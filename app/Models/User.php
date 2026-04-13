@@ -29,7 +29,7 @@ class User extends Authenticatable
         'role',
         'phone',
         'failed_attempts',
-        
+      
     'locked_until',
         'is_active',
         'last_login_at',
