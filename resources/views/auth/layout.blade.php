@@ -119,6 +119,8 @@
     <script src="{{ asset('assets/vendor/libs/@form-validation/popular.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/@form-validation/bootstrap5.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/@form-validation/auto-focus.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/additional-methods.min.js"></script>
 
 
     <!-- Main JS -->
@@ -127,7 +129,7 @@
 
     <!-- Page JS -->
     <script src="{{ asset('assets/js/pages-auth.js') }}"></script>
-    <script>
+<script>
 $(document).ready(function() {
 
     @if(Session::has('success'))
@@ -149,9 +151,8 @@ $(document).ready(function() {
 
 });
 </script>
+@yield('scripts')
   </body>
 </html>
-
-
 
 

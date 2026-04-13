@@ -2,103 +2,53 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Admin\ChangeTenantStatusAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ChangeTenantStatusRequest;
+use App\Models\Tenant;
 use App\Models\User;
-use Illuminate\Http\Request;
 
 class TenantController extends Controller
 {
-    private const STATUS_TRANSITIONS = [
-        'approve' => [
-            'user_is_active' => true,
-            'tenant_status' => 'approved',
-            'status_text' => 'Approved',
-            'badge_class' => 'bg-success',
-            'message' => 'Shop approved successfully',
-        ],
-        'reject' => [
-            'user_is_active' => false,
-            'tenant_status' => 'rejected',
-            'status_text' => 'Rejected',
-            'badge_class' => 'bg-danger',
-            'message' => 'Shop rejected successfully',
-        ],
-        'suspend' => [
-            'user_is_active' => false,
-            'tenant_status' => 'suspended',
-            'status_text' => 'Suspended',
-            'badge_class' => 'bg-secondary',
-            'message' => 'Shop suspended successfully',
-        ],
-        'reactivate' => [
-            'user_is_active' => true,
-            'tenant_status' => 'approved',
-            'status_text' => 'Approved',
-            'badge_class' => 'bg-success',
-            'message' => 'Shop reactivated successfully',
-        ],
-    ];
+    public function __construct(
+        private readonly ChangeTenantStatusAction $changeTenantStatusAction,
+    ) {
+    }
 
     public function index()
     {
-        $shops = User::query()
-            ->where('role', User::TENANT_ADMIN)
+        $shops = Tenant::query()
+            ->with('adminUser')
             ->latest()
             ->get();
 
         return view('shop.index', compact('shops'));
     }
 
-    public function pending()
+    public function changeStatus(ChangeTenantStatusRequest $request, string $id, string $action)
     {
-        $shops = User::query()
-            ->where('role', User::TENANT_ADMIN)
-            ->whereHas('tenant', function ($query): void {
-                $query->where('status', 'pending');
-            })
-            ->latest()
-            ->get();
+        $tenant = Tenant::query()->with('adminUser')->findOrFail($id);
 
-        return view('shop.index', compact('shops'));
-    }
-
-    public function changeStatus(Request $request, $id, string $action)
-    {
-        abort_unless(array_key_exists($action, self::STATUS_TRANSITIONS), 404);
-
-        $request->validate([
-            'reason' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        $shop = User::query()->where('role', User::TENANT_ADMIN)->findOrFail($id);
-        $transition = self::STATUS_TRANSITIONS[$action];
-
-        $shop->update([
-            'is_active' => $transition['user_is_active'],
-        ]);
-
-        optional($shop->tenant)->update([
-            'status' => $transition['tenant_status'],
-            'approved_at' => $transition['tenant_status'] === 'approved' ? now() : optional($shop->tenant)->approved_at,
-            'rejected_reason' => $transition['tenant_status'] === 'rejected'
-                ? ($request->string('reason')->toString() ?: null)
-                : null,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => $transition['message'],
-            'status_text' => $transition['status_text'],
-            'badge_class' => $transition['badge_class'],
-        ]);
+        return response()->json(
+            $this->changeTenantStatusAction->execute(
+                tenant: $tenant,
+                action: $action,
+                reason: $request->validated('reason'),
+            )
+        );
     }
 
     public function impersonate($id)
     {
         $admin = auth()->user();
-        $shop = User::query()->where('role', User::TENANT_ADMIN)->findOrFail($id);
+        $tenant = Tenant::query()->with('adminUser')->findOrFail($id);
+        $shop = $tenant->adminUser;
 
-        if (optional($shop->tenant)->status !== 'approved') {
+        if (! $shop) {
+            return back()->with('error', 'Shop admin not found.');
+        }
+
+        if ($tenant->status->value !== 'approved') {
             return back()->with('error', 'Only approved shops can be impersonated');
         }
 

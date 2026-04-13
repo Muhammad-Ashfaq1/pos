@@ -1,4 +1,5 @@
 @forelse($shops as $index => $shop)
+@php($status = $shop->status instanceof \App\Enums\TenantStatus ? $shop->status->value : $shop->status)
 <tr>
     <td>{{ $index + 1 }}</td>
 
@@ -13,16 +14,16 @@
 
     {{-- ================= STATUS ================= --}}
     <td>
-        @if($shop->status == 'pending')
+        @if($status == 'pending')
             <span class="badge bg-warning text-dark status-badge">Pending</span>
 
-        @elseif($shop->status == 'approved')
+        @elseif($status == 'approved')
             <span class="badge bg-success status-badge">Approved</span>
 
-        @elseif($shop->status == 'rejected')
+        @elseif($status == 'rejected')
             <span class="badge bg-danger status-badge">Rejected</span>
 
-        @elseif($shop->status == 'suspended')
+        @elseif($status == 'suspended')
             <span class="badge bg-secondary status-badge">Suspended</span>
 
         @else
@@ -32,7 +33,7 @@
 
     {{-- ================= IMPERSONATE ================= --}}
     <td>
-        @if($shop->status == 'approved')
+        @if($status == 'approved')
             <button onclick="confirmImpersonate({{ $shop->id }})"
                 class="btn btn-warning btn-sm">
                 Impersonate
@@ -48,7 +49,7 @@
     <td>
 
         {{-- PENDING --}}
-        @if($shop->status == 'pending')
+        @if($status == 'pending')
 
             <button class="btn btn-success btn-sm action-btn"
                 data-id="{{ $shop->id }}"
@@ -66,7 +67,7 @@
 
 
         {{-- APPROVED --}}
-        @if($shop->status == 'approved')
+        @if($status == 'approved')
 
             <button class="btn btn-warning btn-sm action-btn"
                 data-id="{{ $shop->id }}"
@@ -78,7 +79,7 @@
 
 
         {{-- REJECTED --}}
-        @if($shop->status == 'rejected')
+        @if($status == 'rejected')
 
             <button class="btn btn-success btn-sm action-btn"
                 data-id="{{ $shop->id }}"
@@ -90,7 +91,7 @@
 
 
         {{-- SUSPENDED --}}
-        @if($shop->status == 'suspended')
+        @if($status == 'suspended')
 
             <button class="btn btn-success btn-sm action-btn"
                 data-id="{{ $shop->id }}"

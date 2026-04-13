@@ -1,5 +1,9 @@
 <?php
 
+use App\Exceptions\InvalidTenantStatusTransitionException;
+use App\Http\Middleware\EnsureActiveUser;
+use App\Http\Middleware\EnsureCentralUser;
+use App\Http\Middleware\EnsureImpersonatingSession;
 use App\Http\Middleware\EnsureTenantIsApproved;
 use App\Http\Middleware\IsSuperAdmin;
 use Illuminate\Foundation\Application;
@@ -19,10 +23,21 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
+            'active.user' => EnsureActiveUser::class,
+            'central.user' => EnsureCentralUser::class,
+            'impersonating' => EnsureImpersonatingSession::class,
             'super_admin' => IsSuperAdmin::class,
             'tenant.approved' => EnsureTenantIsApproved::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (InvalidTenantStatusTransitionException $exception, $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $exception->getMessage(),
+                ], 422);
+            }
+
+            return back()->with('error', $exception->getMessage());
+        });
     })->create();

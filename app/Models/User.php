@@ -3,15 +3,18 @@
 namespace App\Models;
 
 
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Notifications\Auth\QueuedVerifyEmail;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, MustVerifyEmailTrait;
 
 
     //  Role Constants
@@ -30,8 +33,7 @@ class User extends Authenticatable
         'role',
         'phone',
         'failed_attempts',
-      
-    'locked_until',
+        'locked_until',
         'is_active',
         'last_login_at',
         'last_login_ip',
@@ -49,44 +51,41 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
-               'locked_until' => 'datetime'
+            'locked_until' => 'datetime',
         ];
     }
 
-
-    //  Helper Functions
-
-    public function isSuperAdmin()
+    public function isSuperAdmin(): bool
     {
-        return $this->hasRole(self::SUPER_ADMIN);
+        return $this->role === self::SUPER_ADMIN || $this->hasRole(self::SUPER_ADMIN);
     }
 
-    public function isTenantAdmin()
+    public function isTenantAdmin(): bool
     {
-        return $this->hasRole(self::TENANT_ADMIN);
+        return $this->role === self::TENANT_ADMIN || $this->hasRole(self::TENANT_ADMIN);
     }
 
-    public function isManager()
+    public function isManager(): bool
     {
         return $this->hasRole(self::MANAGER);
     }
 
-    public function isCashier()
+    public function isCashier(): bool
     {
         return $this->hasRole(self::CASHIER);
     }
 
-    public function isTechnician()
+    public function isTechnician(): bool
     {
         return $this->hasRole(self::TECHNICIAN);
     }
 
-    public function isInventoryClerk()
+    public function isInventoryClerk(): bool
     {
         return $this->hasRole(self::INVENTORY_CLERK);
     }
 
-    public function isCustomer()
+    public function isCustomer(): bool
     {
         return $this->hasRole(self::CUSTOMER);
     }
@@ -96,8 +95,8 @@ class User extends Authenticatable
         return $this->belongsTo(Tenant::class);
     }
 
-    /**
-     * Get the attributes that should be cast.
-     */
-
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new QueuedVerifyEmail());
+    }
 }

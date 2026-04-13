@@ -2,76 +2,37 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\Auth\RegisterTenantShopAction;
 use App\Http\Controllers\Controller;
-use App\Models\Tenant;
+use App\Http\Requests\Auth\ForgotPasswordRequest;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterShopRequest;
+use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AuthController extends Controller
 {
+    public function __construct(
+        private readonly RegisterTenantShopAction $registerTenantShopAction,
+    ) {
+    }
+
     public function register(): View
     {
         return view('auth.register');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(RegisterShopRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email', 'unique:tenants,email'],
-            'password' => ['required', 'string', 'confirmed', 'min:8'],
-            'phone' => ['nullable', 'string', 'max:30'],
-            'shop_name' => ['required', 'string', 'max:255'],
-            'website_url' => ['nullable', 'url', 'max:255'],
-            'business_type' => ['nullable', 'string', 'max:255'],
-            'address' => ['nullable', 'string', 'max:1000'],
-            'city' => ['nullable', 'string', 'max:255'],
-            'state' => ['nullable', 'string', 'max:255'],
-            'country' => ['nullable', 'string', 'max:255'],
-            'terms' => ['accepted'],
-        ]);
-
-        $user = DB::transaction(function () use ($validated) {
-            $tenant = Tenant::create([
-                'id' => (string) Str::uuid(),
-                'shop_name' => $validated['shop_name'],
-                'business_type' => $validated['business_type'] ?? null,
-                'owner_name' => $validated['name'],
-                'email' => $validated['email'],
-                'phone' => $validated['phone'] ?? null,
-                'website_url' => $validated['website_url'] ?? null,
-                'address' => $validated['address'] ?? null,
-                'city' => $validated['city'] ?? null,
-                'state' => $validated['state'] ?? null,
-                'country' => $validated['country'] ?? null,
-                'status' => 'pending',
-            ]);
-
-            $user = User::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'password' => $validated['password'],
-                'tenant_id' => $tenant->id,
-                'role' => User::TENANT_ADMIN,
-                'phone' => $validated['phone'] ?? null,
-                'is_active' => false,
-            ]);
-
-            if (method_exists($user, 'assignRole')) {
-                $user->assignRole(User::TENANT_ADMIN);
-            }
-
-            return $user;
-        });
+        $user = $this->registerTenantShopAction->execute($request->validated());
 
         event(new Registered($user));
 
@@ -85,13 +46,9 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function loginSubmit(Request $request): RedirectResponse
+    public function loginSubmit(LoginRequest $request): RedirectResponse
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
-        ]);
-
+        $credentials = $request->safe()->only(['email', 'password']);
         $remember = $request->boolean('remember');
 
         if (! Auth::attempt($credentials, $remember)) {
@@ -105,15 +62,31 @@ class AuthController extends Controller
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        if (is_null($user->email_verified_at)) {
+        if (! $user->hasVerifiedEmail()) {
             Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
 
             return redirect()
                 ->route('login')
                 ->with('warning', 'Verify your email address before signing in.');
         }
 
-        return redirect()->intended('/');
+        if (! $user->is_active && $user->tenant_id) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()
+                ->route('login')
+                ->with('warning', 'Your shop is pending super admin approval.');
+        }
+
+        $defaultRoute = $user->isSuperAdmin()
+            ? route('admin.dashboard')
+            : $this->resolveTenantRedirectUrl($user);
+
+        return redirect()->intended($defaultRoute);
     }
 
     public function forgot(): View
@@ -121,13 +94,9 @@ class AuthController extends Controller
         return view('auth.forgot');
     }
 
-    public function sendResetLink(Request $request): RedirectResponse
+    public function sendResetLink(ForgotPasswordRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'email' => ['required', 'email'],
-        ]);
-
-        $status = Password::sendResetLink($validated);
+        $status = Password::sendResetLink($request->validated());
 
         return $status === Password::RESET_LINK_SENT
             ? back()->with('success', __($status))
@@ -139,16 +108,10 @@ class AuthController extends Controller
         return view('auth.reset', ['token' => $token]);
     }
 
-    public function resetPassword(Request $request): RedirectResponse
+    public function resetPassword(ResetPasswordRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'token' => ['required', 'string'],
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string', 'confirmed', 'min:8'],
-        ]);
-
         $status = Password::reset(
-            $validated,
+            $request->validated(),
             function (User $user, string $password): void {
                 $user->forceFill([
                     'password' => $password,
@@ -173,8 +136,8 @@ class AuthController extends Controller
             abort(403);
         }
 
-        if (is_null($user->email_verified_at)) {
-            $user->forceFill(['email_verified_at' => now()])->save();
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
         }
 
         return redirect()
@@ -190,5 +153,16 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    private function resolveTenantRedirectUrl(User $user): string
+    {
+        $domain = $user->tenant?->domains()->value('domain');
+
+        if (! $domain) {
+            return url('/');
+        }
+
+        return request()->getScheme().'://'.$domain.'/dashboard';
     }
 }

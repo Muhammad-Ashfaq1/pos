@@ -4,29 +4,55 @@
 
 @section('content')
 
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title">All Shops</h5>
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card bg-label-primary">
+            <div class="card-body p-4">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <span class="badge bg-primary mb-3">Tenant Review Desk</span>
+                        <h3 class="mb-2">Manage every shop from one approval console</h3>
+                        <p class="text-muted mb-0">
+                            Review registrations, impersonate approved tenants for support, and keep your SaaS onboarding queue moving without leaving this page.
+                        </p>
+                    </div>
+                    <div class="col-lg-4 text-center d-none d-lg-block">
+                        <img src="{{ asset('assets/img/illustrations/add-new-roles.png') }}" alt="Shop management" class="img-fluid" style="max-height: 180px;">
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="card-datatable table-responsive pt-0">
-        <table class="datatables-basic table" id="shop-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Owner Name</th>
-                    <th>Email</th>
-                    <th>Shop Name</th>
-                    <th>Status</th>
-                    <th>Impersonate</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title mb-1">Shop Directory</h5>
+                    <p class="text-muted mb-0">Central admin view across all registered tenants</p>
+                </div>
+            </div>
 
-            <tbody id="shop-table-body">
-                @include('shop.data-table')
-            </tbody>
-        </table>
+            <div class="card-datatable table-responsive pt-0">
+                <table class="datatables-basic table" id="shop-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Owner Name</th>
+                            <th>Email</th>
+                            <th>Shop Name</th>
+                            <th>Status</th>
+                            <th>Impersonate</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="shop-table-body">
+                        @include('shop.data-table')
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 

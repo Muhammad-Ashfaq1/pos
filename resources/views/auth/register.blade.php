@@ -17,7 +17,7 @@
                     <p class="text-muted">Create your shop and start managing everything easily.</p>
                 </div>
 
-                <form action="{{ route('register.store') }}" method="POST">
+                <form id="shop-registration-form" action="{{ route('register.store') }}" method="POST" novalidate>
                     @csrf
 
                     <!-- OWNER DETAILS -->
@@ -93,10 +93,10 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Website URL <span class="text-danger">*</span></label>
+                            <label class="form-label">Website URL</label>
                             <input type="url" name="website_url" class="form-control"
                                 value="{{ old('website_url') }}"
-                                placeholder="https://yourshop.com" required>
+                                placeholder="https://yourshop.com">
                             <small class="text-muted">Example: https://yourshop.com</small>
                             @error('website_url')
                                 <small class="text-danger">{{ $message }}</small>
@@ -165,4 +165,39 @@
 </div>
 
 
+@endsection
+
+@section('scripts')
+<script>
+$(function () {
+    $('#shop-registration-form').validate({
+        errorClass: 'is-invalid',
+        validClass: 'is-valid',
+        errorElement: 'small',
+        errorPlacement: function (error, element) {
+            error.addClass('text-danger');
+            error.insertAfter(element.closest('.input-group').length ? element.closest('.input-group') : element);
+        },
+        highlight: function (element) {
+            $(element).addClass('is-invalid').removeClass('is-valid');
+        },
+        unhighlight: function (element) {
+            $(element).removeClass('is-invalid').addClass('is-valid');
+        },
+        rules: {
+            name: { required: true, maxlength: 255 },
+            email: { required: true, email: true, maxlength: 255 },
+            password: { required: true, minlength: 8, maxlength: 64 },
+            password_confirmation: { required: true, equalTo: '#password' },
+            phone: { required: true, maxlength: 30 },
+            shop_name: { required: true, maxlength: 255 },
+            website_url: { url: true, maxlength: 255 },
+            address: { required: true, maxlength: 1000 },
+            city: { required: true, maxlength: 255 },
+            country: { required: true, maxlength: 255 },
+            terms: { required: true }
+        }
+    });
+});
+</script>
 @endsection

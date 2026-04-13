@@ -20,7 +20,7 @@ class EnsureTenantIsApproved
 
         $tenant = Tenant::query()->find($user->tenant_id);
 
-        if (! $tenant || $tenant->status !== 'approved') {
+        if (! $tenant || $tenant->status->value !== 'approved') {
             auth()->logout();
 
             $request->session()->invalidate();
