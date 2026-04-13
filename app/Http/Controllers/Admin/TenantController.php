@@ -3,132 +3,102 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\Request;
 
 class TenantController extends Controller
 {
-    // =========================
-    // 1. ALL SHOPS (TENANTS)
-    // =========================
+    private const STATUS_TRANSITIONS = [
+        'approve' => [
+            'user_is_active' => true,
+            'tenant_status' => 'approved',
+            'status_text' => 'Approved',
+            'badge_class' => 'bg-success',
+            'message' => 'Shop approved successfully',
+        ],
+        'reject' => [
+            'user_is_active' => false,
+            'tenant_status' => 'rejected',
+            'status_text' => 'Rejected',
+            'badge_class' => 'bg-danger',
+            'message' => 'Shop rejected successfully',
+        ],
+        'suspend' => [
+            'user_is_active' => false,
+            'tenant_status' => 'suspended',
+            'status_text' => 'Suspended',
+            'badge_class' => 'bg-secondary',
+            'message' => 'Shop suspended successfully',
+        ],
+        'reactivate' => [
+            'user_is_active' => true,
+            'tenant_status' => 'approved',
+            'status_text' => 'Approved',
+            'badge_class' => 'bg-success',
+            'message' => 'Shop reactivated successfully',
+        ],
+    ];
+
     public function index()
     {
-
-
-        $shops = User::where('role', 'shop_admin')
+        $shops = User::query()
+            ->where('role', User::TENANT_ADMIN)
             ->latest()
             ->get();
 
-        return view(' shop.index', compact('shops'));
+        return view('shop.index', compact('shops'));
     }
 
-    // =========================
-    // 2. APPROVE SHOP
-    // =========================
-    public function approve($id)
+    public function pending()
     {
-        $shop = User::where('role', 'shop_admin')->findOrFail($id);
+        $shops = User::query()
+            ->where('role', User::TENANT_ADMIN)
+            ->whereHas('tenant', function ($query): void {
+                $query->where('status', 'pending');
+            })
+            ->latest()
+            ->get();
 
-        $shop->update([
-            'approval_status' => 'approved',
-            'is_active' => 1
-        ]);
-
-        Mail::raw('Your shop has been approved.', function ($message) use ($shop) {
-            $message->to($shop->email)->subject('Shop Approved');
-        });
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Shop approved successfully',
-            'status_text' => 'Approved',
-            'badge_class' => 'bg-success'
-        ]);
+        return view('shop.index', compact('shops'));
     }
 
-    // =========================
-    // 3. REJECT SHOP
-    // =========================
-    public function reject(Request $request, $id)
+    public function changeStatus(Request $request, $id, string $action)
     {
-        $shop = User::where('role', 'shop_admin')->findOrFail($id);
+        abort_unless(array_key_exists($action, self::STATUS_TRANSITIONS), 404);
+
+        $request->validate([
+            'reason' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $shop = User::query()->where('role', User::TENANT_ADMIN)->findOrFail($id);
+        $transition = self::STATUS_TRANSITIONS[$action];
 
         $shop->update([
-            'approval_status' => 'rejected',
-            'is_active' => 0
+            'is_active' => $transition['user_is_active'],
         ]);
 
-        Mail::raw('Your shop request has been rejected.', function ($message) use ($shop) {
-            $message->to($shop->email)->subject('Shop Rejected');
-        });
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Shop rejected successfully',
-            'status_text' => 'Rejected',
-            'badge_class' => 'bg-danger'
-        ]);
-    }
-
-    // =========================
-    // 4. SUSPEND SHOP
-    // =========================
-    public function suspend($id)
-    {
-        $shop = User::where('role', 'shop_admin')->findOrFail($id);
-
-        $shop->update([
-            'approval_status' => 'suspended',
-            'is_active' => 0
-        ]);
-
-        Mail::raw('Your shop has been suspended.', function ($message) use ($shop) {
-            $message->to($shop->email)->subject('Shop Suspended');
-        });
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Shop suspended successfully',
-            'status_text' => 'Suspended',
-            'badge_class' => 'bg-secondary'
-        ]);
-    }
-
-    // =========================
-    // 5. REACTIVATE SHOP
-    // =========================
-    public function reactivate($id)
-    {
-        $shop = User::where('role', 'shop_admin')->findOrFail($id);
-
-        $shop->update([
-            'approval_status' => 'approved',
-            'is_active' => 1
+        optional($shop->tenant)->update([
+            'status' => $transition['tenant_status'],
+            'approved_at' => $transition['tenant_status'] === 'approved' ? now() : optional($shop->tenant)->approved_at,
+            'rejected_reason' => $transition['tenant_status'] === 'rejected'
+                ? ($request->string('reason')->toString() ?: null)
+                : null,
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Shop reactivated successfully',
-            'status_text' => 'Approved',
-            'badge_class' => 'bg-success'
+            'message' => $transition['message'],
+            'status_text' => $transition['status_text'],
+            'badge_class' => $transition['badge_class'],
         ]);
     }
 
-    // =========================
-    // 6. IMPERSONATE SHOP
-    // =========================
     public function impersonate($id)
     {
         $admin = auth()->user();
+        $shop = User::query()->where('role', User::TENANT_ADMIN)->findOrFail($id);
 
-        if ($admin->role !== 'super_admin') {
-            abort(403, 'Unauthorized');
-        }
-
-        $shop = User::where('role', 'shop_admin')->findOrFail($id);
-
-        if ($shop->approval_status !== 'approved') {
+        if (optional($shop->tenant)->status !== 'approved') {
             return back()->with('error', 'Only approved shops can be impersonated');
         }
 
@@ -139,9 +109,6 @@ class TenantController extends Controller
         return redirect('/admin/dashboard');
     }
 
-    // =========================
-    // 7. STOP IMPERSONATION
-    // =========================
     public function stopImpersonate()
     {
         $adminId = session('impersonator_id');

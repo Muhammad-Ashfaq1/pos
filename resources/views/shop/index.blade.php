@@ -54,7 +54,7 @@ $(document).ready(function () {
         let token = $('meta[name="csrf-token"]').attr('content');
 
         $.ajax({
-           url: '/admin/shops/' + action + '/' + id,
+           url: '/admin/shops/' + id + '/status/' + action,
             type: 'POST',
             data: {
                 _token: token
