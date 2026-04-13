@@ -11,7 +11,7 @@ protected $keyType = 'string';
 
  
     protected $fillable = [
-        'id', // usually UUID hota hai
+        'id', 
         'shop_name',
         'business_type',
         'owner_name',
