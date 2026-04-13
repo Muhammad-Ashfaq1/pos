@@ -2,21 +2,18 @@
 
 namespace App\Models;
 
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
 
-    // 🔹 Role Constants
+
+    //  Role Constants
     public const SUPER_ADMIN = 'super_admin';
     public const TENANT_ADMIN = 'tenant_admin';
     public const MANAGER = 'manager';
@@ -24,8 +21,39 @@ class User extends Authenticatable
     public const TECHNICIAN = 'technician';
     public const INVENTORY_CLERK = 'inventory_clerk';
     public const CUSTOMER = 'customer';
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'tenant_id',
+        'role',
+        'phone',
+        'failed_attempts',
+        
+    'locked_until',
+        'is_active',
+        'last_login_at',
+        'last_login_ip',
+    ];
 
-    // 🔹 Helper Functions
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
+               'locked_until' => 'datetime'
+        ];
+    }
+
+
+    //  Helper Functions
 
     public function isSuperAdmin()
     {
@@ -65,11 +93,5 @@ class User extends Authenticatable
     /**
      * Get the attributes that should be cast.
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+
 }
