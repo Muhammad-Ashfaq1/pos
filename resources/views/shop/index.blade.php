@@ -78,43 +78,67 @@ $(document).ready(function () {
         let action = $(this).data('action');
         let button = $(this);
         let token = $('meta[name="csrf-token"]').attr('content');
+        let requiresReason = ['reject', 'suspend'].includes(action);
 
-        $.ajax({
-           url: '/admin/shops/' + id + '/status/' + action,
-            type: 'POST',
-            data: {
-                _token: token
-            },
-            success: function (response) {
+        let submitAction = function(reason = '') {
+            $.ajax({
+               url: '/admin/shops/' + id + '/status/' + action,
+                type: 'POST',
+                data: {
+                    _token: token,
+                    reason: reason
+                },
+                success: function (response) {
 
-                if (response.success) {
+                    if (response.success) {
 
-                    toastr.success(response.message);
+                        toastr.success(response.message);
 
-                    // refresh table body
-                    shopTable.destroy();
+                        shopTable.destroy();
 
-                    $('#shop-table-body').load(location.href + ' #shop-table-body>*', function () {
+                        $('#shop-table-body').load(location.href + ' #shop-table-body>*', function () {
 
-                        shopTable = $('#shop-table').DataTable({
-                            responsive: true,
-                            processing: true
+                            shopTable = $('#shop-table').DataTable({
+                                responsive: true,
+                                processing: true
+                            });
                         });
-                    });
 
-                    // update status badge live
-                    let row = button.closest('tr');
-                    let badge = row.find('.status-badge');
+                        let row = button.closest('tr');
+                        let badge = row.find('.status-badge');
 
-                    badge
-                        .removeClass('bg-success bg-danger bg-warning bg-secondary')
-                        .addClass(response.badge_class)
-                        .text(response.status_text);
+                        badge
+                            .removeClass('bg-success bg-danger bg-warning bg-secondary')
+                            .addClass(response.badge_class)
+                            .text(response.status_text);
+                    }
+                },
+                error: function (xhr) {
+                    console.log(xhr.responseText);
+                    toastr.error(xhr.responseJSON?.message || 'Action failed.');
                 }
+            });
+        };
+
+        if (!requiresReason) {
+            submitAction();
+            return;
+        }
+
+        Swal.fire({
+            title: action === 'reject' ? 'Reject shop?' : 'Suspend shop?',
+            input: 'textarea',
+            inputLabel: 'Reason',
+            inputPlaceholder: 'Add a short audit note',
+            inputAttributes: {
+                'aria-label': 'Reason'
             },
-            error: function (xhr) {
-                console.log(xhr.responseText);
-                toastr.error('Action failed!');
+            showCancelButton: true,
+            confirmButtonText: 'Continue',
+            inputValidator: (value) => !value ? 'A reason is required.' : undefined
+        }).then((result) => {
+            if (result.isConfirmed) {
+                submitAction(result.value);
             }
         });
     });
@@ -129,7 +153,7 @@ function confirmImpersonate(shopId) {
 
     Swal.fire({
         title: 'Impersonate Shop?',
-        text: "You will login as this shop admin",
+        text: "You will sign in as this shop admin",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#696cff',

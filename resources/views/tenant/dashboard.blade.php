@@ -10,7 +10,7 @@
                 <div class="row align-items-center">
                     <div class="col-lg-8">
                         <span class="badge bg-white text-primary mb-3">Tenant Workspace</span>
-                        <h2 class="text-white mb-2">{{ $tenant?->shop_name ?? 'Shop Dashboard' }}</h2>
+                        <h2 class="text-white mb-2">{{ $tenant?->display_name ?? 'Shop Dashboard' }}</h2>
                         <p class="mb-0 text-white-50">
                             Your shop is signed in under its isolated tenant context. This is the starting point for POS, services, customers, and vehicles.
                         </p>
@@ -27,7 +27,7 @@
         <div class="card">
             <div class="card-body">
                 <span class="text-muted d-block mb-2">Shop</span>
-                <h4 class="mb-0">{{ $tenant?->shop_name ?? 'Shop Dashboard' }}</h4>
+                <h4 class="mb-0">{{ $tenant?->display_name ?? 'Shop Dashboard' }}</h4>
             </div>
         </div>
     </div>

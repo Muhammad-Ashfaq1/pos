@@ -25,6 +25,6 @@ class SuperAdminSeeder extends Seeder
             ]
         );
 
-        $user->syncRoles([User::SUPER_ADMIN]);
+        $user->assignPrimaryRole(User::SUPER_ADMIN);
     }
 }

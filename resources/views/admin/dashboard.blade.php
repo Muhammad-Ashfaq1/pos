@@ -123,13 +123,13 @@
                         @forelse($recentTenants as $tenant)
                             <tr>
                                 <td>
-                                    <div class="fw-medium">{{ $tenant->shop_name }}</div>
+                                    <div class="fw-medium">{{ $tenant->display_name }}</div>
                                     <small class="text-muted">{{ $tenant->city }}, {{ $tenant->country }}</small>
                                 </td>
                                 <td>{{ $tenant->owner_name }}</td>
-                                <td>{{ $tenant->email }}</td>
+                                <td>{{ $tenant->owner_email_address }}</td>
                                 <td>
-                                    <span class="badge bg-label-{{ $tenant->status->value === 'approved' ? 'success' : ($tenant->status->value === 'pending' ? 'warning' : 'secondary') }}">
+                                    <span class="badge bg-label-{{ $tenant->status->badgeClass() }}">
                                         {{ ucfirst($tenant->status->value) }}
                                     </span>
                                 </td>
@@ -156,7 +156,7 @@
                     <div class="col-md-4">
                         <div class="border rounded p-3 h-100">
                             <div class="fw-medium mb-2">Approve deliberately</div>
-                            <p class="text-muted mb-0">Each approved shop becomes an active tenant workspace with isolated access and its own domain context.</p>
+                            <p class="text-muted mb-0">Each approved shop becomes an active tenant workspace with single-database isolation enforced through tenant-aware application logic.</p>
                         </div>
                     </div>
                     <div class="col-md-4">

@@ -11,9 +11,9 @@ Route::middleware(['web', 'auth', 'verified', 'active.user', 'central.user', 'su
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/shops', [TenantController::class, 'index'])->name('shops.index');
 
-    Route::post('/shops/{id}/status/{action}', [TenantController::class, 'changeStatus'])->name('shops.status.change');
+    Route::post('/shops/{tenant}/status/{action}', [TenantController::class, 'changeStatus'])->name('shops.status.change');
 
-    Route::get('/shops/impersonate/{id}', [TenantController::class, 'impersonate'])->name('shops.impersonate');
+    Route::get('/shops/impersonate/{tenant}', [TenantController::class, 'impersonate'])->name('shops.impersonate');
 });
 
 Route::middleware(['web', 'auth', 'impersonating'])

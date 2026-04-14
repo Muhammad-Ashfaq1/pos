@@ -3,42 +3,32 @@
 namespace App\Models;
 
 use App\Enums\TenantStatus;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Stancl\Tenancy\Contracts\Tenant as TenantContract;
 use Stancl\Tenancy\Database\Concerns\CentralConnection;
-use Stancl\Tenancy\Database\Concerns\HasInternalKeys;
-use Stancl\Tenancy\Database\Concerns\InvalidatesResolverCache;
 use Stancl\Tenancy\Database\Concerns\TenantRun;
-use Stancl\Tenancy\Database\TenantCollection;
-use Stancl\Tenancy\Events;
 
 class Tenant extends Model implements TenantContract
 {
     use CentralConnection;
-    use HasInternalKeys;
     use TenantRun;
-    use InvalidatesResolverCache;
 
     protected $table = 'tenants';
-
-    protected $primaryKey = 'id';
-
-    public $incrementing = true;
-
-    protected $keyType = 'int';
 
     protected $guarded = [];
 
     protected $fillable = [
-        'id',
-        'shop_name',
-        'business_type',
+        'name',
+        'slug',
         'owner_name',
-        'email',
-        'phone',
-        'website_url',
+        'owner_email',
+        'owner_phone',
+        'business_name',
+        'business_email',
+        'business_phone',
         'address',
         'city',
         'state',
@@ -46,6 +36,15 @@ class Tenant extends Model implements TenantContract
         'status',
         'approved_by',
         'approved_at',
+        'rejected_at',
+        'suspended_at',
+        'onboarding_completed_at',
+        'settings',
+        'shop_name',
+        'email',
+        'phone',
+        'business_type',
+        'website_url',
         'rejected_reason',
         'onboarding_status',
     ];
@@ -53,17 +52,10 @@ class Tenant extends Model implements TenantContract
     protected $casts = [
         'status' => TenantStatus::class,
         'approved_at' => 'datetime',
-    ];
-
-    protected $dispatchesEvents = [
-        'saving' => Events\SavingTenant::class,
-        'saved' => Events\TenantSaved::class,
-        'creating' => Events\CreatingTenant::class,
-        'created' => Events\TenantCreated::class,
-        'updating' => Events\UpdatingTenant::class,
-        'updated' => Events\TenantUpdated::class,
-        'deleting' => Events\DeletingTenant::class,
-        'deleted' => Events\TenantDeleted::class,
+        'rejected_at' => 'datetime',
+        'suspended_at' => 'datetime',
+        'onboarding_completed_at' => 'datetime',
+        'settings' => 'array',
     ];
 
     public function getTenantKeyName(): string
@@ -76,9 +68,16 @@ class Tenant extends Model implements TenantContract
         return $this->getAttribute($this->getTenantKeyName());
     }
 
-    public function newCollection(array $models = []): TenantCollection
+    public function getInternal(string $key)
     {
-        return new TenantCollection($models);
+        return $this->getAttribute($key);
+    }
+
+    public function setInternal(string $key, $value)
+    {
+        $this->setAttribute($key, $value);
+
+        return $this;
     }
 
     public function users(): HasMany
@@ -89,5 +88,35 @@ class Tenant extends Model implements TenantContract
     public function adminUser(): HasOne
     {
         return $this->hasOne(User::class)->where('role', User::TENANT_ADMIN);
+    }
+
+    protected function displayName(): Attribute
+    {
+        return Attribute::get(fn (): string => $this->name ?: $this->business_name ?: $this->shop_name ?: 'Tenant');
+    }
+
+    protected function ownerEmailAddress(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->owner_email ?: $this->email);
+    }
+
+    protected function onboardingState(): Attribute
+    {
+        return Attribute::get(function (): string {
+            if ($this->onboarding_completed_at) {
+                return 'completed';
+            }
+
+            if ($this->approved_at) {
+                return 'in_progress';
+            }
+
+            return 'not_started';
+        });
+    }
+
+    public function isAccessible(): bool
+    {
+        return $this->status->allowsLogin();
     }
 }

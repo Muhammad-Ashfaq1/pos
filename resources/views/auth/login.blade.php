@@ -45,8 +45,8 @@
               </a>
             </div>
             <!-- /Logo -->
-            <h4 class="mb-1">Welcome to Vuexy! 👋</h4>
-            <p class="mb-6">Please sign-in to your account and start the adventure</p>
+            <h4 class="mb-1">Welcome back</h4>
+            <p class="mb-6">Sign in to continue into your platform or tenant workspace.</p>
 
             <form action="{{ route('login.submit') }}" method="POST">
     @csrf
@@ -58,6 +58,7 @@
   class="form-control"
   id="email"
   name="email"
+  value="{{ old('email') }}"
   placeholder="Enter your email"
   required
   autofocus />
@@ -79,8 +80,6 @@
               <div class="my-8">
                 <div class="d-flex justify-content-between">
                   <div class="form-check mb-0 ms-2">
-                    <input class="form-check-input" type="checkbox" id="remember-me" />
-
                     <label class="form-check-label" for="remember-me"> Remember Me </label>
                     <input
   class="form-check-input"
@@ -111,5 +110,4 @@
       </div>
     </div>
 @endsection
-
 

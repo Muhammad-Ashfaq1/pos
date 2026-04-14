@@ -12,7 +12,7 @@ class DashboardController
 
         $stats = [
             'status' => $tenant?->status?->value ?? 'unknown',
-            'onboarding_status' => $tenant?->onboarding_status ?? 'not_started',
+            'onboarding_status' => $tenant?->onboarding_state ?? 'not_started',
             'team_members' => $tenant?->users()->count() ?? 0,
         ];
 

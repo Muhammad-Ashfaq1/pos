@@ -3,6 +3,7 @@
 namespace App\Models\Concerns;
 
 use App\Models\Tenant;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -44,6 +45,19 @@ trait BelongsToTenant
         });
     }
 
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        $query = parent::resolveRouteBindingQuery($query, $value, $field);
+
+        $tenantId = static::resolveTenantId();
+
+        if ($tenantId === null) {
+            return $query;
+        }
+
+        return $query->where($this->qualifyColumn('tenant_id'), $tenantId);
+    }
+
     public function scopeForTenant(Builder $query, string|int|null $tenantId = null): Builder
     {
         $tenantId = $tenantId ?? static::resolveTenantId();
@@ -69,10 +83,6 @@ trait BelongsToTenant
 
     protected static function resolveTenantId(): string|int|null
     {
-        if (function_exists('tenant') && tenant()) {
-            return tenant()->getTenantKey();
-        }
-
-        return auth()->user()?->tenant_id;
+        return app(TenantContext::class)->id();
     }
 }

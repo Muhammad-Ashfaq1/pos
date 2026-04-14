@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\TenantStatus;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\View\View;
@@ -12,8 +13,8 @@ class DashboardController
     {
         $stats = [
             'tenants_total' => Tenant::query()->count(),
-            'tenants_pending' => Tenant::query()->where('status', 'pending')->count(),
-            'tenants_approved' => Tenant::query()->where('status', 'approved')->count(),
+            'tenants_pending' => Tenant::query()->where('status', TenantStatus::Pending->value)->count(),
+            'tenants_approved' => Tenant::query()->where('status', TenantStatus::Approved->value)->count(),
             'tenant_admins' => User::query()->where('role', User::TENANT_ADMIN)->count(),
         ];
 

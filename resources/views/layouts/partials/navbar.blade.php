@@ -4,7 +4,7 @@
     $contextLabel = $isSuperAdmin ? 'Central Admin' : 'Tenant Workspace';
     $contextName = $isSuperAdmin
         ? config('app.name', 'Oil Change POS')
-        : ($user?->tenant?->shop_name ?? 'Shop Workspace');
+        : ($user?->tenant?->display_name ?? 'Shop Workspace');
 @endphp
 
 <nav class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme" id="layout-navbar">
@@ -47,7 +47,7 @@
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <div class="dropdown-item-text">
-                            <small class="text-muted text-uppercase">{{ $user?->role }}</small>
+                            <small class="text-muted text-uppercase">{{ str_replace('_', ' ', $user?->primaryRoleName() ?? 'user') }}</small>
                         </div>
                     </li>
                     <li><hr class="dropdown-divider"></li>

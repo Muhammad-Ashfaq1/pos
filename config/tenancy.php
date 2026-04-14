@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Models\Domain;
 use App\Models\Tenant;
 
 return [
     'tenant_model' => Tenant::class,
     'id_generator' => null,
 
-    'domain_model' => Domain::class,
+    'domain_model' => Stancl\Tenancy\Database\Models\Domain::class,
 
     /**
      * The list of domains hosting your central app.
@@ -28,10 +27,7 @@ return [
      * To configure their behavior, see the config keys below.
      */
     'bootstrappers' => [
-        Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class,
-        Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class,
         Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
-        // Stancl\Tenancy\Bootstrappers\RedisTenancyBootstrapper::class, // Note: phpredis is needed
     ],
 
     /**
@@ -39,7 +35,7 @@ return [
      * single-database tenancy with explicit tenant_id scoping.
      */
     'database' => [
-        'central_connection' => env('DB_CONNECTION', 'sqlite'),
+        'central_connection' => env('DB_CONNECTION', 'mysql'),
         'template_tenant_connection' => null,
         'prefix' => '',
         'suffix' => '',
@@ -71,9 +67,6 @@ return [
          */
         'suffix_base' => 'tenant',
         'disks' => [
-            'local',
-            'public',
-            // 's3',
         ],
 
         /**
@@ -82,9 +75,6 @@ return [
          * See https://tenancyforlaravel.com/docs/v3/tenancy-bootstrappers/#filesystem-tenancy-boostrapper
          */
         'root_override' => [
-            // Disks whose roots should be overridden after storage_path() is suffixed.
-            'local' => '%storage_path%/app/',
-            'public' => '%storage_path%/app/public/',
         ],
 
         /**
@@ -96,7 +86,7 @@ return [
          * edge cases, it can cause issues (like using Passport with Vapor - see #196), so
          * you may want to disable this if you are experiencing these edge case issues.
          */
-        'suffix_storage_path' => true,
+        'suffix_storage_path' => false,
 
         /**
          * By default, asset() calls are made multi-tenant too. You can use global_asset() and mix()
@@ -105,7 +95,7 @@ return [
          * disable asset() helper tenancy and explicitly use tenant_asset() calls in places
          * where you want to use tenant-specific assets (product images, avatars, etc).
          */
-        'asset_helper_tenancy' => true,
+        'asset_helper_tenancy' => false,
     ],
 
     /**
@@ -148,7 +138,7 @@ return [
      * enabled. But it may be useful to disable them if you use external
      * storage (e.g. S3 / Dropbox) or have a custom asset controller.
      */
-    'routes' => true,
+    'routes' => false,
 
     /**
      * Parameters used by the tenants:migrate command.

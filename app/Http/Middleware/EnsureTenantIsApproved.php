@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Tenant;
 use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,9 +17,9 @@ class EnsureTenantIsApproved
             return $next($request);
         }
 
-        $tenant = Tenant::query()->find($user->tenant_id);
+        $tenant = $request->attributes->get('currentTenant') ?? $user->tenant()->first();
 
-        if (! $tenant || $tenant->status->value !== 'approved') {
+        if (! $tenant) {
             auth()->logout();
 
             $request->session()->invalidate();
@@ -28,7 +27,18 @@ class EnsureTenantIsApproved
 
             return redirect()
                 ->route('login')
-                ->with('warning', 'Your shop account is awaiting approval.');
+                ->with('warning', 'Tenant account could not be found.');
+        }
+
+        if (! $tenant->isAccessible()) {
+            auth()->logout();
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()
+                ->route('login')
+                ->with('warning', $tenant->status->loginBlockedMessage());
         }
 
         return $next($request);

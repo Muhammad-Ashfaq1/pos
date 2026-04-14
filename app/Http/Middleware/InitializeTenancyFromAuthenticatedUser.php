@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Tenant;
+use App\Support\Tenancy\TenantContext;
 use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -10,6 +10,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 class InitializeTenancyFromAuthenticatedUser
 {
+    public function __construct(
+        private readonly TenantContext $tenantContext,
+    ) {
+    }
+
     public function handle(Request $request, Closure $next): Response|RedirectResponse
     {
         $user = $request->user();
@@ -18,7 +23,7 @@ class InitializeTenancyFromAuthenticatedUser
             return $next($request);
         }
 
-        $tenant = Tenant::query()->find($user->tenant_id);
+        $tenant = $this->tenantContext->fromUser($user);
 
         if (! $tenant) {
             auth()->logout();
@@ -31,12 +36,13 @@ class InitializeTenancyFromAuthenticatedUser
                 ->with('warning', 'Tenant account could not be found.');
         }
 
-        tenancy()->initialize($tenant);
+        $request->attributes->set('currentTenant', $tenant);
+        $this->tenantContext->initialize($tenant);
 
         try {
             return $next($request);
         } finally {
-            tenancy()->end();
+            $this->tenantContext->end();
         }
     }
 }

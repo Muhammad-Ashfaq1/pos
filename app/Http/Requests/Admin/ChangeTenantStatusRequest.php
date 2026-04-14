@@ -9,7 +9,7 @@ class ChangeTenantStatusRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return (bool) $this->user()?->can('tenant.approvals.manage');
     }
 
     protected function prepareForValidation(): void
@@ -23,7 +23,12 @@ class ChangeTenantStatusRequest extends FormRequest
     {
         return [
             'action' => ['required', Rule::in(['approve', 'reject', 'suspend', 'reactivate'])],
-            'reason' => ['nullable', 'string', 'max:255'],
+            'reason' => [
+                Rule::requiredIf(in_array($this->route('action'), ['reject', 'suspend'], true)),
+                'nullable',
+                'string',
+                'max:255',
+            ],
         ];
     }
 }

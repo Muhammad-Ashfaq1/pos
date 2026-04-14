@@ -15,30 +15,22 @@ class ChangeTenantStatusAction
         'approve' => [
             'status' => TenantStatus::Approved,
             'is_active' => true,
-            'message' => 'Shop approved successfully',
-            'status_text' => 'Approved',
-            'badge_class' => 'bg-success',
+            'message' => 'Shop approved successfully.',
         ],
         'reject' => [
             'status' => TenantStatus::Rejected,
             'is_active' => false,
-            'message' => 'Shop rejected successfully',
-            'status_text' => 'Rejected',
-            'badge_class' => 'bg-danger',
+            'message' => 'Shop rejected successfully.',
         ],
         'suspend' => [
             'status' => TenantStatus::Suspended,
             'is_active' => false,
-            'message' => 'Shop suspended successfully',
-            'status_text' => 'Suspended',
-            'badge_class' => 'bg-secondary',
+            'message' => 'Shop suspended successfully.',
         ],
         'reactivate' => [
             'status' => TenantStatus::Approved,
             'is_active' => true,
-            'message' => 'Shop reactivated successfully',
-            'status_text' => 'Approved',
-            'badge_class' => 'bg-success',
+            'message' => 'Shop reactivated successfully.',
         ],
     ];
 
@@ -51,12 +43,16 @@ class ChangeTenantStatusAction
         }
 
         DB::transaction(function () use ($tenant, $transition, $reason): void {
+            $status = $transition['status'];
+
             $tenant->forceFill([
-                'status' => $transition['status']->value,
-                'approved_at' => $transition['status'] === TenantStatus::Approved ? now() : $tenant->approved_at,
-                'rejected_reason' => $transition['status'] === TenantStatus::Rejected ? $reason : null,
+                'status' => $status->value,
+                'approved_at' => $status === TenantStatus::Approved ? now() : $tenant->approved_at,
                 'approved_by' => auth()->id(),
-                'onboarding_status' => $transition['status'] === TenantStatus::Approved ? 'in_progress' : $tenant->onboarding_status,
+                'rejected_at' => $status === TenantStatus::Rejected ? now() : null,
+                'suspended_at' => $status === TenantStatus::Suspended ? now() : null,
+                'rejected_reason' => $status === TenantStatus::Rejected ? $reason : null,
+                'onboarding_status' => $status === TenantStatus::Approved ? 'in_progress' : $tenant->onboarding_status,
             ])->save();
 
             User::query()
@@ -65,10 +61,12 @@ class ChangeTenantStatusAction
                 ->update(['is_active' => $transition['is_active']]);
         });
 
+        $tenant->loadMissing('adminUser');
+
         if ($tenant->adminUser) {
             $tenant->adminUser->notify(new TenantStatusChangedNotification(
                 status: $transition['status']->value,
-                shopName: $tenant->shop_name,
+                shopName: $tenant->display_name,
                 reason: $reason
             ));
         }
@@ -76,8 +74,8 @@ class ChangeTenantStatusAction
         return [
             'success' => true,
             'message' => $transition['message'],
-            'status_text' => $transition['status_text'],
-            'badge_class' => $transition['badge_class'],
+            'status_text' => ucfirst($transition['status']->value),
+            'badge_class' => 'bg-'.$transition['status']->badgeClass(),
         ];
     }
 }

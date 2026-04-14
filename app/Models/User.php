@@ -2,22 +2,23 @@
 
 namespace App\Models;
 
-
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Notifications\Auth\QueuedVerifyEmail;
+use App\Support\Permissions\PermissionTeamScope;
 use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Notifications\Auth\QueuedVerifyEmail;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable, HasRoles, MustVerifyEmailTrait;
+    use HasFactory;
+    use Notifiable;
+    use HasRoles;
+    use MustVerifyEmailTrait;
 
-
-    //  Role Constants
     public const SUPER_ADMIN = 'super_admin';
     public const TENANT_ADMIN = 'tenant_admin';
     public const MANAGER = 'manager';
@@ -25,6 +26,9 @@ class User extends Authenticatable implements MustVerifyEmail
     public const TECHNICIAN = 'technician';
     public const INVENTORY_CLERK = 'inventory_clerk';
     public const CUSTOMER = 'customer';
+
+    protected string $guard_name = 'web';
+
     protected $fillable = [
         'name',
         'email',
@@ -98,5 +102,19 @@ class User extends Authenticatable implements MustVerifyEmail
     public function sendEmailVerificationNotification(): void
     {
         $this->notify(new QueuedVerifyEmail());
+    }
+
+    public function assignPrimaryRole(string $role, ?int $tenantId = null): void
+    {
+        PermissionTeamScope::for($tenantId ?? 0, function () use ($role): void {
+            $this->syncRoles([$role]);
+        });
+
+        $this->forceFill(['role' => $role])->saveQuietly();
+    }
+
+    public function primaryRoleName(): ?string
+    {
+        return $this->role ?: $this->getRoleNames()->first();
     }
 }

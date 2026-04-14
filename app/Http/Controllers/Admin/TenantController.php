@@ -6,7 +6,9 @@ use App\Actions\Admin\ChangeTenantStatusAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ChangeTenantStatusRequest;
 use App\Models\Tenant;
-use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 
 class TenantController extends Controller
 {
@@ -15,8 +17,10 @@ class TenantController extends Controller
     ) {
     }
 
-    public function index()
+    public function index(): View
     {
+        $this->authorize('viewAny', Tenant::class);
+
         $shops = Tenant::query()
             ->with('adminUser')
             ->latest()
@@ -25,41 +29,43 @@ class TenantController extends Controller
         return view('shop.index', compact('shops'));
     }
 
-    public function changeStatus(ChangeTenantStatusRequest $request, string $id, string $action)
+    public function changeStatus(ChangeTenantStatusRequest $request, Tenant $tenant, string $action): JsonResponse
     {
-        $tenant = Tenant::query()->with('adminUser')->findOrFail($id);
+        $this->authorize('updateStatus', $tenant);
 
         return response()->json(
             $this->changeTenantStatusAction->execute(
-                tenant: $tenant,
+                tenant: $tenant->loadMissing('adminUser'),
                 action: $action,
                 reason: $request->validated('reason'),
             )
         );
     }
 
-    public function impersonate($id)
+    public function impersonate(Tenant $tenant): RedirectResponse
     {
+        $this->authorize('impersonate', $tenant);
+
         $admin = auth()->user();
-        $tenant = Tenant::query()->with('adminUser')->findOrFail($id);
+        $tenant->loadMissing('adminUser');
         $shop = $tenant->adminUser;
 
         if (! $shop) {
             return back()->with('error', 'Shop admin not found.');
         }
 
-        if ($tenant->status->value !== 'approved') {
-            return back()->with('error', 'Only approved shops can be impersonated');
+        if (! $tenant->isAccessible()) {
+            return back()->with('error', $tenant->status->loginBlockedMessage());
         }
 
         session(['impersonator_id' => $admin->id]);
 
         auth()->login($shop);
 
-        return redirect('/admin/dashboard');
+        return redirect()->route('tenant.dashboard');
     }
 
-    public function stopImpersonate()
+    public function stopImpersonate(): RedirectResponse
     {
         $adminId = session('impersonator_id');
 
@@ -68,6 +74,6 @@ class TenantController extends Controller
             session()->forget('impersonator_id');
         }
 
-        return redirect('/admin/shops');
+        return redirect()->route('admin.shops.index');
     }
 }

@@ -38,7 +38,7 @@ class AuthController extends Controller
 
         return redirect()
             ->route('login')
-            ->with('success', 'Registration submitted. Verify your email before signing in.');
+            ->with('success', 'Registration submitted. Verify your email, then wait for super admin approval.');
     }
 
     public function login(): View
@@ -63,28 +63,23 @@ class AuthController extends Controller
         $user = $request->user();
 
         if (! $user->hasVerifiedEmail()) {
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-
-            return redirect()
-                ->route('login')
-                ->with('warning', 'Verify your email address before signing in.');
+            return $this->logoutBlockedUser($request, 'Verify your email address before signing in.');
         }
 
-        if (! $user->is_active && $user->tenant_id) {
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-
-            return redirect()
-                ->route('login')
-                ->with('warning', 'Your shop is pending super admin approval.');
+        if ($message = $this->resolveLoginBlockMessage($user)) {
+            return $this->logoutBlockedUser($request, $message);
         }
+
+        $user->forceFill([
+            'failed_attempts' => 0,
+            'locked_until' => null,
+            'last_login_at' => now(),
+            'last_login_ip' => $request->ip(),
+        ])->save();
 
         $defaultRoute = $user->isSuperAdmin()
             ? route('admin.dashboard')
-            : $this->resolveTenantRedirectUrl($user);
+            : route('tenant.dashboard');
 
         return redirect()->intended($defaultRoute);
     }
@@ -142,7 +137,7 @@ class AuthController extends Controller
 
         return redirect()
             ->route('login')
-            ->with('success', 'Email verified successfully. Your account is pending admin approval.');
+            ->with('success', 'Email verified successfully. Your account now awaits super admin approval.');
     }
 
     public function logout(Request $request): RedirectResponse
@@ -155,10 +150,35 @@ class AuthController extends Controller
         return redirect()->route('login');
     }
 
-    private function resolveTenantRedirectUrl(User $user): string
+    private function resolveLoginBlockMessage(User $user): ?string
     {
-        return $user->tenant_id
-            ? route('tenant.dashboard')
-            : url('/');
+        if ($user->tenant_id) {
+            $tenant = $user->tenant()->first();
+
+            if (! $tenant) {
+                return 'Tenant account could not be found.';
+            }
+
+            if (! $tenant->status->allowsLogin()) {
+                return $tenant->status->loginBlockedMessage();
+            }
+        }
+
+        if (! $user->is_active) {
+            return 'Your user account is inactive.';
+        }
+
+        return null;
+    }
+
+    private function logoutBlockedUser(Request $request, string $message): RedirectResponse
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()
+            ->route('login')
+            ->with('warning', $message);
     }
 }

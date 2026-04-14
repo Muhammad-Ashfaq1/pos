@@ -3,12 +3,13 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureActiveUser
 {
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next): Response|RedirectResponse
     {
         $user = $request->user();
 
@@ -17,7 +18,14 @@ class EnsureActiveUser
         }
 
         if (! $user->is_active) {
-            abort(403, 'Your account is inactive.');
+            auth()->logout();
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()
+                ->route('login')
+                ->with('warning', 'Your user account is inactive.');
         }
 
         return $next($request);

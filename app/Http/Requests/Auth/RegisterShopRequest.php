@@ -22,7 +22,7 @@ class RegisterShopRequest extends FormRequest
                 'email',
                 'max:255',
                 Rule::unique('users', 'email'),
-                Rule::unique('tenants', 'email'),
+                Rule::unique('tenants', 'owner_email'),
             ],
             'password' => ['required', 'string', 'confirmed', 'min:8', 'max:64'],
             'phone' => ['required', 'string', 'max:30'],

@@ -15,6 +15,7 @@ class PermissionSeeder extends Seeder
         $permissions = [
             'dashboard.view',
             'tenant.approvals.manage',
+            'tenant.impersonate',
             'users.view',
             'users.create',
             'users.update',
