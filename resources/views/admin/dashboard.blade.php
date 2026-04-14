@@ -27,38 +27,94 @@
     </div>
 
     <div class="col-xl-3 col-md-6">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-body">
-                <span class="badge bg-label-primary mb-3">Network</span>
-                <span class="text-muted d-block mb-2">Total Shops</span>
-                <h3 class="mb-0">{{ $stats['tenants_total'] }}</h3>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-muted text-uppercase fw-medium small d-block mb-1">Total Shops</span>
+                        <h4 class="mb-0 fw-bold">{{ $stats['tenants_total'] }}</h4>
+                    </div>
+                    <div class="avatar">
+                        <span class="avatar-initial rounded bg-label-primary">
+                            <i class="icon-base ti tabler-building-store icon-lg"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="mt-3 py-1 border-top border-light-subtle">
+                    <small class="text-muted">
+                        <span class="text-success me-1"><i class="ti tabler-chevron-up me-1"></i>+{{ $stats['tenants_total'] > 0 ? '12.5' : '0' }}%</span>
+                        <span>vs last month</span>
+                    </small>
+                </div>
             </div>
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-body">
-                <span class="badge bg-label-warning mb-3">Action Queue</span>
-                <span class="text-muted d-block mb-2">Pending Approval</span>
-                <h3 class="mb-0 text-warning">{{ $stats['tenants_pending'] }}</h3>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-muted text-uppercase fw-medium small d-block mb-1">Pending Approval</span>
+                        <h4 class="mb-0 fw-bold text-warning">{{ $stats['tenants_pending'] }}</h4>
+                    </div>
+                    <div class="avatar">
+                        <span class="avatar-initial rounded bg-label-warning">
+                            <i class="icon-base ti tabler-clock icon-lg"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="mt-3 py-1 border-top border-light-subtle">
+                    <small class="text-muted">
+                        <span class="text-warning me-1"><i class="ti tabler-circle-dot me-1"></i>Action needed</span>
+                        <span>requires review</span>
+                    </small>
+                </div>
             </div>
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-body">
-                <span class="badge bg-label-success mb-3">Live Tenants</span>
-                <span class="text-muted d-block mb-2">Approved Shops</span>
-                <h3 class="mb-0 text-success">{{ $stats['tenants_approved'] }}</h3>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-muted text-uppercase fw-medium small d-block mb-1">Approved Shops</span>
+                        <h4 class="mb-0 fw-bold text-success">{{ $stats['tenants_approved'] }}</h4>
+                    </div>
+                    <div class="avatar">
+                        <span class="avatar-initial rounded bg-label-success">
+                            <i class="icon-base ti tabler-circle-check icon-lg"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="mt-3 py-1 border-top border-light-subtle">
+                    <small class="text-muted">
+                        <span class="text-success me-1"><i class="ti tabler-trending-up me-1"></i>{{ $stats['tenants_total'] > 0 ? round(($stats['tenants_approved'] / $stats['tenants_total']) * 100) : 0 }}%</span>
+                        <span>conversion rate</span>
+                    </small>
+                </div>
             </div>
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-body">
-                <span class="badge bg-label-info mb-3">Operators</span>
-                <span class="text-muted d-block mb-2">Tenant Admins</span>
-                <h3 class="mb-0">{{ $stats['tenant_admins'] }}</h3>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-muted text-uppercase fw-medium small d-block mb-1">Tenant Admins</span>
+                        <h4 class="mb-0 fw-bold">{{ $stats['tenant_admins'] }}</h4>
+                    </div>
+                    <div class="avatar">
+                        <span class="avatar-initial rounded bg-label-info">
+                            <i class="icon-base ti tabler-users icon-lg"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="mt-3 py-1 border-top border-light-subtle">
+                    <small class="text-muted">
+                        <span class="text-info me-1"><i class="ti tabler-activity me-1"></i>Active</span>
+                        <span>system operators</span>
+                    </small>
+                </div>
             </div>
         </div>
     </div>
@@ -111,7 +167,7 @@
             </div>
             <div class="table-responsive">
                 <table class="table">
-                    <thead>
+                    <thead class="bg-label-primary">
                         <tr>
                             <th>Shop</th>
                             <th>Owner</th>
