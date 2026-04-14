@@ -157,12 +157,8 @@ class AuthController extends Controller
 
     private function resolveTenantRedirectUrl(User $user): string
     {
-        $domain = $user->tenant?->domains()->value('domain');
-
-        if (! $domain) {
-            return url('/');
-        }
-
-        return request()->getScheme().'://'.$domain.'/dashboard';
+        return $user->tenant_id
+            ? route('tenant.dashboard')
+            : url('/');
     }
 }

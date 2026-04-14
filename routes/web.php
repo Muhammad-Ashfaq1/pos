@@ -15,13 +15,7 @@ Route::get('/', function () {
     }
 
     if ($user->tenant_id) {
-        $domain = $user->tenant?->domains()->value('domain');
-
-        if ($domain) {
-            return redirect()->away(request()->getScheme().'://'.$domain.'/dashboard');
-        }
-
-        return redirect()->route('login')->with('warning', 'Tenant domain is not configured yet.');
+        return redirect()->route('tenant.dashboard');
     }
 
     abort(403, 'Unable to determine dashboard destination.');

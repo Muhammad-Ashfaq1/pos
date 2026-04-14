@@ -14,7 +14,7 @@ class ApprovedShopSeeder extends Seeder
         $shopEmail = env('DEMO_SHOP_EMAIL', 'owner@rapidlube.test');
         $shopPassword = env('DEMO_SHOP_PASSWORD', 'password123');
         $shopName = env('DEMO_SHOP_NAME', 'Rapid Lube Downtown');
-        $shopDomain = env('DEMO_SHOP_DOMAIN', 'rapidlube.localhost');
+        $shopWebsiteUrl = env('DEMO_SHOP_WEBSITE_URL', 'https://rapidlube.test');
 
         $tenant = Tenant::updateOrCreate(
             ['email' => $shopEmail],
@@ -23,7 +23,7 @@ class ApprovedShopSeeder extends Seeder
                 'business_type' => 'Oil Change & Quick Service',
                 'owner_name' => 'Demo Shop Owner',
                 'phone' => '+1 555 010 2200',
-                'website_url' => 'https://' . $shopDomain,
+                'website_url' => $shopWebsiteUrl,
                 'address' => '1450 Service Bay Road',
                 'city' => 'Houston',
                 'state' => 'Texas',
@@ -34,11 +34,6 @@ class ApprovedShopSeeder extends Seeder
                 'onboarding_status' => 'completed',
                 'rejected_reason' => null,
             ]
-        );
-
-        $tenant->domains()->updateOrCreate(
-            ['domain' => $shopDomain],
-            ['tenant_id' => $tenant->id]
         );
 
         $user = User::updateOrCreate(

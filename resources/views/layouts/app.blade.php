@@ -6,7 +6,7 @@
   dir="ltr"
   data-skin="default"
   data-bs-theme="light"
-  data-assets-path="../../assets/"
+  data-assets-path="{{ asset('assets') }}/"
   data-template="vertical-menu-template">
   <head>
     <meta charset="utf-8" />
@@ -29,8 +29,6 @@
       rel="stylesheet" />
 
     <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/iconify-icons.css') }}" />
-
-    <script src="{{ asset('assets/vendor/libs/@algolia/autocomplete-js.js') }}"></script>
 
     <!-- Core CSS -->
     <!-- build:css assets/vendor/css/theme.css  -->
@@ -67,17 +65,9 @@
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
 
     <script src="{{ asset('assets/js/config.js') }}"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<!-- Toastr -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"/>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-     <title>@yield('title', 'My App')</title> <!-- Ye tab title -->
+    <title>@yield('title', config('app.name', 'Oil Change POS'))</title>
 
   </head>
 
@@ -129,6 +119,7 @@
     <!-- build:js assets/vendor/js/theme.js  -->
 
     <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/@algolia/autocomplete-js.js') }}"></script>
 
     <script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>
     <script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
@@ -158,6 +149,7 @@
     <!-- Page JS -->
     <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     @yield('scripts')
 
   </body>

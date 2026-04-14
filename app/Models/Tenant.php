@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Stancl\Tenancy\Contracts\Tenant as TenantContract;
 use Stancl\Tenancy\Database\Concerns\CentralConnection;
-use Stancl\Tenancy\Database\Concerns\HasDomains;
 use Stancl\Tenancy\Database\Concerns\HasInternalKeys;
 use Stancl\Tenancy\Database\Concerns\InvalidatesResolverCache;
 use Stancl\Tenancy\Database\Concerns\TenantRun;
@@ -18,7 +17,6 @@ use Stancl\Tenancy\Events;
 class Tenant extends Model implements TenantContract
 {
     use CentralConnection;
-    use HasDomains;
     use HasInternalKeys;
     use TenantRun;
     use InvalidatesResolverCache;

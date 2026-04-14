@@ -39,12 +39,6 @@ class RegisterTenantShopAction
 
             $user->syncRoles([User::TENANT_ADMIN]);
 
-            $host = parse_url($payload['website_url'] ?? '', PHP_URL_HOST);
-
-            if ($host && ! in_array($host, config('tenancy.central_domains', []), true)) {
-                $tenant->createDomain(['domain' => $host]);
-            }
-
             return $user;
         });
     }

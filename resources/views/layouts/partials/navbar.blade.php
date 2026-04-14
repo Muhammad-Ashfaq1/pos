@@ -2,7 +2,9 @@
     $user = auth()->user();
     $isSuperAdmin = $user?->isSuperAdmin();
     $contextLabel = $isSuperAdmin ? 'Central Admin' : 'Tenant Workspace';
-    $contextName = $isSuperAdmin ? config('app.name', 'Oil Change POS') : (tenant('shop_name') ?? 'Shop');
+    $contextName = $isSuperAdmin
+        ? config('app.name', 'Oil Change POS')
+        : ($user?->tenant?->shop_name ?? 'Shop Workspace');
 @endphp
 
 <nav class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme" id="layout-navbar">

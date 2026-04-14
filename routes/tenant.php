@@ -4,27 +4,9 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Tenant\DashboardController;
-use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
-use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
-
-/*
-|--------------------------------------------------------------------------
-| Tenant Routes
-|--------------------------------------------------------------------------
-|
-| Here you can register the tenant routes for your application.
-| These routes are loaded by the TenantRouteServiceProvider.
-|
-| Feel free to customize them however you want. Good luck!
-|
-*/
-
-Route::middleware([
-    'web',
-    InitializeTenancyByDomain::class,
-    PreventAccessFromCentralDomains::class,
-])->group(function () {
-    Route::middleware(['auth', 'verified', 'active.user', 'tenant.approved'])->group(function () {
-        Route::get('/dashboard', DashboardController::class)->name('tenant.dashboard');
+ 
+Route::middleware(['web'])->group(function () {
+    Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.approved'])->group(function () {
+        Route::get('/tenant/dashboard', DashboardController::class)->name('tenant.dashboard');
     });
 });

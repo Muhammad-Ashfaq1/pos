@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureActiveUser;
 use App\Http\Middleware\EnsureCentralUser;
 use App\Http\Middleware\EnsureImpersonatingSession;
 use App\Http\Middleware\EnsureTenantIsApproved;
+use App\Http\Middleware\InitializeTenancyFromAuthenticatedUser;
 use App\Http\Middleware\IsSuperAdmin;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -27,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'central.user' => EnsureCentralUser::class,
             'impersonating' => EnsureImpersonatingSession::class,
             'super_admin' => IsSuperAdmin::class,
+            'tenant.init' => InitializeTenancyFromAuthenticatedUser::class,
             'tenant.approved' => EnsureTenantIsApproved::class,
         ]);
     })

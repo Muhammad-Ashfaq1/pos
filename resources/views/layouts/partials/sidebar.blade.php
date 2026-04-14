@@ -1,19 +1,20 @@
 @php
     $user = auth()->user();
     $isSuperAdmin = $user?->isSuperAdmin();
+    $homeRoute = $isSuperAdmin ? 'admin.dashboard' : 'tenant.dashboard';
     $menuItems = $isSuperAdmin
         ? [
-            ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'icon' => 'tabler-smart-home'],
-            ['label' => 'All Shops', 'route' => 'admin.shops.index', 'icon' => 'tabler-building-store'],
+            ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'pattern' => 'admin.dashboard', 'icon' => 'tabler-smart-home'],
+            ['label' => 'Shops', 'route' => 'admin.shops.index', 'pattern' => 'admin.shops.*', 'icon' => 'tabler-building-store'],
         ]
         : [
-            ['label' => 'Dashboard', 'route' => 'tenant.dashboard', 'icon' => 'tabler-layout-dashboard'],
+            ['label' => 'Dashboard', 'route' => 'tenant.dashboard', 'pattern' => 'tenant.*', 'icon' => 'tabler-layout-dashboard'],
         ];
 @endphp
 
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
     <div class="app-brand demo">
-        <a href="{{ $isSuperAdmin ? route('admin.dashboard') : route('tenant.dashboard') }}" class="app-brand-link">
+        <a href="{{ route($homeRoute) }}" class="app-brand-link">
             <span class="app-brand-logo demo">
                 <span class="text-primary">
                     <svg width="32" height="22" viewBox="0 0 32 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -35,7 +36,7 @@
 
     <ul class="menu-inner py-1">
         @foreach($menuItems as $item)
-            <li class="menu-item {{ request()->routeIs($item['route']) ? 'active' : '' }}">
+            <li class="menu-item {{ request()->routeIs($item['pattern']) ? 'active open' : '' }}">
                 <a href="{{ route($item['route']) }}" class="menu-link">
                     <i class="menu-icon icon-base ti {{ $item['icon'] }}"></i>
                     <div>{{ $item['label'] }}</div>
