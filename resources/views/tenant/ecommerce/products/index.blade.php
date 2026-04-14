@@ -29,5 +29,48 @@
                 </div>
             </div>
         </div>
+
+        <div class="table-responsive">
+            <table class="table table-operations dataTable mb-0">
+                <thead class=" bg-label-primary">
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="operationTableBody" class="table-border-bottom-0 scroll-y">
+                    @for ($i = 0; $i < 10; $i++)
+                        <tr>
+                            <td>{{ $i }}</td>
+                            <td>Albert Cook</td>
+                            <td class="text-center"><span class="badge bg-label-success me-1">Active</span></td>
+                            <td class="text-center">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <a href="javascript:void(0);" data-id="WZY1RPeROn"
+                                        class="btn btn-icon btn-text-secondary rounded-pill waves-effect view-operation"
+                                        data-bs-toggle="tooltip" data-bs-placement="top"
+                                        data-bs-custom-class="tooltip-primary" aria-label="View Operation"
+                                        data-bs-original-title="View Operation"><i class="icon-base ti tabler-eye"></i></a>
+                                    <a href="javascript:void(0);" data-id="WZY1RPeROn"
+                                        class="btn btn-icon btn-text-secondary rounded-pill waves-effect edit-operation"
+                                        data-bs-toggle="tooltip" data-bs-placement="top"
+                                        data-bs-custom-class="tooltip-primary" aria-label="Edit Operation"
+                                        data-bs-original-title="Edit Operation"> <i
+                                            class="icon-base ti tabler-edit icon-md"></i></a>
+                                    <a href="javascript:void(0);" data-id="WZY1RPeROn"
+                                        class="btn btn-icon btn-text-secondary rounded-pill waves-effect delete-operation"
+                                        data-bs-toggle="tooltip" data-bs-placement="top"
+                                        data-bs-custom-class="tooltip-primary" aria-label="Delete Operation"
+                                        data-bs-original-title="Delete Operation"> <i
+                                            class="icon-base ti tabler-trash icon-md text-danger"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    @endfor
+                </tbody>
+            </table>
+        </div>
     </div>
 @endsection
