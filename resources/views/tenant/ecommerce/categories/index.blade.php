@@ -18,7 +18,7 @@
                                 style="top: 50%; right: 1rem; transform: translateY(-50%);"></i>
                         </div>
                     </div>
-                    <div class="col-lg-8 col-md-6  d-flex justify-content-end align-items-end">
+                    <div class="col-lg-8 col-md-6 p-0 d-flex justify-content-end align-items-end">
                         <div class="d-flex align-items-center gap-2">
                             <button type="button" class="btn btn-primary text-nowrap" data-bs-target="#addCategoryModal"
                                 data-bs-toggle="modal">
