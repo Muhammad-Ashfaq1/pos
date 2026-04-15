@@ -48,9 +48,9 @@ class AuthController extends Controller
 
     public function loginSubmit(LoginRequest $request): RedirectResponse
     {
+        
         $credentials = $request->safe()->only(['email', 'password']);
-        $remember = $request->boolean('remember');
-
+        $remember = $request->remember ? true : false;
         if (! Auth::attempt($credentials, $remember)) {
             return back()
                 ->withInput($request->only('email'))
