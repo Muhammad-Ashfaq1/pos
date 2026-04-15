@@ -10,6 +10,13 @@
   data-template="vertical-menu-template">
   <head>
     <meta charset="utf-8" />
+    <script>
+      (function () {
+        const theme = localStorage.getItem('templateCustomizer-vertical-menu-template--Theme') || 'light';
+        const themeToApply = theme === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme;
+        document.documentElement.setAttribute('data-bs-theme', themeToApply);
+      })();
+    </script>
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />

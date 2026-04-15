@@ -8,7 +8,17 @@
             ['label' => 'Shops', 'route' => 'admin.shops.index', 'pattern' => 'admin.shops.*', 'icon' => 'tabler-building-store'],
         ]
         : [
-            ['label' => 'Dashboard', 'route' => 'tenant.dashboard', 'pattern' => 'tenant.*', 'icon' => 'tabler-layout-dashboard'],
+            ['label' => 'Dashboard', 'route' => 'tenant.dashboard', 'pattern' => 'tenant.dashboard', 'icon' => 'tabler-layout-dashboard'],
+            [
+                'label' => 'E-commerce',
+                'icon' => 'tabler-shopping-cart',
+                'pattern' => 'tenant.ecommerce.*',
+                'submenu' => [
+                    ['label' => 'Category', 'route' => 'tenant.ecommerce.categories.index', 'pattern' => 'tenant.ecommerce.categories.*'],
+                    ['label' => 'Sub Category', 'route' => 'tenant.ecommerce.subcategories.index', 'pattern' => 'tenant.ecommerce.subcategories.*'],
+                    ['label' => 'Product', 'route' => 'tenant.ecommerce.products.index', 'pattern' => 'tenant.ecommerce.products.*'],
+                ]
+            ],
         ];
 @endphp
 
@@ -36,11 +46,26 @@
 
     <ul class="menu-inner py-1">
         @foreach($menuItems as $item)
-            <li class="menu-item {{ request()->routeIs($item['pattern']) ? 'active open' : '' }}">
-                <a href="{{ route($item['route']) }}" class="menu-link">
+            @php
+                $hasSubmenu = isset($item['submenu']);
+                $isActive = request()->routeIs($item['pattern']) || ($hasSubmenu && collect($item['submenu'])->contains(fn($sub) => request()->routeIs($sub['pattern'])));
+            @endphp
+            <li class="menu-item {{ $isActive ? 'active open' : '' }}">
+                <a href="{{ $hasSubmenu ? 'javascript:void(0);' : route($item['route']) }}" class="menu-link {{ $hasSubmenu ? 'menu-toggle' : '' }}">
                     <i class="menu-icon icon-base ti {{ $item['icon'] }}"></i>
                     <div>{{ $item['label'] }}</div>
                 </a>
+                @if($hasSubmenu)
+                    <ul class="menu-sub">
+                        @foreach($item['submenu'] as $sub)
+                            <li class="menu-item {{ request()->routeIs($sub['pattern']) ? 'active' : '' }}">
+                                <a href="{{ $sub['route'] !== '#' ? route($sub['route']) : 'javascript:void(0);' }}" class="menu-link">
+                                    <div>{{ $sub['label'] }}</div>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
             </li>
         @endforeach
 

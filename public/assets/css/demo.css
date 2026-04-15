@@ -103,3 +103,6 @@
   text-align: center;
   margin-top: 1rem;
 }
+th {
+  color: var(--bs-primary) !important;
+}
