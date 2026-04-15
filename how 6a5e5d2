@@ -1,0 +1,15 @@
+*   [33md47041b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/login-flow[m[33m)[m Merge branch 'prod' of https://github.com/Muhammad-Ashfaq1/pos into feature/login-flow
+[31m|[m[32m\[m  
+[31m|[m * [33m7da92cf[m[33m ([m[1;31morigin/prod[m[33m)[m update request validation
+* [32m|[m [33me4f3780[m Merge branch 'prod' of https://github.com/Muhammad-Ashfaq1/pos into feature/login-flow
+[33m|[m[32m\[m[32m|[m 
+[33m|[m *   [33mc6f6b69[m Merge pull request #4 from Muhammad-Ashfaq1/feature/dev
+[33m|[m [35m|[m[36m\[m  
+[33m|[m [35m|[m * [33mbfff141[m feat: create product index view with search and management table
+[33m|[m [35m|[m * [33mbd0fbb8[m feat: create index view for ecommerce categories with search and management table
+[33m|[m [35m|[m * [33m012d4ce[m feat: implement e-commerce categories, products, and sub-categories management views
+[33m|[m [35m|[m * [33m765a338[m feat: implement tenant e-commerce module with dashboard layout and routes
+[33m|[m [35m|[m[35m/[m  
+* [35m/[m [33m6a5e5d2[m[33m ([m[1;31morigin/feature/login-flow[m[33m)[m Added login flow changes
+[35m|[m[35m/[m  
+* [33mcd4f6d5[m[33m ([m[1;32mprod[m[33m, [m[1;32mfeature/prod[m[33m, [m[1;32mfeature/Shops-Approval[m[33m)[m tenancy setup
