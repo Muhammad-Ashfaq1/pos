@@ -101,59 +101,98 @@
 
 @section('scripts')
 
+
 <script>
 $(document).ready(function () {
 
     let editCategoryId = null;
 
-
     const table = $('#category-table').DataTable();
 
 
-    toastr.options = {
-        closeButton: true,
-        progressBar: true,
-        positionClass: "toast-top-right",
-        timeOut: "3000"
-    };
-
-
+    // ================= SAVE (CREATE / UPDATE) =================
     $(document).on('click', '#saveCategoryButton', function (e) {
         e.preventDefault();
 
         const name = $('#categoryName').val().trim();
         const is_active = $('#categoryIsActive').is(':checked') ? 1 : 0;
 
-        const url = editCategoryId
-            ? `/tenant/ecommerce/categories/${editCategoryId}`
-            : "{{ route('tenant.ecommerce.categories.store') }}";
-
         $.ajax({
-            url: url,
+            url: "{{ route('tenant.ecommerce.categories.save') }}",
             type: 'POST',
             data: {
                 _token: $('meta[name="csrf-token"]').attr('content'),
-                _method: editCategoryId ? 'PUT' : 'POST',
+                id: editCategoryId,
                 name,
                 is_active
             },
 
             success: function (response) {
 
+                let c = response.data;
+
+              let isActive = Number(c.is_active) === 1;
+
+let badge = isActive
+    ? `<span class="badge bg-label-success me-1">Active</span>`
+    : `<span class="badge bg-label-danger me-1">Inactive</span>`;
+
+                  let actions = `
+        <div class="d-flex align-items-center justify-content-center">
+            <a href="javascript:void(0);" data-id="${c.id}" class="btn btn-icon btn-text-secondary rounded-pill view-operation">
+                <i class="icon-base ti tabler-eye"></i>
+            </a>
+            <a href="javascript:void(0);" data-id="${c.id}" class="btn btn-icon btn-text-secondary rounded-pill edit-operation">
+                <i class="icon-base ti tabler-edit"></i>
+            </a>
+            <a href="javascript:void(0);" data-id="${c.id}" class="btn btn-icon btn-text-secondary rounded-pill delete-operation">
+                <i class="icon-base ti tabler-trash text-danger"></i>
+            </a>
+        </div>
+    `;
+
+
+                // ================= UPDATE =================
+                if (editCategoryId) {
+
+                    table.rows().every(function () {
+
+                        let node = $(this.node());
+                        let btn = node.find('.edit-operation');
+
+                        if (btn.data('id') == editCategoryId) {
+
+                            this.data([
+                                this.index() + 1,
+                                c.name,
+                                `<div class="text-center">${badge}</div>`,
+                                actions
+                            ]).draw(false);
+                        }
+                    });
+
+                } else {
+
+                    // ================= CREATE =================
+                    table.row.add([
+                        table.rows().count() + 1,
+                        c.name,
+                        `<div class="text-center">${badge}</div>`,
+                        actions
+                    ]).draw(false);
+                }
+
                 $('#addCategoryModal').modal('hide');
                 resetForm();
 
-                toastr.success(response.message ?? 'Category saved successfully');
-
-                location.reload(); // optional (better: use DataTable add row)
+                toastr.success(response.message ?? 'Saved successfully');
             },
 
             error: function (xhr) {
 
                 if (xhr.status === 422) {
                     let errors = xhr.responseJSON.errors;
-                    let message = Object.values(errors).map(e => e[0]).join('\n');
-                    toastr.error(message);
+                    toastr.error(Object.values(errors).map(e => e[0]).join('\n'));
                 } else {
                     toastr.error('Something went wrong!');
                 }
@@ -161,7 +200,7 @@ $(document).ready(function () {
         });
     });
 
-
+    // ================= EDIT =================
     $(document).on('click', '.edit-operation', function () {
 
         editCategoryId = $(this).data('id');
@@ -184,19 +223,17 @@ $(document).ready(function () {
         });
     });
 
-
+    // ================= DELETE =================
     $(document).on('click', '.delete-operation', function () {
 
         const id = $(this).data('id');
-        const row = $(this).closest('tr');
+        const row = table.row($(this).closest('tr'));
 
         Swal.fire({
             title: 'Are you sure?',
             text: "This action cannot be undone!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#696cff',
-            cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
 
@@ -213,10 +250,7 @@ $(document).ready(function () {
                 success: function (response) {
 
                     if (response.success) {
-
-                        // remove row safely
-                        table.row(row).remove().draw();
-
+                        row.remove().draw();
                         Swal.fire('Deleted!', response.message, 'success');
                     }
                 },
@@ -228,7 +262,7 @@ $(document).ready(function () {
         });
     });
 
-
+    // ================= VIEW =================
     $(document).on('click', '.view-operation', function () {
 
         const id = $(this).data('id');
@@ -253,7 +287,7 @@ $(document).ready(function () {
         });
     });
 
-
+    // ================= RESET =================
     function resetForm() {
         $('#categoryName').val('');
         $('#categoryIsActive').prop('checked', true);
@@ -263,5 +297,6 @@ $(document).ready(function () {
     $('#addCategoryModal').on('hidden.bs.modal', resetForm);
 
 });
-</script>
+</script
+
 @endsection

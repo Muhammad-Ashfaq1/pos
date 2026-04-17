@@ -19,12 +19,15 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
             Route::get('/categories', [EcommerceController::class, 'categories'])
                 ->name('categories.index');
 
-            Route::controller(CategoryController::class)->group(function () {
+          Route::controller(CategoryController::class)->group(function () {
 
-                Route::get('/categories/{id}/edit', 'edit')->name('categories.edit');
-                Route::post('/categories', 'store')->name('categories.store');
-                Route::put('/categories/{id}', 'update')->name('categories.update');
-                Route::delete('/categories/{id}', 'destroy')->name('categories.destroy');
+    Route::post('/categories/save', 'save')->name('categories.save');
+
+    Route::get('/categories/{id}/edit', 'edit')->name('categories.edit');
+
+    Route::delete('/categories/{id}', 'destroy')->name('categories.destroy');
+
+
 
             });
 
