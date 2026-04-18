@@ -43,54 +43,7 @@
                     </tr>
                 </thead>
 
-                <tbody id="operationTableBody" class="table-border-bottom-0 scroll-y">
-
-                    @forelse($categories as $category)
-                        <tr>
-                            <td>{{ $loop->iteration }}</td>
-
-                            <td>{{ $category->name }}</td>
-
-                            <td class="text-center">
-                                @if($category->is_active)
-                                    <span class="badge bg-label-success me-1">Active</span>
-                                @else
-                                    <span class="badge bg-label-danger me-1">Inactive</span>
-                                @endif
-                            </td>
-
-                            <td class="text-center">
-                                <div class="d-flex align-items-center justify-content-center">
-
-                                    <a href="javascript:void(0);"
-                                       data-id="{{ $category->id }}"
-                                       class="btn btn-icon btn-text-secondary rounded-pill waves-effect view-operation"
-                                       data-bs-toggle="tooltip">
-                                        <i class="icon-base ti tabler-eye"></i>
-                                    </a>
-
-                                    <a href="javascript:void(0);"
-                                       data-id="{{ $category->id }}"
-                                       class="btn btn-icon btn-text-secondary rounded-pill waves-effect edit-operation"
-                                       data-bs-toggle="tooltip">
-                                        <i class="icon-base ti tabler-edit icon-md"></i>
-                                    </a>
-
-                                    <a href="javascript:void(0);"
-                                       data-id="{{ $category->id }}"
-                                       class="btn btn-icon btn-text-secondary rounded-pill waves-effect delete-operation"
-                                       data-bs-toggle="tooltip">
-                                        <i class="icon-base ti tabler-trash icon-md text-danger"></i>
-                                    </a>
-
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-
-                    @endforelse
-
-                </tbody>
+                  <tbody></tbody>
             </table>
         </div>
     </div>
@@ -107,10 +60,58 @@ $(document).ready(function () {
 
     let editCategoryId = null;
 
-    const table = $('#category-table').DataTable();
+    // ================= DATATABLE INIT =================
+    const table = $('#category-table').DataTable({
+        ajax: {
+           url: "{{ route('tenant.ecommerce.categories.list') }}",
+            dataSrc: 'data'
+        },
+
+        columns: [
+            {
+                data: null,
+                render: (data, type, row, meta) => meta.row + 1
+            },
+
+            { data: 'name' },
+
+            {
+                data: 'is_active',
+                className: 'text-center',
+                render: function (data) {
+                    return data == 1
+                        ? `<span class="badge bg-label-success">Active</span>`
+                        : `<span class="badge bg-label-danger">Inactive</span>`;
+                }
+            },
+
+            {
+                data: 'id',
+                className: 'text-center',
+                orderable: false,
+                render: function (id) {
+                    return `
+                        <div class="d-flex justify-content-center">
+                            <a href="javascript:void(0);" data-id="${id}" class="btn btn-icon view-operation">
+                                <i class="ti tabler-eye"></i>
+                            </a>
+                            <a href="javascript:void(0);" data-id="${id}" class="btn btn-icon edit-operation">
+                                <i class="ti tabler-edit"></i>
+                            </a>
+                            <a href="javascript:void(0);" data-id="${id}" class="btn btn-icon delete-operation">
+                                <i class="ti tabler-trash text-danger"></i>
+                            </a>
+                        </div>
+                    `;
+                }
+            }
+        ]
+    });
 
 
-    // ================= SAVE (CREATE / UPDATE) =================
+
+
+    // ================= SAVE =================
     $(document).on('click', '#saveCategoryButton', function (e) {
         e.preventDefault();
 
@@ -129,67 +130,16 @@ $(document).ready(function () {
 
             success: function (response) {
 
-                let c = response.data;
-
-              let isActive = Number(c.is_active) === 1;
-
-let badge = isActive
-    ? `<span class="badge bg-label-success me-1">Active</span>`
-    : `<span class="badge bg-label-danger me-1">Inactive</span>`;
-
-                  let actions = `
-        <div class="d-flex align-items-center justify-content-center">
-            <a href="javascript:void(0);" data-id="${c.id}" class="btn btn-icon btn-text-secondary rounded-pill view-operation">
-                <i class="icon-base ti tabler-eye"></i>
-            </a>
-            <a href="javascript:void(0);" data-id="${c.id}" class="btn btn-icon btn-text-secondary rounded-pill edit-operation">
-                <i class="icon-base ti tabler-edit"></i>
-            </a>
-            <a href="javascript:void(0);" data-id="${c.id}" class="btn btn-icon btn-text-secondary rounded-pill delete-operation">
-                <i class="icon-base ti tabler-trash text-danger"></i>
-            </a>
-        </div>
-    `;
-
-
-                // ================= UPDATE =================
-                if (editCategoryId) {
-
-                    table.rows().every(function () {
-
-                        let node = $(this.node());
-                        let btn = node.find('.edit-operation');
-
-                        if (btn.data('id') == editCategoryId) {
-
-                            this.data([
-                                this.index() + 1,
-                                c.name,
-                                `<div class="text-center">${badge}</div>`,
-                                actions
-                            ]).draw(false);
-                        }
-                    });
-
-                } else {
-
-                    // ================= CREATE =================
-                    table.row.add([
-                        table.rows().count() + 1,
-                        c.name,
-                        `<div class="text-center">${badge}</div>`,
-                        actions
-                    ]).draw(false);
-                }
-
                 $('#addCategoryModal').modal('hide');
                 resetForm();
+
+                // ✅ ONLY reload table (NO manual row add)
+                table.ajax.reload(null, false);
 
                 toastr.success(response.message ?? 'Saved successfully');
             },
 
             error: function (xhr) {
-
                 if (xhr.status === 422) {
                     let errors = xhr.responseJSON.errors;
                     toastr.error(Object.values(errors).map(e => e[0]).join('\n'));
@@ -199,6 +149,7 @@ let badge = isActive
             }
         });
     });
+
 
     // ================= EDIT =================
     $(document).on('click', '.edit-operation', function () {

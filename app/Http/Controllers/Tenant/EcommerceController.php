@@ -11,11 +11,10 @@ class EcommerceController extends Controller
 {
     public function categories()
 {
-    $categories = Category::latest()->get();
 
-    return view('tenant.ecommerce.categories.index', [
-        'categories' => $categories
-    ]);
+
+    return view('tenant.ecommerce.categories.index');
+
 }
     public function subCategories()
     {

@@ -15,17 +15,17 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
 
         Route::prefix('ecommerce')->name('ecommerce.')->group(function () {
 
-
-            Route::get('/categories', [EcommerceController::class, 'categories'])
+          Route::get('/categories', [EcommerceController::class, 'categories'])
                 ->name('categories.index');
 
-          Route::controller(CategoryController::class)->group(function () {
 
-    Route::post('/categories/save', 'save')->name('categories.save');
+           Route::controller(CategoryController::class)->group(function () {
 
-    Route::get('/categories/{id}/edit', 'edit')->name('categories.edit');
+                   Route::get('/categories/list', 'list')->name('categories.list');
+                   Route::post('/categories/save', 'save')->name('categories.save');
+                   Route::get('/categories/{id}/edit', 'edit')->name('categories.edit');
 
-    Route::delete('/categories/{id}', 'destroy')->name('categories.destroy');
+                   Route::delete('/categories/{id}', 'destroy')->name('categories.destroy');
 
 
 

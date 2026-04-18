@@ -9,6 +9,15 @@ use App\Models\Category;
 class CategoryController extends Controller
 {
 
+public function list()
+{
+    $categories = Category::latest()->get();
+
+    return response()->json([
+        'data' => $categories
+    ]);
+}
+
 public function save(Request $request)
 {
     $request->validate([
