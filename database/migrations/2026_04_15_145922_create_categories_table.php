@@ -26,7 +26,9 @@ return new class extends Migration
             $table->softDeletes();
 
 
-            $table->index(['tenant_id', 'name']);
+
+             $table->unique(['tenant_id', 'name']);
+        $table->unique(['tenant_id', 'code']);
         });
     }
     public function down(): void

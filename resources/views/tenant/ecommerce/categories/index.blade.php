@@ -12,11 +12,7 @@
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
                 <div class="row col-12">
                     <div class="col-lg-4 col-md-6 ">
-                        <div class="mb-0 position-relative flex-grow-1 w-100">
-                            <input type="text" class="form-control pe-5" placeholder="Search products...">
-                            <i class="ti tabler-search position-absolute text-muted"
-                                style="top: 50%; right: 1rem; transform: translateY(-50%);"></i>
-                        </div>
+
                     </div>
 
                     <div class="col-lg-8 col-md-6 p-0 d-flex justify-content-end align-items-end">
@@ -60,8 +56,17 @@ $(document).ready(function () {
 
     let editCategoryId = null;
 
-    // ================= DATATABLE INIT =================
     const table = $('#category-table').DataTable({
+       processing: false,
+    serverSide: false,
+        deferRender: true,
+
+    language: {
+        loadingRecords: "",
+        processing: "",
+        emptyTable: ""
+    },
+
         ajax: {
            url: "{{ route('tenant.ecommerce.categories.list') }}",
             dataSrc: 'data'
@@ -133,7 +138,7 @@ $(document).ready(function () {
                 $('#addCategoryModal').modal('hide');
                 resetForm();
 
-                // ✅ ONLY reload table (NO manual row add)
+
                 table.ajax.reload(null, false);
 
                 toastr.success(response.message ?? 'Saved successfully');
@@ -248,6 +253,6 @@ $(document).ready(function () {
     $('#addCategoryModal').on('hidden.bs.modal', resetForm);
 
 });
-</script
+</script>
 
 @endsection

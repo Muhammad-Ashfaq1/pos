@@ -17,8 +17,12 @@ class EcommerceController extends Controller
 
 }
     public function subCategories()
+
     {
-        return view('tenant.ecommerce.sub-categories.index');
+
+       $categories = Category::active()->latest()->get();
+
+    return view('tenant.ecommerce.sub-categories.index', compact('categories'));
     }
 
     public function products()

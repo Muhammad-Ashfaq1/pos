@@ -17,12 +17,16 @@ class Category extends Model
         'sort_order',
         'is_active',
     ];
-    protected static function booted()
-    {
-        static::creating(function ($model) {
-            if (tenant()) {
-                $model->tenant_id = tenant('id');
-            }
-        });
-    }
+
+
+
+public function scopeActive($query)
+{
+    return $query->where('is_active', 1);
+}
+
+  public function subCategories()
+{
+    return $this->hasMany(SubCategory::class);
+}
 }
