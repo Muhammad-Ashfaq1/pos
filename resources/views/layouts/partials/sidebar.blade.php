@@ -2,6 +2,11 @@
     $user = auth()->user();
     $isSuperAdmin = $user?->isSuperAdmin();
     $homeRoute = $isSuperAdmin ? 'admin.dashboard' : 'tenant.dashboard';
+    $tenantSubmenu = collect([
+        $user?->can('category.view') ? ['label' => 'Categories', 'route' => 'tenant.ecommerce.categories.index', 'pattern' => 'tenant.ecommerce.categories.*'] : null,
+        ['label' => 'Sub Categories', 'route' => 'tenant.ecommerce.subcategories.index', 'pattern' => 'tenant.ecommerce.subcategories.*'],
+        ['label' => 'Products', 'route' => 'tenant.ecommerce.products.index', 'pattern' => 'tenant.ecommerce.products.*'],
+    ])->filter()->values()->all();
     $menuItems = $isSuperAdmin
         ? [
             ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'pattern' => 'admin.dashboard', 'icon' => 'tabler-smart-home'],
@@ -10,14 +15,10 @@
         : [
             ['label' => 'Dashboard', 'route' => 'tenant.dashboard', 'pattern' => 'tenant.dashboard', 'icon' => 'tabler-layout-dashboard'],
             [
-                'label' => 'E-commerce',
+                'label' => 'Ecommerce',
                 'icon' => 'tabler-shopping-cart',
                 'pattern' => 'tenant.ecommerce.*',
-                'submenu' => [
-                    ['label' => 'Category', 'route' => 'tenant.ecommerce.categories.index', 'pattern' => 'tenant.ecommerce.categories.*'],
-                    ['label' => 'Sub Category', 'route' => 'tenant.ecommerce.subcategories.index', 'pattern' => 'tenant.ecommerce.subcategories.*'],
-                    ['label' => 'Product', 'route' => 'tenant.ecommerce.products.index', 'pattern' => 'tenant.ecommerce.products.*'],
-                ]
+                'submenu' => $tenantSubmenu,
             ],
         ];
 @endphp
@@ -48,6 +49,9 @@
         @foreach($menuItems as $item)
             @php
                 $hasSubmenu = isset($item['submenu']);
+                if ($hasSubmenu && empty($item['submenu'])) {
+                    continue;
+                }
                 $isActive = request()->routeIs($item['pattern']) || ($hasSubmenu && collect($item['submenu'])->contains(fn($sub) => request()->routeIs($sub['pattern'])));
             @endphp
             <li class="menu-item {{ $isActive ? 'active open' : '' }}">

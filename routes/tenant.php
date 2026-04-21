@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Tenant\CategoryController;
 use App\Http\Controllers\Tenant\DashboardController;
 use Illuminate\Support\Facades\Route;
 
@@ -10,7 +11,18 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
         Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
         Route::prefix('ecommerce')->name('ecommerce.')->group(function () {
-            Route::get('/categories', [App\Http\Controllers\Tenant\EcommerceController::class, 'categories'])->name('categories.index');
+            Route::get('/categories', [CategoryController::class, 'index'])
+                ->middleware('permission:category.view')
+                ->name('categories.index');
+            Route::post('/categories/save', [CategoryController::class, 'save'])
+                ->middleware('permission:category.create|category.update')
+                ->name('categories.save');
+            Route::patch('/categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])
+                ->middleware('permission:category.update')
+                ->name('categories.toggle-status');
+            Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])
+                ->middleware('permission:category.delete')
+                ->name('categories.destroy');
             Route::get('/sub-categories', [App\Http\Controllers\Tenant\EcommerceController::class, 'subCategories'])->name('subcategories.index');
             Route::get('/products', [App\Http\Controllers\Tenant\EcommerceController::class, 'products'])->name('products.index');
         });
