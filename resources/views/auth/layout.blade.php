@@ -146,8 +146,8 @@
       @endif
     </script>
     <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-aio-3.2.8.min.js"></script>
+    <script src="{{ asset('assets/js/app-helpers.js') }}"></script>
     <script src="{{ asset('assets/js/session-notifications.js') }}"></script>
 @yield('scripts')
   </body>
 </html>
-
