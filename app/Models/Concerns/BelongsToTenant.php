@@ -23,12 +23,10 @@ trait BelongsToTenant
         });
 
         static::creating(function (Model $model): void {
-            if (blank($model->tenant_id)) {
-                $tenantId = static::resolveTenantId();
+            $tenantId = static::resolveTenantId();
 
-                if ($tenantId !== null) {
-                    $model->tenant_id = $tenantId;
-                }
+            if ($tenantId !== null) {
+                $model->tenant_id = $tenantId;
             }
         });
 
