@@ -2,6 +2,7 @@
 
 namespace App\Support\Permissions;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Contracts\PermissionsTeamResolver;
 
@@ -38,7 +39,7 @@ class TenantPermissionTeamResolver implements PermissionsTeamResolver
             return tenant()->getTenantKey();
         }
 
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = auth()->user();
 
         if (! $user) {

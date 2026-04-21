@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
 
-    $table->foreign('tenant_id')
-        ->references('id')
-        ->on('tenants')
-        ->cascadeOnDelete();
+            $table->foreign('tenant_id')
+                ->references('id')
+                ->on('tenants')
+                ->cascadeOnDelete();
 
         });
     }

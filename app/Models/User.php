@@ -15,16 +15,22 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory;
-    use Notifiable;
     use HasRoles;
     use MustVerifyEmailTrait;
+    use Notifiable;
 
     public const SUPER_ADMIN = 'super_admin';
+
     public const TENANT_ADMIN = 'tenant_admin';
+
     public const MANAGER = 'manager';
+
     public const CASHIER = 'cashier';
+
     public const TECHNICIAN = 'technician';
+
     public const INVENTORY_CLERK = 'inventory_clerk';
+
     public const CUSTOMER = 'customer';
 
     protected string $guard_name = 'web';
@@ -101,7 +107,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function sendEmailVerificationNotification(): void
     {
-        $this->notify(new QueuedVerifyEmail());
+        $this->notify(new QueuedVerifyEmail);
     }
 
     public function assignPrimaryRole(string $role, ?int $tenantId = null): void

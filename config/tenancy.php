@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use App\Models\Tenant;
+use Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper;
+use Stancl\Tenancy\Database\Models\Domain;
 
 return [
     'tenant_model' => Tenant::class,
     'id_generator' => null,
 
-    'domain_model' => Stancl\Tenancy\Database\Models\Domain::class,
+    'domain_model' => Domain::class,
 
     /**
      * The list of domains hosting your central app.
@@ -27,7 +29,7 @@ return [
      * To configure their behavior, see the config keys below.
      */
     'bootstrappers' => [
-        Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
+        QueueTenancyBootstrapper::class,
     ],
 
     /**

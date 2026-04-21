@@ -22,8 +22,7 @@ class AuthController extends Controller
 {
     public function __construct(
         private readonly RegisterTenantShopAction $registerTenantShopAction,
-    ) {
-    }
+    ) {}
 
     public function register(): View
     {
@@ -48,7 +47,7 @@ class AuthController extends Controller
 
     public function loginSubmit(LoginRequest $request): RedirectResponse
     {
-        
+
         $credentials = $request->safe()->only(['email', 'password']);
         $remember = $request->remember ? true : false;
         if (! Auth::attempt($credentials, $remember)) {
@@ -59,7 +58,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = $request->user();
 
         if (! $user->hasVerifiedEmail()) {
@@ -124,7 +123,7 @@ class AuthController extends Controller
 
     public function verifyEmail(Request $request, int|string $id, string $hash): RedirectResponse
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = User::find($id);
 
         if (! $user || ! hash_equals(sha1($user->getEmailForVerification()), $hash)) {

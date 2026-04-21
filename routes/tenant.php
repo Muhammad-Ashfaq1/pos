@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Tenant\CategoryController;
 use App\Http\Controllers\Tenant\DashboardController;
+use App\Http\Controllers\Tenant\EcommerceController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.approved'])
@@ -10,20 +11,30 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
     ->group(function () {
         Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
-        Route::prefix('ecommerce')->name('ecommerce.')->group(function () {
-            Route::get('/categories', [CategoryController::class, 'index'])
-                ->middleware('permission:category.view')
-                ->name('categories.index');
-            Route::get('/categories/listing', [CategoryController::class, 'listing'])
-                ->middleware('permission:category.view')
-                ->name('categories.listing');
-            Route::post('/categories/save', [CategoryController::class, 'save'])
-                ->middleware('permission:category.create|category.update')
-                ->name('categories.save');
-            Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])
-                ->middleware('permission:category.delete')
-                ->name('categories.destroy');
-            Route::get('/sub-categories', [App\Http\Controllers\Tenant\EcommerceController::class, 'subCategories'])->name('subcategories.index');
-            Route::get('/products', [App\Http\Controllers\Tenant\EcommerceController::class, 'products'])->name('products.index');
-        });
+        Route::prefix('ecommerce')
+            ->name('ecommerce.')
+            ->group(function () {
+                Route::prefix('categories')
+                    ->name('categories.')
+                    ->controller(CategoryController::class)
+                    ->group(function () {
+                        Route::get('/', 'index')
+                            ->middleware('permission:category.view')
+                            ->name('index');
+                        Route::get('/listing', 'listing')
+                            ->middleware('permission:category.view')
+                            ->name('listing');
+                        Route::post('/save', 'save')
+                            ->middleware('permission:category.create|category.update')
+                            ->name('save');
+                        Route::delete('/{category}', 'destroy')
+                            ->middleware('permission:category.delete')
+                            ->name('destroy');
+                    });
+
+                Route::controller(EcommerceController::class)->group(function () {
+                    Route::get('/sub-categories', 'subCategories')->name('subcategories.index');
+                    Route::get('/products', 'products')->name('products.index');
+                });
+            });
     });

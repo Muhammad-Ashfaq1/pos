@@ -6,16 +6,15 @@ use App\Actions\Admin\ChangeTenantStatusAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ChangeTenantStatusRequest;
 use App\Models\Tenant;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class TenantController extends Controller
 {
     public function __construct(
         private readonly ChangeTenantStatusAction $changeTenantStatusAction,
-    ) {
-    }
+    ) {}
 
     public function index(): View
     {

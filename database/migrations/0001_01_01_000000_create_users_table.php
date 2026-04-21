@@ -17,11 +17,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
 
-              
-    $table->string('tenant_id')->index();
-
-
-
+            $table->string('tenant_id')->index();
 
             //  Role system
             $table->string('role')->default('tenant_admin');
@@ -32,7 +28,7 @@ return new class extends Migration
             //  Contact
             $table->string('phone')->nullable();
             $table->unique(['tenant_id', 'email']);
-                $table->integer('failed_attempts')->default(0);
+            $table->integer('failed_attempts')->default(0);
             $table->timestamp('locked_until')->nullable();
 
             // Tracking

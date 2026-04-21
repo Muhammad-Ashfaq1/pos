@@ -3,9 +3,9 @@
     $isSuperAdmin = $user?->isSuperAdmin();
     $homeRoute = $isSuperAdmin ? 'admin.dashboard' : 'tenant.dashboard';
     $tenantSubmenu = collect([
-        $user?->can('category.view') ? ['label' => 'Categories', 'route' => 'tenant.ecommerce.categories.index', 'pattern' => 'tenant.ecommerce.categories.*'] : null,
-        ['label' => 'Sub Categories', 'route' => 'tenant.ecommerce.subcategories.index', 'pattern' => 'tenant.ecommerce.subcategories.*'],
-        ['label' => 'Products', 'route' => 'tenant.ecommerce.products.index', 'pattern' => 'tenant.ecommerce.products.*'],
+        $user?->can('category.view') ? ['label' => 'Categories', 'route' => 'tenant.ecommerce.categories.index', 'pattern' => 'tenant.ecommerce.categories.*', 'icon' => 'tabler-category'] : null,
+        ['label' => 'Sub Categories', 'route' => 'tenant.ecommerce.subcategories.index', 'pattern' => 'tenant.ecommerce.subcategories.*', 'icon' => 'tabler-category-plus'],
+        ['label' => 'Products', 'route' => 'tenant.ecommerce.products.index', 'pattern' => 'tenant.ecommerce.products.*', 'icon' => 'tabler-package'],
     ])->filter()->values()->all();
     $menuItems = $isSuperAdmin
         ? [
@@ -64,6 +64,9 @@
                         @foreach($item['submenu'] as $sub)
                             <li class="menu-item {{ request()->routeIs($sub['pattern']) ? 'active' : '' }}">
                                 <a href="{{ $sub['route'] !== '#' ? route($sub['route']) : 'javascript:void(0);' }}" class="menu-link">
+                                    @if(isset($sub['icon']))
+                                        <i class="menu-icon icon-base ti {{ $sub['icon'] }}"></i>
+                                    @endif
                                     <div>{{ $sub['label'] }}</div>
                                 </a>
                             </li>

@@ -13,7 +13,7 @@ class TenantContext
             return tenant();
         }
 
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = auth()->user();
 
         if (! $user?->tenant_id) {

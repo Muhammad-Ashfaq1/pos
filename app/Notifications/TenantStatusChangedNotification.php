@@ -15,8 +15,7 @@ class TenantStatusChangedNotification extends Notification implements ShouldQueu
         private readonly string $status,
         private readonly string $shopName,
         private readonly ?string $reason = null,
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {
