@@ -15,70 +15,55 @@
             </nav>
         </div>
 
-        @can('create', \App\Models\Category::class)
-            <button
-                type="button"
-                class="btn btn-primary"
-                id="addCategoryBtn"
-                data-bs-toggle="modal"
-                data-bs-target="#categoryModal"
-            >
-                <i class="ti tabler-plus me-1"></i>
-                Add Category
-            </button>
-        @endcan
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <form id="categoryFilterForm" method="GET" action="{{ route('tenant.ecommerce.categories.index') }}">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-4 col-md-6">
-                        <label for="search" class="form-label">Search</label>
-                        <input
-                            type="text"
-                            id="search"
-                            name="search"
-                            class="form-control"
-                            value="{{ $filters['search'] }}"
-                            placeholder="Search by name or code"
-                        >
-                    </div>
-                    <div class="col-lg-2 col-md-6">
+        <div class="d-flex align-items-center gap-2">
+            <div class="dropdown">
+                <button
+                    type="button"
+                    class="btn btn-label-secondary btn-icon"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    title="Filters"
+                >
+                    <i class="ti tabler-filter"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end p-3" style="min-width: 260px;">
+                    <div class="mb-3">
                         <label for="status" class="form-label">Status</label>
-                        <select id="status" name="status" class="form-select filter-control">
+                        <select id="status" class="form-select filter-control">
                             <option value="">All</option>
-                            <option value="1" @selected($filters['status'] === '1')>Active</option>
-                            <option value="0" @selected($filters['status'] === '0')>Inactive</option>
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
                         </select>
                     </div>
-                    <div class="col-lg-3 col-md-6">
+                    <div>
                         <label for="sort" class="form-label">Sort By</label>
-                        <select id="sort" name="sort" class="form-select filter-control">
-                            @foreach ($sortOptions as $value => $label)
-                                <option value="{{ $value }}" @selected($filters['sort'] === $value)>{{ $label }}</option>
-                            @endforeach
+                        <select id="sort" class="form-select filter-control">
+                            <option value="latest">Latest</option>
+                            <option value="name">Name A-Z</option>
+                            <option value="sort_order">Sort Order Low-High</option>
                         </select>
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <label for="per_page" class="form-label">Per Page</label>
-                        <select id="per_page" name="per_page" class="form-select filter-control">
-                            @foreach ([15, 25, 50, 100] as $perPage)
-                                <option value="{{ $perPage }}" @selected($filters['per_page'] === $perPage)>{{ $perPage }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-lg-1 col-md-12 d-grid">
-                        <button type="submit" class="btn btn-label-primary">Go</button>
                     </div>
                 </div>
-            </form>
+            </div>
+
+            @can('create', \App\Models\Category::class)
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    id="addCategoryBtn"
+                    data-bs-toggle="modal"
+                    data-bs-target="#categoryModal"
+                >
+                    <i class="ti tabler-plus me-1"></i>
+                    Add Category
+                </button>
+            @endcan
         </div>
     </div>
 
     <div class="card">
         <div class="table-responsive">
-            <table class="table border-top mb-0 align-middle">
+            <table class="table border-top mb-0 align-middle categories-datatables">
                 <thead class="table-light">
                     <tr>
                         <th>#</th>
@@ -91,73 +76,9 @@
                         <th class="text-center">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @if ($categories->count())
-                        @foreach ($categories as $category)
-                            <tr id="category-row-{{ $category->id }}">
-                                <td>{{ $categories->firstItem() + $loop->index }}</td>
-                                <td class="fw-semibold">{{ $category->name }}</td>
-                                <td>{{ $category->code ?: '—' }}</td>
-                                <td>{{ \Illuminate\Support\Str::limit($category->description ?: '—', 70) }}</td>
-                                <td>{{ $category->sort_order }}</td>
-                                <td>
-                                    <span class="badge {{ $category->is_active ? 'bg-label-success' : 'bg-label-secondary' }}">
-                                        {{ $category->is_active ? 'Active' : 'Inactive' }}
-                                    </span>
-                                </td>
-                                <td class="text-nowrap">{{ $category->created_at?->format('d M Y') }}</td>
-                                <td>
-                                    <div class="d-flex justify-content-center gap-1">
-                                        @can('update', $category)
-                                            <button
-                                                type="button"
-                                                class="btn btn-sm btn-icon btn-text-secondary edit-category-btn"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#categoryModal"
-                                                data-id="{{ $category->id }}"
-                                                data-name="{{ $category->name }}"
-                                                data-code="{{ $category->code }}"
-                                                data-description="{{ $category->description }}"
-                                                data-sort-order="{{ $category->sort_order }}"
-                                                data-is-active="{{ $category->is_active ? 1 : 0 }}"
-                                                title="Edit"
-                                            >
-                                                <i class="ti tabler-edit"></i>
-                                            </button>
-                                        @endcan
-
-                                        @can('delete', $category)
-                                            <button
-                                                type="button"
-                                                class="btn btn-sm btn-icon btn-text-danger category-delete-btn"
-                                                data-url="{{ route('tenant.ecommerce.categories.destroy', $category) }}"
-                                                data-name="{{ $category->name }}"
-                                                title="Delete"
-                                            >
-                                                <i class="ti tabler-trash"></i>
-                                            </button>
-                                        @endcan
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    @else
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-4">No categories found</td>
-                        </tr>
-                    @endif
-                </tbody>
+                <tbody></tbody>
             </table>
         </div>
-
-        @if ($categories->count())
-            <div class="card-body border-top d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-                <div class="text-muted">
-                    Showing {{ $categories->firstItem() }} to {{ $categories->lastItem() }} of {{ $categories->total() }} categories.
-                </div>
-                {{ $categories->links() }}
-            </div>
-        @endif
     </div>
 
     <div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
@@ -220,5 +141,8 @@
 
 @section('scripts')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"></script>
+    <script>
+        window.categoryListingUrl = @json($listingUrl);
+    </script>
     <script src="{{ asset('assets/js/tenant-categories.js') }}"></script>
 @endsection

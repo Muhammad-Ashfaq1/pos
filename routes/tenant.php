@@ -14,6 +14,9 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
             Route::get('/categories', [CategoryController::class, 'index'])
                 ->middleware('permission:category.view')
                 ->name('categories.index');
+            Route::get('/categories/listing', [CategoryController::class, 'listing'])
+                ->middleware('permission:category.view')
+                ->name('categories.listing');
             Route::post('/categories/save', [CategoryController::class, 'save'])
                 ->middleware('permission:category.create|category.update')
                 ->name('categories.save');

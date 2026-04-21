@@ -6,6 +6,8 @@
   const modal = $modal.length ? new bootstrap.Modal($modal[0]) : null;
   const $form = $('#categoryForm');
   const $submitButton = $('#categorySubmitBtn');
+  const $table = $('.categories-datatables');
+  let categoryTable = null;
 
   $.ajaxSetup({
     headers: {
@@ -18,7 +20,6 @@
   const showAlert = function (type, message) {
     if (typeof window.appNotify === 'function') {
       window.appNotify(type, message);
-      return;
     }
   };
 
@@ -35,19 +36,11 @@
   };
 
   const resetValidationState = function () {
-    if (! $form.length) {
-      return;
-    }
-
     $form.find('.is-invalid').removeClass('is-invalid');
     $form.find('.invalid-feedback').text('');
   };
 
   const resetForm = function () {
-    if (! $form.length) {
-      return;
-    }
-
     $form[0].reset();
     $('#category_id').val('');
     $('#sort_order').val(0);
@@ -69,8 +62,43 @@
     resetValidationState();
   };
 
+  const escapeHtml = function (value) {
+    return $('<div>').text(value ?? '').html();
+  };
+
+  const actionButtonsHtml = function (row) {
+    let html = '<div class="d-flex justify-content-center gap-1">';
+
+    if (row.can_update) {
+      html +=
+        '<button type="button" class="btn btn-sm btn-icon btn-text-secondary edit-category-btn" ' +
+        'data-bs-toggle="modal" data-bs-target="#categoryModal" ' +
+        'data-id="' + row.id + '" ' +
+        'data-name="' + escapeHtml(row.name) + '" ' +
+        'data-code="' + escapeHtml(row.code || '') + '" ' +
+        'data-description="' + escapeHtml(row.description || '') + '" ' +
+        'data-sort-order="' + row.sort_order + '" ' +
+        'data-is-active="' + (row.is_active ? 1 : 0) + '" title="Edit">' +
+        '<i class="ti tabler-edit"></i>' +
+        '</button>';
+    }
+
+    if (row.can_delete && row.delete_url) {
+      html +=
+        '<button type="button" class="btn btn-sm btn-icon btn-text-danger category-delete-btn" ' +
+        'data-url="' + row.delete_url + '" ' +
+        'data-name="' + escapeHtml(row.name) + '" title="Delete">' +
+        '<i class="ti tabler-trash"></i>' +
+        '</button>';
+    }
+
+    html += '</div>';
+
+    return html;
+  };
+
   const bindFormValidation = function () {
-    if (! $form.length || typeof $.fn.validate !== 'function') {
+    if (typeof $.fn.validate !== 'function') {
       return null;
     }
 
@@ -120,6 +148,7 @@
       },
       errorPlacement: function (error, element) {
         const $feedback = element.siblings('.invalid-feedback').first();
+
         if ($feedback.length) {
           $feedback.text(error.text());
           return;
@@ -130,29 +159,117 @@
     });
   };
 
-  const bindFilterForm = function () {
-    const $form = $('#categoryFilterForm');
-
-    if (! $form.length) {
+  const initDataTable = function () {
+    if (typeof DataTable === 'undefined' || ! $table.length) {
       return;
     }
 
-    let timer = null;
-
-    $form.find('.filter-control').on('change', function () {
-      $form.trigger('submit');
+    categoryTable = new DataTable($table[0], {
+      processing: true,
+      serverSide: true,
+      searching: true,
+      ordering: false,
+      ajax: {
+        url: window.categoryListingUrl,
+        data: function (d) {
+          d.status = $('#status').val();
+          d.sort = $('#sort').val();
+        }
+      },
+      pageLength: 10,
+      lengthMenu: [10, 25, 50, 100],
+      layout: {
+        topStart: {
+          search: {
+            placeholder: 'Search by name or code',
+            text: '_INPUT_',
+            className: 'form-control'
+          }
+        },
+        topEnd: null,
+        bottomStart: {
+          rowClass: 'row mx-3 my-md-0 me-3 ms-0 justify-content-between',
+          features: [
+            'info',
+            {
+              pageLength: {
+                menu: [10, 25, 50, 100],
+                text: '_MENU_'
+              }
+            }
+          ]
+        },
+        bottomEnd: 'paging'
+      },
+      language: {
+        emptyTable: 'No categories found',
+        paginate: {
+          next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
+          previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>'
+        }
+      },
+      columns: [
+        {
+          data: null,
+          render: function (data, type, row, meta) {
+            return meta.settings._iDisplayStart + meta.row + 1;
+          }
+        },
+        {
+          data: 'name',
+          render: function (data) {
+            return '<span class="fw-semibold">' + escapeHtml(data) + '</span>';
+          }
+        },
+        {
+          data: 'code',
+          render: function (data) {
+            return escapeHtml(data || '—');
+          }
+        },
+        {
+          data: 'description',
+          render: function (data) {
+            const value = data || '—';
+            return escapeHtml(value.length > 70 ? value.slice(0, 67) + '...' : value);
+          }
+        },
+        { data: 'sort_order' },
+        {
+          data: null,
+          render: function (data, type, row) {
+            return '<span class="badge ' + row.status_badge_class + '">' + escapeHtml(row.status_label) + '</span>';
+          }
+        },
+        {
+          data: 'created_at',
+          render: function (data) {
+            return '<span class="text-nowrap">' + escapeHtml(data || '') + '</span>';
+          }
+        },
+        {
+          data: null,
+          orderable: false,
+          searchable: false,
+          className: 'text-center',
+          render: function (data, type, row) {
+            return actionButtonsHtml(row);
+          }
+        }
+      ]
     });
+  };
 
-    $form.find('input[name="search"]').on('input', function () {
-      clearTimeout(timer);
-      timer = setTimeout(function () {
-        $form.trigger('submit');
-      }, 500);
+  const bindFilters = function () {
+    $('#status, #sort').on('change', function () {
+      if (categoryTable) {
+        categoryTable.ajax.reload(null, false);
+      }
     });
   };
 
   const bindModalActions = function (validator) {
-    $(document).on('click', '#addCategoryBtn, #emptyStateAddCategoryBtn', function () {
+    $(document).on('click', '#addCategoryBtn', function () {
       resetForm();
       if (validator) {
         validator.resetForm();
@@ -175,10 +292,6 @@
   };
 
   const bindSaveForm = function (validator) {
-    if (! $form.length) {
-      return;
-    }
-
     $form.on('submit', function (event) {
       event.preventDefault();
       resetValidationState();
@@ -198,7 +311,12 @@
           if (modal) {
             modal.hide();
           }
-          window.location.reload();
+
+          if (categoryTable) {
+            categoryTable.ajax.reload(null, false);
+          }
+
+          showAlert('success', response.message || 'Category saved successfully.');
         })
         .fail(function (xhr) {
           if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
@@ -255,12 +373,11 @@
           method: 'DELETE'
         })
           .done(function (response) {
-            $button.closest('tr').remove();
-            showAlert('success', response.message || 'Category deleted successfully.');
-
-            if ($('tbody tr[id^="category-row-"]').length === 0) {
-              window.location.reload();
+            if (categoryTable) {
+              categoryTable.ajax.reload(null, false);
             }
+
+            showAlert('success', response.message || 'Category deleted successfully.');
           })
           .fail(function (xhr) {
             showAlert('error', xhr.responseJSON?.message || 'Unable to delete category.');
@@ -274,9 +391,10 @@
 
   $(function () {
     const validator = bindFormValidation();
+    initDataTable();
+    bindFilters();
     bindModalActions(validator);
     bindSaveForm(validator);
-    bindFilterForm();
     bindDeleteButton();
   });
 })(jQuery);

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\Categories\SaveCategoryRequest;
 use App\Models\Category;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -17,40 +18,55 @@ class CategoryController extends Controller
     {
         $this->authorize('viewAny', Category::class);
 
+        return view('tenant.ecommerce.categories.index', [
+            'listingUrl' => route('tenant.ecommerce.categories.listing'),
+        ]);
+    }
+
+    public function listing(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', Category::class);
+
         $validated = $request->validate([
-            'search' => ['nullable', 'string', 'max:255'],
+            'draw' => ['nullable', 'integer'],
+            'start' => ['nullable', 'integer', 'min:0'],
+            'length' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'search.value' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', Rule::in(['1', '0'])],
             'sort' => ['nullable', Rule::in(['latest', 'name', 'sort_order'])],
-            'per_page' => ['nullable', 'integer', 'min:10', 'max:100'],
         ]);
 
-        $filters = [
-            'search' => $validated['search'] ?? '',
-            'status' => $validated['status'] ?? '',
-            'sort' => $validated['sort'] ?? 'latest',
-            'per_page' => (int) ($validated['per_page'] ?? 15),
-        ];
+        $start = (int) ($validated['start'] ?? 0);
+        $length = (int) ($validated['length'] ?? 10);
+        $search = data_get($validated, 'search.value', '');
+        $status = $validated['status'] ?? '';
+        $sort = $validated['sort'] ?? 'latest';
 
-        $categories = Category::query()
-            ->search($filters['search'])
-            ->when($filters['status'] !== '', function (Builder $query) use ($filters): void {
-                $query->where('is_active', $filters['status'] === '1');
+        $baseQuery = Category::query();
+        $filteredQuery = Category::query()
+            ->search($search)
+            ->when($status !== '', function (Builder $query) use ($status): void {
+                $query->where('is_active', $status === '1');
             });
 
-        match ($filters['sort']) {
-            'name' => $categories->orderBy('name')->orderBy('id'),
-            'sort_order' => $categories->orderBy('sort_order')->orderBy('name')->orderBy('id'),
-            default => $categories->latest(),
+        match ($sort) {
+            'name' => $filteredQuery->orderBy('name')->orderBy('id'),
+            'sort_order' => $filteredQuery->orderBy('sort_order')->orderBy('name')->orderBy('id'),
+            default => $filteredQuery->latest(),
         };
 
-        return view('tenant.ecommerce.categories.index', [
-            'categories' => $categories->paginate($filters['per_page'])->withQueryString(),
-            'filters' => $filters,
-            'sortOptions' => [
-                'latest' => 'Latest',
-                'name' => 'Name A-Z',
-                'sort_order' => 'Sort Order Low-High',
-            ],
+        $recordsTotal = (clone $baseQuery)->count();
+        $recordsFiltered = (clone $filteredQuery)->count();
+        $categories = $filteredQuery
+            ->skip($start)
+            ->take($length)
+            ->get();
+
+        return response()->json([
+            'draw' => (int) ($validated['draw'] ?? 0),
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $this->transformCategories($categories, $request),
         ]);
     }
 
@@ -58,6 +74,7 @@ class CategoryController extends Controller
     {
         $category = $request->category();
         $payload = $request->payload();
+        $user = $request->user();
         $userId = $request->user()?->getAuthIdentifier();
         $isUpdate = $category !== null;
 
@@ -74,17 +91,11 @@ class CategoryController extends Controller
         }
 
         $message = $isUpdate ? 'Category updated successfully.' : 'Category created successfully.';
-        $request->session()->flash('success', $message);
 
         return response()->json([
             'message' => $message,
             'data' => [
-                'id' => $category->id,
-                'name' => $category->name,
-                'code' => $category->code,
-                'description' => $category->description,
-                'sort_order' => $category->sort_order,
-                'is_active' => $category->is_active,
+                ...$this->transformCategory($category, $request),
             ],
         ]);
     }
@@ -98,5 +109,34 @@ class CategoryController extends Controller
         return response()->json([
             'message' => 'Category deleted successfully.',
         ]);
+    }
+
+    private function transformCategories(Collection $categories, Request $request): array
+    {
+        return $categories
+            ->map(fn (Category $category) => $this->transformCategory($category, $request))
+            ->all();
+    }
+
+    private function transformCategory(Category $category, Request $request): array
+    {
+        $user = $request->user();
+
+        return [
+            'id' => $category->id,
+            'name' => $category->name,
+            'code' => $category->code,
+            'description' => $category->description,
+            'sort_order' => $category->sort_order,
+            'is_active' => $category->is_active,
+            'status_label' => $category->is_active ? 'Active' : 'Inactive',
+            'status_badge_class' => $category->is_active ? 'bg-label-success' : 'bg-label-secondary',
+            'created_at' => $category->created_at?->format('d M Y'),
+            'can_update' => $user?->can('update', $category) ?? false,
+            'can_delete' => $user?->can('delete', $category) ?? false,
+            'delete_url' => $user?->can('delete', $category)
+                ? route('tenant.ecommerce.categories.destroy', $category)
+                : null,
+        ];
     }
 }
