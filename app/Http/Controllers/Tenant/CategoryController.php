@@ -89,26 +89,6 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function toggleStatus(Request $request, Category $category): JsonResponse
-    {
-        $this->authorize('update', $category);
-
-        $category->forceFill([
-            'is_active' => ! $category->is_active,
-            'updated_by' => $request->user()?->getAuthIdentifier(),
-        ])->save();
-
-        return response()->json([
-            'message' => 'Category status updated successfully.',
-            'data' => [
-                'id' => $category->id,
-                'is_active' => $category->is_active,
-                'status_label' => $category->is_active ? 'Active' : 'Inactive',
-                'status_badge_class' => $category->is_active ? 'bg-label-success' : 'bg-label-secondary',
-            ],
-        ]);
-    }
-
     public function destroy(Category $category): JsonResponse
     {
         $this->authorize('delete', $category);

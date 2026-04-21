@@ -17,9 +17,6 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
             Route::post('/categories/save', [CategoryController::class, 'save'])
                 ->middleware('permission:category.create|category.update')
                 ->name('categories.save');
-            Route::patch('/categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])
-                ->middleware('permission:category.update')
-                ->name('categories.toggle-status');
             Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])
                 ->middleware('permission:category.delete')
                 ->name('categories.destroy');

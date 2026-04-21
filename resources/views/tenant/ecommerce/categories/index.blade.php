@@ -117,22 +117,9 @@
                                 <td>{{ \Illuminate\Support\Str::limit($category->description ?: '—', 70) }}</td>
                                 <td>{{ $category->sort_order }}</td>
                                 <td>
-                                    <div class="d-flex flex-column gap-2">
-                                        <span class="badge {{ $category->is_active ? 'bg-label-success' : 'bg-label-secondary' }}" data-status-badge>
-                                            {{ $category->is_active ? 'Active' : 'Inactive' }}
-                                        </span>
-                                        @can('update', $category)
-                                            <div class="form-check form-switch mb-0">
-                                                <input
-                                                    type="checkbox"
-                                                    class="form-check-input category-status-toggle"
-                                                    {{ $category->is_active ? 'checked' : '' }}
-                                                    data-url="{{ route('tenant.ecommerce.categories.toggle-status', $category) }}"
-                                                    aria-label="Toggle category status"
-                                                >
-                                            </div>
-                                        @endcan
-                                    </div>
+                                    <span class="badge {{ $category->is_active ? 'bg-label-success' : 'bg-label-secondary' }}">
+                                        {{ $category->is_active ? 'Active' : 'Inactive' }}
+                                    </span>
                                 </td>
                                 <td class="text-nowrap">{{ $category->created_at?->format('d M Y') }}</td>
                                 <td>

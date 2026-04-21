@@ -234,39 +234,6 @@
     });
   };
 
-  const bindStatusToggle = function () {
-    $(document).on('change', '.category-status-toggle', function () {
-      const $toggle = $(this);
-      const $row = $toggle.closest('tr');
-      const previousState = ! $toggle.is(':checked');
-
-      $toggle.prop('disabled', true);
-
-      $.ajax({
-        url: $toggle.data('url'),
-        method: 'PATCH'
-      })
-        .done(function (response) {
-          const data = response.data || {};
-          const $badge = $row.find('[data-status-badge]');
-
-          $badge
-            .text(data.status_label || 'Updated')
-            .removeClass('bg-label-success bg-label-secondary')
-            .addClass(data.status_badge_class || 'bg-label-secondary');
-
-          showAlert('success', response.message || 'Category status updated successfully.');
-        })
-        .fail(function (xhr) {
-          $toggle.prop('checked', previousState);
-          showAlert('error', xhr.responseJSON?.message || 'Unable to update category status.');
-        })
-        .always(function () {
-          $toggle.prop('disabled', false);
-        });
-    });
-  };
-
   const bindDeleteButton = function () {
     $(document).on('click', '.category-delete-btn', function () {
       const $button = $(this);
@@ -319,7 +286,6 @@
     bindModalActions(validator);
     bindSaveForm(validator);
     bindFilterForm();
-    bindStatusToggle();
     bindDeleteButton();
   });
 })(jQuery);
