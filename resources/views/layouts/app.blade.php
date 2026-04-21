@@ -58,6 +58,7 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/flag-icons.css') }}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-3.2.8.min.css" />
 
     <!-- Page CSS -->
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/cards-advance.css') }}" />
@@ -72,7 +73,6 @@
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
 
     <script src="{{ asset('assets/js/config.js') }}"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"/>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', config('app.name', 'Oil Change POS'))</title>
 
@@ -155,8 +155,30 @@
 
     <!-- Page JS -->
     <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>
+    <script>
+      window.sessionMessages = window.sessionMessages || {};
+      @if (session('success'))
+        window.sessionMessages.success = @json(session('success'));
+      @endif
+      @if (session('error'))
+        window.sessionMessages.error = @json(session('error'));
+      @endif
+      @if (session('info'))
+        window.sessionMessages.info = @json(session('info'));
+      @endif
+      @if (session('warning'))
+        window.sessionMessages.warning = @json(session('warning'));
+      @endif
+      @if (session('status'))
+        window.sessionMessages.status = @json(session('status'));
+      @endif
+      @if (session('errors') && $errors->any())
+        window.sessionMessages.errors = @json($errors->all());
+      @endif
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-aio-3.2.8.min.js"></script>
+    <script src="{{ asset('assets/js/session-notifications.js') }}"></script>
     @yield('scripts')
 
   </body>

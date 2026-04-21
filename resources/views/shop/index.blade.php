@@ -92,7 +92,9 @@ $(document).ready(function () {
 
                     if (response.success) {
 
-                        toastr.success(response.message);
+                        if (typeof window.appNotify === 'function') {
+                            window.appNotify('success', response.message);
+                        }
 
                         shopTable.destroy();
 
@@ -115,7 +117,9 @@ $(document).ready(function () {
                 },
                 error: function (xhr) {
                     console.log(xhr.responseText);
-                    toastr.error(xhr.responseJSON?.message || 'Action failed.');
+                    if (typeof window.appNotify === 'function') {
+                        window.appNotify('error', xhr.responseJSON?.message || 'Action failed.');
+                    }
                 }
             });
         };

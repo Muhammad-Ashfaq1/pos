@@ -6,7 +6,6 @@
   const modal = $modal.length ? new bootstrap.Modal($modal[0]) : null;
   const $form = $('#categoryForm');
   const $submitButton = $('#categorySubmitBtn');
-  const $alerts = $('#categoryAlerts');
 
   $.ajaxSetup({
     headers: {
@@ -17,18 +16,10 @@
   });
 
   const showAlert = function (type, message) {
-    if (! $alerts.length) {
+    if (typeof window.appNotify === 'function') {
+      window.appNotify(type, message);
       return;
     }
-
-    const className = type === 'success' ? 'alert-success' : 'alert-danger';
-
-    $alerts.html(
-      '<div class="alert ' + className + ' alert-dismissible fade show" role="alert">' +
-        message +
-        '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
-      '</div>'
-    );
   };
 
   const setSubmitButtonState = function (loading) {
