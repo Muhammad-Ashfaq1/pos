@@ -67,11 +67,11 @@
   };
 
   const actionButtonsHtml = function (row) {
-    let html = '<div class="d-flex justify-content-center gap-1">';
+    let html = '<div class="d-flex align-items-center justify-content-center">';
 
     if (row.can_update) {
       html +=
-        '<button type="button" class="btn btn-sm btn-icon btn-text-secondary edit-category-btn" ' +
+        '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect edit-category-btn" ' +
         'data-bs-toggle="modal" data-bs-target="#categoryModal" ' +
         'data-id="' + row.id + '" ' +
         'data-name="' + escapeHtml(row.name) + '" ' +
@@ -79,16 +79,16 @@
         'data-description="' + escapeHtml(row.description || '') + '" ' +
         'data-sort-order="' + row.sort_order + '" ' +
         'data-is-active="' + (row.is_active ? 1 : 0) + '" title="Edit">' +
-        '<i class="ti tabler-edit"></i>' +
+        '<i class="icon-base ti tabler-edit icon-md"></i>' +
         '</button>';
     }
 
     if (row.can_delete && row.delete_url) {
       html +=
-        '<button type="button" class="btn btn-sm btn-icon btn-text-danger category-delete-btn" ' +
+        '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect delete-category-btn category-delete-btn" ' +
         'data-url="' + row.delete_url + '" ' +
         'data-name="' + escapeHtml(row.name) + '" title="Delete">' +
-        '<i class="ti tabler-trash"></i>' +
+        '<i class="icon-base ti tabler-trash icon-md text-danger"></i>' +
         '</button>';
     }
 
