@@ -71,10 +71,17 @@
             </button>
         @endif
         @if($status == 'approved')
-            <button class="btn btn-warning btn-sm action-btn"
+            <button
+                type="button"
+                class="btn btn-primary btn-sm edit-shop-btn"
                 data-id="{{ $shop->id }}"
-                data-action="suspend">
-                <i class="icon-base ti tabler-player-pause me-1"></i>Suspend
+                data-owner-name="{{ $shop->owner_name ?? 'Unknown Owner' }}"
+                data-owner-email="{{ $shop->owner_email_address ?? '-' }}"
+                data-shop-name="{{ $shop->display_name ?? '-' }}"
+                data-status="{{ $status }}"
+                data-status-text="{{ ucfirst($status) }}"
+                data-badge-class="bg-{{ $shop->status->badgeClass() }}">
+                <i class="icon-base ti tabler-edit me-1"></i>Edit
             </button>
         @endif
         @if($status == 'rejected')
