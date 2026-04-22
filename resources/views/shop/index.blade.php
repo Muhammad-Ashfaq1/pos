@@ -3,6 +3,13 @@
 @section('title', 'Shop List')
 
 @section('content')
+@php
+    $resolveStatus = fn ($shop) => $shop->status instanceof \App\Enums\TenantStatus ? $shop->status->value : $shop->status;
+    $pendingCount = $shops->filter(fn ($shop) => $resolveStatus($shop) === 'pending')->count();
+    $approvedCount = $shops->filter(fn ($shop) => $resolveStatus($shop) === 'approved')->count();
+    $suspendedCount = $shops->filter(fn ($shop) => $resolveStatus($shop) === 'suspended')->count();
+    $rejectedCount = $shops->filter(fn ($shop) => $resolveStatus($shop) === 'rejected')->count();
+@endphp
 
 <div class="row g-4">
     <div class="col-12">
@@ -24,12 +31,94 @@
         </div>
     </div>
 
+    <div class="col-xl-3 col-md-6">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="text-muted text-uppercase small fw-semibold d-block mb-1">Total Shops</span>
+                        <h3 class="mb-0">{{ $shops->count() }}</h3>
+                    </div>
+                    <span class="avatar avatar-sm">
+                        <span class="avatar-initial rounded bg-label-primary">
+                            <i class="icon-base ti tabler-building-store"></i>
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="text-muted text-uppercase small fw-semibold d-block mb-1">Pending Review</span>
+                        <h3 class="mb-0 text-warning">{{ $pendingCount }}</h3>
+                    </div>
+                    <span class="avatar avatar-sm">
+                        <span class="avatar-initial rounded bg-label-warning">
+                            <i class="icon-base ti tabler-hourglass-high"></i>
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="text-muted text-uppercase small fw-semibold d-block mb-1">Approved</span>
+                        <h3 class="mb-0 text-success">{{ $approvedCount }}</h3>
+                    </div>
+                    <span class="avatar avatar-sm">
+                        <span class="avatar-initial rounded bg-label-success">
+                            <i class="icon-base ti tabler-circle-check"></i>
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="text-muted text-uppercase small fw-semibold d-block mb-1">Flagged</span>
+                        <h3 class="mb-0 text-danger">{{ $suspendedCount + $rejectedCount }}</h3>
+                    </div>
+                    <span class="avatar avatar-sm">
+                        <span class="avatar-initial rounded bg-label-danger">
+                            <i class="icon-base ti tabler-alert-triangle"></i>
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="col-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <div>
                     <h5 class="card-title mb-1">Shop Directory</h5>
                     <p class="text-muted mb-0">Central admin view across all registered tenants</p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-label-warning">Pending {{ $pendingCount }}</span>
+                    <span class="badge bg-label-success">Approved {{ $approvedCount }}</span>
+                    @if ($suspendedCount > 0)
+                        <span class="badge bg-label-secondary">Suspended {{ $suspendedCount }}</span>
+                    @endif
+                    @if ($rejectedCount > 0)
+                        <span class="badge bg-label-danger">Rejected {{ $rejectedCount }}</span>
+                    @endif
                 </div>
             </div>
 
@@ -38,12 +127,12 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Owner Name</th>
-                            <th>Email</th>
-                            <th>Shop Name</th>
+                            <th>Owner</th>
+                            <th>Contact</th>
+                            <th>Shop</th>
                             <th>Status</th>
                             <th>Impersonate</th>
-                            <th>Action</th>
+                            <th class="text-center">Action</th>
                         </tr>
                     </thead>
 
@@ -65,7 +154,15 @@ $(document).ready(function () {
 
     let shopTable = $('#shop-table').DataTable({
         responsive: true,
-        processing: true
+        processing: true,
+        order: [],
+        language: {
+            search: '',
+            searchPlaceholder: 'Search shops, owners, or email'
+        },
+        columnDefs: [
+            { orderable: false, targets: [4, 5, 6] }
+        ]
     });
 
     // =========================
@@ -102,7 +199,15 @@ $(document).ready(function () {
 
                             shopTable = $('#shop-table').DataTable({
                                 responsive: true,
-                                processing: true
+                                processing: true,
+                                order: [],
+                                language: {
+                                    search: '',
+                                    searchPlaceholder: 'Search shops, owners, or email'
+                                },
+                                columnDefs: [
+                                    { orderable: false, targets: [4, 5, 6] }
+                                ]
                             });
                         });
 
