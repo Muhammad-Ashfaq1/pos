@@ -29,7 +29,13 @@
                 <div class="dropdown-menu dropdown-menu-end p-3" style="min-width: 260px;">
                     <div class="mb-3">
                         <label for="status" class="form-label">Status</label>
-                        <select id="status" class="form-select filter-control">
+                        <select
+                            id="status"
+                            class="form-select filter-control select2"
+                            data-placeholder="All statuses"
+                            data-allow-clear="false"
+                            data-minimum-results-for-search="Infinity"
+                        >
                             <option value="">All</option>
                             <option value="1">Active</option>
                             <option value="0">Inactive</option>
@@ -37,7 +43,13 @@
                     </div>
                     <div>
                         <label for="sort" class="form-label">Sort By</label>
-                        <select id="sort" class="form-select filter-control">
+                        <select
+                            id="sort"
+                            class="form-select filter-control select2"
+                            data-placeholder="Sort categories"
+                            data-allow-clear="false"
+                            data-minimum-results-for-search="Infinity"
+                        >
                             <option value="latest">Latest</option>
                             <option value="name">Name A-Z</option>
                             <option value="sort_order">Sort Order Low-High</option>
