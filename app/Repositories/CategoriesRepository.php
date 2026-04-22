@@ -69,11 +69,7 @@ class CategoriesRepository implements CategoryRepositoryInterface
                 $query->where('is_active', $status === '1');
             });
 
-        match ($sort) {
-            'name' => $filteredQuery->orderBy('name')->orderBy('id'),
-            'sort_order' => $filteredQuery->orderBy('sort_order')->orderBy('name')->orderBy('id'),
-            default => $filteredQuery->latest(),
-        };
+        $this->applyOrdering($filteredQuery, $filters, $sort);
 
         $recordsTotal = (clone $baseQuery)->count();
         $recordsFiltered = (clone $filteredQuery)->count();
@@ -88,6 +84,38 @@ class CategoriesRepository implements CategoryRepositoryInterface
             'recordsFiltered' => $recordsFiltered,
             'data' => $this->transformCategories($categories, $user),
         ];
+    }
+
+    private function applyOrdering(Builder $query, array $filters, string $fallbackSort): void
+    {
+        $orderColumnIndex = data_get($filters, 'order.0.column');
+        $orderDirection = data_get($filters, 'order.0.dir', 'asc');
+        $columns = $filters['columns'] ?? [];
+        $orderColumn = is_numeric($orderColumnIndex)
+            ? data_get($columns, (int) $orderColumnIndex . '.data')
+            : null;
+
+        $sortableColumns = [
+            'name' => 'name',
+            'slug' => 'slug',
+            'code' => 'code',
+            'description' => 'description',
+            'sort_order' => 'sort_order',
+            'created_at' => 'created_at',
+        ];
+
+        if (is_string($orderColumn) && array_key_exists($orderColumn, $sortableColumns)) {
+            $query->orderBy($sortableColumns[$orderColumn], $orderDirection === 'desc' ? 'desc' : 'asc')
+                ->orderBy('id');
+
+            return;
+        }
+
+        match ($fallbackSort) {
+            'name' => $query->orderBy('name')->orderBy('id'),
+            'sort_order' => $query->orderBy('sort_order')->orderBy('name')->orderBy('id'),
+            default => $query->latest(),
+        };
     }
 
     private function transformCategories(Collection $categories, ?Authenticatable $user = null): array

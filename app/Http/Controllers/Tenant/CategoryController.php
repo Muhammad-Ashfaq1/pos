@@ -37,6 +37,11 @@ class CategoryController extends Controller
             'search.value' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', Rule::in(['1', '0'])],
             'sort' => ['nullable', Rule::in(['latest', 'name', 'sort_order'])],
+            'columns' => ['nullable', 'array'],
+            'columns.*.data' => ['nullable', 'string'],
+            'order' => ['nullable', 'array'],
+            'order.*.column' => ['nullable', 'integer', 'min:0'],
+            'order.*.dir' => ['nullable', Rule::in(['asc', 'desc'])],
         ]);
 
         return response()->json(

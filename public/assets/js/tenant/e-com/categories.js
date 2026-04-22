@@ -173,7 +173,7 @@
       processing: true,
       serverSide: true,
       searching: true,
-      ordering: false,
+      ordering: true,
       ajax: {
         url: window.categoryListingUrl,
         data: function (d) {
@@ -216,6 +216,8 @@
       columns: [
         {
           data: null,
+          orderable: false,
+          searchable: false,
           render: function (data, type, row, meta) {
             return meta.settings._iDisplayStart + meta.row + 1;
           }
@@ -248,6 +250,8 @@
         { data: 'sort_order' },
         {
           data: null,
+          orderable: false,
+          searchable: false,
           render: function (data, type, row) {
             return '<span class="badge ' + row.status_badge_class + '">' + escapeHtml(row.status_label) + '</span>';
           }
@@ -300,7 +304,6 @@
         validator.resetForm();
       }
     });
-
   };
 
   const bindSaveForm = function (validator) {

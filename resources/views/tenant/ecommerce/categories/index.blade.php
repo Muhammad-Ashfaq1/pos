@@ -145,5 +145,5 @@
     <script>
         window.categoryListingUrl = @json($listingUrl);
     </script>
-    <script src="{{ asset('assets/js/tenant-categories.js') }}"></script>
+    <script src="{{ asset('assets/js/tenant/e-com/categories.js') }}"></script>
 @endsection
