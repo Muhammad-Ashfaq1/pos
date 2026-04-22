@@ -62,12 +62,13 @@
     </div>
 
     <div class="card">
-        <div class="table-responsive">
-            <table class="table border-top mb-0 align-middle categories-datatables">
-                <thead class="table-light">
+        <div class="card-datatable table-responsive pt-0">
+            <table class="categories-datatables table">
+                <thead class="bg-label-primary">
                     <tr>
                         <th>#</th>
                         <th>Category</th>
+                        <th>Slug</th>
                         <th>Code</th>
                         <th>Description</th>
                         <th>Sort Order</th>

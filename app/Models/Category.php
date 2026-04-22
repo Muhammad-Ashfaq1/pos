@@ -13,6 +13,7 @@ class Category extends Model
 
     protected $fillable = [
         'name',
+        'slug',
         'code',
         'description',
         'sort_order',
@@ -50,6 +51,7 @@ class Category extends Model
         return $query->where(function (Builder $builder) use ($term): void {
             $builder
                 ->where('name', 'like', "%{$term}%")
+                ->orWhere('slug', 'like', "%{$term}%")
                 ->orWhere('code', 'like', "%{$term}%");
         });
     }

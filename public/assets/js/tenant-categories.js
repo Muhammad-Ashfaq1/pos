@@ -186,7 +186,7 @@
       layout: {
         topStart: {
           search: {
-            placeholder: 'Search by name or code',
+            placeholder: 'Search by name, slug or code',
             text: '_INPUT_',
             className: 'form-control'
           }
@@ -224,6 +224,12 @@
           data: 'name',
           render: function (data) {
             return '<span class="fw-semibold">' + escapeHtml(data) + '</span>';
+          }
+        },
+        {
+          data: 'slug',
+          render: function (data) {
+            return '<code>' + escapeHtml(data || '—') + '</code>';
           }
         },
         {
@@ -294,6 +300,7 @@
         validator.resetForm();
       }
     });
+
   };
 
   const bindSaveForm = function (validator) {

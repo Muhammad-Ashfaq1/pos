@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Repositories\Interface\CategoryRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -45,9 +46,20 @@ class CategoryController extends Controller
 
     public function save(SaveCategoryRequest $request): JsonResponse
     {
+        $validated = $request->validated();
+        $category = isset($validated['id'])
+            ? Category::query()->findOrFail($validated['id'])
+            : null;
+
+        if ($category) {
+            $this->authorize('update', $category);
+        } else {
+            $this->authorize('create', Category::class);
+        }
+
         $result = $this->repo->store(
-            $request->payload(),
-            $request->category(),
+            Arr::except($validated, ['id']),
+            $category,
             $request->user(),
         );
 

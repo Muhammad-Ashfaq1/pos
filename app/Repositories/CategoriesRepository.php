@@ -7,6 +7,7 @@ use App\Repositories\Interface\CategoryRepositoryInterface;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class CategoriesRepository implements CategoryRepositoryInterface
@@ -22,6 +23,7 @@ class CategoriesRepository implements CategoryRepositoryInterface
     {
         $isUpdate = $category !== null;
         $userId = $user?->getAuthIdentifier();
+        $data['slug'] = $this->makeUniqueSlug($data['slug'] ?? $data['name'] ?? '', $category?->id);
 
         if ($isUpdate) {
             $category->fill($data);
@@ -100,6 +102,7 @@ class CategoriesRepository implements CategoryRepositoryInterface
         return [
             'id' => $category->id,
             'name' => $category->name,
+            'slug' => $category->slug,
             'code' => $category->code,
             'description' => $category->description,
             'sort_order' => $category->sort_order,
@@ -113,5 +116,25 @@ class CategoriesRepository implements CategoryRepositoryInterface
                 ? route('tenant.ecommerce.categories.destroy', $category)
                 : null,
         ];
+    }
+
+    private function makeUniqueSlug(string $value, int|string|null $ignoreId = null): string
+    {
+        $baseSlug = Str::slug($value);
+        $baseSlug = $baseSlug !== '' ? $baseSlug : 'category';
+        $slug = $baseSlug;
+        $suffix = 2;
+
+        while (
+            Category::query()
+                ->when($ignoreId !== null, fn (Builder $query) => $query->whereKeyNot($ignoreId))
+                ->where('slug', $slug)
+                ->exists()
+        ) {
+            $slug = "{$baseSlug}-{$suffix}";
+            $suffix++;
+        }
+
+        return $slug;
     }
 }
