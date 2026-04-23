@@ -16,6 +16,42 @@ class Tenant extends Model implements TenantContract
     use CentralConnection;
     use TenantRun;
 
+    public const DEFAULT_SETTINGS = [
+        'regional' => [
+            'currency' => 'USD',
+            'timezone' => 'UTC',
+            'locale' => 'en',
+        ],
+        'tax' => [
+            'name' => 'Sales Tax',
+            'percentage' => '0.00',
+        ],
+        'invoice' => [
+            'prefix' => 'INV',
+            'next_number' => 1,
+        ],
+        'inventory' => [
+            'low_stock_threshold' => 5,
+        ],
+        'notifications' => [
+            'reminder_email_enabled' => true,
+            'receipt_email_enabled' => true,
+        ],
+        'loyalty' => [
+            'enabled' => false,
+            'points_per_currency' => '1.00',
+        ],
+        'business_hours' => [
+            'monday' => ['is_closed' => false, 'open' => '09:00', 'close' => '18:00'],
+            'tuesday' => ['is_closed' => false, 'open' => '09:00', 'close' => '18:00'],
+            'wednesday' => ['is_closed' => false, 'open' => '09:00', 'close' => '18:00'],
+            'thursday' => ['is_closed' => false, 'open' => '09:00', 'close' => '18:00'],
+            'friday' => ['is_closed' => false, 'open' => '09:00', 'close' => '18:00'],
+            'saturday' => ['is_closed' => false, 'open' => '09:00', 'close' => '13:00'],
+            'sunday' => ['is_closed' => true, 'open' => '09:00', 'close' => '13:00'],
+        ],
+    ];
+
     protected $table = 'tenants';
 
     protected $guarded = [];
@@ -158,5 +194,20 @@ class Tenant extends Model implements TenantContract
     public function isAccessible(): bool
     {
         return $this->status->allowsLogin();
+    }
+
+    public static function defaultSettings(): array
+    {
+        return self::DEFAULT_SETTINGS;
+    }
+
+    public function mergedSettings(): array
+    {
+        return array_replace_recursive(self::defaultSettings(), $this->settings ?? []);
+    }
+
+    public function setting(string $key, mixed $default = null): mixed
+    {
+        return data_get($this->mergedSettings(), $key, $default);
     }
 }

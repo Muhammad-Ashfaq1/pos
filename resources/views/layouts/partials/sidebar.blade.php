@@ -2,30 +2,58 @@
     $user = auth()->user();
     $isSuperAdmin = $user?->isSuperAdmin();
     $homeRoute = $isSuperAdmin ? 'admin.dashboard' : 'tenant.dashboard';
-    $tenantSubmenu = collect([
-        $user?->can('category.view') ? ['label' => 'Categories', 'route' => 'tenant.ecommerce.categories.index', 'pattern' => 'tenant.ecommerce.categories.*', 'icon' => 'tabler-category'] : null,
-        $user?->can('subcategory.view') ? ['label' => 'Sub Categories', 'route' => 'tenant.ecommerce.subcategories.index', 'pattern' => 'tenant.ecommerce.subcategories.*', 'icon' => 'tabler-category-plus'] : null,
-        ($user?->can('product.view') || $user?->can('products.view') || $user?->can('products.manage')) ? ['label' => 'Products', 'route' => 'tenant.ecommerce.products.index', 'pattern' => 'tenant.ecommerce.products.*', 'icon' => 'tabler-package'] : null,
-        $user?->can('service.view') ? ['label' => 'Services', 'route' => 'tenant.ecommerce.services.index', 'pattern' => 'tenant.ecommerce.services.*', 'icon' => 'tabler-tool'] : null,
-        $user?->can('discount.manage') ? ['label' => 'Discounts', 'route' => 'tenant.ecommerce.discounts.index', 'pattern' => 'tenant.ecommerce.discounts.*', 'icon' => 'tabler-discount-2'] : null,
-        ($user?->can('customer.view') || $user?->can('customers.view')) ? ['label' => 'Customers', 'route' => 'tenant.ecommerce.customers.index', 'pattern' => 'tenant.ecommerce.customers.*', 'icon' => 'tabler-users'] : null,
-        ($user?->can('vehicle.view') || $user?->can('vehicles.view')) ? ['label' => 'Vehicles', 'route' => 'tenant.ecommerce.vehicles.index', 'pattern' => 'tenant.ecommerce.vehicles.*', 'icon' => 'tabler-car'] : null,
-    ])->filter()->values()->all();
-    $menuItems = $isSuperAdmin
-        ? [
-            ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'pattern' => 'admin.dashboard', 'icon' => 'tabler-smart-home'],
-            ['label' => 'Shops', 'route' => 'admin.shops.index', 'pattern' => 'admin.shops.*', 'icon' => 'tabler-building-store'],
-        ]
-        : [
-            ['label' => 'Dashboard', 'route' => 'tenant.dashboard', 'pattern' => 'tenant.dashboard', 'icon' => 'tabler-layout-dashboard'],
-            [
-                'label' => 'Ecommerce',
-                'icon' => 'tabler-shopping-cart',
-                'pattern' => 'tenant.ecommerce.*',
-                'submenu' => $tenantSubmenu,
-            ],
-        ];
+    $adminMenuItems = [
+        ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'pattern' => 'admin.dashboard', 'icon' => 'tabler-smart-home'],
+        ['label' => 'Shops', 'route' => 'admin.shops.index', 'pattern' => 'admin.shops.*', 'icon' => 'tabler-building-store'],
+    ];
+    $tenantSections = [
+        [
+            'label' => 'Shop Management',
+            'items' => collect([
+                $user?->can('settings.manage') ? ['label' => 'Shop Profile', 'route' => 'tenant.settings.shop-profile.edit', 'pattern' => 'tenant.settings.shop-profile.*', 'icon' => 'tabler-building-store'] : null,
+            ])->filter()->values()->all(),
+        ],
+        [
+            'label' => 'Catalog & Services',
+            'items' => collect([
+                $user?->can('category.view') ? ['label' => 'Categories', 'route' => 'tenant.ecommerce.categories.index', 'pattern' => 'tenant.ecommerce.categories.*', 'icon' => 'tabler-category'] : null,
+                $user?->can('subcategory.view') ? ['label' => 'Sub Categories', 'route' => 'tenant.ecommerce.subcategories.index', 'pattern' => 'tenant.ecommerce.subcategories.*', 'icon' => 'tabler-category-plus'] : null,
+                ($user?->can('product.view') || $user?->can('products.view') || $user?->can('products.manage')) ? ['label' => 'Products', 'route' => 'tenant.ecommerce.products.index', 'pattern' => 'tenant.ecommerce.products.*', 'icon' => 'tabler-package'] : null,
+                $user?->can('service.view') ? ['label' => 'Services', 'route' => 'tenant.ecommerce.services.index', 'pattern' => 'tenant.ecommerce.services.*', 'icon' => 'tabler-tool'] : null,
+                $user?->can('discount.manage') ? ['label' => 'Discounts', 'route' => 'tenant.ecommerce.discounts.index', 'pattern' => 'tenant.ecommerce.discounts.*', 'icon' => 'tabler-ticket'] : null,
+            ])->filter()->values()->all(),
+        ],
+        [
+            'label' => 'Customers',
+            'items' => collect([
+                ($user?->can('customer.view') || $user?->can('customers.view')) ? ['label' => 'Customers', 'route' => 'tenant.ecommerce.customers.index', 'pattern' => 'tenant.ecommerce.customers.*', 'icon' => 'tabler-users'] : null,
+                ($user?->can('vehicle.view') || $user?->can('vehicles.view')) ? ['label' => 'Vehicles', 'route' => 'tenant.ecommerce.vehicles.index', 'pattern' => 'tenant.ecommerce.vehicles.*', 'icon' => 'tabler-car'] : null,
+            ])->filter()->values()->all(),
+        ],
+    ];
 @endphp
+
+@once
+    <style>
+        #layout-menu .menu-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        #layout-menu .menu-link .menu-icon {
+            flex: 0 0 1.375rem;
+        }
+
+        #layout-menu .menu-sub > .menu-item > .menu-link::before {
+            display: none;
+        }
+
+        #layout-menu .menu-sub .menu-link {
+            padding-inline-start: 1rem;
+        }
+    </style>
+@endonce
 
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
     <div class="app-brand demo">
@@ -50,35 +78,40 @@
     <div class="menu-inner-shadow"></div>
 
     <ul class="menu-inner py-1">
-        @foreach($menuItems as $item)
-            @php
-                $hasSubmenu = isset($item['submenu']);
-                if ($hasSubmenu && empty($item['submenu'])) {
-                    continue;
-                }
-                $isActive = request()->routeIs($item['pattern']) || ($hasSubmenu && collect($item['submenu'])->contains(fn($sub) => request()->routeIs($sub['pattern'])));
-            @endphp
-            <li class="menu-item {{ $isActive ? 'active open' : '' }}">
-                <a href="{{ $hasSubmenu ? 'javascript:void(0);' : route($item['route']) }}" class="menu-link {{ $hasSubmenu ? 'menu-toggle' : '' }}">
-                    <i class="menu-icon icon-base ti {{ $item['icon'] }}"></i>
-                    <div>{{ $item['label'] }}</div>
+        @if($isSuperAdmin)
+            @foreach($adminMenuItems as $item)
+                <li class="menu-item {{ request()->routeIs($item['pattern']) ? 'active' : '' }}">
+                    <a href="{{ route($item['route']) }}" class="menu-link">
+                        <i class="menu-icon icon-base ti {{ $item['icon'] }}"></i>
+                        <div>{{ $item['label'] }}</div>
+                    </a>
+                </li>
+            @endforeach
+        @else
+            <li class="menu-item {{ request()->routeIs('tenant.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('tenant.dashboard') }}" class="menu-link">
+                    <i class="menu-icon icon-base ti tabler-layout-dashboard"></i>
+                    <div>Dashboard</div>
                 </a>
-                @if($hasSubmenu)
-                    <ul class="menu-sub">
-                        @foreach($item['submenu'] as $sub)
-                            <li class="menu-item {{ request()->routeIs($sub['pattern']) ? 'active' : '' }}">
-                                <a href="{{ $sub['route'] !== '#' ? route($sub['route']) : 'javascript:void(0);' }}" class="menu-link">
-                                    @if(isset($sub['icon']))
-                                        <i class="menu-icon icon-base ti {{ $sub['icon'] }}"></i>
-                                    @endif
-                                    <div>{{ $sub['label'] }}</div>
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                @endif
             </li>
-        @endforeach
+
+            @foreach($tenantSections as $section)
+                @continue(empty($section['items']))
+
+                <li class="menu-header small">
+                    <span class="menu-header-text">{{ $section['label'] }}</span>
+                </li>
+
+                @foreach($section['items'] as $item)
+                    <li class="menu-item {{ request()->routeIs($item['pattern']) ? 'active' : '' }}">
+                        <a href="{{ route($item['route']) }}" class="menu-link">
+                            <i class="menu-icon icon-base ti {{ $item['icon'] }}"></i>
+                            <div>{{ $item['label'] }}</div>
+                        </a>
+                    </li>
+                @endforeach
+            @endforeach
+        @endif
 
         @if(session()->has('impersonator_id'))
             <li class="menu-item">
