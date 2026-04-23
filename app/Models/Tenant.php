@@ -95,6 +95,11 @@ class Tenant extends Model implements TenantContract
         return $this->hasMany(SubCategory::class);
     }
 
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
     public function adminUser(): HasOne
     {
         return $this->hasOne(User::class)->where('role', User::TENANT_ADMIN);

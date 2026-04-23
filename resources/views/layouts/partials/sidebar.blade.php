@@ -5,7 +5,7 @@
     $tenantSubmenu = collect([
         $user?->can('category.view') ? ['label' => 'Categories', 'route' => 'tenant.ecommerce.categories.index', 'pattern' => 'tenant.ecommerce.categories.*', 'icon' => 'tabler-category'] : null,
         $user?->can('subcategory.view') ? ['label' => 'Sub Categories', 'route' => 'tenant.ecommerce.subcategories.index', 'pattern' => 'tenant.ecommerce.subcategories.*', 'icon' => 'tabler-category-plus'] : null,
-        ['label' => 'Products', 'route' => 'tenant.ecommerce.products.index', 'pattern' => 'tenant.ecommerce.products.*', 'icon' => 'tabler-package'],
+        ($user?->can('product.view') || $user?->can('products.view') || $user?->can('products.manage')) ? ['label' => 'Products', 'route' => 'tenant.ecommerce.products.index', 'pattern' => 'tenant.ecommerce.products.*', 'icon' => 'tabler-package'] : null,
     ])->filter()->values()->all();
     $menuItems = $isSuperAdmin
         ? [

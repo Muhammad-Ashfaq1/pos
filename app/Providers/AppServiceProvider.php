@@ -5,7 +5,9 @@ namespace App\Providers;
 use App\Models\User;
 use App\Repositories\CategoriesRepository;
 use App\Repositories\Interface\CategoryRepositoryInterface;
+use App\Repositories\Interface\ProductRepositoryInterface;
 use App\Repositories\Interface\SubCategoryRepositoryInterface;
+use App\Repositories\ProductsRepository;
 use App\Repositories\SubCategoriesRepository;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -19,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(CategoryRepositoryInterface::class, CategoriesRepository::class);
         $this->app->bind(SubCategoryRepositoryInterface::class, SubCategoriesRepository::class);
+        $this->app->bind(ProductRepositoryInterface::class, ProductsRepository::class);
     }
 
     /**

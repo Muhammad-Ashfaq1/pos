@@ -32,6 +32,11 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('subcategory.create', 'web'),
             Permission::findByName('subcategory.update', 'web'),
             Permission::findByName('subcategory.delete', 'web'),
+            Permission::findByName('product.view', 'web'),
+            Permission::findByName('product.create', 'web'),
+            Permission::findByName('product.update', 'web'),
+            Permission::findByName('product.delete', 'web'),
+            Permission::findByName('product.adjust_stock', 'web'),
             Permission::findByName('products.view', 'web'),
             Permission::findByName('products.manage', 'web'),
             Permission::findByName('services.view', 'web'),
@@ -54,6 +59,7 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('dashboard.view', 'web'),
             Permission::findByName('category.view', 'web'),
             Permission::findByName('subcategory.view', 'web'),
+            Permission::findByName('product.view', 'web'),
             Permission::findByName('products.view', 'web'),
             Permission::findByName('services.view', 'web'),
             Permission::findByName('inventory.view', 'web'),
@@ -80,6 +86,8 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('dashboard.view', 'web'),
             Permission::findByName('inventory.view', 'web'),
             Permission::findByName('inventory.manage', 'web'),
+            Permission::findByName('product.view', 'web'),
+            Permission::findByName('product.adjust_stock', 'web'),
             Permission::findByName('products.view', 'web'),
         ]);
 

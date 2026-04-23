@@ -4,6 +4,7 @@ use App\Http\Controllers\Tenant\CategoryController;
 use App\Http\Controllers\Tenant\DashboardController;
 use App\Http\Controllers\Tenant\DropdownController;
 use App\Http\Controllers\Tenant\EcommerceController;
+use App\Http\Controllers\Tenant\ProductController;
 use App\Http\Controllers\Tenant\SubCategoryController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,8 +22,11 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                     ->controller(DropdownController::class)
                     ->group(function () {
                         Route::get('/categories', 'categories')
-                            ->middleware('permission:category.view|category.create|category.update|subcategory.view|subcategory.create|subcategory.update')
+                            ->middleware('permission:category.view|category.create|category.update|subcategory.view|subcategory.create|subcategory.update|product.view|product.create|product.update|products.view|products.manage')
                             ->name('categories');
+                        Route::get('/sub-categories', 'subCategories')
+                            ->middleware('permission:subcategory.view|subcategory.create|subcategory.update|product.view|product.create|product.update|products.view|products.manage')
+                            ->name('subcategories');
                     });
 
                 Route::prefix('categories')
@@ -61,8 +65,22 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                             ->name('destroy');
                     });
 
-                Route::controller(EcommerceController::class)->group(function () {
-                    Route::get('/products', 'products')->name('products.index');
-                });
+                Route::prefix('products')
+                    ->name('products.')
+                    ->controller(ProductController::class)
+                    ->group(function () {
+                        Route::get('/', 'index')
+                            ->middleware('permission:product.view|products.view')
+                            ->name('index');
+                        Route::get('/listing', 'listing')
+                            ->middleware('permission:product.view|products.view')
+                            ->name('listing');
+                        Route::post('/save', 'save')
+                            ->middleware('permission:product.create|product.update|products.manage')
+                            ->name('save');
+                        Route::delete('/{product}', 'destroy')
+                            ->middleware('permission:product.delete|products.manage')
+                            ->name('destroy');
+                    });
             });
     });
