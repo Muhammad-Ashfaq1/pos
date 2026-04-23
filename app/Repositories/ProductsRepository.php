@@ -7,14 +7,22 @@ use App\Models\Product;
 use App\Models\SubCategory;
 use App\Repositories\Interface\ProductRepositoryInterface;
 use App\Repositories\Support\Concerns\HandlesCatalogSlugs;
+use App\Services\ImageService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ProductsRepository implements ProductRepositoryInterface
 {
     use HandlesCatalogSlugs;
+
+    public function __construct(
+        private readonly ImageService $imageService
+    ) {
+    }
 
     public function index(): View
     {
@@ -26,47 +34,60 @@ class ProductsRepository implements ProductRepositoryInterface
         ]);
     }
 
-    public function store(array $data, ?Product $product = null, ?Authenticatable $user = null): array
+    public function store(array $data, ?Product $product = null, ?Authenticatable $user = null, array $images = []): array
     {
         $isUpdate = $product !== null;
         $userId = $user?->getAuthIdentifier();
-        $data['slug'] = $this->makeUniqueSlug(
-            Product::class,
-            $data['slug'] ?? $data['name'] ?? '',
-            $product?->id,
-            'product'
-        );
 
-        $data['opening_stock'] = $this->normalizeDecimal($data['opening_stock'] ?? 0);
-        $data['current_stock'] = array_key_exists('current_stock', $data)
-            ? $this->normalizeDecimal($data['current_stock'])
-            : ($isUpdate ? $product->current_stock : $data['opening_stock']);
-        $data['minimum_stock_level'] = $this->normalizeDecimal($data['minimum_stock_level'] ?? 0);
-        $data['reorder_level'] = $this->normalizeDecimal($data['reorder_level'] ?? 0);
-        $data['tax_percentage'] = $data['tax_percentage'] !== null && $data['tax_percentage'] !== ''
-            ? $this->normalizeMoney($data['tax_percentage'])
-            : null;
-        $data['cost_price'] = $this->normalizeMoney($data['cost_price'] ?? 0);
-        $data['sale_price'] = $this->normalizeMoney($data['sale_price'] ?? 0);
-        $data['category_id'] = $data['category_id'] ?: null;
-        $data['sub_category_id'] = $data['sub_category_id'] ?: null;
+        $product = DB::transaction(function () use ($data, $product, $user, $userId, $isUpdate, $images): Product {
+            $data['slug'] = $this->makeUniqueSlug(
+                Product::class,
+                $data['slug'] ?? $data['name'] ?? '',
+                $product?->id,
+                'product'
+            );
 
-        if ($isUpdate) {
-            $product->fill($data);
-            $product->forceFill(['updated_by' => $userId])->save();
-        } else {
-            $product = new Product($data);
-            $product->forceFill([
-                'created_by' => $userId,
-                'updated_by' => $userId,
+            $data['opening_stock'] = $this->normalizeDecimal($data['opening_stock'] ?? 0);
+            $data['current_stock'] = array_key_exists('current_stock', $data)
+                ? $this->normalizeDecimal($data['current_stock'])
+                : ($isUpdate ? $product->current_stock : $data['opening_stock']);
+            $data['minimum_stock_level'] = $this->normalizeDecimal($data['minimum_stock_level'] ?? 0);
+            $data['reorder_level'] = $this->normalizeDecimal($data['reorder_level'] ?? 0);
+            $data['tax_percentage'] = $data['tax_percentage'] !== null && $data['tax_percentage'] !== ''
+                ? $this->normalizeMoney($data['tax_percentage'])
+                : null;
+            $data['cost_price'] = $this->normalizeMoney($data['cost_price'] ?? 0);
+            $data['sale_price'] = $this->normalizeMoney($data['sale_price'] ?? 0);
+            $data['category_id'] = $data['category_id'] ?: null;
+            $data['sub_category_id'] = $data['sub_category_id'] ?: null;
+
+            if ($isUpdate) {
+                $product->fill($data);
+                $product->forceFill(['updated_by' => $userId])->save();
+            } else {
+                $product = new Product($data);
+                $product->forceFill([
+                    'created_by' => $userId,
+                    'updated_by' => $userId,
+                ]);
+                $product->save();
+            }
+
+            $this->imageService->syncForModel(
+                model: $product,
+                uploadedImages: array_values(array_filter($images, fn ($file) => $file instanceof UploadedFile)),
+                removedImageIds: array_map('intval', $data['removed_image_ids'] ?? []),
+                primaryImageRef: $data['primary_image_ref'] ?? null,
+                user: $user,
+            );
+
+            return $product->fresh([
+                'category:id,name',
+                'subCategory:id,name',
+                'images',
+                'primaryImage',
             ]);
-            $product->save();
-        }
-
-        $product->loadMissing([
-            'category:id,name',
-            'subCategory:id,name',
-        ]);
+        });
 
         return [
             'success' => true,
@@ -102,6 +123,8 @@ class ProductsRepository implements ProductRepositoryInterface
             ->with([
                 'category:id,name',
                 'subCategory:id,name',
+                'images',
+                'primaryImage',
             ])
             ->search($search)
             ->when($status !== '', function (Builder $query) use ($status): void {
@@ -226,6 +249,9 @@ class ProductsRepository implements ProductRepositoryInterface
             'is_active' => $product->is_active,
             'status_label' => $product->is_active ? 'Active' : 'Inactive',
             'status_badge_class' => $product->is_active ? 'bg-label-success' : 'bg-label-secondary',
+            'primary_image_url' => $product->primaryImage?->url,
+            'images' => $this->imageService->transformMany($product->images),
+            'images_count' => $product->images->count(),
             'stock_badge_class' => ! $product->track_inventory
                 ? 'bg-label-secondary'
                 : ($isLowStock ? 'bg-label-warning' : 'bg-label-success'),

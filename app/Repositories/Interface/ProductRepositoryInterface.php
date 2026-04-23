@@ -10,7 +10,7 @@ interface ProductRepositoryInterface
 {
     public function index(): View;
 
-    public function store(array $data, ?Product $product = null, ?Authenticatable $user = null): array;
+    public function store(array $data, ?Product $product = null, ?Authenticatable $user = null, array $images = []): array;
 
     public function destroy(Product $product): array;
 

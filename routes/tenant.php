@@ -4,6 +4,7 @@ use App\Http\Controllers\Tenant\CategoryController;
 use App\Http\Controllers\Tenant\DashboardController;
 use App\Http\Controllers\Tenant\DropdownController;
 use App\Http\Controllers\Tenant\EcommerceController;
+use App\Http\Controllers\Tenant\ImageController;
 use App\Http\Controllers\Tenant\ProductController;
 use App\Http\Controllers\Tenant\SubCategoryController;
 use Illuminate\Support\Facades\Route;
@@ -81,6 +82,21 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                         Route::delete('/{product}', 'destroy')
                             ->middleware('permission:product.delete|products.manage')
                             ->name('destroy');
+                    });
+
+                Route::prefix('images')
+                    ->name('images.')
+                    ->controller(ImageController::class)
+                    ->group(function () {
+                        Route::post('/upload', 'upload')
+                            ->middleware('permission:product.create|product.update|products.manage')
+                            ->name('upload');
+                        Route::delete('/{image}', 'destroy')
+                            ->middleware('permission:product.update|products.manage')
+                            ->name('destroy');
+                        Route::patch('/{image}/primary', 'setPrimary')
+                            ->middleware('permission:product.update|products.manage')
+                            ->name('primary');
                     });
             });
     });

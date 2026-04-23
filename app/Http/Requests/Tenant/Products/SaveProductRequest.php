@@ -3,10 +3,13 @@
 namespace App\Http\Requests\Tenant\Products;
 
 use App\Models\Product;
+use App\Models\Image;
+use App\Models\SubCategory;
 use App\Support\Tenancy\TenantContext;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class SaveProductRequest extends FormRequest
 {
@@ -106,10 +109,109 @@ class SaveProductRequest extends FormRequest
             'reorder_level' => ['nullable', 'numeric', 'min:0'],
             'track_inventory' => ['required', 'boolean'],
             'is_active' => ['required', 'boolean'],
+            'images' => ['nullable', 'array', 'max:20'],
+            'images.*' => ['nullable', 'file', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
+            'removed_image_ids' => ['nullable', 'array'],
+            'removed_image_ids.*' => [
+                'integer',
+                Rule::exists('images', 'id')->where(
+                    fn ($query) => $query->where('tenant_id', $tenantId)
+                ),
+            ],
+            'primary_image_ref' => ['nullable', 'string', 'max:50', 'regex:/^(existing|new):[0-9]+$/'],
             'tenant_id' => ['prohibited'],
             'created_by' => ['prohibited'],
             'updated_by' => ['prohibited'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            $product = $this->filled('id')
+                ? Product::query()->with('images')->find($this->integer('id'))
+                : null;
+
+            if ($this->filled('sub_category_id') && $this->filled('category_id')) {
+                $belongsToCategory = SubCategory::query()
+                    ->whereKey($this->integer('sub_category_id'))
+                    ->where('category_id', $this->integer('category_id'))
+                    ->exists();
+
+                if (! $belongsToCategory) {
+                    $validator->errors()->add('sub_category_id', 'The selected sub category does not belong to the selected category.');
+                }
+            }
+
+            $removedImageIds = collect($this->input('removed_image_ids', []))
+                ->filter()
+                ->map(fn ($id) => (int) $id)
+                ->values();
+
+            if ($removedImageIds->isNotEmpty()) {
+                if (! $product) {
+                    $validator->errors()->add('removed_image_ids', 'Images can only be removed from an existing product.');
+                } else {
+                    $invalidRemovedImage = Image::query()
+                        ->whereIn('id', $removedImageIds)
+                        ->where(function ($query) use ($product): void {
+                            $query
+                                ->where('imageable_type', '!=', Product::class)
+                                ->orWhere('imageable_id', '!=', $product->id);
+                        })
+                        ->exists();
+
+                    if ($invalidRemovedImage) {
+                        $validator->errors()->add('removed_image_ids', 'One or more selected images are invalid for this product.');
+                    }
+                }
+            }
+
+            $existingImagesCount = $product?->images->count() ?? 0;
+            $finalCount = $existingImagesCount
+                - $removedImageIds->count()
+                + count($this->file('images', []));
+
+            if ($finalCount > 20) {
+                $validator->errors()->add('images', 'A product can have at most 20 images.');
+            }
+
+            $primaryImageRef = $this->input('primary_image_ref');
+
+            if (! $primaryImageRef) {
+                return;
+            }
+
+            if (str_starts_with($primaryImageRef, 'existing:')) {
+                $imageId = (int) substr($primaryImageRef, 9);
+
+                if (! $product) {
+                    $validator->errors()->add('primary_image_ref', 'Please save the product before selecting an existing primary image.');
+
+                    return;
+                }
+
+                $belongsToProduct = Image::query()
+                    ->whereKey($imageId)
+                    ->where('imageable_type', Product::class)
+                    ->where('imageable_id', $product->id)
+                    ->exists();
+
+                if (! $belongsToProduct) {
+                    $validator->errors()->add('primary_image_ref', 'The selected primary image does not belong to this product.');
+                }
+
+                return;
+            }
+
+            if (str_starts_with($primaryImageRef, 'new:')) {
+                $newIndex = (int) substr($primaryImageRef, 4);
+
+                if (! array_key_exists($newIndex, $this->file('images', []))) {
+                    $validator->errors()->add('primary_image_ref', 'The selected primary image upload is invalid.');
+                }
+            }
+        });
     }
 
     public function messages(): array
@@ -130,6 +232,10 @@ class SaveProductRequest extends FormRequest
             'brand.max' => 'The brand may not be greater than 120 characters.',
             'unit.max' => 'The unit may not be greater than 50 characters.',
             'description.max' => 'The description may not be greater than 2000 characters.',
+            'images.max' => 'A product can have at most 20 images.',
+            'images.*.image' => 'Each uploaded file must be a valid image.',
+            'images.*.mimes' => 'Images must be JPG, JPEG, PNG, GIF, or WEBP files.',
+            'images.*.max' => 'Each image may not be greater than 5 MB.',
         ];
     }
 }

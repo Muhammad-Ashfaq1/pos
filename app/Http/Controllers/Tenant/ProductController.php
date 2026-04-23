@@ -100,6 +100,7 @@ class ProductController extends Controller
             Arr::except($validated, ['id']),
             $product,
             $request->user(),
+            $request->file('images', []),
         );
 
         return response()->json([

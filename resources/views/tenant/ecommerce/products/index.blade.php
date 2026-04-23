@@ -244,6 +244,16 @@
                                 <div class="invalid-feedback"></div>
                             </div>
 
+                            <div class="col-12">
+                                <x-media.dropzone
+                                    id="product_images_dropzone"
+                                    label="Product Images"
+                                    inputName="images[]"
+                                    primaryInputName="primary_image_ref"
+                                    removedInputName="removed_image_ids[]"
+                                />
+                            </div>
+
                             <div class="col-md-3">
                                 <label for="product_cost_price" class="form-label">Cost Price <span class="text-danger">*</span></label>
                                 <input type="number" step="0.01" min="0" class="form-control" id="product_cost_price" name="cost_price" value="0.00">
@@ -306,6 +316,8 @@
 
 @section('scripts')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"></script>
+    <script src="{{ asset('assets/vendor/libs/dropzone/dropzone.js') }}"></script>
+    <script src="{{ asset('assets/js/media-dropzone.js') }}"></script>
     <script>
         window.productListingUrl = @json($listingUrl);
         window.categoryDropdownUrl = @json($categoriesDropdownUrl);
