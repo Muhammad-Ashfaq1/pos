@@ -7,8 +7,10 @@
   const $form = $('#vehicleForm');
   const $submitButton = $('#vehicleSubmitBtn');
   const $table = $('.vehicles-datatables');
+  const $mode = $('#vehicle_customer_entry_mode');
   const $formCustomer = $('#vehicle_customer_id');
   const $filterCustomer = $('#vehicle_filter_customer');
+  const $walkInSaveCheckbox = $('#save_walk_in_as_customer');
   const initialCustomerId = new URLSearchParams(window.location.search).get('customer_id') || '';
   let vehicleTable = null;
 
@@ -53,6 +55,7 @@
   const resetValidationState = function () {
     $form.find('.is-invalid').removeClass('is-invalid');
     $form.find('.invalid-feedback').text('');
+    setSelect2ErrorState($mode, false);
     setSelect2ErrorState($formCustomer, false);
   };
 
@@ -136,19 +139,45 @@
     });
   };
 
+  const applyCustomerMode = function () {
+    const mode = $mode.val() || 'existing';
+
+    $('.customer-mode-section').each(function () {
+      const modes = String($(this).data('mode') || '').split(' ');
+      $(this).toggleClass('d-none', !modes.includes(mode));
+    });
+
+    if (mode !== 'walk_in') {
+      $walkInSaveCheckbox.prop('checked', true);
+    }
+  };
+
   const resetForm = function () {
     $form[0].reset();
     $('#vehicle_id').val('');
+    $mode.val(initialCustomerId ? 'existing' : 'existing').trigger('change');
     ensureSelectOption($formCustomer, initialCustomerId || null, null);
+    $('#inline_customer_name').val('');
+    $('#inline_customer_phone').val('');
+    $('#inline_customer_email').val('');
+    $('#inline_customer_address').val('');
+    $walkInSaveCheckbox.prop('checked', true);
     $('#vehicle_is_default').prop('checked', false);
     $('#vehicleModalLabel').text('Add Vehicle');
     setSubmitButtonState(false);
     resetValidationState();
+    applyCustomerMode();
   };
 
   const fillForm = function (vehicle) {
     $('#vehicle_id').val(vehicle.id);
+    $mode.val(vehicle.customer_entry_mode || 'existing').trigger('change');
     ensureSelectOption($formCustomer, vehicle.customer_id, vehicle.customer_name);
+    $('#inline_customer_name').val(vehicle.inline_customer_name || '');
+    $('#inline_customer_phone').val(vehicle.inline_customer_phone || '');
+    $('#inline_customer_email').val(vehicle.inline_customer_email || '');
+    $('#inline_customer_address').val(vehicle.inline_customer_address || '');
+    $walkInSaveCheckbox.prop('checked', Boolean(vehicle.save_walk_in_as_customer));
     $('#vehicle_plate_number').val(vehicle.plate_number);
     $('#vehicle_registration_number').val(vehicle.registration_number);
     $('#vehicle_make').val(vehicle.make);
@@ -162,6 +191,7 @@
     $('#vehicleModalLabel').text('Edit Vehicle');
     setSubmitButtonState(false);
     resetValidationState();
+    applyCustomerMode();
   };
 
   const actionButtonsHtml = function (row) {
@@ -196,7 +226,20 @@
     return $form.validate({
       ignore: [],
       rules: {
-        customer_id: { required: true },
+        customer_entry_mode: { required: true },
+        customer_id: {
+          required: {
+            depends: function () {
+              return $mode.val() === 'existing';
+            }
+          }
+        },
+        inline_customer_name: {
+          maxlength: 150
+        },
+        inline_customer_phone: { maxlength: 30 },
+        inline_customer_email: { email: true, maxlength: 150 },
+        inline_customer_address: { maxlength: 1000 },
         plate_number: { required: true, maxlength: 50 },
         registration_number: { maxlength: 80 },
         make: { maxlength: 100 },
@@ -208,6 +251,7 @@
         notes: { maxlength: 2000 }
       },
       messages: {
+        customer_entry_mode: { required: 'Please select how you want to link this vehicle.' },
         customer_id: { required: 'Please select a customer.' },
         plate_number: { required: 'Please enter a plate number.' }
       },
@@ -303,6 +347,9 @@
           data: 'customer_name',
           render: function (data, type, row) {
             let html = '<div><span class="fw-semibold">' + escapeHtml(data || '—') + '</span>';
+            if (row.customer_type_label) {
+              html += '<div class="small"><span class="badge bg-label-secondary">' + escapeHtml(row.customer_type_label) + '</span></div>';
+            }
             if (row.customer_phone) {
               html += '<div class="small text-muted">' + escapeHtml(row.customer_phone) + '</div>';
             }
@@ -539,10 +586,13 @@
 
   $(function () {
     initStaticSelect2();
+    $mode.on('change', function () {
+      applyCustomerMode();
+    });
     initCustomerSelect($formCustomer);
     initCustomerSelect($filterCustomer);
     if (initialCustomerId) {
-      $filterCustomer.val(initialCustomerId);
+      ensureSelectOption($filterCustomer, initialCustomerId, 'Selected customer');
     }
     const validator = bindFormValidation();
     initDataTable();

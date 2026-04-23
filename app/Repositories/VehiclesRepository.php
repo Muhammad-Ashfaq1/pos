@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Customer;
 use App\Models\Vehicle;
+use App\Http\Requests\Tenant\Vehicles\SaveVehicleRequest;
 use App\Repositories\Interface\VehicleRepositoryInterface;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,8 +29,9 @@ class VehiclesRepository implements VehicleRepositoryInterface
         $isUpdate = $vehicle !== null;
         $userId = $user?->getAuthIdentifier();
 
-        $vehicle = DB::transaction(function () use ($data, $vehicle, $userId, $isUpdate): Vehicle {
-            $payload = $this->buildPayload($data);
+        $vehicle = DB::transaction(function () use ($data, $vehicle, $userId, $isUpdate, $user): Vehicle {
+            $customer = $this->resolveCustomerFromPayload($data, $user, $vehicle);
+            $payload = $this->buildPayload($data, $customer);
 
             if ($isUpdate) {
                 $vehicle->fill($payload);
@@ -114,10 +116,10 @@ class VehiclesRepository implements VehicleRepositoryInterface
         return $this->transformVehicle($vehicle, $user);
     }
 
-    private function buildPayload(array $data): array
+    private function buildPayload(array $data, Customer $customer): array
     {
         return [
-            'customer_id' => (int) $data['customer_id'],
+            'customer_id' => $customer->id,
             'plate_number' => strtoupper(trim((string) $data['plate_number'])),
             'registration_number' => $this->normalizeNullableUpperString($data['registration_number'] ?? null),
             'make' => $this->normalizeNullableString($data['make'] ?? null),
@@ -191,6 +193,18 @@ class VehiclesRepository implements VehicleRepositoryInterface
             'customer_name' => $vehicle->customer?->name,
             'customer_phone' => $vehicle->customer?->phone,
             'customer_email' => $vehicle->customer?->email,
+            'customer_type' => $vehicle->customer?->customer_type,
+            'customer_type_label' => $vehicle->customer
+                ? (Customer::typeOptions()[$vehicle->customer->customer_type] ?? ucfirst((string) $vehicle->customer->customer_type))
+                : null,
+            'customer_entry_mode' => $vehicle->customer?->customer_type === Customer::TYPE_WALK_IN
+                ? SaveVehicleRequest::MODE_WALK_IN
+                : SaveVehicleRequest::MODE_EXISTING,
+            'inline_customer_name' => $vehicle->customer?->name,
+            'inline_customer_phone' => $vehicle->customer?->phone,
+            'inline_customer_email' => $vehicle->customer?->email,
+            'inline_customer_address' => $vehicle->customer?->address,
+            'save_walk_in_as_customer' => $this->shouldTreatWalkInAsSavedCustomer($vehicle->customer),
             'plate_number' => $vehicle->plate_number,
             'registration_number' => $vehicle->registration_number,
             'make' => $vehicle->make,
@@ -228,5 +242,142 @@ class VehiclesRepository implements VehicleRepositoryInterface
         $value = $this->normalizeNullableString($value);
 
         return $value !== null ? strtoupper($value) : null;
+    }
+
+    private function resolveCustomerFromPayload(
+        array $data,
+        ?Authenticatable $user = null,
+        ?Vehicle $currentVehicle = null,
+    ): Customer
+    {
+        $mode = $data['customer_entry_mode'] ?? SaveVehicleRequest::MODE_EXISTING;
+
+        if ($mode === SaveVehicleRequest::MODE_EXISTING) {
+            return Customer::query()->findOrFail((int) $data['customer_id']);
+        }
+
+        return $this->resolveInlineCustomer(
+            data: $data,
+            user: $user,
+            customerType: Customer::TYPE_WALK_IN,
+            fallbackName: Customer::defaultWalkInName(),
+            shouldPersistDetails: (bool) ($data['save_walk_in_as_customer'] ?? true),
+            existingCustomer: $currentVehicle?->customer_id
+                ? $currentVehicle->customer()->first()
+                : null,
+        );
+    }
+
+    private function resolveInlineCustomer(
+        array $data,
+        ?Authenticatable $user,
+        string $customerType,
+        string $fallbackName,
+        bool $shouldPersistDetails,
+        ?Customer $existingCustomer = null,
+    ): Customer {
+        if (
+            $existingCustomer
+            && $existingCustomer->customer_type === Customer::TYPE_WALK_IN
+            && $customerType === Customer::TYPE_WALK_IN
+        ) {
+            $resolvedName = $data['inline_customer_name']
+                ?? $existingCustomer->name
+                ?? $fallbackName;
+
+            $existingCustomer->fill([
+                'name' => $shouldPersistDetails
+                    ? $resolvedName
+                    : $fallbackName,
+                'phone' => $shouldPersistDetails ? ($data['inline_customer_phone'] ?? null) : null,
+                'email' => $shouldPersistDetails ? ($data['inline_customer_email'] ?? null) : null,
+                'address' => $shouldPersistDetails ? ($data['inline_customer_address'] ?? null) : null,
+                'notes' => ! $shouldPersistDetails
+                    ? 'Auto-created from quick vehicle entry.'
+                    : $existingCustomer->notes,
+            ]);
+
+            $existingCustomer->forceFill([
+                'updated_by' => $user?->getAuthIdentifier(),
+            ])->save();
+
+            return $existingCustomer;
+        }
+
+        $matchedCustomer = $shouldPersistDetails
+            ? $this->findExistingCustomerMatch($data)
+            : null;
+
+        if ($matchedCustomer) {
+            $matchedCustomer->fill(array_filter([
+                'name' => $matchedCustomer->name ?: ($data['inline_customer_name'] ?? null),
+                'address' => $matchedCustomer->address ?: ($data['inline_customer_address'] ?? null),
+            ], fn ($value) => $value !== null && $value !== ''));
+
+            if ($matchedCustomer->customer_type === Customer::TYPE_WALK_IN && $customerType === Customer::TYPE_REGISTERED) {
+                $matchedCustomer->customer_type = Customer::TYPE_REGISTERED;
+            }
+
+            $matchedCustomer->forceFill([
+                'updated_by' => $user?->getAuthIdentifier(),
+            ])->save();
+
+            return $matchedCustomer;
+        }
+
+        $customer = new Customer([
+            'customer_type' => $customerType,
+            'name' => $shouldPersistDetails
+                ? ($data['inline_customer_name'] ?? $fallbackName)
+                : $fallbackName,
+            'phone' => $shouldPersistDetails ? ($data['inline_customer_phone'] ?? null) : null,
+            'email' => $shouldPersistDetails ? ($data['inline_customer_email'] ?? null) : null,
+            'address' => $shouldPersistDetails ? ($data['inline_customer_address'] ?? null) : null,
+            'notes' => ! $shouldPersistDetails
+                ? 'Auto-created from quick vehicle entry.'
+                : null,
+        ]);
+
+        $customer->forceFill([
+            'created_by' => $user?->getAuthIdentifier(),
+            'updated_by' => $user?->getAuthIdentifier(),
+        ]);
+        $customer->save();
+
+        return $customer;
+    }
+
+    private function findExistingCustomerMatch(array $data): ?Customer
+    {
+        $email = $data['inline_customer_email'] ?? null;
+        $phone = $data['inline_customer_phone'] ?? null;
+
+        if ($email) {
+            $customer = Customer::query()->where('email', $email)->first();
+
+            if ($customer) {
+                return $customer;
+            }
+        }
+
+        if ($phone) {
+            return Customer::query()->where('phone', $phone)->first();
+        }
+
+        return null;
+    }
+
+    private function shouldTreatWalkInAsSavedCustomer(?Customer $customer): bool
+    {
+        if (! $customer || $customer->customer_type !== Customer::TYPE_WALK_IN) {
+            return true;
+        }
+
+        return (bool) (
+            $customer->phone
+            || $customer->email
+            || $customer->address
+            || ($customer->name && $customer->name !== Customer::defaultWalkInName())
+        );
     }
 }

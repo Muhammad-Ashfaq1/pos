@@ -13,6 +13,8 @@ class Customer extends Model
 {
     use BelongsToTenant;
 
+    public const DEFAULT_WALK_IN_NAME = 'Walk-in Customer';
+
     public const TYPE_REGISTERED = 'registered';
 
     public const TYPE_WALK_IN = 'walk_in';
@@ -55,6 +57,11 @@ class Customer extends Model
             self::TYPE_WALK_IN => 'Walk In',
             self::TYPE_CORPORATE => 'Corporate',
         ];
+    }
+
+    public static function defaultWalkInName(): string
+    {
+        return self::DEFAULT_WALK_IN_NAME;
     }
 
     public function creator(): BelongsTo

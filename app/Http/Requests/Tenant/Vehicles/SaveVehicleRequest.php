@@ -2,12 +2,18 @@
 
 namespace App\Http\Requests\Tenant\Vehicles;
 
+use App\Models\Customer;
 use App\Support\Tenancy\TenantContext;
+use Illuminate\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class SaveVehicleRequest extends FormRequest
 {
+    public const MODE_EXISTING = 'existing';
+
+    public const MODE_WALK_IN = 'walk_in';
+
     public function authorize(): bool
     {
         return true;
@@ -16,6 +22,7 @@ class SaveVehicleRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
+            'customer_entry_mode' => trim((string) $this->input('customer_entry_mode', self::MODE_EXISTING)),
             'plate_number' => strtoupper(trim((string) $this->input('plate_number'))),
             'registration_number' => $this->normalizeNullableUpperString($this->input('registration_number')),
             'make' => $this->normalizeNullableString($this->input('make')),
@@ -23,6 +30,11 @@ class SaveVehicleRequest extends FormRequest
             'color' => $this->normalizeNullableString($this->input('color')),
             'engine_type' => $this->normalizeNullableString($this->input('engine_type')),
             'notes' => $this->normalizeNullableString($this->input('notes')),
+            'inline_customer_name' => $this->normalizeNullableString($this->input('inline_customer_name')),
+            'inline_customer_phone' => $this->normalizeNullableString($this->input('inline_customer_phone')),
+            'inline_customer_email' => $this->normalizeNullableString(mb_strtolower((string) $this->input('inline_customer_email'))),
+            'inline_customer_address' => $this->normalizeNullableString($this->input('inline_customer_address')),
+            'save_walk_in_as_customer' => $this->boolean('save_walk_in_as_customer', true),
         ]);
     }
 
@@ -39,13 +51,23 @@ class SaveVehicleRequest extends FormRequest
                     fn ($query) => $query->where('tenant_id', $tenantId)
                 ),
             ],
-            'customer_id' => [
+            'customer_entry_mode' => [
                 'required',
+                'string',
+                Rule::in([self::MODE_EXISTING, self::MODE_WALK_IN]),
+            ],
+            'customer_id' => [
+                'nullable',
                 'integer',
                 Rule::exists('customers', 'id')->where(
                     fn ($query) => $query->where('tenant_id', $tenantId)
                 ),
             ],
+            'inline_customer_name' => ['nullable', 'string', 'max:150'],
+            'inline_customer_phone' => ['nullable', 'string', 'max:30'],
+            'inline_customer_email' => ['nullable', 'email', 'max:150'],
+            'inline_customer_address' => ['nullable', 'string', 'max:1000'],
+            'save_walk_in_as_customer' => ['required', 'boolean'],
             'plate_number' => [
                 'required',
                 'string',
@@ -76,12 +98,42 @@ class SaveVehicleRequest extends FormRequest
         ];
     }
 
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            $mode = $this->input('customer_entry_mode');
+
+            if ($mode === self::MODE_EXISTING && ! $this->filled('customer_id')) {
+                $validator->errors()->add('customer_id', 'Please select a customer.');
+            }
+
+            if ($mode === self::MODE_WALK_IN && ! $this->boolean('save_walk_in_as_customer')) {
+                return;
+            }
+
+            if (
+                $mode === self::MODE_WALK_IN
+                && ! $this->filled('inline_customer_name')
+                && ! $this->filled('inline_customer_phone')
+                && ! $this->filled('inline_customer_email')
+            ) {
+                return;
+            }
+        });
+    }
+
     public function messages(): array
     {
         return [
             'id.exists' => 'The selected vehicle was not found for this shop.',
-            'customer_id.required' => 'Please select a customer.',
+            'customer_entry_mode.required' => 'Please select how you want to link this vehicle.',
+            'customer_entry_mode.in' => 'Please select a valid customer entry mode.',
             'customer_id.exists' => 'The selected customer was not found for this shop.',
+            'inline_customer_name.max' => 'The customer name may not be greater than 150 characters.',
+            'inline_customer_phone.max' => 'The phone number may not be greater than 30 characters.',
+            'inline_customer_email.email' => 'Please enter a valid email address.',
+            'inline_customer_email.max' => 'The email may not be greater than 150 characters.',
+            'inline_customer_address.max' => 'The address may not be greater than 1000 characters.',
             'plate_number.required' => 'Please enter a plate number.',
             'plate_number.max' => 'The plate number may not be greater than 50 characters.',
             'plate_number.unique' => 'This plate number already exists for this shop.',

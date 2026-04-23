@@ -120,7 +120,26 @@
 
                     <div class="modal-body">
                         <div class="row g-3">
-                            <div class="col-md-4">
+                            <div class="col-md-12">
+                                <label for="vehicle_customer_entry_mode" class="form-label">Customer Mode <span class="text-danger">*</span></label>
+                                <div class="position-relative">
+                                    <select
+                                        id="vehicle_customer_entry_mode"
+                                        name="customer_entry_mode"
+                                        class="form-select select2"
+                                        data-placeholder="Select customer mode"
+                                        data-dropdown-parent="#vehicleModal"
+                                        data-allow-clear="false"
+                                        data-minimum-results-for-search="Infinity"
+                                    >
+                                        <option value="existing">Select Existing Customer</option>
+                                        <option value="walk_in">Walk-in / Quick Entry</option>
+                                    </select>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 customer-mode-section" data-mode="existing">
                                 <label for="vehicle_customer_id" class="form-label">Customer <span class="text-danger">*</span></label>
                                 <div class="position-relative">
                                     <select
@@ -134,6 +153,44 @@
                                     <div class="invalid-feedback"></div>
                                 </div>
                             </div>
+                            <div class="col-md-8 customer-mode-section" data-mode="existing">
+                                <div class="alert alert-label-primary mb-0">
+                                    Use this option when the customer already exists and this vehicle should link directly to that record.
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 customer-mode-section d-none" data-mode="walk_in">
+                                <label for="inline_customer_name" class="form-label">Customer Name</label>
+                                <input type="text" class="form-control" id="inline_customer_name" name="inline_customer_name" maxlength="150" placeholder="Walk-in Customer">
+                                <div class="invalid-feedback"></div>
+                            </div>
+                            <div class="col-md-6 customer-mode-section d-none" data-mode="walk_in">
+                                <label for="inline_customer_phone" class="form-label">Phone</label>
+                                <input type="text" class="form-control" id="inline_customer_phone" name="inline_customer_phone" maxlength="30" placeholder="Optional">
+                                <div class="invalid-feedback"></div>
+                            </div>
+                            <div class="col-md-6 customer-mode-section d-none" data-mode="walk_in">
+                                <label for="inline_customer_email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="inline_customer_email" name="inline_customer_email" maxlength="150" placeholder="Optional">
+                                <div class="invalid-feedback"></div>
+                            </div>
+                            <div class="col-md-6 customer-mode-section d-none" data-mode="walk_in">
+                                <label for="inline_customer_address" class="form-label">Address</label>
+                                <input type="text" class="form-control" id="inline_customer_address" name="inline_customer_address" maxlength="1000" placeholder="Optional">
+                                <div class="invalid-feedback"></div>
+                            </div>
+                            <div class="col-md-12 customer-mode-section d-none" data-mode="walk_in">
+                                <input type="hidden" name="save_walk_in_as_customer" value="0">
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="save_walk_in_as_customer" name="save_walk_in_as_customer" value="1" checked>
+                                    <label class="form-check-label" for="save_walk_in_as_customer">Save this walk-in as customer</label>
+                                </div>
+                                <div class="form-text">
+                                    If unchecked, the system will still create a safe internal walk-in link for this vehicle.
+                                </div>
+                                <div class="invalid-feedback d-block"></div>
+                            </div>
+
                             <div class="col-md-4">
                                 <label for="vehicle_plate_number" class="form-label">Plate Number <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control text-uppercase" id="vehicle_plate_number" name="plate_number" maxlength="50">
