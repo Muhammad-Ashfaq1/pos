@@ -3,6 +3,7 @@
 use App\Http\Controllers\Tenant\CategoryController;
 use App\Http\Controllers\Tenant\CustomerController;
 use App\Http\Controllers\Tenant\DashboardController;
+use App\Http\Controllers\Tenant\DiscountController;
 use App\Http\Controllers\Tenant\DropdownController;
 use App\Http\Controllers\Tenant\EcommerceController;
 use App\Http\Controllers\Tenant\ImageController;
@@ -117,6 +118,27 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                             ->name('save');
                         Route::delete('/{service}', 'destroy')
                             ->middleware('permission:service.delete')
+                            ->name('destroy');
+                    });
+
+                Route::prefix('discounts')
+                    ->name('discounts.')
+                    ->controller(DiscountController::class)
+                    ->group(function () {
+                        Route::get('/', 'index')
+                            ->middleware('permission:discount.manage')
+                            ->name('index');
+                        Route::get('/listing', 'listing')
+                            ->middleware('permission:discount.manage')
+                            ->name('listing');
+                        Route::get('/{discount}/edit', 'edit')
+                            ->middleware('permission:discount.manage')
+                            ->name('edit');
+                        Route::post('/save', 'save')
+                            ->middleware('permission:discount.manage')
+                            ->name('save');
+                        Route::delete('/{discount}', 'destroy')
+                            ->middleware('permission:discount.manage')
                             ->name('destroy');
                     });
 

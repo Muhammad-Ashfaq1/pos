@@ -115,6 +115,11 @@ class Tenant extends Model implements TenantContract
         return $this->hasMany(Vehicle::class);
     }
 
+    public function discounts(): HasMany
+    {
+        return $this->hasMany(Discount::class);
+    }
+
     public function serviceProducts(): HasMany
     {
         return $this->hasMany(ServiceProduct::class);
