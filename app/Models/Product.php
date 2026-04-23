@@ -7,6 +7,8 @@ use App\Models\Concerns\HasImages;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
@@ -96,6 +98,18 @@ class Product extends Model
     public function updater(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function serviceProducts(): HasMany
+    {
+        return $this->hasMany(ServiceProduct::class);
+    }
+
+    public function services(): BelongsToMany
+    {
+        return $this->belongsToMany(Service::class, 'service_products')
+            ->withPivot(['tenant_id', 'quantity', 'unit', 'is_required'])
+            ->withTimestamps();
     }
 
     public function scopeSearch(Builder $query, ?string $term): Builder

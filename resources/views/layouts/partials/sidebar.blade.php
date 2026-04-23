@@ -6,6 +6,10 @@
         $user?->can('category.view') ? ['label' => 'Categories', 'route' => 'tenant.ecommerce.categories.index', 'pattern' => 'tenant.ecommerce.categories.*', 'icon' => 'tabler-category'] : null,
         $user?->can('subcategory.view') ? ['label' => 'Sub Categories', 'route' => 'tenant.ecommerce.subcategories.index', 'pattern' => 'tenant.ecommerce.subcategories.*', 'icon' => 'tabler-category-plus'] : null,
         ($user?->can('product.view') || $user?->can('products.view') || $user?->can('products.manage')) ? ['label' => 'Products', 'route' => 'tenant.ecommerce.products.index', 'pattern' => 'tenant.ecommerce.products.*', 'icon' => 'tabler-package'] : null,
+        $user?->can('service.view') ? ['label' => 'Services', 'route' => 'tenant.ecommerce.services.index', 'pattern' => 'tenant.ecommerce.services.*', 'icon' => 'tabler-tool'] : null,
+        $user?->can('discount.manage') ? ['label' => 'Discounts', 'route' => 'tenant.ecommerce.discounts.index', 'pattern' => 'tenant.ecommerce.discounts.*', 'icon' => 'tabler-discount-2'] : null,
+        ($user?->can('customer.view') || $user?->can('customers.view')) ? ['label' => 'Customers', 'route' => 'tenant.ecommerce.customers.index', 'pattern' => 'tenant.ecommerce.customers.*', 'icon' => 'tabler-users'] : null,
+        ($user?->can('vehicle.view') || $user?->can('vehicles.view')) ? ['label' => 'Vehicles', 'route' => 'tenant.ecommerce.vehicles.index', 'pattern' => 'tenant.ecommerce.vehicles.*', 'icon' => 'tabler-car'] : null,
     ])->filter()->values()->all();
     $menuItems = $isSuperAdmin
         ? [
