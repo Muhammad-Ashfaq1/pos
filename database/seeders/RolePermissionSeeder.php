@@ -28,6 +28,10 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('category.create', 'web'),
             Permission::findByName('category.update', 'web'),
             Permission::findByName('category.delete', 'web'),
+            Permission::findByName('subcategory.view', 'web'),
+            Permission::findByName('subcategory.create', 'web'),
+            Permission::findByName('subcategory.update', 'web'),
+            Permission::findByName('subcategory.delete', 'web'),
             Permission::findByName('products.view', 'web'),
             Permission::findByName('products.manage', 'web'),
             Permission::findByName('services.view', 'web'),
@@ -49,6 +53,7 @@ class RolePermissionSeeder extends Seeder
         Role::findByName(User::MANAGER)->syncPermissions([
             Permission::findByName('dashboard.view', 'web'),
             Permission::findByName('category.view', 'web'),
+            Permission::findByName('subcategory.view', 'web'),
             Permission::findByName('products.view', 'web'),
             Permission::findByName('services.view', 'web'),
             Permission::findByName('inventory.view', 'web'),

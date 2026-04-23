@@ -6,13 +6,13 @@ use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Category extends Model
+class SubCategory extends Model
 {
     use BelongsToTenant;
 
     protected $fillable = [
+        'category_id',
         'name',
         'slug',
         'code',
@@ -26,9 +26,15 @@ class Category extends Model
     protected function casts(): array
     {
         return [
+            'category_id' => 'integer',
             'sort_order' => 'integer',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
     }
 
     public function creator(): BelongsTo
@@ -39,11 +45,6 @@ class Category extends Model
     public function updater(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
-    }
-
-    public function subCategories(): HasMany
-    {
-        return $this->hasMany(SubCategory::class);
     }
 
     public function scopeSearch(Builder $query, ?string $term): Builder
@@ -58,7 +59,10 @@ class Category extends Model
             $builder
                 ->where('name', 'like', "%{$term}%")
                 ->orWhere('slug', 'like', "%{$term}%")
-                ->orWhere('code', 'like', "%{$term}%");
+                ->orWhere('code', 'like', "%{$term}%")
+                ->orWhereHas('category', function (Builder $categoryQuery) use ($term): void {
+                    $categoryQuery->where('name', 'like', "%{$term}%");
+                });
         });
     }
 }
