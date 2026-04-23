@@ -25,7 +25,7 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
              Route::controller(CategoryController::class) ->prefix('categories')->name('categories.')  ->group(function ()
               {
 
-              Route::get('/list', 'list')->name('list');
+
 
               Route::post('/save', 'save')->name('save');
 
@@ -40,7 +40,7 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
 
             Route::controller(SubCategoryController::class)->prefix('subcategories') ->name('subcategories.')->group(function () {
 
-            Route::get('/list', 'list')->name('list');
+
 
            Route::post('/save', 'save')->name('save');
 

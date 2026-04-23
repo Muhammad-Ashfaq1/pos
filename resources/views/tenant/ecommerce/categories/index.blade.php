@@ -12,7 +12,11 @@
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
                 <div class="row col-12">
                     <div class="col-lg-4 col-md-6 ">
-
+                        <div class="mb-0 position-relative flex-grow-1 w-100">
+                            <input type="text" class="form-control pe-5" placeholder="Search products...">
+                            <i class="ti tabler-search position-absolute text-muted"
+                                style="top: 50%; right: 1rem; transform: translateY(-50%);"></i>
+                        </div>
                     </div>
 
                     <div class="col-lg-8 col-md-6 p-0 d-flex justify-content-end align-items-end">
@@ -20,7 +24,7 @@
                             <button type="button" class="btn btn-primary text-nowrap"
                                 data-bs-target="#addCategoryModal"
                                 data-bs-toggle="modal">
-                                <i class="ti tabler-plus me-1"></i>Add Category
+                                <i class="ti tabler-plus me-1"></i>Create Category
                             </button>
                         </div>
                     </div>
@@ -38,13 +42,67 @@
                         <th class="text-center">Actions</th>
                     </tr>
                 </thead>
+             <tbody id="categories-table-body">
+                @include('tenant.ecommerce.categories.data-table')
+            </tbody>
+        </table>
+    </div>
+    <!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+             <h5 class="modal-title" id="addCategoryModalTitle">Add Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
 
-                  <tbody></tbody>
-            </table>
+            <form action="#" id="addCategoryForm" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <label for="categoryName" class="form-label">Category Name</label>
+                        <input
+                            name="name"
+                            type="text"
+                            id="categoryName"
+                            class="form-control"
+                            placeholder="Enter category name"
+                            required
+                        >
+                        <div class="invalid-feedback">
+                            Category name is required.
+                        </div>
+                    </div>
+
+                    <div class="form-check form-switch mb-2">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="categoryIsActive"
+                            name="is_active"
+                            value="1"
+                            checked
+                        >
+                        <label class="form-check-label" for="categoryIsActive">Status (Active)</label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
+                   <button class="btn btn-primary" type="button" id="saveCategoryButton">
+                     Save Category
+                </button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
-    @include('tenant.ecommerce.categories.category-modal')
+
+
+
+
 @endsection
 
 
@@ -56,67 +114,9 @@ $(document).ready(function () {
 
     let editCategoryId = null;
 
-    const table = $('#category-table').DataTable({
-       processing: false,
-    serverSide: false,
-        deferRender: true,
+    const table = $('#category-table').DataTable();
 
-    language: {
-        loadingRecords: "",
-        processing: "",
-        emptyTable: ""
-    },
-
-        ajax: {
-           url: "{{ route('tenant.ecommerce.categories.list') }}",
-            dataSrc: 'data'
-        },
-
-        columns: [
-            {
-                data: null,
-                render: (data, type, row, meta) => meta.row + 1
-            },
-
-            { data: 'name' },
-
-            {
-                data: 'is_active',
-                className: 'text-center',
-                render: function (data) {
-                    return data == 1
-                        ? `<span class="badge bg-label-success">Active</span>`
-                        : `<span class="badge bg-label-danger">Inactive</span>`;
-                }
-            },
-
-            {
-                data: 'id',
-                className: 'text-center',
-                orderable: false,
-                render: function (id) {
-                    return `
-                        <div class="d-flex justify-content-center">
-                            <a href="javascript:void(0);" data-id="${id}" class="btn btn-icon view-operation">
-                                <i class="ti tabler-eye"></i>
-                            </a>
-                            <a href="javascript:void(0);" data-id="${id}" class="btn btn-icon edit-operation">
-                                <i class="ti tabler-edit"></i>
-                            </a>
-                            <a href="javascript:void(0);" data-id="${id}" class="btn btn-icon delete-operation">
-                                <i class="ti tabler-trash text-danger"></i>
-                            </a>
-                        </div>
-                    `;
-                }
-            }
-        ]
-    });
-
-
-
-
-    // ================= SAVE =================
+    // ================= SAVE (CREATE / UPDATE) =================
     $(document).on('click', '#saveCategoryButton', function (e) {
         e.preventDefault();
 
@@ -129,21 +129,21 @@ $(document).ready(function () {
             data: {
                 _token: $('meta[name="csrf-token"]').attr('content'),
                 id: editCategoryId,
-                name,
-                is_active
+                name: name,
+                is_active: is_active
             },
 
-            success: function (response) {
+       success: function(response) {
+    if(response.success){
 
-                $('#addCategoryModal').modal('hide');
-                resetForm();
+        $('#addCategoryModal').modal('hide');
+
+        $('#categories-table-body').html(response.html);
 
 
-                table.ajax.reload(null, false);
-
-                toastr.success(response.message ?? 'Saved successfully');
-            },
-
+        toastr.success(response.message);
+    }
+},
             error: function (xhr) {
                 if (xhr.status === 422) {
                     let errors = xhr.responseJSON.errors;
@@ -154,7 +154,6 @@ $(document).ready(function () {
             }
         });
     });
-
 
     // ================= EDIT =================
     $(document).on('click', '.edit-operation', function () {
@@ -169,13 +168,16 @@ $(document).ready(function () {
                 if (response.success) {
                     $('#categoryName').val(response.data.name);
                     $('#categoryIsActive').prop('checked', response.data.is_active == 1);
+
+                    $('#addCategoryModalTitle').text('Edit Category');
                     $('#addCategoryModal').modal('show');
                 }
             },
 
-            error: function () {
-                toastr.error('Failed to load category data!');
-            }
+            error: function (xhr) {
+            console.log(xhr.responseText);
+            toastr.error('Failed to load category data!');
+        }
         });
     });
 
@@ -204,7 +206,6 @@ $(document).ready(function () {
                 },
 
                 success: function (response) {
-
                     if (response.success) {
                         row.remove().draw();
                         Swal.fire('Deleted!', response.message, 'success');
@@ -248,6 +249,7 @@ $(document).ready(function () {
         $('#categoryName').val('');
         $('#categoryIsActive').prop('checked', true);
         editCategoryId = null;
+        $('#addCategoryModalTitle').text('Add Category');
     }
 
     $('#addCategoryModal').on('hidden.bs.modal', resetForm);

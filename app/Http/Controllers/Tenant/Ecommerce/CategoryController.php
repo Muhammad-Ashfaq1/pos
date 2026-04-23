@@ -10,45 +10,36 @@ use Illuminate\Validation\Rule;
 class CategoryController extends Controller
 {
 
-public function list()
-{
-    $categories = Category::latest()->get();
-
-    return response()->json([
-        'data' => $categories
-    ]);
-}
 
 public function save(Request $request)
 {
     $request->validate([
         'id' => 'nullable|exists:categories,id',
-       'name' => [  'required','string','max:255',
-      Rule::unique('categories', 'name')->ignore($request->id)->where(fn ($q) => $q->where('tenant_id', tenant('id')))
-],
+        'name' => [
+            'required','string','max:255',
+            Rule::unique('categories', 'name')
+                ->ignore($request->id)
+
+        ],
         'code' => 'nullable|string|max:50',
         'sort_order' => 'nullable|integer',
         'is_active' => 'nullable|boolean',
     ]);
 
-    $category = Category::updateOrCreate(
-        [
-            'id' => $request->id
-        ],
+     Category::updateOrCreate(
+        ['id' => $request->id],
         [
             'name' => $request->name,
             'code' => $request->code,
             'sort_order' => $request->sort_order ?? 0,
             'is_active' => $request->boolean('is_active'),
-
         ]
     );
 
-    return response()->json([
-        'success' => true,
-        'message' => $request->id ? 'Category updated successfully' : 'Category added successfully',
-        'data' => $category
-    ]);
+    return $this->getLatestCategory(
+        true,
+        $request->id ? 'Category updated successfully' : 'Category created successfully'
+    );
 }
     public function edit($id)
     {
@@ -59,16 +50,33 @@ public function save(Request $request)
             'data' => $category
         ]);
     }
-
-
-    public function destroy($id)
+      private function getLatestCategory($success = true, $message = 'Category saved successfully!', $html = null)
     {
-        $category = Category::findOrFail($id);
-        $category->delete();
+
+
+       $categories = Category::latest()->get();
+
+        if ($html === null) {
+            $html = view('tenant.ecommerce.categories.data-table', compact('categories'))->render();
+
+        }
 
         return response()->json([
-            'success' => true,
-            'message' => 'Category deleted successfully'
+            'success' => $success,
+            'message' => $message,
+            'html' => $html
         ]);
     }
+
+
+ public function destroy($id)
+{
+    $category = Category::findOrFail($id);
+    $category->delete();
+
+    return $this->getLatestCategory(
+        true,
+        'Category deleted successfully'
+    );
+}
 }
