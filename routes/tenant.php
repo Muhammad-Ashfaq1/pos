@@ -6,6 +6,7 @@ use App\Http\Controllers\Tenant\DropdownController;
 use App\Http\Controllers\Tenant\EcommerceController;
 use App\Http\Controllers\Tenant\ImageController;
 use App\Http\Controllers\Tenant\ProductController;
+use App\Http\Controllers\Tenant\ServiceController;
 use App\Http\Controllers\Tenant\SubCategoryController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,11 +24,14 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                     ->controller(DropdownController::class)
                     ->group(function () {
                         Route::get('/categories', 'categories')
-                            ->middleware('permission:category.view|category.create|category.update|subcategory.view|subcategory.create|subcategory.update|product.view|product.create|product.update|products.view|products.manage')
+                            ->middleware('permission:category.view|category.create|category.update|subcategory.view|subcategory.create|subcategory.update|product.view|product.create|product.update|products.view|products.manage|service.view|service.create|service.update')
                             ->name('categories');
                         Route::get('/sub-categories', 'subCategories')
                             ->middleware('permission:subcategory.view|subcategory.create|subcategory.update|product.view|product.create|product.update|products.view|products.manage')
                             ->name('subcategories');
+                        Route::get('/products', 'products')
+                            ->middleware('permission:product.view|product.create|product.update|products.view|products.manage|service.view|service.create|service.update')
+                            ->name('products');
                     });
 
                 Route::prefix('categories')
@@ -84,6 +88,27 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                             ->name('save');
                         Route::delete('/{product}', 'destroy')
                             ->middleware('permission:product.delete|products.manage')
+                            ->name('destroy');
+                    });
+
+                Route::prefix('services')
+                    ->name('services.')
+                    ->controller(ServiceController::class)
+                    ->group(function () {
+                        Route::get('/', 'index')
+                            ->middleware('permission:service.view')
+                            ->name('index');
+                        Route::get('/listing', 'listing')
+                            ->middleware('permission:service.view')
+                            ->name('listing');
+                        Route::get('/{service}/edit', 'edit')
+                            ->middleware('permission:service.update')
+                            ->name('edit');
+                        Route::post('/save', 'save')
+                            ->middleware('permission:service.create|service.update')
+                            ->name('save');
+                        Route::delete('/{service}', 'destroy')
+                            ->middleware('permission:service.delete')
                             ->name('destroy');
                     });
 
