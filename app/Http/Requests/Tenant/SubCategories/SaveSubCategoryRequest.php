@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Requests\Tenant\Categories;
+namespace App\Http\Requests\Tenant\SubCategories;
 
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveCategoryRequest extends FormRequest
+class SaveSubCategoryRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,11 +16,18 @@ class SaveCategoryRequest extends FormRequest
     public function rules(): array
     {
         $tenantId = app(TenantContext::class)->id();
-        $categoryId = $this->filled('id') ? (int) $this->input('id') : null;
+        $subCategoryId = $this->filled('id') ? (int) $this->input('id') : null;
 
         return [
             'id' => [
                 'nullable',
+                'integer',
+                Rule::exists('sub_categories', 'id')->where(
+                    fn ($query) => $query->where('tenant_id', $tenantId)
+                ),
+            ],
+            'category_id' => [
+                'required',
                 'integer',
                 Rule::exists('categories', 'id')->where(
                     fn ($query) => $query->where('tenant_id', $tenantId)
@@ -30,9 +37,9 @@ class SaveCategoryRequest extends FormRequest
                 'required',
                 'string',
                 'max:150',
-                Rule::unique('categories', 'name')
+                Rule::unique('sub_categories', 'name')
                     ->where(fn ($query) => $query->where('tenant_id', $tenantId))
-                    ->ignore($categoryId),
+                    ->ignore($subCategoryId),
             ],
             'slug' => [
                 'nullable',
@@ -43,9 +50,9 @@ class SaveCategoryRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:50',
-                Rule::unique('categories', 'code')
+                Rule::unique('sub_categories', 'code')
                     ->where(fn ($query) => $query->where('tenant_id', $tenantId))
-                    ->ignore($categoryId),
+                    ->ignore($subCategoryId),
             ],
             'description' => ['nullable', 'string', 'max:1000'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
@@ -59,12 +66,14 @@ class SaveCategoryRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'id.exists' => 'The selected category was not found for this shop.',
-            'name.required' => 'Please enter a category name.',
-            'name.max' => 'The category name may not be greater than 150 characters.',
-            'name.unique' => 'This category name already exists for this shop.',
-            'code.max' => 'The category code may not be greater than 50 characters.',
-            'code.unique' => 'This category code already exists for this shop.',
+            'id.exists' => 'The selected sub category was not found for this shop.',
+            'category_id.required' => 'Please select a category.',
+            'category_id.exists' => 'The selected category was not found for this shop.',
+            'name.required' => 'Please enter a sub category name.',
+            'name.max' => 'The sub category name may not be greater than 150 characters.',
+            'name.unique' => 'This sub category name already exists for this shop.',
+            'code.max' => 'The sub category code may not be greater than 50 characters.',
+            'code.unique' => 'This sub category code already exists for this shop.',
             'description.max' => 'The description may not be greater than 1000 characters.',
             'sort_order.integer' => 'Sort order must be a whole number.',
             'sort_order.min' => 'Sort order must be zero or greater.',

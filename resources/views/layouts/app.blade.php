@@ -50,6 +50,7 @@
     <!-- Vendors CSS -->
 
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
 
     <!-- endbuild -->
 
@@ -139,6 +140,7 @@
     <script src="{{ asset('assets/vendor/libs/hammer/hammer.js') }}"></script>
 
     <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
 
     <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
 
@@ -179,6 +181,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-aio-3.2.8.min.js"></script>
     <script src="{{ asset('assets/js/app-helpers.js') }}"></script>
+    <script src="{{ asset('assets/js/dropdowns.js') }}"></script>
     <script src="{{ asset('assets/js/session-notifications.js') }}"></script>
     @yield('scripts')
 

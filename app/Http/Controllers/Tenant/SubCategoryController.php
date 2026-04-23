@@ -3,32 +3,33 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Tenant\Categories\SaveCategoryRequest;
-use App\Models\Category;
-use App\Repositories\Interface\CategoryRepositoryInterface;
+use App\Http\Requests\Tenant\SubCategories\SaveSubCategoryRequest;
+use App\Models\SubCategory;
+use App\Repositories\Interface\SubCategoryRepositoryInterface;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
-class CategoryController extends Controller
+class SubCategoryController extends Controller
 {
     public function __construct(
-        private readonly CategoryRepositoryInterface $repo
+        private readonly SubCategoryRepositoryInterface $repo
     ) {
     }
 
     public function index(Request $request): View
     {
-        $this->authorize('viewAny', Category::class);
+        $this->authorize('viewAny', SubCategory::class);
 
         return $this->repo->index();
     }
 
     public function listing(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', Category::class);
+        $this->authorize('viewAny', SubCategory::class);
 
         $validated = $request->validate([
             'draw' => ['nullable', 'integer'],
@@ -36,7 +37,14 @@ class CategoryController extends Controller
             'length' => ['nullable', 'integer', 'min:1', 'max:100'],
             'search.value' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', Rule::in(['1', '0'])],
-            'sort' => ['nullable', Rule::in(['latest', 'name', 'sort_order'])],
+            'category_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('categories', 'id')->where(
+                    fn ($query) => $query->where('tenant_id', app(TenantContext::class)->id())
+                ),
+            ],
+            'sort' => ['nullable', Rule::in(['latest', 'name', 'sort_order', 'category'])],
             'columns' => ['nullable', 'array'],
             'columns.*.data' => ['nullable', 'string'],
             'order' => ['nullable', 'array'],
@@ -45,26 +53,26 @@ class CategoryController extends Controller
         ]);
 
         return response()->json(
-            $this->repo->getCategoriesListing($validated, $request->user())
+            $this->repo->getSubCategoriesListing($validated, $request->user())
         );
     }
 
-    public function save(SaveCategoryRequest $request): JsonResponse
+    public function save(SaveSubCategoryRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $category = isset($validated['id'])
-            ? Category::query()->findOrFail($validated['id'])
+        $subCategory = isset($validated['id'])
+            ? SubCategory::query()->findOrFail($validated['id'])
             : null;
 
-        if ($category) {
-            $this->authorize('update', $category);
+        if ($subCategory) {
+            $this->authorize('update', $subCategory);
         } else {
-            $this->authorize('create', Category::class);
+            $this->authorize('create', SubCategory::class);
         }
 
         $result = $this->repo->store(
             Arr::except($validated, ['id']),
-            $category,
+            $subCategory,
             $request->user(),
         );
 
@@ -74,11 +82,11 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function destroy(Category $category): JsonResponse
+    public function destroy(SubCategory $subCategory): JsonResponse
     {
-        $this->authorize('delete', $category);
+        $this->authorize('delete', $subCategory);
 
-        $result = $this->repo->destroy($category);
+        $result = $this->repo->destroy($subCategory);
 
         return response()->json([
             'message' => $result['message'],
