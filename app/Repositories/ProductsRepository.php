@@ -28,6 +28,7 @@ class ProductsRepository implements ProductRepositoryInterface
     {
         return view('tenant.ecommerce.products.index', [
             'listingUrl' => route('tenant.ecommerce.products.listing'),
+            'editUrlTemplate' => route('tenant.ecommerce.products.edit', ['product' => '__PRODUCT__']),
             'categoriesDropdownUrl' => route('tenant.ecommerce.dropdowns.categories'),
             'subCategoriesDropdownUrl' => route('tenant.ecommerce.dropdowns.subcategories'),
             'productTypes' => Product::typeOptions(),
@@ -84,8 +85,8 @@ class ProductsRepository implements ProductRepositoryInterface
             return $product->fresh([
                 'category:id,name',
                 'subCategory:id,name',
-                'images',
                 'primaryImage',
+                'images',
             ]);
         });
 
@@ -123,7 +124,6 @@ class ProductsRepository implements ProductRepositoryInterface
             ->with([
                 'category:id,name',
                 'subCategory:id,name',
-                'images',
                 'primaryImage',
             ])
             ->search($search)
@@ -212,11 +212,28 @@ class ProductsRepository implements ProductRepositoryInterface
     private function transformProducts(Collection $products, ?Authenticatable $user = null): array
     {
         return $products
-            ->map(fn (Product $product) => $this->transformProduct($product, $user))
+            ->map(fn (Product $product) => $this->transformProductForContext($product, $user, false))
             ->all();
     }
 
     private function transformProduct(Product $product, ?Authenticatable $user = null): array
+    {
+        return $this->transformProductForContext($product, $user, true);
+    }
+
+    public function getProductFormData(Product $product, ?Authenticatable $user = null): array
+    {
+        $product->loadMissing([
+            'category:id,name',
+            'subCategory:id,name',
+            'primaryImage',
+            'images',
+        ]);
+
+        return $this->transformProductForContext($product, $user, true);
+    }
+
+    private function transformProductForContext(Product $product, ?Authenticatable $user = null, bool $includeImages = false): array
     {
         $typeOptions = Product::typeOptions();
         $isLowStock = $product->track_inventory
@@ -250,8 +267,10 @@ class ProductsRepository implements ProductRepositoryInterface
             'status_label' => $product->is_active ? 'Active' : 'Inactive',
             'status_badge_class' => $product->is_active ? 'bg-label-success' : 'bg-label-secondary',
             'primary_image_url' => $product->primaryImage?->url,
-            'images' => $this->imageService->transformMany($product->images),
-            'images_count' => $product->images->count(),
+            'images' => $includeImages ? $this->imageService->transformMany($product->images) : [],
+            'images_count' => $includeImages
+                ? $product->images->count()
+                : ($product->relationLoaded('images') ? $product->images->count() : null),
             'stock_badge_class' => ! $product->track_inventory
                 ? 'bg-label-secondary'
                 : ($isLowStock ? 'bg-label-warning' : 'bg-label-success'),
@@ -261,6 +280,9 @@ class ProductsRepository implements ProductRepositoryInterface
             'created_at' => $product->created_at?->format('d M Y'),
             'can_update' => $user?->can('update', $product) ?? false,
             'can_delete' => $user?->can('delete', $product) ?? false,
+            'edit_url' => $user?->can('update', $product)
+                ? route('tenant.ecommerce.products.edit', $product)
+                : null,
             'delete_url' => $user?->can('delete', $product)
                 ? route('tenant.ecommerce.products.destroy', $product)
                 : null,

@@ -15,4 +15,6 @@ interface ProductRepositoryInterface
     public function destroy(Product $product): array;
 
     public function getProductsListing(array $filters, ?Authenticatable $user = null): array;
+
+    public function getProductFormData(Product $product, ?Authenticatable $user = null): array;
 }

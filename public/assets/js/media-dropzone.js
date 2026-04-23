@@ -36,6 +36,7 @@
     this.existingImages = [];
     this.removedImageIds = [];
     this.primaryRef = '';
+    this.isRefreshingPrimary = false;
     this.isResetting = false;
     this.init();
   }
@@ -90,6 +91,12 @@
   };
 
   MediaDropzone.prototype.totalCount = function () {
+    if (!this.dropzone) {
+      return this.existingImages.filter(function (image) {
+        return !image.removed;
+      }).length;
+    }
+
     const existingActive = this.existingImages.filter(function (image) {
       return !image.removed;
     }).length;
@@ -106,8 +113,28 @@
     }
 
     const self = this;
+    const thumbnailImage = file.previewElement.querySelector('[data-dz-thumbnail]');
+    const noPreview = file.previewElement.querySelector('.dz-nopreview');
+    const removeLink = file.previewElement.querySelector('.dz-remove');
     const meta = document.createElement('div');
     meta.className = 'app-media-dropzone__meta';
+
+    if (removeLink) {
+      removeLink.setAttribute('title', 'Remove image');
+      removeLink.setAttribute('aria-label', 'Remove image');
+      removeLink.textContent = 'Remove image';
+    }
+
+    if (thumbnailImage && noPreview) {
+      const syncPreviewVisibility = function () {
+        const hasPreview = thumbnailImage.getAttribute('src');
+        noPreview.style.display = hasPreview ? 'none' : '';
+      };
+
+      thumbnailImage.addEventListener('load', syncPreviewVisibility);
+      thumbnailImage.addEventListener('error', syncPreviewVisibility);
+      syncPreviewVisibility();
+    }
 
     const sourceBadge = document.createElement('span');
     sourceBadge.className = 'badge bg-label-secondary';
@@ -181,6 +208,10 @@
     }
 
     this.renderRemovedInputs();
+
+    if (this.primaryRef === 'existing:' + imageId) {
+      this.primaryRef = '';
+    }
   };
 
   MediaDropzone.prototype.renderRemovedInputs = function () {
@@ -206,57 +237,76 @@
     this.refreshPrimaryState();
   };
 
+  MediaDropzone.prototype.findFirstAvailablePrimaryRef = function (activeFiles) {
+    const firstExisting = this.existingImages.find(function (image) {
+      return !image.removed;
+    });
+
+    if (firstExisting) {
+      return 'existing:' + firstExisting.id;
+    }
+
+    const firstNew = (activeFiles || []).find(function (file) {
+      return !file.existingImageId;
+    });
+
+    if (firstNew) {
+      return 'new:' + this.newFileIndex(firstNew);
+    }
+
+    return '';
+  };
+
   MediaDropzone.prototype.refreshPrimaryState = function () {
+    if (this.isRefreshingPrimary || !this.dropzone) {
+      return;
+    }
+
+    this.isRefreshingPrimary = true;
+
     const activeFiles = this.dropzone.files.filter(function (file) {
       return !file._removeLink || file.status !== 'canceled';
     });
 
-    if (!this.primaryRef) {
-      const firstExisting = this.existingImages.find(function (image) {
-        return !image.removed;
-      });
+    try {
+      let currentPrimary = this.primaryRef;
 
-      if (firstExisting) {
-        this.primaryRef = 'existing:' + firstExisting.id;
-      } else {
-        const firstNew = activeFiles.find(function (file) {
-          return !file.existingImageId;
-        });
+      if (!currentPrimary) {
+        currentPrimary = this.findFirstAvailablePrimaryRef(activeFiles);
+      }
 
-        if (firstNew) {
-          this.primaryRef = 'new:' + this.newFileIndex(firstNew);
+      const primaryStillExists = currentPrimary
+        ? this.dropzone.files.some(function (file) {
+            return (file.existingImageId ? 'existing:' + file.existingImageId : 'new:' + this.newFileIndex(file)) === currentPrimary;
+          }, this)
+        : false;
+
+      if (!primaryStillExists) {
+        currentPrimary = this.findFirstAvailablePrimaryRef(activeFiles);
+      }
+
+      this.primaryRef = currentPrimary || '';
+
+      if (this.primaryInput) {
+        this.primaryInput.value = this.primaryRef;
+      }
+
+      this.dropzone.files.forEach(function (file) {
+        const ref = file.existingImageId ? 'existing:' + file.existingImageId : 'new:' + this.newFileIndex(file);
+        const isPrimary = this.primaryRef === ref;
+
+        if (file._primaryBadge) {
+          file._primaryBadge.classList.toggle('d-none', !isPrimary);
         }
-      }
-    }
 
-    const currentPrimary = this.primaryRef;
-
-    if (this.primaryInput) {
-      this.primaryInput.value = currentPrimary;
-    }
-
-    this.dropzone.files.forEach(function (file) {
-      const ref = file.existingImageId ? 'existing:' + file.existingImageId : 'new:' + this.newFileIndex(file);
-      const isPrimary = currentPrimary === ref;
-
-      if (file._primaryBadge) {
-        file._primaryBadge.classList.toggle('d-none', !isPrimary);
-      }
-
-      if (file._primaryButton) {
-        file._primaryButton.textContent = isPrimary ? 'Primary Selected' : 'Set Primary';
-        file._primaryButton.classList.toggle('btn-label-primary', !isPrimary);
-        file._primaryButton.classList.toggle('btn-primary', isPrimary);
-      }
-    }, this);
-
-    const primaryStillExists = this.dropzone.files.some(function (file) {
-      return (file.existingImageId ? 'existing:' + file.existingImageId : 'new:' + this.newFileIndex(file)) === currentPrimary;
-    }, this);
-
-    if (!primaryStillExists && this.totalCount() > 0) {
-      this.primaryRef = '';
-      this.refreshPrimaryState();
+        if (file._primaryButton) {
+          file._primaryButton.textContent = isPrimary ? 'Primary Selected' : 'Set Primary';
+          file._primaryButton.classList.toggle('btn-label-primary', !isPrimary);
+          file._primaryButton.classList.toggle('btn-primary', isPrimary);
+        }
+      }, this);
+    } finally {
+      this.isRefreshingPrimary = false;
     }
   };
 
@@ -308,7 +358,8 @@
         name: image.original_name || image.file_name || ('Image #' + image.id),
         size: image.size || 0,
         accepted: true,
-        existingImageId: image.id
+        existingImageId: image.id,
+        status: window.Dropzone.SUCCESS
       };
 
       self.dropzone.emit('addedfile', mockFile);

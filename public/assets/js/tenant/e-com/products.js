@@ -18,6 +18,14 @@
   }) : null;
   let productTable = null;
 
+  const productEditUrl = function (productId) {
+    if (!window.productEditUrlTemplate) {
+      return '';
+    }
+
+    return window.productEditUrlTemplate.replace('__PRODUCT__', productId);
+  };
+
   $.ajaxSetup({
     headers: {
       'X-CSRF-TOKEN': csrfToken,
@@ -236,28 +244,28 @@
     setInventoryFieldsState();
   };
 
-  const fillForm = function ($button) {
-    $('#product_id').val($button.data('id'));
-    ensureSelectOption($formCategory, $button.data('category-id'), $button.data('category-name'));
-    ensureSelectOption($formSubCategory, $button.data('sub-category-id'), $button.data('sub-category-name'));
-    $('#product_type').val(String($button.data('product-type'))).trigger('change');
-    $('#product_name').val($button.data('name'));
-    $('#product_sku').val($button.data('sku'));
-    $('#product_barcode').val($button.data('barcode'));
-    $('#product_brand').val($button.data('brand'));
-    $('#product_unit').val($button.data('unit'));
-    $('#product_description').val($button.data('description'));
-    $('#product_cost_price').val($button.data('cost-price'));
-    $('#product_sale_price').val($button.data('sale-price'));
-    $('#product_tax_percentage').val($button.data('tax-percentage'));
-    $('#product_opening_stock').val($button.data('opening-stock'));
-    $('#product_current_stock').val($button.data('current-stock'));
-    $('#product_minimum_stock_level').val($button.data('minimum-stock-level'));
-    $('#product_reorder_level').val($button.data('reorder-level'));
-    $('#product_is_active').prop('checked', String($button.data('is-active')) === '1');
-    $('#product_track_inventory_toggle').prop('checked', String($button.data('track-inventory')) === '1');
+  const fillForm = function (product) {
+    $('#product_id').val(product.id);
+    ensureSelectOption($formCategory, product.category_id, product.category_name);
+    ensureSelectOption($formSubCategory, product.sub_category_id, product.sub_category_name);
+    $('#product_type').val(String(product.product_type)).trigger('change');
+    $('#product_name').val(product.name);
+    $('#product_sku').val(product.sku);
+    $('#product_barcode').val(product.barcode);
+    $('#product_brand').val(product.brand);
+    $('#product_unit').val(product.unit);
+    $('#product_description').val(product.description);
+    $('#product_cost_price').val(product.cost_price);
+    $('#product_sale_price').val(product.sale_price);
+    $('#product_tax_percentage').val(product.tax_percentage);
+    $('#product_opening_stock').val(product.opening_stock);
+    $('#product_current_stock').val(product.current_stock);
+    $('#product_minimum_stock_level').val(product.minimum_stock_level);
+    $('#product_reorder_level').val(product.reorder_level);
+    $('#product_is_active').prop('checked', Boolean(product.is_active));
+    $('#product_track_inventory_toggle').prop('checked', Boolean(product.track_inventory));
     if (mediaManager) {
-      mediaManager.loadExisting(parseJsonAttribute($button.attr('data-images')));
+      mediaManager.loadExisting(Array.isArray(product.images) ? product.images : []);
     }
     $('#productModalLabel').text('Edit Product');
     setSubmitButtonState(false);
@@ -272,7 +280,6 @@
 
   const actionButtonsHtml = function (row) {
     let html = '<div class="d-flex align-items-center justify-content-center">';
-    const imagePayload = escapeHtml(JSON.stringify(row.images || []));
 
     if (row.can_update) {
       html +=
@@ -299,7 +306,7 @@
         'data-reorder-level="' + row.reorder_level + '" ' +
         'data-track-inventory="' + (row.track_inventory ? 1 : 0) + '" ' +
         'data-is-active="' + (row.is_active ? 1 : 0) + '" ' +
-        'data-images="' + imagePayload + '" title="Edit">' +
+        'data-edit-url="' + escapeHtml(row.edit_url || productEditUrl(row.id)) + '" title="Edit">' +
         '<i class="icon-base ti tabler-edit icon-md"></i>' +
         '</button>';
     }
@@ -481,6 +488,18 @@
           }
         },
         {
+          data: 'primary_image_url',
+          orderable: false,
+          searchable: false,
+          render: function (data, type, row) {
+            if (data) {
+              return '<img src="' + escapeHtml(data) + '" alt="' + escapeHtml(row.name) + '" class="rounded" style="width:40px;height:40px;object-fit:cover;">';
+            }
+
+            return '<span class="avatar avatar-sm rounded bg-label-secondary"><i class="ti tabler-photo-off"></i></span>';
+          }
+        },
+        {
           data: 'category_name',
           render: function (data) {
             return '<span class="text-nowrap">' + escapeHtml(data || '—') + '</span>';
@@ -496,11 +515,7 @@
           data: 'name',
           render: function (data, type, row) {
             const sku = row.sku ? '<small class="text-muted d-block">' + escapeHtml(row.sku) + '</small>' : '';
-            const thumbnail = row.primary_image_url
-              ? '<img src="' + escapeHtml(row.primary_image_url) + '" alt="' + escapeHtml(data) + '" class="rounded me-2" style="width:40px;height:40px;object-fit:cover;">'
-              : '<span class="avatar avatar-sm rounded bg-label-secondary me-2"><i class="ti tabler-photo"></i></span>';
-
-            return '<div class="d-flex align-items-center"><div class="flex-shrink-0">' + thumbnail + '</div><div><span class="fw-semibold">' + escapeHtml(data) + '</span>' + sku + '</div></div>';
+            return '<div><span class="fw-semibold">' + escapeHtml(data) + '</span>' + sku + '</div>';
           }
         },
         {
@@ -597,10 +612,39 @@
     });
 
     $(document).on('click', '.edit-product-btn', function () {
-      fillForm($(this));
-      if (validator) {
-        validator.resetForm();
+      const $button = $(this);
+      const editUrl = $button.data('edit-url') || productEditUrl($button.data('id'));
+
+      resetForm();
+      setSubmitButtonState(true);
+
+      if (window.appLoading && typeof window.appLoading.show === 'function') {
+        window.appLoading.show('Loading product...');
       }
+
+      $.ajax({
+        url: editUrl,
+        method: 'GET'
+      })
+        .done(function (response) {
+          fillForm(response.data || {});
+          if (validator) {
+            validator.resetForm();
+          }
+        })
+        .fail(function (xhr) {
+          if (modal) {
+            modal.hide();
+          }
+
+          showAlert('error', xhr.responseJSON?.message || 'Unable to load product details.');
+        })
+        .always(function () {
+          setSubmitButtonState(false);
+          if (window.appLoading && typeof window.appLoading.hide === 'function') {
+            window.appLoading.hide(200);
+          }
+        });
     });
 
     $modal.on('hidden.bs.modal', function () {

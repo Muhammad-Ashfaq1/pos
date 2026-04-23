@@ -76,6 +76,9 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                         Route::get('/listing', 'listing')
                             ->middleware('permission:product.view|products.view')
                             ->name('listing');
+                        Route::get('/{product}/edit', 'edit')
+                            ->middleware('permission:product.update|products.manage')
+                            ->name('edit');
                         Route::post('/save', 'save')
                             ->middleware('permission:product.create|product.update|products.manage')
                             ->name('save');

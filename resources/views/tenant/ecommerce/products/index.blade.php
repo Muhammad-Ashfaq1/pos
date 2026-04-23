@@ -130,6 +130,7 @@
                 <thead class="bg-label-primary">
                     <tr>
                         <th>#</th>
+                        <th>Image</th>
                         <th>Category</th>
                         <th>Sub Category</th>
                         <th>Product</th>
@@ -320,6 +321,7 @@
     <script src="{{ asset('assets/js/media-dropzone.js') }}"></script>
     <script>
         window.productListingUrl = @json($listingUrl);
+        window.productEditUrlTemplate = @json($editUrlTemplate);
         window.categoryDropdownUrl = @json($categoriesDropdownUrl);
         window.subCategoryDropdownUrl = @json($subCategoriesDropdownUrl);
         window.productTypes = @json($productTypes);

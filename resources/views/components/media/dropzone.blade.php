@@ -50,6 +50,7 @@
             border: 1px solid var(--bs-border-color);
             border-radius: 0.875rem;
             overflow: hidden;
+            position: relative;
         }
 
         .app-media-dropzone__surface .dz-thumbnail {
@@ -66,6 +67,22 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        .app-media-dropzone__surface .dz-thumbnail img:not([src]),
+        .app-media-dropzone__surface .dz-thumbnail img[src=""] {
+            display: none;
+        }
+
+        .app-media-dropzone__surface .dz-thumbnail img[src]:not([src=""]) + .dz-nopreview {
+            display: none;
+        }
+
+        .app-media-dropzone__surface .dz-nopreview {
+            color: var(--bs-secondary-color);
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 0.75rem;
         }
 
         .app-media-dropzone__surface .dz-details {
@@ -96,6 +113,37 @@
             --bs-btn-padding-y: 0.2rem;
             --bs-btn-padding-x: 0.55rem;
             --bs-btn-font-size: 0.75rem;
+        }
+
+        .app-media-dropzone__surface .dz-remove {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 1.75rem;
+            height: 1.75rem;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            background: rgba(var(--bs-danger-rgb), 0.95);
+            color: #fff !important;
+            text-decoration: none !important;
+            font-size: 0 !important;
+            line-height: 1;
+            z-index: 3;
+            box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.18);
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+
+        .app-media-dropzone__surface .dz-remove::before {
+            content: "×";
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .app-media-dropzone__surface .dz-remove:hover {
+            background: rgba(var(--bs-danger-rgb), 1);
+            transform: scale(1.05);
         }
 
         @media (max-width: 575.98px) {

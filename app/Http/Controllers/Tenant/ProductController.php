@@ -83,6 +83,15 @@ class ProductController extends Controller
         );
     }
 
+    public function edit(Product $product, Request $request): JsonResponse
+    {
+        $this->authorize('update', $product);
+
+        return response()->json([
+            'data' => $this->repo->getProductFormData($product, $request->user()),
+        ]);
+    }
+
     public function save(SaveProductRequest $request): JsonResponse
     {
         $validated = $request->validated();
