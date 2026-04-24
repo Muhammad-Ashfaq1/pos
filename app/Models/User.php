@@ -31,6 +31,8 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public const INVENTORY_CLERK = 'inventory_clerk';
 
+    public const EMPLOYEE = 'employee';
+
     public const CUSTOMER = 'customer';
 
     protected string $guard_name = 'web';
@@ -95,9 +97,24 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasRole(self::INVENTORY_CLERK);
     }
 
+    public function isEmployee(): bool
+    {
+        return $this->role === self::EMPLOYEE || $this->hasRole(self::EMPLOYEE);
+    }
+
     public function isCustomer(): bool
     {
         return $this->hasRole(self::CUSTOMER);
+    }
+
+    public function defaultDashboardRouteName(): string
+    {
+        return match (true) {
+            $this->isSuperAdmin() => 'admin.dashboard',
+            $this->isEmployee() => 'employee.dashboard',
+            ! empty($this->tenant_id) => 'tenant.dashboard',
+            default => 'admin.dashboard',
+        };
     }
 
     public function tenant(): BelongsTo

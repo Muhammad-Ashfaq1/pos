@@ -1,11 +1,6 @@
 @php
     $user = auth()->user();
-    $isSuperAdmin = $user?->isSuperAdmin();
-    $isEmployee = $user?->isEmployee();
-    $contextLabel = $isSuperAdmin ? 'Central Admin' : ($isEmployee ? 'Employee Panel' : 'Tenant Workspace');
-    $contextName = $isSuperAdmin
-        ? config('app.name', 'Oil Change POS')
-        : $user?->tenant?->display_name ?? 'Shop Workspace';
+    $workspaceName = $user?->tenant?->display_name ?? 'Employee Workspace';
 @endphp
 
 <nav class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
@@ -18,18 +13,21 @@
 
     <div class="navbar-nav-right d-flex align-items-center justify-content-between w-100" id="navbar-collapse">
         <div>
-            <h6 class="mb-0">{{ $contextLabel }}</h6>
-            <small class="text-muted">{{ $contextName }}</small>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-label-primary">Employee Panel</span>
+                <h6 class="mb-0">{{ $workspaceName }}</h6>
+            </div>
+            <small class="text-muted">Operator workspace for quick service, lookup, and catalog tasks.</small>
         </div>
 
-        <ul class="navbar-nav flex-row align-items-center gap-3 ms-auto">
-            @if (session()->has('impersonator_id'))
-                <li class="nav-item me-3">
-                    <a href="{{ route('admin.impersonate.stop') }}" class="btn btn-warning btn-sm">
-                        Stop Impersonation
-                    </a>
-                </li>
-            @endif
+        <ul class="navbar-nav flex-row align-items-center gap-2 ms-auto">
+            <li class="nav-item">
+                <a href="{{ route('employee.workspace') }}" class="btn btn-primary btn-sm">
+                    <i class="icon-base ti tabler-cash-register me-1"></i>
+                    Workspace
+                </a>
+            </li>
+
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow" id="nav-theme" href="javascript:void(0);"
                     data-bs-toggle="dropdown" aria-label="Theme: light" aria-expanded="false">
@@ -40,25 +38,24 @@
                     <li>
                         <button type="button" class="dropdown-item align-items-center waves-effect active"
                             data-bs-theme-value="light" aria-pressed="true">
-                            <span><i class="icon-base ti tabler-sun icon-22px me-3" data-icon="sun"></i>Light</span>
+                            <span><i class="icon-base ti tabler-sun icon-22px me-3"></i>Light</span>
                         </button>
                     </li>
                     <li>
                         <button type="button" class="dropdown-item align-items-center waves-effect"
                             data-bs-theme-value="dark" aria-pressed="false">
-                            <span><i class="icon-base ti tabler-moon-stars icon-22px me-3"
-                                    data-icon="moon-stars"></i>Dark</span>
+                            <span><i class="icon-base ti tabler-moon-stars icon-22px me-3"></i>Dark</span>
                         </button>
                     </li>
                     <li>
                         <button type="button" class="dropdown-item align-items-center waves-effect"
                             data-bs-theme-value="system" aria-pressed="false">
-                            <span><i class="icon-base ti tabler-device-desktop-analytics icon-22px me-3"
-                                    data-icon="device-desktop-analytics"></i>System</span>
+                            <span><i class="icon-base ti tabler-device-desktop-analytics icon-22px me-3"></i>System</span>
                         </button>
                     </li>
                 </ul>
             </li>
+
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">
@@ -74,18 +71,22 @@
                             <small class="text-muted">{{ $user?->email }}</small>
                         </div>
                     </li>
+                    <li><hr class="dropdown-divider"></li>
                     <li>
-                        <hr class="dropdown-divider">
+                        <a href="{{ route('employee.account') }}" class="dropdown-item">
+                            <i class="icon-base ti tabler-user-circle me-2"></i>
+                            Account
+                        </a>
                     </li>
-                    <li>
-                        <div class="dropdown-item-text">
-                            <small
-                                class="text-muted text-uppercase">{{ str_replace('_', ' ', $user?->primaryRoleName() ?? 'user') }}</small>
-                        </div>
-                    </li>
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
+                    @if(session()->has('impersonator_id'))
+                        <li>
+                            <a href="{{ route('admin.impersonate.stop') }}" class="dropdown-item text-warning">
+                                <i class="icon-base ti tabler-user-x me-2"></i>
+                                Stop Impersonation
+                            </a>
+                        </li>
+                    @endif
+                    <li><hr class="dropdown-divider"></li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf

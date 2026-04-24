@@ -1,7 +1,8 @@
 @php
     $user = auth()->user();
     $isSuperAdmin = $user?->isSuperAdmin();
-    $homeRoute = $isSuperAdmin ? 'admin.dashboard' : 'tenant.dashboard';
+    $isEmployee = $user?->isEmployee();
+    $homeRoute = $isSuperAdmin ? 'admin.dashboard' : ($isEmployee ? 'employee.dashboard' : 'tenant.dashboard');
     $currentRouteName = request()->route()?->getName();
 
     $adminMenuItems = [
@@ -104,8 +105,11 @@
                 </li>
             @endforeach
         @else
-            <li class="menu-item {{ request()->routeIs('tenant.dashboard') ? 'active' : '' }}">
-                <a href="{{ route('tenant.dashboard') }}" class="menu-link">
+            @php
+                $dashboardRoute = $isEmployee ? 'employee.dashboard' : 'tenant.dashboard';
+            @endphp
+            <li class="menu-item {{ request()->routeIs($dashboardRoute) ? 'active' : '' }}">
+                <a href="{{ route($dashboardRoute) }}" class="menu-link">
                     <i class="menu-icon icon-base ti tabler-layout-dashboard"></i>
                     <div>Dashboard</div>
                 </a>
