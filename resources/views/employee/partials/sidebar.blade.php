@@ -1,16 +1,42 @@
 @php
     $user = auth()->user();
     $currentRouteName = request()->route()?->getName();
+    $menuGroups = collect([
+        [
+            'label' => 'Workspace',
+            'items' => [
+                ['label' => 'Dashboard', 'route' => 'employee.dashboard', 'pattern' => 'employee.dashboard', 'icon' => 'tabler-layout-dashboard', 'visible' => true],
+                ['label' => 'POS / Workspace', 'route' => 'employee.pos', 'pattern' => 'employee.workspace|employee.pos', 'icon' => 'tabler-cash-register', 'visible' => true],
+            ],
+        ],
+        [
+            'label' => 'Catalog',
+            'items' => [
+                ['label' => 'Products', 'route' => 'tenant.ecommerce.products.index', 'pattern' => 'tenant.ecommerce.products.*', 'icon' => 'tabler-package', 'visible' => $user?->can('product.view') || $user?->can('products.view') || $user?->can('products.manage')],
+                ['label' => 'Services', 'route' => 'tenant.ecommerce.services.index', 'pattern' => 'tenant.ecommerce.services.*', 'icon' => 'tabler-tool', 'visible' => $user?->can('service.view') || $user?->can('services.view')],
+            ],
+        ],
+        [
+            'label' => 'Lookup',
+            'items' => [
+                ['label' => 'Customers', 'route' => 'tenant.ecommerce.customers.index', 'pattern' => 'tenant.ecommerce.customers.*', 'icon' => 'tabler-users', 'visible' => $user?->can('customer.view') || $user?->can('customers.view')],
+                ['label' => 'Vehicles', 'route' => 'tenant.ecommerce.vehicles.index', 'pattern' => 'tenant.ecommerce.vehicles.*', 'icon' => 'tabler-car', 'visible' => $user?->can('vehicle.view') || $user?->can('vehicles.view')],
+            ],
+        ],
+        [
+            'label' => 'Account',
+            'items' => [
+                ['label' => 'Profile', 'route' => 'employee.account', 'pattern' => 'employee.account|employee.profile', 'icon' => 'tabler-user-circle', 'visible' => true],
+            ],
+        ],
+    ])->map(function (array $group): array {
+        $group['items'] = collect($group['items'])
+            ->filter(fn (array $item): bool => (bool) $item['visible'])
+            ->values()
+            ->all();
 
-    $menuItems = collect([
-        ['label' => 'Dashboard', 'route' => 'employee.dashboard', 'pattern' => 'employee.dashboard', 'icon' => 'tabler-layout-dashboard', 'visible' => true],
-        ['label' => 'Workspace', 'route' => 'employee.workspace', 'pattern' => 'employee.workspace|employee.pos', 'icon' => 'tabler-cash-register', 'visible' => true],
-        ['label' => 'Products', 'route' => 'tenant.ecommerce.products.index', 'pattern' => 'tenant.ecommerce.products.*', 'icon' => 'tabler-package', 'visible' => $user?->can('product.view') || $user?->can('products.view') || $user?->can('products.manage')],
-        ['label' => 'Services', 'route' => 'tenant.ecommerce.services.index', 'pattern' => 'tenant.ecommerce.services.*', 'icon' => 'tabler-tool', 'visible' => $user?->can('service.view') || $user?->can('services.view')],
-        ['label' => 'Customers', 'route' => 'tenant.ecommerce.customers.index', 'pattern' => 'tenant.ecommerce.customers.*', 'icon' => 'tabler-users', 'visible' => $user?->can('customer.view') || $user?->can('customers.view')],
-        ['label' => 'Vehicles', 'route' => 'tenant.ecommerce.vehicles.index', 'pattern' => 'tenant.ecommerce.vehicles.*', 'icon' => 'tabler-car', 'visible' => $user?->can('vehicle.view') || $user?->can('vehicles.view')],
-        ['label' => 'Account', 'route' => 'employee.account', 'pattern' => 'employee.account|employee.profile', 'icon' => 'tabler-user-circle', 'visible' => true],
-    ])->filter(fn (array $item): bool => (bool) $item['visible'])->values();
+        return $group;
+    })->filter(fn (array $group): bool => ! empty($group['items']))->values();
 
     $isActive = function (string $pattern) use ($currentRouteName): bool {
         return collect(explode('|', $pattern))->contains(
@@ -27,9 +53,18 @@
             gap: 0.75rem;
         }
 
+        #layout-menu.employee-menu .menu-link .menu-icon {
+            flex: 0 0 1.375rem;
+        }
+
         #layout-menu.employee-menu .employee-panel-badge {
             letter-spacing: 0.08em;
             font-size: 0.7rem;
+        }
+
+        #layout-menu.employee-menu .employee-mini-stat {
+            border-radius: 0.75rem;
+            background: rgba(115, 103, 240, 0.08);
         }
     </style>
 @endonce
@@ -60,6 +95,10 @@
                 <span class="badge bg-primary employee-panel-badge">EMPLOYEE PANEL</span>
                 <div class="fw-semibold mt-2">{{ $user?->tenant?->display_name ?? 'Workspace' }}</div>
                 <small class="text-muted">Daily operations and catalog access</small>
+                <div class="employee-mini-stat d-flex justify-content-between align-items-center px-3 py-2 mt-3">
+                    <small class="text-muted">Signed in as</small>
+                    <small class="fw-semibold text-body">{{ str($user?->primaryRoleName() ?? 'employee')->replace('_', ' ')->title() }}</small>
+                </div>
             </div>
         </div>
     </div>
@@ -67,17 +106,19 @@
     <div class="menu-inner-shadow"></div>
 
     <ul class="menu-inner py-1">
-        <li class="menu-header small text-uppercase">
-            <span class="menu-header-text">Operate</span>
-        </li>
-
-        @foreach($menuItems as $item)
-            <li class="menu-item {{ $isActive($item['pattern']) ? 'active' : '' }}">
-                <a href="{{ route($item['route']) }}" class="menu-link">
-                    <i class="menu-icon icon-base ti {{ $item['icon'] }}"></i>
-                    <div>{{ $item['label'] }}</div>
-                </a>
+        @foreach($menuGroups as $group)
+            <li class="menu-header small text-uppercase">
+                <span class="menu-header-text">{{ $group['label'] }}</span>
             </li>
+
+            @foreach($group['items'] as $item)
+                <li class="menu-item {{ $isActive($item['pattern']) ? 'active' : '' }}">
+                    <a href="{{ route($item['route']) }}" class="menu-link">
+                        <i class="menu-icon icon-base ti {{ $item['icon'] }}"></i>
+                        <div>{{ $item['label'] }}</div>
+                    </a>
+                </li>
+            @endforeach
         @endforeach
 
         @if(session()->has('impersonator_id'))

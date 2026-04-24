@@ -23,8 +23,9 @@ class PanelController
             'user' => $user,
             'tenant' => $tenant,
             'stats' => $stats,
-            'operatorCards' => $this->operatorCards($user),
             'summaryCards' => $this->summaryCards($stats),
+            'actionCards' => $this->actionCards($user, $stats),
+            'summaryRows' => $this->summaryRows($stats),
             'placeholders' => $this->placeholderCards(),
         ]);
     }
@@ -39,8 +40,9 @@ class PanelController
             'user' => $user,
             'tenant' => $tenant,
             'stats' => $stats,
-            'workspaceTiles' => $this->workspaceTiles($user),
+            'workspaceTiles' => $this->workspaceTiles($user, $stats),
             'catalogCards' => $this->catalogCards($stats),
+            'summaryRows' => $this->summaryRows($stats),
             'placeholders' => $this->placeholderCards(),
         ]);
     }
@@ -68,6 +70,8 @@ class PanelController
 
         return [
             'today_label' => now()->format('D, d M'),
+            'today_full_label' => now()->format('l, d F Y'),
+            'workspace_name' => $tenant?->display_name ?? 'Employee Workspace',
             'products_total' => $canViewProducts ? Product::query()->count() : null,
             'active_products' => $canViewProducts ? Product::query()->where('is_active', true)->count() : null,
             'low_stock_products' => $canViewProducts
@@ -92,132 +96,128 @@ class PanelController
     {
         return collect([
             $stats['active_services'] !== null ? ['label' => 'Active Services', 'value' => $stats['active_services'], 'icon' => 'tabler-tool', 'theme' => 'primary'] : null,
-            $stats['customers_total'] !== null ? ['label' => 'Customer Lookup', 'value' => $stats['customers_total'], 'icon' => 'tabler-users', 'theme' => 'success'] : null,
-            $stats['vehicles_total'] !== null ? ['label' => 'Vehicle Lookup', 'value' => $stats['vehicles_total'], 'icon' => 'tabler-car', 'theme' => 'warning'] : null,
-            $stats['active_products'] !== null ? ['label' => 'Catalog Products', 'value' => $stats['active_products'], 'icon' => 'tabler-package', 'theme' => 'info'] : null,
+            $stats['customers_total'] !== null ? ['label' => 'Customer Records', 'value' => $stats['customers_total'], 'icon' => 'tabler-users-group', 'theme' => 'success'] : null,
+            $stats['vehicles_total'] !== null ? ['label' => 'Vehicle Records', 'value' => $stats['vehicles_total'], 'icon' => 'tabler-car-garage', 'theme' => 'warning'] : null,
+            $stats['active_products'] !== null ? ['label' => 'Active Products', 'value' => $stats['active_products'], 'icon' => 'tabler-package', 'theme' => 'info'] : null,
         ])->filter()->values()->all();
     }
 
-    private function operatorCards(User $user): array
+    private function actionCards(User $user, array $stats): array
     {
         return collect([
             [
-                'label' => 'POS Workspace',
-                'description' => 'Open the employee operating screen for lookup, service shell, and quick daily actions.',
-                'route' => route('employee.workspace'),
+                'label' => 'POS / Quick Sale',
+                'description' => 'Open the worker-facing workspace shell for quick sale, lookup, and future service execution.',
+                'route' => route('employee.pos'),
                 'icon' => 'tabler-cash-register',
                 'theme' => 'primary',
                 'badge' => 'Main Entry',
+                'stat' => 'Ready now',
             ],
             [
-                'label' => 'Start Service / Order',
-                'description' => 'UI-ready shell for future service order flow without inventing order tables today.',
-                'route' => route('employee.workspace'),
-                'icon' => 'tabler-playlist-add',
+                'label' => 'Assigned Services / Queue',
+                'description' => 'Prepared queue section until a tenant-scoped service-job or order table is added.',
+                'route' => route('employee.pos'),
+                'icon' => 'tabler-clipboard-list',
                 'theme' => 'warning',
                 'badge' => 'Placeholder',
+                'stat' => 'No table yet',
             ],
             $user->can('viewAny', Customer::class) ? [
-                'label' => 'Customer Lookup',
-                'description' => 'Search and open customer records inside the current tenant.',
+                'label' => 'Customers Lookup',
+                'description' => 'Search customer records already stored for this workspace.',
                 'route' => route('tenant.ecommerce.customers.index'),
-                'icon' => 'tabler-users-group',
+                'icon' => 'tabler-users',
                 'theme' => 'success',
                 'badge' => 'Live Data',
+                'stat' => ($stats['customers_total'] ?? 0).' records',
             ] : null,
             $user->can('viewAny', Vehicle::class) ? [
-                'label' => 'Vehicle Lookup',
-                'description' => 'Review tenant-scoped vehicle records and service-linked context.',
+                'label' => 'Vehicles Lookup',
+                'description' => 'Review vehicle records, plate numbers, and customer links.',
                 'route' => route('tenant.ecommerce.vehicles.index'),
-                'icon' => 'tabler-car-garage',
+                'icon' => 'tabler-car',
                 'theme' => 'info',
                 'badge' => 'Live Data',
+                'stat' => ($stats['vehicles_total'] ?? 0).' vehicles',
             ] : null,
             $user->can('viewAny', Product::class) ? [
                 'label' => 'Products Catalog',
-                'description' => 'Browse products and stock-sensitive catalog items safely.',
+                'description' => 'Open the read-safe product catalog with stock-aware counts.',
                 'route' => route('tenant.ecommerce.products.index'),
                 'icon' => 'tabler-package',
                 'theme' => 'secondary',
                 'badge' => 'Reference',
+                'stat' => ($stats['products_total'] ?? 0).' products',
             ] : null,
             $user->can('viewAny', Service::class) ? [
                 'label' => 'Services Catalog',
-                'description' => 'Open service definitions, pricing, and technician-required work types.',
+                'description' => 'Browse service definitions and technician-required offerings.',
                 'route' => route('tenant.ecommerce.services.index'),
                 'icon' => 'tabler-tool',
                 'theme' => 'dark',
                 'badge' => 'Reference',
+                'stat' => ($stats['active_services'] ?? 0).' active',
             ] : null,
         ])->filter()->values()->all();
     }
 
-    private function workspaceTiles(User $user): array
+    private function workspaceTiles(User $user, array $stats): array
     {
         return collect([
             [
                 'label' => 'Start Service / Order',
-                'description' => 'Prepared shell for the future employee transaction flow.',
+                'description' => 'Daily-start shell reserved for later POS or service-order implementation.',
                 'route' => null,
                 'icon' => 'tabler-shopping-cart-plus',
                 'theme' => 'primary',
-                'status' => 'Coming Next',
+                'status' => 'Placeholder',
+                'meta' => 'No order tables yet',
             ],
             $user->can('viewAny', Customer::class) ? [
-                'label' => 'Search Customers',
-                'description' => 'Open customer lookup and service-ready profiles.',
+                'label' => 'Search Customer',
+                'description' => 'Open customer lookup and service-ready customer records.',
                 'route' => route('tenant.ecommerce.customers.index'),
                 'icon' => 'tabler-search',
                 'theme' => 'success',
                 'status' => 'Available',
+                'meta' => ($stats['customers_total'] ?? 0).' customers',
             ] : null,
             $user->can('viewAny', Vehicle::class) ? [
-                'label' => 'Search Vehicles',
-                'description' => 'Review vehicles, plates, and linked customer info.',
+                'label' => 'Search Vehicle',
+                'description' => 'Review plates, registrations, and customer-linked vehicles.',
                 'route' => route('tenant.ecommerce.vehicles.index'),
                 'icon' => 'tabler-steering-wheel',
                 'theme' => 'warning',
                 'status' => 'Available',
+                'meta' => ($stats['vehicles_total'] ?? 0).' vehicles',
             ] : null,
             $user->can('viewAny', Product::class) ? [
                 'label' => 'View Products',
-                'description' => 'Inspect products, stock, and catalog details.',
+                'description' => 'Inspect products, units, and low-stock-sensitive items.',
                 'route' => route('tenant.ecommerce.products.index'),
                 'icon' => 'tabler-package',
                 'theme' => 'info',
                 'status' => 'Available',
+                'meta' => ($stats['products_total'] ?? 0).' products',
             ] : null,
             $user->can('viewAny', Service::class) ? [
                 'label' => 'View Services',
-                'description' => 'Browse services and technician-required offerings.',
+                'description' => 'Open service pricing, duration, and technician-required work.',
                 'route' => route('tenant.ecommerce.services.index'),
                 'icon' => 'tabler-tool',
                 'theme' => 'secondary',
                 'status' => 'Available',
+                'meta' => ($stats['services_total'] ?? 0).' services',
             ] : null,
             [
-                'label' => 'Today Work Queue',
-                'description' => 'Reserved for assignments, service jobs, and queue tracking once those tables exist.',
-                'route' => null,
-                'icon' => 'tabler-clipboard-list',
+                'label' => 'Today\'s Work Summary',
+                'description' => 'Jump to today\'s live tenant-scoped counts and workspace readiness details.',
+                'route' => '#today-summary',
+                'icon' => 'tabler-calendar-stats',
                 'theme' => 'dark',
-                'status' => 'Placeholder',
-            ],
-            [
-                'label' => 'Notifications',
-                'description' => 'Prepared panel slot for reminders and employee alerts.',
-                'route' => null,
-                'icon' => 'tabler-bell',
-                'theme' => 'warning',
-                'status' => 'Placeholder',
-            ],
-            [
-                'label' => 'Account',
-                'description' => 'Review workspace access, identity, and tenant info.',
-                'route' => route('employee.account'),
-                'icon' => 'tabler-user-circle',
-                'theme' => 'primary',
-                'status' => 'Available',
+                'status' => 'Live Data',
+                'meta' => $stats['today_label'],
             ],
         ])->filter()->values()->all();
     }
@@ -242,18 +242,30 @@ class PanelController
             [
                 'title' => 'Accessible Modules',
                 'value' => $stats['accessible_modules'],
-                'meta' => 'Products, services, customers, and vehicles shown only when permitted',
+                'meta' => 'Products, services, customers, and vehicles only appear when permitted',
                 'icon' => 'tabler-layout-grid',
                 'theme' => 'success',
             ],
             [
-                'title' => 'Team Members',
+                'title' => 'Workspace Team',
                 'value' => $stats['team_members'],
-                'meta' => 'Current tenant workspace staff count',
+                'meta' => 'Current tenant-scoped staff count',
                 'icon' => 'tabler-users-group',
                 'theme' => 'warning',
             ],
         ])->filter()->values()->all();
+    }
+
+    private function summaryRows(array $stats): array
+    {
+        return [
+            ['label' => 'Date', 'value' => $stats['today_full_label']],
+            ['label' => 'Active Services', 'value' => $stats['active_services'] ?? 'N/A'],
+            ['label' => 'Customer Records', 'value' => $stats['customers_total'] ?? 'N/A'],
+            ['label' => 'Vehicle Records', 'value' => $stats['vehicles_total'] ?? 'N/A'],
+            ['label' => 'Low Stock Watch', 'value' => $stats['low_stock_products'] ?? 'N/A'],
+            ['label' => 'Team Members', 'value' => $stats['team_members']],
+        ];
     }
 
     private function placeholderCards(): array
@@ -261,18 +273,18 @@ class PanelController
         return [
             [
                 'title' => 'Assigned Services',
-                'description' => 'No service-job or assignment table exists yet, so this panel is intentionally prepared as a clean placeholder.',
+                'description' => 'No service-job or assignment table exists yet, so this remains a clean placeholder for future tenant-scoped queue data.',
                 'icon' => 'tabler-calendar-time',
             ],
             [
-                'title' => 'Work Queue',
-                'description' => 'Pending and completed queue cards will plug into this screen once service execution records are added.',
-                'icon' => 'tabler-clipboard-data',
+                'title' => 'Notifications & Reminders',
+                'description' => 'The workspace can later plug employee-targeted reminders and alerts into this area once notification records exist.',
+                'icon' => 'tabler-bell-ringing',
             ],
             [
-                'title' => 'Notifications & Reminders',
-                'description' => 'The tenant already stores notification settings, but employee-targeted notification records do not exist yet.',
-                'icon' => 'tabler-bell-ringing',
+                'title' => 'Order / Work Queue',
+                'description' => 'Service execution, queue priority, and completion cards will attach here when the POS or order module is implemented.',
+                'icon' => 'tabler-clipboard-data',
             ],
         ];
     }

@@ -76,7 +76,12 @@ class AuthController extends Controller
             'last_login_ip' => $request->ip(),
         ])->save();
 
-        $defaultRoute = route($user->defaultDashboardRouteName());
+        $defaultRouteName = $user->defaultDashboardRouteName();
+        $defaultRoute = route($defaultRouteName);
+
+        if ($user->isEmployee()) {
+            return redirect()->route($defaultRouteName);
+        }
 
         return redirect()->intended($defaultRoute);
     }

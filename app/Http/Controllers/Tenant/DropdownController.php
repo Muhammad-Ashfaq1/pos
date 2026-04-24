@@ -15,26 +15,6 @@ class DropdownController extends Controller
 {
     public function categories(Request $request): JsonResponse
     {
-        abort_unless(
-            $request->user()?->canAny([
-                'category.view',
-                'category.create',
-                'category.update',
-                'subcategory.view',
-                'subcategory.create',
-                'subcategory.update',
-                'product.view',
-                'product.create',
-                'product.update',
-                'products.view',
-                'products.manage',
-                'service.view',
-                'service.create',
-                'service.update',
-            ]),
-            403
-        );
-
         $search = trim((string) $request->string('q')->toString());
         $perPage = min((int) $request->integer('per_page', 20), 50);
         $page = max((int) $request->integer('page', 1), 1);
@@ -68,23 +48,6 @@ class DropdownController extends Controller
 
     public function subCategories(Request $request): JsonResponse
     {
-        abort_unless(
-            $request->user()?->canAny([
-                'subcategory.view',
-                'subcategory.create',
-                'subcategory.update',
-                'product.view',
-                'product.create',
-                'product.update',
-                'products.view',
-                'products.manage',
-                'service.view',
-                'service.create',
-                'service.update',
-            ]),
-            403
-        );
-
         $search = trim((string) $request->string('q')->toString());
         $perPage = min((int) $request->integer('per_page', 20), 50);
         $page = max((int) $request->integer('page', 1), 1);
@@ -121,20 +84,6 @@ class DropdownController extends Controller
 
     public function products(Request $request): JsonResponse
     {
-        abort_unless(
-            $request->user()?->canAny([
-                'product.view',
-                'product.create',
-                'product.update',
-                'products.view',
-                'products.manage',
-                'service.view',
-                'service.create',
-                'service.update',
-            ]),
-            403
-        );
-
         $search = trim((string) $request->string('q')->toString());
         $perPage = min((int) $request->integer('per_page', 20), 50);
         $page = max((int) $request->integer('page', 1), 1);
@@ -172,21 +121,6 @@ class DropdownController extends Controller
 
     public function customers(Request $request): JsonResponse
     {
-        abort_unless(
-            $request->user()?->canAny([
-                'customer.view',
-                'customer.create',
-                'customer.update',
-                'vehicle.view',
-                'vehicle.create',
-                'vehicle.update',
-                'pos.bill',
-                'customers.view',
-                'customers.manage',
-            ]),
-            403
-        );
-
         $search = trim((string) $request->string('q')->toString());
         $perPage = min((int) $request->integer('per_page', 20), 50);
         $page = max((int) $request->integer('page', 1), 1);
@@ -221,21 +155,6 @@ class DropdownController extends Controller
 
     public function vehicles(Request $request): JsonResponse
     {
-        abort_unless(
-            $request->user()?->canAny([
-                'vehicle.view',
-                'vehicle.create',
-                'vehicle.update',
-                'customer.view',
-                'customer.create',
-                'customer.update',
-                'pos.bill',
-                'vehicles.view',
-                'vehicles.manage',
-            ]),
-            403
-        );
-
         $search = trim((string) $request->string('q')->toString());
         $perPage = min((int) $request->integer('per_page', 20), 50);
         $page = max((int) $request->integer('page', 1), 1);

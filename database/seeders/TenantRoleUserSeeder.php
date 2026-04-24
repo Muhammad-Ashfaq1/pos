@@ -36,11 +36,14 @@ class TenantRoleUserSeeder extends Seeder
             ->get()
             ->each(function (Tenant $tenant) use ($password): void {
                 foreach (self::ROLE_EMAIL_PREFIXES as $role => $emailPrefix) {
-                    $user = $this->resolveUser($tenant, $role, $emailPrefix);
+                    $email = $role === User::EMPLOYEE
+                        ? $this->employeeEmailFor($tenant)
+                        : $this->emailFor($tenant, $emailPrefix);
+                    $user = User::query()->firstOrNew(['email' => $email]);
 
                     $user->fill([
-                        'name' => $user->exists ? $user->name : $this->defaultName($tenant, $role),
-                        'email' => $user->email ?: $this->emailFor($tenant, $emailPrefix),
+                        'name' => $user->name ?: $this->defaultName($tenant, $role),
+                        'email' => $email,
                         'password' => $password,
                         'tenant_id' => $tenant->id,
                         'role' => $role,
@@ -54,28 +57,14 @@ class TenantRoleUserSeeder extends Seeder
             });
     }
 
-    private function resolveUser(Tenant $tenant, string $role, string $emailPrefix): User
-    {
-        if ($role === User::TENANT_ADMIN) {
-            $existingTenantAdmin = User::query()
-                ->where('tenant_id', $tenant->id)
-                ->where('role', $role)
-                ->orderBy('id')
-                ->first();
-
-            if ($existingTenantAdmin) {
-                return $existingTenantAdmin;
-            }
-        }
-
-        return User::query()->firstOrNew([
-            'email' => $this->emailFor($tenant, $emailPrefix),
-        ]);
-    }
-
     private function emailFor(Tenant $tenant, string $prefix): string
     {
         return sprintf('%s+%s@example.com', $prefix, $tenant->id);
+    }
+
+    private function employeeEmailFor(Tenant $tenant): string
+    {
+        return sprintf('employee%s@gmail.com', $tenant->id);
     }
 
     private function defaultName(Tenant $tenant, string $role): string

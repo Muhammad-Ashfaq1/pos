@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.employee')
 
 @section('title', 'Employee Dashboard')
 @section('content_container_class', 'container-fluid flex-grow-1 container-p-y')
@@ -6,39 +6,53 @@
 @section('content')
 <div class="row g-4">
     <div class="col-12">
-        <div class="card bg-primary text-white overflow-hidden">
-            <div class="card-body p-4 p-lg-5">
-                <div class="row align-items-center g-4">
-                    <div class="col-lg-8">
-                        <span class="badge bg-white text-primary mb-3">Worker Panel</span>
-                        <h2 class="text-white mb-2">{{ $tenant?->display_name ?? 'Employee Workspace' }}</h2>
-                        <p class="mb-4 text-white-50">
-                            Use this panel as the daily operating start point for customer lookup, vehicle lookup, product references, and the employee workspace shell.
+        <div class="card employee-shell-hero border-0 text-white">
+            <div class="card-body p-4 p-lg-5 position-relative">
+                <div class="row g-4 align-items-center">
+                    <div class="col-xl-8">
+                        <span class="badge bg-white text-primary mb-3">Worker Dashboard</span>
+                        <h2 class="text-white mb-2">{{ $stats['workspace_name'] }}</h2>
+                        <p class="mb-4 text-white text-opacity-75">
+                            This panel follows the worker-first flow we reused from the Future-card structure: start from POS/workspace, move into customer or vehicle lookup, then reference products and services without exposing tenant admin setup screens.
                         </p>
-                        <div class="d-flex flex-wrap gap-2">
-                            <a href="{{ route('employee.workspace') }}" class="btn btn-light text-primary">
+
+                        <div class="d-flex flex-wrap gap-2 employee-shell-toolbar">
+                            <a href="{{ route('employee.pos') }}" class="btn btn-light text-primary">
                                 <i class="ti tabler-cash-register me-1"></i>
-                                Open Workspace
+                                Open POS / Workspace
                             </a>
+                            @if($user->can('customer.view') || $user->can('customers.view'))
+                                <a href="{{ route('tenant.ecommerce.customers.index') }}" class="btn btn-outline-light">
+                                    <i class="ti tabler-users me-1"></i>
+                                    Customers Lookup
+                                </a>
+                            @endif
                             <a href="{{ route('employee.account') }}" class="btn btn-outline-light">
                                 <i class="ti tabler-user-circle me-1"></i>
-                                View Account
+                                Profile
                             </a>
                         </div>
                     </div>
-                    <div class="col-lg-4">
+
+                    <div class="col-xl-4">
                         <div class="card bg-white bg-opacity-10 border-0 shadow-none mb-0">
                             <div class="card-body">
-                                <small class="text-white-50 d-block mb-2">Today Summary</small>
-                                <h4 class="text-white mb-1">{{ $stats['today_label'] }}</h4>
-                                <p class="text-white-50 mb-3">Tenant-scoped totals only. Job and queue data will appear here once those tables exist.</p>
-                                <div class="d-flex justify-content-between text-white-50">
-                                    <span>Modules Ready</span>
+                                <small class="text-white text-opacity-75 d-block mb-2">Today Summary</small>
+                                <h4 class="text-white mb-1">{{ $stats['today_full_label'] }}</h4>
+                                <p class="text-white text-opacity-75 mb-3">
+                                    Live cards below use real tenant-scoped product, service, customer, and vehicle data only.
+                                </p>
+                                <div class="d-flex justify-content-between text-white text-opacity-75">
+                                    <span>Accessible Modules</span>
                                     <span class="fw-semibold text-white">{{ $stats['accessible_modules'] }}</span>
                                 </div>
-                                <div class="d-flex justify-content-between text-white-50 mt-2">
-                                    <span>Team Members</span>
+                                <div class="d-flex justify-content-between text-white text-opacity-75 mt-2">
+                                    <span>Workspace Team</span>
                                     <span class="fw-semibold text-white">{{ $stats['team_members'] }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between text-white text-opacity-75 mt-2">
+                                    <span>Low Stock Watch</span>
+                                    <span class="fw-semibold text-white">{{ $stats['low_stock_products'] ?? 'N/A' }}</span>
                                 </div>
                             </div>
                         </div>
@@ -50,7 +64,7 @@
 
     @foreach($summaryCards as $card)
         <div class="col-xl-3 col-md-6">
-            <div class="card h-100">
+            <div class="card employee-shell-stat h-100">
                 <div class="card-body">
                     <span class="avatar bg-label-{{ $card['theme'] }} mb-3">
                         <i class="ti {{ $card['icon'] }}"></i>
@@ -64,29 +78,31 @@
 
     <div class="col-xl-8">
         <div class="card h-100">
-            <div class="card-header">
-                <h5 class="mb-0">Daily Actions</h5>
-                <small class="text-muted">Inspired by Future-card’s operator-first flow, adapted into the POS Vuexy card system.</small>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">Daily Flow</h5>
+                    <small class="text-muted">Quick worker actions, lookup entry points, and future-ready placeholders.</small>
+                </div>
+                <span class="badge bg-label-primary">Operator First</span>
             </div>
             <div class="card-body">
-                <div class="row g-3">
-                    @foreach($operatorCards as $card)
-                        <div class="col-md-6">
-                            <a href="{{ $card['route'] }}" class="card shadow-none border h-100 text-decoration-none">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start gap-3">
-                                        <div>
-                                            <span class="badge bg-label-{{ $card['theme'] }} mb-2">{{ $card['badge'] }}</span>
-                                            <h6 class="mb-1 text-body">{{ $card['label'] }}</h6>
-                                            <p class="mb-0 text-muted">{{ $card['description'] }}</p>
-                                        </div>
-                                        <span class="avatar bg-label-{{ $card['theme'] }}">
-                                            <i class="ti {{ $card['icon'] }}"></i>
-                                        </span>
+                <div class="employee-shell-grid">
+                    @foreach($actionCards as $card)
+                        <a href="{{ $card['route'] }}" class="card employee-shell-card h-100 mb-0 text-decoration-none">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+                                    <div>
+                                        <span class="badge bg-label-{{ $card['theme'] }} mb-2">{{ $card['badge'] }}</span>
+                                        <h5 class="mb-1 text-body">{{ $card['label'] }}</h5>
+                                        <p class="mb-0 text-muted">{{ $card['description'] }}</p>
                                     </div>
+                                    <span class="avatar bg-label-{{ $card['theme'] }}">
+                                        <i class="ti {{ $card['icon'] }}"></i>
+                                    </span>
                                 </div>
-                            </a>
-                        </div>
+                                <small class="text-muted">{{ $card['stat'] }}</small>
+                            </div>
+                        </a>
                     @endforeach
                 </div>
             </div>
@@ -96,7 +112,7 @@
     <div class="col-xl-4">
         <div class="card h-100">
             <div class="card-header">
-                <h5 class="mb-0">Profile & Workspace</h5>
+                <h5 class="mb-0">Profile / Workspace</h5>
             </div>
             <div class="card-body">
                 <div class="d-flex align-items-center gap-3 mb-4">
@@ -111,12 +127,12 @@
 
                 <div class="rounded bg-label-primary p-3 mb-3">
                     <small class="text-muted d-block mb-1">Role</small>
-                    <div class="fw-semibold">Employee</div>
+                    <div class="fw-semibold">{{ str($user->primaryRoleName() ?? 'employee')->replace('_', ' ')->title() }}</div>
                 </div>
 
                 <div class="rounded bg-label-success p-3 mb-3">
                     <small class="text-muted d-block mb-1">Workspace</small>
-                    <div class="fw-semibold">{{ $tenant?->display_name ?? 'Tenant Workspace' }}</div>
+                    <div class="fw-semibold">{{ $stats['workspace_name'] }}</div>
                 </div>
 
                 <div class="rounded bg-label-info p-3">
@@ -127,9 +143,25 @@
         </div>
     </div>
 
+    <div class="col-xl-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Today Summary</h5>
+            </div>
+            <div class="card-body">
+                @foreach($summaryRows as $row)
+                    <div class="d-flex justify-content-between align-items-center py-2 {{ $loop->last ? '' : 'border-bottom' }}">
+                        <span class="text-muted">{{ $row['label'] }}</span>
+                        <span class="fw-semibold">{{ $row['value'] }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
     @foreach($placeholders as $placeholder)
-        <div class="col-xl-4 col-md-6">
-            <div class="card h-100">
+        <div class="col-xl-2 col-md-4">
+            <div class="card employee-shell-placeholder h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <h6 class="mb-0">{{ $placeholder['title'] }}</h6>
