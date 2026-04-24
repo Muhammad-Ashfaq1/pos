@@ -1,8 +1,22 @@
+@php
+  $authUser = auth()->user();
+  $isEmployeePanel = $authUser?->isEmployee() ?? false;
+  $bodyClasses = ' layout-navbar-fixed layout-menu-fixed layout-compact ';
+
+  if (str_starts_with(request()->route()?->getName() ?? '', 'tenant.settings.')) {
+      $bodyClasses .= ' layout-menu-collapsed ';
+  }
+
+  $contentContainerClass = trim($__env->yieldContent('content_container_class')) ?: ($isEmployeePanel
+      ? 'container-fluid flex-grow-1 container-p-y'
+      : 'container-xxl flex-grow-1 container-p-y');
+@endphp
+
 <!doctype html>
 
 <html
   lang="en"
-  class=" layout-navbar-fixed layout-menu-fixed layout-compact "
+  class="{{ trim($bodyClasses) }}"
   dir="ltr"
   data-skin="default"
   data-bs-theme="light"
@@ -75,6 +89,8 @@
 
     <script src="{{ asset('assets/js/config.js') }}"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @stack('styles')
+    @stack('page-style')
     <title>@yield('title', config('app.name', 'Oil Change POS'))</title>
 
   </head>
@@ -85,28 +101,28 @@
       <div class="layout-container">
         <!-- Menu -->
 
-
-        @include('layouts.partials.sidebar')
+        @include($isEmployeePanel ? 'employee.partials.sidebar' : 'layouts.partials.sidebar')
         <!-- / Menu -->
 
         <!-- Layout container -->
         <div class="layout-page">
           <!-- Navbar -->
-
-        @include('layouts.partials.navbar')
+        @include($isEmployeePanel ? 'employee.partials.navbar' : 'layouts.partials.navbar')
 
           <!-- / Navbar -->
 
           <!-- Content wrapper -->
           <div class="content-wrapper">
             <!-- Content -->
-            <div class="container-xxl flex-grow-1 container-p-y">
+            <div class="{{ $contentContainerClass }}">
 
             @yield('content')
             </div>
             <!-- / Content -->
 
-           @include('layouts.partials.footer')
+           @unless($isEmployeePanel)
+             @include('layouts.partials.footer')
+           @endunless
 
             <div class="content-backdrop fade"></div>
           </div>
@@ -183,6 +199,7 @@
     <script src="{{ asset('assets/js/app-helpers.js') }}"></script>
     <script src="{{ asset('assets/js/dropdowns.js') }}"></script>
     <script src="{{ asset('assets/js/session-notifications.js') }}"></script>
+    @stack('page-script')
     @yield('scripts')
 
   </body>

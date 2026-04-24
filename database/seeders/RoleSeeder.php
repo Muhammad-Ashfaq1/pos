@@ -20,6 +20,7 @@ class RoleSeeder extends Seeder
             User::CASHIER,
             User::TECHNICIAN,
             User::INVENTORY_CLERK,
+            User::EMPLOYEE,
             User::CUSTOMER,
         ];
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\Tenant\DropdownController;
 use App\Http\Controllers\Tenant\EcommerceController;
 use App\Http\Controllers\Tenant\ImageController;
 use App\Http\Controllers\Tenant\ProductController;
+use App\Http\Controllers\Tenant\ShopSettingsController;
 use App\Http\Controllers\Tenant\ServiceController;
 use App\Http\Controllers\Tenant\SubCategoryController;
 use App\Http\Controllers\Tenant\VehicleController;
@@ -197,6 +198,32 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                         Route::patch('/{image}/primary', 'setPrimary')
                             ->middleware('permission:product.update|products.manage')
                             ->name('primary');
+                    });
+            });
+
+        Route::prefix('settings')
+            ->name('settings.')
+            ->controller(ShopSettingsController::class)
+            ->group(function () {
+                Route::get('/shop-profile', 'edit')
+                    ->middleware('permission:settings.manage')
+                    ->name('shop-profile.edit');
+
+                Route::prefix('shop-profile')
+                    ->name('shop-profile.')
+                    ->middleware('permission:settings.manage')
+                    ->group(function () {
+                        Route::get('/general', 'general')->name('general');
+                        Route::post('/general/save', 'saveGeneral')->name('general.save');
+
+                        Route::get('/regional', 'regional')->name('regional');
+                        Route::post('/regional/save', 'saveRegional')->name('regional.save');
+
+                        Route::get('/operations', 'operations')->name('operations');
+                        Route::post('/operations/save', 'saveOperations')->name('operations.save');
+
+                        Route::get('/notifications', 'notifications')->name('notifications');
+                        Route::post('/notifications/save', 'saveNotifications')->name('notifications.save');
                     });
             });
     });

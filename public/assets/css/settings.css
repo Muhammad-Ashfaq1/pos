@@ -1,0 +1,90 @@
+/* Settings sidebar styling */
+.settings-sidebar {
+    background-color: transparent;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    border: none !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.settings-sidebar .nav-link {
+    border-radius: 0.375rem;
+    padding: 0.75rem 1rem;
+    color: var(--bs-body-color);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.settings-sidebar .nav-link:hover {
+    background-color: var(--bs-gray-100);
+    color: var(--bs-primary);
+}
+
+.settings-sidebar .nav-link.active {
+    background-color: var(--bs-primary);
+    color: var(--bs-white);
+}
+
+.settings-sidebar .nav-link.active i {
+    color: var(--bs-white);
+}
+
+.settings-sidebar .settings-dropdown-toggle {
+    cursor: pointer;
+}
+
+.settings-sidebar .settings-dropdown-toggle .ti-chevron-down {
+    transition: transform 0.3s ease;
+    font-size: 0.875rem;
+}
+
+.settings-sidebar .settings-dropdown-toggle[aria-expanded="true"] .ti-chevron-down {
+    transform: rotate(180deg);
+}
+
+.settings-sidebar .nav ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.settings-sidebar .nav ul .nav-link {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    justify-content: flex-start;
+    text-align: left;
+}
+
+.settings-sidebar .text-uppercase {
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    margin-top: 0.5rem;
+}
+
+.content-wrapper .container-p-y .row .col-md-8.col-lg-10,
+.content-wrapper .container-p-y .row .col-md-9.col-lg-10 {
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.content-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: calc(100vh - 3.5rem) !important;
+    flex-grow: 1 !important;
+}
+
+.content-wrapper .container-xxl,
+.content-wrapper > .container-xxl,
+.container-xxl.flex-grow-1.container-p-y,
+.content-wrapper .container-xxl.flex-grow-1.container-p-y,
+.content-wrapper > .container-xxl.flex-grow-1.container-p-y {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}

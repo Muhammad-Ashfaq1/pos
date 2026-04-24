@@ -128,6 +128,18 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('products.view', 'web'),
         ]);
 
+        Role::findByName(User::EMPLOYEE)->syncPermissions([
+            Permission::findByName('dashboard.view', 'web'),
+            Permission::findByName('product.view', 'web'),
+            Permission::findByName('products.view', 'web'),
+            Permission::findByName('service.view', 'web'),
+            Permission::findByName('services.view', 'web'),
+            Permission::findByName('customer.view', 'web'),
+            Permission::findByName('customers.view', 'web'),
+            Permission::findByName('vehicle.view', 'web'),
+            Permission::findByName('vehicles.view', 'web'),
+        ]);
+
         Role::findByName(User::CUSTOMER)->syncPermissions([
             Permission::findByName('dashboard.view', 'web'),
         ]);

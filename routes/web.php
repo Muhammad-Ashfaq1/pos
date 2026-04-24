@@ -10,13 +10,5 @@ Route::get('/', function () {
 
     $user = Auth::user();
 
-    if ($user->isSuperAdmin()) {
-        return redirect()->route('admin.dashboard');
-    }
-
-    if ($user->tenant_id) {
-        return redirect()->route('tenant.dashboard');
-    }
-
-    abort(403, 'Unable to determine dashboard destination.');
+    return redirect()->route($user->defaultDashboardRouteName());
 });
