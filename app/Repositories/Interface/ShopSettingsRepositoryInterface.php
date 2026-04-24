@@ -3,12 +3,16 @@
 namespace App\Repositories\Interface;
 
 use App\Models\Tenant;
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\View\View;
 
 interface ShopSettingsRepositoryInterface
 {
-    public function edit(Tenant $tenant): View;
+    public function sharedViewData(Tenant $tenant): array;
 
-    public function update(Tenant $tenant, array $data, ?Authenticatable $user = null): array;
+    public function saveGeneralSettings(Tenant $tenant, array $data): array;
+
+    public function saveRegionalSettings(Tenant $tenant, array $data): array;
+
+    public function saveOperationsSettings(Tenant $tenant, array $data): array;
+
+    public function saveNotificationsSettings(Tenant $tenant, array $data): array;
 }

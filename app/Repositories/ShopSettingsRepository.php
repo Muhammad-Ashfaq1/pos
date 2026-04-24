@@ -4,8 +4,6 @@ namespace App\Repositories;
 
 use App\Models\Tenant;
 use App\Repositories\Interface\ShopSettingsRepositoryInterface;
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\View\View;
 
 class ShopSettingsRepository implements ShopSettingsRepositoryInterface
 {
@@ -41,9 +39,9 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
         'sunday' => 'Sunday',
     ];
 
-    public function edit(Tenant $tenant): View
+    public function sharedViewData(Tenant $tenant): array
     {
-        return view('tenant.settings.shop-profile', [
+        return [
             'tenant' => $tenant,
             'form' => $this->buildFormData($tenant),
             'currencyOptions' => self::CURRENCY_OPTIONS,
@@ -54,55 +52,12 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
             ),
             'weekdayOptions' => self::WEEKDAYS,
             'readiness' => $this->buildReadinessChecklist($tenant),
-        ]);
+            'settingsSections' => $this->settingsSections(),
+        ];
     }
 
-    public function update(Tenant $tenant, array $data, ?Authenticatable $user = null): array
+    public function saveGeneralSettings(Tenant $tenant, array $data): array
     {
-        $settings = $tenant->mergedSettings();
-
-        $settings['regional'] = [
-            'currency' => $data['currency'],
-            'timezone' => $data['timezone'],
-            'locale' => $data['locale'],
-        ];
-
-        $settings['tax'] = [
-            'name' => $data['tax_name'],
-            'percentage' => number_format((float) $data['tax_percentage'], 2, '.', ''),
-        ];
-
-        $settings['invoice'] = [
-            'prefix' => strtoupper(trim((string) $data['invoice_prefix'])),
-            'next_number' => (int) $data['invoice_next_number'],
-        ];
-
-        $settings['inventory'] = [
-            'low_stock_threshold' => (int) $data['low_stock_threshold'],
-        ];
-
-        $settings['notifications'] = [
-            'reminder_email_enabled' => (bool) ($data['reminder_email_enabled'] ?? false),
-            'receipt_email_enabled' => (bool) ($data['receipt_email_enabled'] ?? false),
-        ];
-
-        $settings['loyalty'] = [
-            'enabled' => (bool) ($data['loyalty_enabled'] ?? false),
-            'points_per_currency' => number_format((float) $data['loyalty_points_per_currency'], 2, '.', ''),
-        ];
-
-        $settings['business_hours'] = collect(self::WEEKDAYS)
-            ->mapWithKeys(function (string $label, string $day) use ($data): array {
-                return [
-                    $day => [
-                        'is_closed' => (bool) data_get($data, "business_hours.{$day}.is_closed", false),
-                        'open' => data_get($data, "business_hours.{$day}.open"),
-                        'close' => data_get($data, "business_hours.{$day}.close"),
-                    ],
-                ];
-            })
-            ->all();
-
         $shopName = trim((string) $data['shop_name']);
         $businessName = trim((string) $data['business_name']);
         $businessEmail = $this->normalizeNullableString($data['business_email'] ?? null);
@@ -122,9 +77,142 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
             'city' => $this->normalizeNullableString($data['city'] ?? null),
             'state' => $this->normalizeNullableString($data['state'] ?? null),
             'country' => $this->normalizeNullableString($data['country'] ?? null),
+        ]);
+
+        $this->persistTenant($tenant);
+
+        return [
+            'success' => true,
+            'message' => 'Shop profile updated successfully.',
+        ];
+    }
+
+    public function saveRegionalSettings(Tenant $tenant, array $data): array
+    {
+        $settings = $tenant->mergedSettings();
+
+        $settings['regional'] = [
+            'currency' => $data['currency'],
+            'timezone' => $data['timezone'],
+            'locale' => $data['locale'],
+        ];
+
+        $settings['tax'] = [
+            'name' => $data['tax_name'],
+            'percentage' => number_format((float) $data['tax_percentage'], 2, '.', ''),
+        ];
+
+        $settings['invoice'] = [
+            'prefix' => strtoupper(trim((string) $data['invoice_prefix'])),
+            'next_number' => (int) $data['invoice_next_number'],
+        ];
+
+        $tenant->forceFill([
             'settings' => $settings,
         ]);
 
+        $this->persistTenant($tenant);
+
+        return [
+            'success' => true,
+            'message' => 'Regional and billing settings updated successfully.',
+        ];
+    }
+
+    public function saveOperationsSettings(Tenant $tenant, array $data): array
+    {
+        $settings = $tenant->mergedSettings();
+
+        $settings['inventory'] = [
+            'low_stock_threshold' => (int) $data['low_stock_threshold'],
+        ];
+
+        $settings['business_hours'] = collect(self::WEEKDAYS)
+            ->mapWithKeys(function (string $label, string $day) use ($data): array {
+                return [
+                    $day => [
+                        'is_closed' => (bool) data_get($data, "business_hours.{$day}.is_closed", false),
+                        'open' => data_get($data, "business_hours.{$day}.open"),
+                        'close' => data_get($data, "business_hours.{$day}.close"),
+                    ],
+                ];
+            })
+            ->all();
+
+        $tenant->forceFill([
+            'settings' => $settings,
+        ]);
+
+        $this->persistTenant($tenant);
+
+        return [
+            'success' => true,
+            'message' => 'Operations settings updated successfully.',
+        ];
+    }
+
+    public function saveNotificationsSettings(Tenant $tenant, array $data): array
+    {
+        $settings = $tenant->mergedSettings();
+
+        $settings['notifications'] = [
+            'reminder_email_enabled' => (bool) ($data['reminder_email_enabled'] ?? false),
+            'receipt_email_enabled' => (bool) ($data['receipt_email_enabled'] ?? false),
+        ];
+
+        $settings['loyalty'] = [
+            'enabled' => (bool) ($data['loyalty_enabled'] ?? false),
+            'points_per_currency' => number_format((float) $data['loyalty_points_per_currency'], 2, '.', ''),
+        ];
+
+        $tenant->forceFill([
+            'settings' => $settings,
+        ]);
+
+        $this->persistTenant($tenant);
+
+        return [
+            'success' => true,
+            'message' => 'Notification and loyalty settings updated successfully.',
+        ];
+    }
+
+    private function settingsSections(): array
+    {
+        return [
+            [
+                'label' => 'Shop Profile',
+                'route' => 'tenant.settings.shop-profile.general',
+                'pattern' => 'tenant.settings.shop-profile.general',
+                'icon' => 'tabler-building-store',
+                'description' => 'Business identity, contact details, and address.',
+            ],
+            [
+                'label' => 'Regional & Billing',
+                'route' => 'tenant.settings.shop-profile.regional',
+                'pattern' => 'tenant.settings.shop-profile.regional',
+                'icon' => 'tabler-world',
+                'description' => 'Currency, timezone, tax defaults, and invoice numbering.',
+            ],
+            [
+                'label' => 'Operations',
+                'route' => 'tenant.settings.shop-profile.operations',
+                'pattern' => 'tenant.settings.shop-profile.operations',
+                'icon' => 'tabler-settings-cog',
+                'description' => 'Inventory thresholds and business hours for this tenant.',
+            ],
+            [
+                'label' => 'Notifications & Loyalty',
+                'route' => 'tenant.settings.shop-profile.notifications',
+                'pattern' => 'tenant.settings.shop-profile.notifications',
+                'icon' => 'tabler-bell',
+                'description' => 'Communication defaults and loyalty behavior.',
+            ],
+        ];
+    }
+
+    private function persistTenant(Tenant $tenant): void
+    {
         if (! $tenant->onboarding_completed_at && $this->isReadyForCompletion($tenant)) {
             $tenant->forceFill([
                 'onboarding_status' => 'completed',
@@ -133,11 +221,6 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
         }
 
         $tenant->save();
-
-        return [
-            'success' => true,
-            'message' => 'Shop settings updated successfully.',
-        ];
     }
 
     private function buildFormData(Tenant $tenant): array

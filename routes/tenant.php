@@ -208,8 +208,22 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                 Route::get('/shop-profile', 'edit')
                     ->middleware('permission:settings.manage')
                     ->name('shop-profile.edit');
-                Route::put('/shop-profile', 'update')
+
+                Route::prefix('shop-profile')
+                    ->name('shop-profile.')
                     ->middleware('permission:settings.manage')
-                    ->name('shop-profile.update');
+                    ->group(function () {
+                        Route::get('/general', 'general')->name('general');
+                        Route::post('/general/save', 'saveGeneral')->name('general.save');
+
+                        Route::get('/regional', 'regional')->name('regional');
+                        Route::post('/regional/save', 'saveRegional')->name('regional.save');
+
+                        Route::get('/operations', 'operations')->name('operations');
+                        Route::post('/operations/save', 'saveOperations')->name('operations.save');
+
+                        Route::get('/notifications', 'notifications')->name('notifications');
+                        Route::post('/notifications/save', 'saveNotifications')->name('notifications.save');
+                    });
             });
     });

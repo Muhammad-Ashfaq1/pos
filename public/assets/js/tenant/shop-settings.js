@@ -1,8 +1,6 @@
 (function ($) {
   'use strict';
 
-  const $activeTabInput = $('#shop_settings_active_tab');
-
   const initSelect2 = function () {
     if (typeof $.fn.select2 !== 'function') {
       return;
@@ -45,15 +43,8 @@
     });
   };
 
-  const bindTabs = function () {
-    $('[data-bs-toggle="tab"][data-tab-value]').on('shown.bs.tab', function () {
-      $activeTabInput.val($(this).data('tab-value'));
-    });
-  };
-
   $(function () {
     initSelect2();
     bindBusinessHours();
-    bindTabs();
   });
 })(jQuery);

@@ -1,8 +1,16 @@
+@php
+  $bodyClasses = ' layout-navbar-fixed layout-menu-fixed layout-compact ';
+
+  if (str_starts_with(request()->route()?->getName() ?? '', 'tenant.settings.')) {
+      $bodyClasses .= ' layout-menu-collapsed ';
+  }
+@endphp
+
 <!doctype html>
 
 <html
   lang="en"
-  class=" layout-navbar-fixed layout-menu-fixed layout-compact "
+  class="{{ trim($bodyClasses) }}"
   dir="ltr"
   data-skin="default"
   data-bs-theme="light"
@@ -75,6 +83,8 @@
 
     <script src="{{ asset('assets/js/config.js') }}"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @stack('styles')
+    @stack('page-style')
     <title>@yield('title', config('app.name', 'Oil Change POS'))</title>
 
   </head>
@@ -183,6 +193,7 @@
     <script src="{{ asset('assets/js/app-helpers.js') }}"></script>
     <script src="{{ asset('assets/js/dropdowns.js') }}"></script>
     <script src="{{ asset('assets/js/session-notifications.js') }}"></script>
+    @stack('page-script')
     @yield('scripts')
 
   </body>
