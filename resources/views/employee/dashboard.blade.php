@@ -3,187 +3,133 @@
 @section('title', 'Employee Portal Dashboard')
 
 @php
-    // Static demo data for UI preview only. Backend/auth wiring will be connected later.
     $summaryCards = [
-        ['label' => "Today's Jobs", 'value' => '12', 'meta' => 'Assigned this shift', 'icon' => 'tabler-briefcase', 'variant' => 'primary'],
-        ['label' => 'Pending Jobs', 'value' => '04', 'meta' => 'Waiting to begin', 'icon' => 'tabler-loader', 'variant' => 'secondary'],
-        ['label' => 'In Progress', 'value' => '03', 'meta' => 'Vehicles in bay', 'icon' => 'tabler-car-garage', 'variant' => 'accent'],
+        ['value' => '0', 'label' => 'Orders', 'meta' => 'Completed Today', 'icon' => 'tabler-calendar-event', 'chip' => 'preview-chip--blue'],
+        ['value' => '0', 'label' => 'Orders', 'meta' => 'Incompleted Today', 'icon' => 'tabler-map-pin-share', 'chip' => 'preview-chip--purple'],
+        ['value' => '2', 'label' => 'Products', 'meta' => 'Available Today', 'icon' => 'tabler-search', 'chip' => 'preview-chip--violet'],
     ];
 
-    $actionTiles = [
+    $tiles = [
         ['label' => 'Time Clock', 'icon' => 'tabler-clock-hour-4'],
-        ['label' => 'Start Job', 'icon' => 'tabler-player-play'],
-        ['label' => 'Assigned Jobs', 'icon' => 'tabler-list-details'],
-        ['label' => 'Service Orders', 'icon' => 'tabler-clipboard-text'],
-        ['label' => 'Update Job Status', 'icon' => 'tabler-refresh-dot'],
-        ['label' => 'Customer Vehicle', 'icon' => 'tabler-car'],
-        ['label' => 'Reports', 'icon' => 'tabler-report-analytics'],
+        ['label' => 'New Order', 'icon' => 'tabler-shopping-bag'],
+        ['label' => 'Reports', 'icon' => 'tabler-report-search'],
+        ['label' => 'Orders', 'icon' => 'tabler-clipboard-data'],
+        ['label' => 'Returns', 'icon' => 'tabler-arrow-back-up'],
+        ['label' => 'Product Setup', 'icon' => 'tabler-tool'],
         ['label' => 'Invoices', 'icon' => 'tabler-file-invoice'],
+        ['label' => 'Discounts', 'icon' => 'tabler-badge'],
     ];
 
     $operations = [
-        ['label' => 'End of Shift Status', 'icon' => 'tabler-sun-low', 'meta' => 'Review handoff checklist'],
-        ['label' => 'Till Management', 'icon' => 'tabler-credit-card', 'meta' => 'Preview cash drawer summary'],
-        ['label' => 'Bay Assignment', 'icon' => 'tabler-garage', 'meta' => 'See current service bay placement'],
-        ['label' => 'Vehicle Lookup', 'icon' => 'tabler-search', 'meta' => 'Open customer vehicle preview'],
+        ['label' => 'End of Day Status', 'icon' => 'tabler-sun-low'],
+        ['label' => 'Till Management', 'icon' => 'tabler-credit-card'],
     ];
 
-    $recentJobs = [
-        ['customer' => 'Daniel Carter', 'vehicle' => 'Toyota Corolla 2020 - ABC-102', 'service' => 'Oil Change + Filter', 'status' => 'In Progress', 'theme' => 'info'],
-        ['customer' => 'Ava Rodriguez', 'vehicle' => 'Honda Civic 2019 - KLM-441', 'service' => 'Engine Flush', 'status' => 'Pending', 'theme' => 'warning'],
-        ['customer' => 'Michael Turner', 'vehicle' => 'Ford F-150 2021 - TX-9821', 'service' => 'Brake Inspection', 'status' => 'Completed', 'theme' => 'success'],
-        ['customer' => 'Sophia Bennett', 'vehicle' => 'Nissan Altima 2018 - GHJ-908', 'service' => 'Transmission Check', 'status' => 'Assigned', 'theme' => 'primary'],
+    $bottomNav = [
+        ['label' => 'POS', 'icon' => 'tabler-device-desktop'],
+        ['label' => 'Customers', 'icon' => 'tabler-users'],
+        ['label' => 'Inventory', 'icon' => 'tabler-package'],
+        ['label' => 'Settings', 'icon' => 'tabler-settings'],
     ];
 @endphp
 
 @section('content')
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-        <div>
-            <h3 class="employee-preview-title mb-1">Welcome back, Employee</h3>
-            <p class="text-muted mb-0">Rapid Lube Downtown · Service Floor Workspace</p>
-        </div>
-
-        <div class="d-flex flex-wrap align-items-center gap-2">
-            <span class="badge bg-label-primary">25 Apr 2026</span>
-            <span class="badge bg-label-success">Shift Active</span>
-            <span class="badge bg-label-warning">Morning Shift</span>
-        </div>
-    </div>
-
-    <div class="row g-4">
-        <div class="col-xl-6">
-            <div class="card employee-surface-card mb-4">
-                <div class="card-header d-flex flex-wrap justify-content-between align-items-start gap-3">
+    <div class="preview-grid">
+        <section class="preview-left-column">
+            <div class="preview-card">
+                <div class="preview-card-header">
                     <div>
-                        <h4 class="employee-preview-title mb-1">Product Mix</h4>
-                        <p class="text-muted mb-0">Today's operator snapshot for the service floor.</p>
+                        <h2 class="preview-card-title">Product Mix</h2>
                     </div>
 
-                    <div class="d-flex align-items-start gap-3">
-                        <select class="form-select form-select-sm" aria-label="Employee dashboard filter">
+                    <div class="preview-card-tools">
+                        <select class="preview-select" aria-label="Employee dashboard filter">
                             <option selected>Today (Default)</option>
                             <option>This Week</option>
                             <option>This Month</option>
                         </select>
 
-                        <div class="text-end">
-                            <small class="employee-updated-text fw-semibold d-block">Updated</small>
-                            <small class="text-muted">19 seconds ago</small>
+                        <div class="preview-updated">
+                            <span class="preview-updated-label">Updated</span>
+                            <span class="preview-updated-time">19 seconds ago</span>
                         </div>
 
-                        <a href="javascript:void(0)" class="btn btn-icon btn-sm btn-label-primary">
+                        <button type="button" class="preview-refresh-btn">
                             <i class="ti tabler-refresh"></i>
-                        </a>
+                        </button>
+
+                        <span class="preview-status-dot"></span>
                     </div>
                 </div>
 
-                <div class="card-body pt-2">
-                    <div class="row g-3">
+                <div class="preview-card-body">
+                    <div class="preview-stats-grid">
                         @foreach($summaryCards as $card)
-                            <div class="col-md-6 {{ $loop->last ? 'col-lg-6' : '' }}">
-                                <div class="employee-dashboard-chip employee-dashboard-chip--{{ $card['variant'] }}">
-                                    <div class="d-flex justify-content-between align-items-start gap-3">
-                                        <div>
-                                            <h2 class="mb-1">{{ $card['value'] }}</h2>
-                                            <div class="fw-semibold text-body">{{ $card['label'] }}</div>
-                                            <small class="text-muted">{{ $card['meta'] }}</small>
-                                        </div>
-                                        <i class="ti {{ $card['icon'] }} fs-1"></i>
+                            <div class="preview-chip {{ $card['chip'] }}">
+                                <div>
+                                    <div class="preview-chip-number-row">
+                                        <span class="preview-chip-value">{{ $card['value'] }}</span>
+                                        <span class="preview-chip-label">{{ $card['label'] }}</span>
                                     </div>
+                                    <div class="preview-chip-meta">{{ $card['meta'] }}</div>
                                 </div>
+                                <i class="ti {{ $card['icon'] }} preview-chip-icon"></i>
                             </div>
                         @endforeach
                     </div>
                 </div>
             </div>
 
-            <div class="card employee-surface-card h-100">
-                <div class="card-header">
-                    <h4 class="employee-preview-title mb-1">Operations</h4>
-                    <p class="text-muted mb-0">Quick links for employee desk and service floor actions.</p>
+            <div class="preview-card preview-operations-card">
+                <div class="preview-card-header">
+                    <div>
+                        <h2 class="preview-card-title">Operations</h2>
+                    </div>
                 </div>
-                <div class="card-body pt-2">
+
+                <div class="preview-card-body">
                     @foreach($operations as $operation)
-                        <div class="employee-ops-item d-flex justify-content-between align-items-center py-3">
-                            <div class="d-flex align-items-center gap-3">
-                                <span class="employee-ops-icon fs-4">
+                        <div class="preview-operation-item">
+                            <div class="preview-operation-main">
+                                <span class="preview-operation-icon">
                                     <i class="ti {{ $operation['icon'] }}"></i>
                                 </span>
-                                <div>
-                                    <div class="fw-semibold">{{ $operation['label'] }}</div>
-                                    <small class="text-muted">{{ $operation['meta'] }}</small>
-                                </div>
+                                <span class="preview-operation-label">{{ $operation['label'] }}</span>
                             </div>
 
-                            <a href="javascript:void(0)" class="employee-preview-link">
-                                <i class="ti tabler-arrow-up-right fs-5"></i>
-                            </a>
+                            <span class="preview-operation-link">
+                                <i class="ti tabler-arrow-up-right"></i>
+                            </span>
                         </div>
                     @endforeach
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div class="col-xl-6">
-            <div class="employee-tile-grid">
-                @foreach($actionTiles as $tile)
-                    <div class="card employee-tile-card employee-surface-card mb-0">
-                        <div class="card-body d-flex flex-column align-items-center justify-content-center text-center p-4">
-                            <span class="employee-tile-icon mb-3">
+        <section class="preview-right-column">
+            <div class="preview-tiles-grid">
+                @foreach($tiles as $tile)
+                    <div class="preview-card preview-tile">
+                        <div class="preview-tile-content">
+                            <span class="preview-tile-icon-wrap">
                                 <i class="ti {{ $tile['icon'] }}"></i>
                             </span>
-                            <h4 class="employee-tile-title mb-0">{{ $tile['label'] }}</h4>
+                            <h3 class="preview-tile-title">{{ $tile['label'] }}</h3>
                         </div>
                     </div>
                 @endforeach
             </div>
-        </div>
-
-        <div class="col-12">
-            <div class="card employee-surface-card">
-                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-                    <div>
-                        <h5 class="employee-preview-title mb-1">Recent Jobs</h5>
-                        <p class="text-muted mb-0">Static demo rows for the employee portal preview.</p>
-                    </div>
-                    <span class="badge bg-label-primary">UI Only</span>
-                </div>
-                <div class="table-responsive">
-                    <table class="table employee-table align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>Customer</th>
-                                <th>Vehicle</th>
-                                <th>Service</th>
-                                <th>Status</th>
-                                <th class="text-end">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($recentJobs as $job)
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-3">
-                                            <span class="avatar avatar-sm bg-label-primary">
-                                                <span class="fw-semibold">{{ strtoupper(substr($job['customer'], 0, 1)) }}</span>
-                                            </span>
-                                            <span class="fw-medium">{{ $job['customer'] }}</span>
-                                        </div>
-                                    </td>
-                                    <td>{{ $job['vehicle'] }}</td>
-                                    <td>{{ $job['service'] }}</td>
-                                    <td>
-                                        <span class="badge bg-label-{{ $job['theme'] }}">{{ $job['status'] }}</span>
-                                    </td>
-                                    <td class="text-end">
-                                        <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary">View Job</a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+        </section>
     </div>
+
+    <nav class="preview-bottom-nav">
+        @foreach($bottomNav as $item)
+            <a href="javascript:void(0)" class="preview-bottom-link">
+                <span class="preview-bottom-icon">
+                    <i class="ti {{ $item['icon'] }}"></i>
+                </span>
+                <span class="preview-bottom-label">{{ $item['label'] }}</span>
+            </a>
+        @endforeach
+    </nav>
 @endsection

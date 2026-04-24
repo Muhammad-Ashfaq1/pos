@@ -15,7 +15,6 @@
     <title>@yield('title', 'Employee Portal')</title>
 
     <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
-
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -28,132 +27,426 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/core.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/cards-advance.css') }}" />
-
-    <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
-    <script src="{{ asset('assets/js/config.js') }}"></script>
 
     <style>
-        .employee-admin-preview {
-            --employee-indigo-50: #eef2ff;
-            --employee-indigo-100: #e0e7ff;
-            --employee-indigo-300: #a5b4fc;
-            --employee-indigo-600: #4f46e5;
-            --employee-indigo-700: #4338ca;
-            --employee-indigo-800: #3730a3;
-            --employee-amber-100: #fef3c7;
-            --employee-amber-400: #fbbf24;
-            --employee-slate-200: #e2e8f0;
-            --employee-slate-400: #94a3b8;
-            --employee-slate-500: #64748b;
-            --employee-slate-700: #334155;
-        }
-
-        .employee-admin-preview {
+        body.employee-admin-preview {
+            --preview-page: #f8f8fc;
+            --preview-card: #ffffff;
+            --preview-border: #c7d2fe;
+            --preview-indigo: #4338ca;
+            --preview-indigo-dark: #312e81;
+            --preview-muted: #64748b;
+            --preview-slate-light: #94a3b8;
+            --preview-amber: #fbbf24;
+            --preview-amber-soft: #fef3c7;
+            --preview-blue-soft: #dbeafe;
+            --preview-purple-soft: #eedcff;
+            --preview-violet-soft: #ddd6fe;
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Public Sans', sans-serif;
             background:
-                radial-gradient(circle at top right, rgba(79, 70, 229, 0.06), transparent 24%),
-                linear-gradient(180deg, #f8f7fb 0%, #f5f5f9 100%);
+                radial-gradient(circle at top right, rgba(165, 180, 252, 0.18), transparent 22%),
+                linear-gradient(180deg, #fafafd 0%, #f5f6fb 100%);
         }
 
-        .employee-admin-preview .employee-preview-navbar {
-            backdrop-filter: saturate(180%) blur(14px);
-            background-color: rgba(255, 255, 255, 0.88);
-            border-bottom: 1px solid rgba(47, 43, 61, 0.08);
-        }
-
-        .employee-admin-preview .employee-preview-shell {
+        .employee-admin-preview .preview-shell {
             min-height: 100vh;
         }
 
-        .employee-admin-preview .employee-preview-navbar .navbar-brand {
-            font-size: 1rem;
+        .employee-admin-preview .preview-header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            border-bottom: 1px solid rgba(199, 210, 254, 0.9);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(18px);
         }
 
-        .employee-admin-preview .employee-surface-card {
-            border: 1px solid rgba(165, 180, 252, 0.45);
-            box-shadow: 0 0.25rem 1rem rgba(47, 43, 61, 0.04);
+        .employee-admin-preview .preview-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1rem;
         }
 
-        .employee-admin-preview .employee-surface-card,
-        .employee-admin-preview .employee-dashboard-chip,
-        .employee-admin-preview .employee-tile-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .employee-admin-preview .employee-surface-card:hover,
-        .employee-admin-preview .employee-dashboard-chip:hover,
-        .employee-admin-preview .employee-tile-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 1rem 1.5rem rgba(47, 43, 61, 0.08);
-        }
-
-        .employee-admin-preview .employee-dashboard-chip {
-            border-radius: 1rem;
-            padding: 1.5rem;
-            min-height: 5.9rem;
-        }
-
-        .employee-admin-preview .employee-dashboard-chip--primary {
-            background: linear-gradient(135deg, rgba(224, 231, 255, 0.95), rgba(147, 197, 253, 0.85));
-        }
-
-        .employee-admin-preview .employee-dashboard-chip--secondary {
-            background: linear-gradient(135deg, rgba(243, 232, 255, 0.95), rgba(196, 181, 253, 0.85));
-        }
-
-        .employee-admin-preview .employee-dashboard-chip--accent {
-            background: linear-gradient(135deg, rgba(238, 242, 255, 0.95), rgba(165, 180, 252, 0.92));
-        }
-
-        .employee-admin-preview .employee-tile-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+        .employee-admin-preview .preview-header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             gap: 1rem;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
         }
 
-        .employee-admin-preview .employee-tile-card {
-            border: 1px solid rgba(165, 180, 252, 0.45);
-            min-height: 9.75rem;
+        .employee-admin-preview .preview-brand {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
         }
 
-        .employee-admin-preview .employee-tile-icon {
-            width: 3.5rem;
-            height: 3.5rem;
-            border-radius: 1rem;
+        .employee-admin-preview .preview-brand-text {
+            font-size: 2.25rem;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: 0.04em;
+            color: var(--preview-indigo-dark);
+        }
+
+        .employee-admin-preview .preview-brand-text span {
+            color: var(--preview-amber);
+        }
+
+        .employee-admin-preview .preview-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .employee-admin-preview .preview-circle-btn {
+            width: 2.6rem;
+            height: 2.6rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: var(--employee-amber-100);
-            color: var(--employee-amber-400);
-            font-size: 1.5rem;
+            border-radius: 999px;
+            border: 0;
+            font-size: 1.2rem;
         }
 
-        .employee-admin-preview .employee-tile-title,
-        .employee-admin-preview .employee-preview-title,
-        .employee-admin-preview .employee-preview-link,
-        .employee-admin-preview .employee-updated-text {
-            color: var(--employee-indigo-700);
+        .employee-admin-preview .preview-circle-btn--indigo {
+            background: #eef2ff;
+            color: var(--preview-indigo);
         }
 
-        .employee-admin-preview .employee-dashboard-chip i,
-        .employee-admin-preview .employee-ops-icon {
-            color: var(--employee-indigo-600);
+        .employee-admin-preview .preview-circle-btn--slate {
+            background: #f1f5f9;
+            color: #475569;
         }
 
-        .employee-admin-preview .employee-ops-item + .employee-ops-item {
-            border-top: 1px solid rgba(47, 43, 61, 0.08);
+        .employee-admin-preview .preview-circle-btn--red {
+            background: #fef2f2;
+            color: #f87171;
         }
 
-        .employee-admin-preview .employee-table thead th {
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--employee-slate-400);
+        .employee-admin-preview .preview-main {
+            padding-bottom: 8rem;
         }
 
-        @media (max-width: 991.98px) {
-            .employee-admin-preview .employee-tile-grid {
-                grid-template-columns: 1fr;
+        .employee-admin-preview .preview-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 1rem;
+        }
+
+        .employee-admin-preview .preview-left-column,
+        .employee-admin-preview .preview-right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .employee-admin-preview .preview-card {
+            border: 1px solid var(--preview-border);
+            border-radius: 1.4rem;
+            background: var(--preview-card);
+            box-shadow: 0 10px 26px rgba(67, 56, 202, 0.04);
+            overflow: hidden;
+        }
+
+        .employee-admin-preview .preview-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1.1rem 1.25rem;
+            border-bottom: 1px solid rgba(199, 210, 254, 0.55);
+        }
+
+        .employee-admin-preview .preview-card-title {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .employee-admin-preview .preview-card-body {
+            padding: 1rem 1.25rem 1.25rem;
+        }
+
+        .employee-admin-preview .preview-card-tools {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.85rem;
+            flex-wrap: wrap;
+        }
+
+        .employee-admin-preview .preview-select {
+            min-width: 10rem;
+            border: 1px solid var(--preview-border);
+            border-radius: 0.8rem;
+            background: #fff;
+            padding: 0.6rem 0.85rem;
+            font-size: 0.88rem;
+            color: #334155;
+        }
+
+        .employee-admin-preview .preview-updated {
+            text-align: right;
+        }
+
+        .employee-admin-preview .preview-updated-label {
+            display: block;
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: var(--preview-indigo);
+        }
+
+        .employee-admin-preview .preview-updated-time {
+            display: block;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .employee-admin-preview .preview-refresh-btn {
+            width: 2.55rem;
+            height: 2.55rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--preview-border);
+            border-radius: 999px;
+            background: #eef2ff;
+            color: var(--preview-indigo);
+            font-size: 1.25rem;
+        }
+
+        .employee-admin-preview .preview-status-dot {
+            width: 0.7rem;
+            height: 0.7rem;
+            border-radius: 999px;
+            background: #d4d4d8;
+            margin-top: 0.9rem;
+        }
+
+        .employee-admin-preview .preview-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.9rem;
+        }
+
+        .employee-admin-preview .preview-chip {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            border-radius: 1.2rem;
+            padding: 1.35rem;
+            min-height: 6rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .employee-admin-preview .preview-chip:hover,
+        .employee-admin-preview .preview-tile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 36px rgba(67, 56, 202, 0.08);
+        }
+
+        .employee-admin-preview .preview-chip--blue {
+            background: linear-gradient(135deg, var(--preview-blue-soft) 0%, #bfdbfe 100%);
+        }
+
+        .employee-admin-preview .preview-chip--purple {
+            background: linear-gradient(135deg, #f3e8ff 0%, #d8b4fe 100%);
+        }
+
+        .employee-admin-preview .preview-chip--violet {
+            background: linear-gradient(135deg, #ede9fe 0%, #a5b4fc 100%);
+        }
+
+        .employee-admin-preview .preview-chip-number-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 0.45rem;
+        }
+
+        .employee-admin-preview .preview-chip-value {
+            font-size: 2.05rem;
+            font-weight: 800;
+            line-height: 1;
+            color: #374151;
+        }
+
+        .employee-admin-preview .preview-chip-label {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #374151;
+            padding-bottom: 0.18rem;
+        }
+
+        .employee-admin-preview .preview-chip-meta {
+            margin-top: 0.7rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: rgba(71, 85, 105, 0.9);
+        }
+
+        .employee-admin-preview .preview-chip-icon {
+            font-size: 2.35rem;
+            color: rgba(67, 56, 202, 0.72);
+        }
+
+        .employee-admin-preview .preview-operations-card {
+            min-height: 20.5rem;
+        }
+
+        .employee-admin-preview .preview-operation-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.95rem 0;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+        }
+
+        .employee-admin-preview .preview-operation-item:last-child {
+            border-bottom: 0;
+        }
+
+        .employee-admin-preview .preview-operation-main {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .employee-admin-preview .preview-operation-icon {
+            font-size: 1.3rem;
+            color: var(--preview-amber);
+        }
+
+        .employee-admin-preview .preview-operation-label {
+            font-size: 0.96rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .employee-admin-preview .preview-operation-link {
+            font-size: 1.2rem;
+            color: var(--preview-indigo);
+        }
+
+        .employee-admin-preview .preview-tiles-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .employee-admin-preview .preview-tile {
+            min-height: 9.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .employee-admin-preview .preview-tile-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .employee-admin-preview .preview-tile-icon-wrap {
+            width: 4rem;
+            height: 4rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            background: var(--preview-amber-soft);
+            color: var(--preview-amber);
+            font-size: 1.95rem;
+        }
+
+        .employee-admin-preview .preview-tile-title {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--preview-indigo);
+        }
+
+        .employee-admin-preview .preview-bottom-nav {
+            position: fixed;
+            left: 50%;
+            bottom: 1.25rem;
+            transform: translateX(-50%);
+            z-index: 25;
+            width: min(90%, 54rem);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            gap: 0.5rem;
+            padding: 0.7rem 0.9rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(165, 180, 252, 0.9);
+            background: rgba(224, 231, 255, 0.92);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 24px 50px rgba(67, 56, 202, 0.18);
+        }
+
+        .employee-admin-preview .preview-bottom-link {
+            min-width: 6rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+            padding: 0.55rem 0.75rem;
+            text-decoration: none;
+            border-radius: 0.85rem;
+            color: var(--preview-indigo);
+            transition: background-color 0.2s ease;
+        }
+
+        .employee-admin-preview .preview-bottom-link:hover {
+            background: rgba(255, 255, 255, 0.72);
+        }
+
+        .employee-admin-preview .preview-bottom-icon {
+            font-size: 1.35rem;
+        }
+
+        .employee-admin-preview .preview-bottom-label {
+            font-size: 0.86rem;
+            font-weight: 600;
+        }
+
+        @media (min-width: 768px) {
+            .employee-admin-preview .preview-container {
+                padding: 1.25rem 1.5rem;
+            }
+
+            .employee-admin-preview .preview-stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .employee-admin-preview .preview-stats-grid .preview-chip:last-child {
+                max-width: 48%;
+            }
+
+            .employee-admin-preview .preview-tiles-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .employee-admin-preview .preview-container {
+                padding: 1.35rem 1.75rem;
+            }
+
+            .employee-admin-preview .preview-grid {
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
             }
         }
     </style>
@@ -161,28 +454,33 @@
     @stack('styles')
 </head>
 <body class="employee-admin-preview">
-    <div class="employee-preview-shell">
-        <nav class="employee-preview-navbar navbar navbar-expand-lg">
-            <div class="container-fluid px-4 px-lg-5">
-                <a href="{{ route('employee.dashboard') }}" class="navbar-brand d-flex align-items-center gap-3 mb-0">
-                    <span class="avatar bg-label-primary">
-                        <i class="ti tabler-steering-wheel"></i>
-                    </span>
-                    <span>
-                        <span class="fw-bold d-block text-body">{{ config('app.name', 'Oil Change POS') }}</span>
-                        <small class="text-muted">Employee Portal Preview</small>
-                    </span>
-                </a>
+    <div class="preview-shell">
+        <header class="preview-header">
+            <div class="preview-container">
+                <div class="preview-header-inner">
+                    <a href="{{ route('employee.dashboard') }}" class="preview-brand">
+                        <span class="preview-brand-text">OIL<span>POS</span></span>
+                    </a>
 
-                <div class="d-flex align-items-center gap-2 ms-auto">
-                    <span class="badge bg-label-primary">UI Only</span>
-                    <span class="badge bg-label-success">Vuexy Preview</span>
+                    <div class="preview-header-actions">
+                        <button type="button" class="preview-circle-btn preview-circle-btn--indigo">
+                            <i class="ti tabler-bell"></i>
+                        </button>
+                        <button type="button" class="preview-circle-btn preview-circle-btn--slate">
+                            <i class="ti tabler-user"></i>
+                        </button>
+                        <button type="button" class="preview-circle-btn preview-circle-btn--red">
+                            <i class="ti tabler-logout"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
-        </nav>
+        </header>
 
-        <main class="container-fluid px-4 px-lg-5 py-4 py-lg-5">
-            @yield('content')
+        <main class="preview-main">
+            <div class="preview-container">
+                @yield('content')
+            </div>
         </main>
     </div>
 
