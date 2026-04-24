@@ -1,0 +1,76 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
+
+class PermissionSeeder extends Seeder
+{
+    public function run(): void
+    {
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        $permissions = [
+            'dashboard.view',
+            'tenant.approvals.manage',
+            'tenant.impersonate',
+            'users.view',
+            'users.create',
+            'users.update',
+            'users.delete',
+            'roles.view',
+            'roles.manage',
+            'category.view',
+            'category.create',
+            'category.update',
+            'category.delete',
+            'subcategory.view',
+            'subcategory.create',
+            'subcategory.update',
+            'subcategory.delete',
+            'product.view',
+            'product.create',
+            'product.update',
+            'product.delete',
+            'product.adjust_stock',
+            'products.view',
+            'products.manage',
+            'service.view',
+            'service.create',
+            'service.update',
+            'service.delete',
+            'services.view',
+            'services.manage',
+            'inventory.view',
+            'inventory.manage',
+            'pos.bill',
+            'discount.manage',
+            'discount.apply_bill',
+            'discount.apply_item',
+            'discounts.manage',
+            'refunds.manage',
+            'customer.view',
+            'customer.create',
+            'customer.update',
+            'customer.delete',
+            'customers.view',
+            'customers.manage',
+            'vehicle.view',
+            'vehicle.create',
+            'vehicle.update',
+            'vehicle.delete',
+            'vehicles.view',
+            'vehicles.manage',
+            'reminders.manage',
+            'reports.view',
+            'audit-logs.view',
+            'settings.manage',
+        ];
+
+        foreach ($permissions as $permission) {
+            Permission::findOrCreate($permission, 'web');
+        }
+    }
+}

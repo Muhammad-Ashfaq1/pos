@@ -1,18 +1,55 @@
 <?php
 
+use App\Exceptions\InvalidTenantStatusTransitionException;
+use App\Http\Middleware\EnsureActiveUser;
+use App\Http\Middleware\EnsureCentralUser;
+use App\Http\Middleware\EnsureEmployeePanelAccess;
+use App\Http\Middleware\EnsureImpersonatingSession;
+use App\Http\Middleware\EnsureTenantIsApproved;
+use App\Http\Middleware\InitializeTenancyFromAuthenticatedUser;
+use App\Http\Middleware\IsSuperAdmin;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\Route;
+use Spatie\Permission\Middleware\PermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware;
+use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        then: function (): void {
+            Route::middleware('web')->group(base_path('routes/auth.php'));
+            Route::middleware('web')->group(base_path('routes/admin.php'));
+            Route::middleware('web')->group(base_path('routes/employee.php'));
+            Route::middleware('web')->group(base_path('routes/tenant.php'));
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'active.user' => EnsureActiveUser::class,
+            'central.user' => EnsureCentralUser::class,
+            'employee.panel' => EnsureEmployeePanelAccess::class,
+            'impersonating' => EnsureImpersonatingSession::class,
+            'permission' => PermissionMiddleware::class,
+            'role' => RoleMiddleware::class,
+            'role_or_permission' => RoleOrPermissionMiddleware::class,
+            'super_admin' => IsSuperAdmin::class,
+            'tenant.init' => InitializeTenancyFromAuthenticatedUser::class,
+            'tenant.approved' => EnsureTenantIsApproved::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (InvalidTenantStatusTransitionException $exception, $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $exception->getMessage(),
+                ], 422);
+            }
+
+            return back()->with('error', $exception->getMessage());
+        });
     })->create();

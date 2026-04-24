@@ -1,15 +1,36 @@
+@php
+  $authUser = auth()->user();
+  $isEmployeePanel = $authUser?->isEmployee() ?? false;
+  $bodyClasses = ' layout-navbar-fixed layout-menu-fixed layout-compact ';
+
+  if (str_starts_with(request()->route()?->getName() ?? '', 'tenant.settings.')) {
+      $bodyClasses .= ' layout-menu-collapsed ';
+  }
+
+  $contentContainerClass = trim($__env->yieldContent('content_container_class')) ?: ($isEmployeePanel
+      ? 'container-fluid flex-grow-1 container-p-y'
+      : 'container-xxl flex-grow-1 container-p-y');
+@endphp
+
 <!doctype html>
 
 <html
   lang="en"
-  class=" layout-navbar-fixed layout-menu-fixed layout-compact "
+  class="{{ trim($bodyClasses) }}"
   dir="ltr"
   data-skin="default"
   data-bs-theme="light"
-  data-assets-path="../../assets/"
+  data-assets-path="{{ asset('assets') }}/"
   data-template="vertical-menu-template">
   <head>
     <meta charset="utf-8" />
+    <script>
+      (function () {
+        const theme = localStorage.getItem('templateCustomizer-vertical-menu-template--Theme') || 'light';
+        const themeToApply = theme === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme;
+        document.documentElement.setAttribute('data-bs-theme', themeToApply);
+      })();
+    </script>
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
@@ -30,8 +51,6 @@
 
     <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/iconify-icons.css') }}" />
 
-    <script src="{{ asset('assets/vendor/libs/@algolia/autocomplete-js.js') }}"></script>
-
     <!-- Core CSS -->
     <!-- build:css assets/vendor/css/theme.css  -->
 
@@ -45,6 +64,7 @@
     <!-- Vendors CSS -->
 
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
 
     <!-- endbuild -->
 
@@ -53,6 +73,7 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/flag-icons.css') }}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-3.2.8.min.css" />
 
     <!-- Page CSS -->
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/cards-advance.css') }}" />
@@ -67,17 +88,10 @@
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
 
     <script src="{{ asset('assets/js/config.js') }}"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<!-- Toastr -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
-
     <meta name="csrf-token" content="{{ csrf_token() }}">
-     <title>@yield('title', 'My App')</title> <!-- Ye tab title -->
+    @stack('styles')
+    @stack('page-style')
+    <title>@yield('title', config('app.name', 'Oil Change POS'))</title>
 
   </head>
 
@@ -87,28 +101,28 @@
       <div class="layout-container">
         <!-- Menu -->
 
-
-        @include('layouts.partials.sidebar')
+        @include($isEmployeePanel ? 'employee.partials.sidebar' : 'layouts.partials.sidebar')
         <!-- / Menu -->
 
         <!-- Layout container -->
         <div class="layout-page">
           <!-- Navbar -->
-
-        @include('layouts.partials.navbar')
+        @include($isEmployeePanel ? 'employee.partials.navbar' : 'layouts.partials.navbar')
 
           <!-- / Navbar -->
 
           <!-- Content wrapper -->
           <div class="content-wrapper">
             <!-- Content -->
-            <div class="container-xxl flex-grow-1 container-p-y">
+            <div class="{{ $contentContainerClass }}">
 
             @yield('content')
             </div>
             <!-- / Content -->
 
-           @include('layouts.partials.footer')
+           @unless($isEmployeePanel)
+             @include('layouts.partials.footer')
+           @endunless
 
             <div class="content-backdrop fade"></div>
           </div>
@@ -129,6 +143,7 @@
     <!-- build:js assets/vendor/js/theme.js  -->
 
     <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/@algolia/autocomplete-js.js') }}"></script>
 
     <script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>
     <script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
@@ -141,6 +156,7 @@
     <script src="{{ asset('assets/vendor/libs/hammer/hammer.js') }}"></script>
 
     <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
 
     <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
 
@@ -157,7 +173,33 @@
 
     <!-- Page JS -->
     <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>
+    <script>
+      window.sessionMessages = window.sessionMessages || {};
+      @if (session('success'))
+        window.sessionMessages.success = @json(session('success'));
+      @endif
+      @if (session('error'))
+        window.sessionMessages.error = @json(session('error'));
+      @endif
+      @if (session('info'))
+        window.sessionMessages.info = @json(session('info'));
+      @endif
+      @if (session('warning'))
+        window.sessionMessages.warning = @json(session('warning'));
+      @endif
+      @if (session('status'))
+        window.sessionMessages.status = @json(session('status'));
+      @endif
+      @if (session('errors') && $errors->any())
+        window.sessionMessages.errors = @json($errors->all());
+      @endif
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-aio-3.2.8.min.js"></script>
+    <script src="{{ asset('assets/js/app-helpers.js') }}"></script>
+    <script src="{{ asset('assets/js/dropdowns.js') }}"></script>
+    <script src="{{ asset('assets/js/session-notifications.js') }}"></script>
+    @stack('page-script')
     @yield('scripts')
 
   </body>

@@ -2,74 +2,142 @@
 
 namespace App\Models;
 
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
+use App\Notifications\Auth\QueuedVerifyEmail;
+use App\Support\Permissions\PermissionTeamScope;
+use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory;
+    use HasRoles;
+    use MustVerifyEmailTrait;
+    use Notifiable;
 
-    // 🔹 Role Constants
     public const SUPER_ADMIN = 'super_admin';
+
     public const TENANT_ADMIN = 'tenant_admin';
+
     public const MANAGER = 'manager';
+
     public const CASHIER = 'cashier';
+
     public const TECHNICIAN = 'technician';
+
     public const INVENTORY_CLERK = 'inventory_clerk';
+
+    public const EMPLOYEE = 'employee';
+
     public const CUSTOMER = 'customer';
 
-    // 🔹 Helper Functions
+    protected string $guard_name = 'web';
 
-    public function isSuperAdmin()
-    {
-        return $this->hasRole(self::SUPER_ADMIN);
-    }
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'tenant_id',
+        'role',
+        'phone',
+        'failed_attempts',
+        'locked_until',
+        'is_active',
+        'last_login_at',
+        'last_login_ip',
+    ];
 
-    public function isTenantAdmin()
-    {
-        return $this->hasRole(self::TENANT_ADMIN);
-    }
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
-    public function isManager()
-    {
-        return $this->hasRole(self::MANAGER);
-    }
-
-    public function isCashier()
-    {
-        return $this->hasRole(self::CASHIER);
-    }
-
-    public function isTechnician()
-    {
-        return $this->hasRole(self::TECHNICIAN);
-    }
-
-    public function isInventoryClerk()
-    {
-        return $this->hasRole(self::INVENTORY_CLERK);
-    }
-
-    public function isCustomer()
-    {
-        return $this->hasRole(self::CUSTOMER);
-    }
-
-    /**
-     * Get the attributes that should be cast.
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
+            'locked_until' => 'datetime',
         ];
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === self::SUPER_ADMIN || $this->hasRole(self::SUPER_ADMIN);
+    }
+
+    public function isTenantAdmin(): bool
+    {
+        return $this->role === self::TENANT_ADMIN || $this->hasRole(self::TENANT_ADMIN);
+    }
+
+    public function isManager(): bool
+    {
+        return $this->hasRole(self::MANAGER);
+    }
+
+    public function isCashier(): bool
+    {
+        return $this->hasRole(self::CASHIER);
+    }
+
+    public function isTechnician(): bool
+    {
+        return $this->hasRole(self::TECHNICIAN);
+    }
+
+    public function isInventoryClerk(): bool
+    {
+        return $this->hasRole(self::INVENTORY_CLERK);
+    }
+
+    public function isEmployee(): bool
+    {
+        return $this->role === self::EMPLOYEE || $this->hasRole(self::EMPLOYEE);
+    }
+
+    public function isCustomer(): bool
+    {
+        return $this->hasRole(self::CUSTOMER);
+    }
+
+    public function defaultDashboardRouteName(): string
+    {
+        return match (true) {
+            $this->isSuperAdmin() => 'admin.dashboard',
+            $this->isEmployee() => 'employee.dashboard',
+            ! empty($this->tenant_id) => 'tenant.dashboard',
+            default => 'admin.dashboard',
+        };
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new QueuedVerifyEmail);
+    }
+
+    public function assignPrimaryRole(string $role, ?int $tenantId = null): void
+    {
+        PermissionTeamScope::for($tenantId ?? 0, function () use ($role): void {
+            $this->syncRoles([$role]);
+        });
+
+        $this->forceFill(['role' => $role])->saveQuietly();
+    }
+
+    public function primaryRoleName(): ?string
+    {
+        return $this->role ?: $this->getRoleNames()->first();
     }
 }
