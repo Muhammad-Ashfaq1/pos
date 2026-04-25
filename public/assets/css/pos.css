@@ -1,0 +1,36 @@
+/* POS System Styles */
+
+.pos-sidebar-card {
+    min-height: 85vh;
+}
+
+.btn-cancel-order {
+    background-color: #ffe6e6 !important;
+}
+
+.pos-tool-label {
+    font-size: 16px;
+}
+
+.category-card {
+    background-color: #dbdaea;
+    min-height: 150px;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    background-color: #d1d0e5;
+}
+
+.pos-search-input {
+    border-left: 0 !important;
+    padding-left: 0 !important;
+}
+
+.pos-search-icon {
+    background-color: white !important;
+    border-right: 0 !important;
+}
