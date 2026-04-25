@@ -19,7 +19,12 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             RolePermissionSeeder::class,
             SuperAdminSeeder::class,
-            TenantRoleUserSeeder::class,
+            ApprovedShopSeeder::class,
+            TenantEmployeeSeeder::class,
         ]);
+
+        if (env('SEED_TENANT_ROLE_USERS', false)) {
+            $this->call(TenantRoleUserSeeder::class);
+        }
     }
 }
