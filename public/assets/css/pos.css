@@ -34,3 +34,29 @@
     background-color: white !important;
     border-right: 0 !important;
 }
+
+.pos-item-list {
+    max-height: 200px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    padding-right: 8px;
+}
+
+/* Custom Scrollbar */
+.pos-item-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.pos-item-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.pos-item-list::-webkit-scrollbar-thumb {
+    background: #dbdaea;
+    border-radius: 10px;
+}
+
+.pos-item-list::-webkit-scrollbar-thumb:hover {
+    background: #c3c2d6;
+}
