@@ -24,12 +24,10 @@
 
             <div class="custom-discount-section">
                 <h5 class="fw-bold mb-4">Custom Discount</h5>
-
                 <div class="mb-4">
                     <label class="form-label fw-bold small">Discount Title</label>
                     <input type="text" class="form-control py-2" placeholder="Discount Title">
                 </div>
-
                 <div class="mb-4">
                     <label class="form-label fw-bold small">Discount Type</label>
                     <select class="form-select py-2">
@@ -38,19 +36,16 @@
                         <option value="percentage">Percentage</option>
                     </select>
                 </div>
-
                 <div class="mb-4">
                     <label class="form-label fw-bold small">Discount Value</label>
                     <input type="text" class="form-control py-2" placeholder="Select Discount Value">
                 </div>
-
                 <div class="mb-4">
                     <label class="form-label fw-bold small">Valid Until</label>
                     <input type="date" class="form-control py-2">
                     <small class="text-muted mt-2 d-block fs-tiny">Please choose an expiry date for
                         the discount.</small>
                 </div>
-
                 <div class="text-end mt-5">
                     <button class="btn btn-primary px-4 py-2 rounded-3 fw-bold">Apply
                         Discount</button>

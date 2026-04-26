@@ -33,6 +33,10 @@
                             <option selected>Orders</option>
                         </select>
 
+                        <select class="form-select mb-3">
+                            <option selected>Add Vehicle</option>
+                        </select>
+
                         <table class="table table-borderless align-middle mb-2">
                             <thead>
                                 <tr class="border-bottom">
@@ -149,7 +153,7 @@
                         </div>
                     </div>
                     <div class="product-details-view d-none">
-                        <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+                        <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
                             <button
                                 class="btn btn-sm bg-label-secondary text-primary border-0 rounded-pill btn-circle-38 btn-back-to-categories">
                                 <i class="ti tabler-arrow-left fs-4"></i>
