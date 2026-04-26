@@ -2,7 +2,7 @@
     <div class="offcanvas offcanvas-start offcanvas-discount" tabindex="-1" id="offcanvasDiscount"
         aria-labelledby="offcanvasDiscountLabel">
         <div class="offcanvas-header border-bottom py-3">
-            <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center gap-3">
                 <button type="button"
                     class="btn btn-sm bg-label-primary bg-opacity-10 text-primary border-0 rounded-pill btn-circle-38"
                     data-bs-dismiss="offcanvas">
@@ -63,7 +63,7 @@
     <div class="offcanvas offcanvas-start offcanvas-discount" tabindex="-1" id="offcanvasServiceFee"
         aria-labelledby="offcanvasServiceFeeLabel">
         <div class="offcanvas-header border-bottom py-3">
-            <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center gap-3">
                 <button type="button"
                     class="btn btn-sm bg-label-primary bg-opacity-10 text-primary border-0 rounded-pill btn-circle-38"
                     data-bs-dismiss="offcanvas">
