@@ -25,6 +25,28 @@
     background-color: #d1d0e5;
 }
 
+.product-details-view .form-control:focus {
+    box-shadow: 0 0 0 0.25rem rgba(67, 56, 202, 0.1);
+}
+
+/* Utility Classes */
+.btn-circle-38 {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.offcanvas-discount {
+    width: 400px !important;
+}
+
+.fs-tiny {
+    font-size: 0.75rem !important;
+}
+
 .pos-search-input {
     border-left: 0 !important;
     padding-left: 0 !important;
