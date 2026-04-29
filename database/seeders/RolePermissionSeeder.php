@@ -48,10 +48,21 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('inventory.view', 'web'),
             Permission::findByName('inventory.manage', 'web'),
             Permission::findByName('pos.bill', 'web'),
+            Permission::findByName('discount.manage', 'web'),
+            Permission::findByName('discount.apply_bill', 'web'),
+            Permission::findByName('discount.apply_item', 'web'),
             Permission::findByName('discounts.manage', 'web'),
             Permission::findByName('refunds.manage', 'web'),
+            Permission::findByName('customer.view', 'web'),
+            Permission::findByName('customer.create', 'web'),
+            Permission::findByName('customer.update', 'web'),
+            Permission::findByName('customer.delete', 'web'),
             Permission::findByName('customers.view', 'web'),
             Permission::findByName('customers.manage', 'web'),
+            Permission::findByName('vehicle.view', 'web'),
+            Permission::findByName('vehicle.create', 'web'),
+            Permission::findByName('vehicle.update', 'web'),
+            Permission::findByName('vehicle.delete', 'web'),
             Permission::findByName('vehicles.view', 'web'),
             Permission::findByName('vehicles.manage', 'web'),
             Permission::findByName('reminders.manage', 'web'),
@@ -69,7 +80,16 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('services.view', 'web'),
             Permission::findByName('inventory.view', 'web'),
             Permission::findByName('pos.bill', 'web'),
+            Permission::findByName('discount.manage', 'web'),
+            Permission::findByName('discount.apply_bill', 'web'),
+            Permission::findByName('discount.apply_item', 'web'),
+            Permission::findByName('customer.view', 'web'),
+            Permission::findByName('customer.create', 'web'),
+            Permission::findByName('customer.update', 'web'),
             Permission::findByName('customers.view', 'web'),
+            Permission::findByName('vehicle.view', 'web'),
+            Permission::findByName('vehicle.create', 'web'),
+            Permission::findByName('vehicle.update', 'web'),
             Permission::findByName('vehicles.view', 'web'),
             Permission::findByName('reports.view', 'web'),
         ]);
@@ -77,7 +97,15 @@ class RolePermissionSeeder extends Seeder
         Role::findByName(User::CASHIER)->syncPermissions([
             Permission::findByName('dashboard.view', 'web'),
             Permission::findByName('pos.bill', 'web'),
+            Permission::findByName('discount.apply_bill', 'web'),
+            Permission::findByName('discount.apply_item', 'web'),
+            Permission::findByName('customer.view', 'web'),
+            Permission::findByName('customer.create', 'web'),
+            Permission::findByName('customer.update', 'web'),
             Permission::findByName('customers.view', 'web'),
+            Permission::findByName('vehicle.view', 'web'),
+            Permission::findByName('vehicle.create', 'web'),
+            Permission::findByName('vehicle.update', 'web'),
             Permission::findByName('vehicles.view', 'web'),
         ]);
 
@@ -85,6 +113,9 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('dashboard.view', 'web'),
             Permission::findByName('service.view', 'web'),
             Permission::findByName('services.view', 'web'),
+            Permission::findByName('customer.view', 'web'),
+            Permission::findByName('customers.view', 'web'),
+            Permission::findByName('vehicle.view', 'web'),
             Permission::findByName('vehicles.view', 'web'),
         ]);
 
@@ -95,6 +126,18 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('product.view', 'web'),
             Permission::findByName('product.adjust_stock', 'web'),
             Permission::findByName('products.view', 'web'),
+        ]);
+
+        Role::findByName(User::EMPLOYEE)->syncPermissions([
+            Permission::findByName('dashboard.view', 'web'),
+            Permission::findByName('product.view', 'web'),
+            Permission::findByName('products.view', 'web'),
+            Permission::findByName('service.view', 'web'),
+            Permission::findByName('services.view', 'web'),
+            Permission::findByName('customer.view', 'web'),
+            Permission::findByName('customers.view', 'web'),
+            Permission::findByName('vehicle.view', 'web'),
+            Permission::findByName('vehicles.view', 'web'),
         ]);
 
         Role::findByName(User::CUSTOMER)->syncPermissions([

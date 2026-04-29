@@ -1,7 +1,8 @@
 @php
     $user = auth()->user();
     $isSuperAdmin = $user?->isSuperAdmin();
-    $contextLabel = $isSuperAdmin ? 'Central Admin' : 'Tenant Workspace';
+    $isEmployee = $user?->isEmployee();
+    $contextLabel = $isSuperAdmin ? 'Central Admin' : ($isEmployee ? 'Employee Panel' : 'Tenant Workspace');
     $contextName = $isSuperAdmin
         ? config('app.name', 'Oil Change POS')
         : $user?->tenant?->display_name ?? 'Shop Workspace';
@@ -18,7 +19,7 @@
     <div class="navbar-nav-right d-flex align-items-center justify-content-between w-100" id="navbar-collapse">
         <div>
             <h6 class="mb-0">{{ $contextLabel }}</h6>
-            {{-- <h6 class="mb-0">{{ $contextName }}</h6> --}}
+            <small class="text-muted">{{ $contextName }}</small>
         </div>
 
         <ul class="navbar-nav flex-row align-items-center gap-3 ms-auto">

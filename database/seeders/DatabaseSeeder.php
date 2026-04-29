@@ -18,8 +18,13 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             PermissionSeeder::class,
             RolePermissionSeeder::class,
-            // SuperAdminSeeder::class,
-            // ApprovedShopSeeder::class,
+            SuperAdminSeeder::class,
+            ApprovedShopSeeder::class,
+            TenantEmployeeSeeder::class,
         ]);
+
+        if (env('SEED_TENANT_ROLE_USERS', false)) {
+            $this->call(TenantRoleUserSeeder::class);
+        }
     }
 }

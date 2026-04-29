@@ -76,9 +76,12 @@ class AuthController extends Controller
             'last_login_ip' => $request->ip(),
         ])->save();
 
-        $defaultRoute = $user->isSuperAdmin()
-            ? route('admin.dashboard')
-            : route('tenant.dashboard');
+        $defaultRouteName = $user->defaultDashboardRouteName();
+        $defaultRoute = route($defaultRouteName);
+
+        if ($user->isEmployee()) {
+            return redirect()->route($defaultRouteName);
+        }
 
         return redirect()->intended($defaultRoute);
     }
@@ -151,6 +154,10 @@ class AuthController extends Controller
 
     private function resolveLoginBlockMessage(User $user): ?string
     {
+        if ($user->isEmployee() && empty($user->tenant_id)) {
+            return 'Employee accounts must belong to a tenant workspace.';
+        }
+
         if ($user->tenant_id) {
             $tenant = $user->tenant()->first();
 

@@ -3,6 +3,7 @@
 use App\Exceptions\InvalidTenantStatusTransitionException;
 use App\Http\Middleware\EnsureActiveUser;
 use App\Http\Middleware\EnsureCentralUser;
+use App\Http\Middleware\EnsureEmployeePanelAccess;
 use App\Http\Middleware\EnsureImpersonatingSession;
 use App\Http\Middleware\EnsureTenantIsApproved;
 use App\Http\Middleware\InitializeTenancyFromAuthenticatedUser;
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
         then: function (): void {
             Route::middleware('web')->group(base_path('routes/auth.php'));
             Route::middleware('web')->group(base_path('routes/admin.php'));
+            Route::middleware('web')->group(base_path('routes/employee.php'));
             Route::middleware('web')->group(base_path('routes/tenant.php'));
         },
     )
@@ -30,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'active.user' => EnsureActiveUser::class,
             'central.user' => EnsureCentralUser::class,
+            'employee.panel' => EnsureEmployeePanelAccess::class,
             'impersonating' => EnsureImpersonatingSession::class,
             'permission' => PermissionMiddleware::class,
             'role' => RoleMiddleware::class,

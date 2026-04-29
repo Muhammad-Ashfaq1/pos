@@ -1,13 +1,17 @@
 <?php
 
 use App\Http\Controllers\Tenant\CategoryController;
+use App\Http\Controllers\Tenant\CustomerController;
 use App\Http\Controllers\Tenant\DashboardController;
+use App\Http\Controllers\Tenant\DiscountController;
 use App\Http\Controllers\Tenant\DropdownController;
 use App\Http\Controllers\Tenant\EcommerceController;
 use App\Http\Controllers\Tenant\ImageController;
 use App\Http\Controllers\Tenant\ProductController;
+use App\Http\Controllers\Tenant\ShopSettingsController;
 use App\Http\Controllers\Tenant\ServiceController;
 use App\Http\Controllers\Tenant\SubCategoryController;
+use App\Http\Controllers\Tenant\VehicleController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.approved'])
@@ -32,6 +36,12 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                         Route::get('/products', 'products')
                             ->middleware('permission:product.view|product.create|product.update|products.view|products.manage|service.view|service.create|service.update')
                             ->name('products');
+                        Route::get('/customers', 'customers')
+                            ->middleware('permission:customer.view|customer.create|customer.update|vehicle.view|vehicle.create|vehicle.update|pos.bill|customers.view|customers.manage')
+                            ->name('customers');
+                        Route::get('/vehicles', 'vehicles')
+                            ->middleware('permission:vehicle.view|vehicle.create|vehicle.update|customer.view|customer.create|customer.update|pos.bill|vehicles.view|vehicles.manage')
+                            ->name('vehicles');
                     });
 
                 Route::prefix('categories')
@@ -112,6 +122,69 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                             ->name('destroy');
                     });
 
+                Route::prefix('discounts')
+                    ->name('discounts.')
+                    ->controller(DiscountController::class)
+                    ->group(function () {
+                        Route::get('/', 'index')
+                            ->middleware('permission:discount.manage')
+                            ->name('index');
+                        Route::get('/listing', 'listing')
+                            ->middleware('permission:discount.manage')
+                            ->name('listing');
+                        Route::get('/{discount}/edit', 'edit')
+                            ->middleware('permission:discount.manage')
+                            ->name('edit');
+                        Route::post('/save', 'save')
+                            ->middleware('permission:discount.manage')
+                            ->name('save');
+                        Route::delete('/{discount}', 'destroy')
+                            ->middleware('permission:discount.manage')
+                            ->name('destroy');
+                    });
+
+                Route::prefix('customers')
+                    ->name('customers.')
+                    ->controller(CustomerController::class)
+                    ->group(function () {
+                        Route::get('/', 'index')
+                            ->middleware('permission:customer.view|customers.view')
+                            ->name('index');
+                        Route::get('/listing', 'listing')
+                            ->middleware('permission:customer.view|customers.view')
+                            ->name('listing');
+                        Route::get('/{customer}/edit', 'edit')
+                            ->middleware('permission:customer.update|customers.manage')
+                            ->name('edit');
+                        Route::post('/save', 'save')
+                            ->middleware('permission:customer.create|customer.update|customers.manage')
+                            ->name('save');
+                        Route::delete('/{customer}', 'destroy')
+                            ->middleware('permission:customer.delete|customers.manage')
+                            ->name('destroy');
+                    });
+
+                Route::prefix('vehicles')
+                    ->name('vehicles.')
+                    ->controller(VehicleController::class)
+                    ->group(function () {
+                        Route::get('/', 'index')
+                            ->middleware('permission:vehicle.view|vehicles.view')
+                            ->name('index');
+                        Route::get('/listing', 'listing')
+                            ->middleware('permission:vehicle.view|vehicles.view')
+                            ->name('listing');
+                        Route::get('/{vehicle}/edit', 'edit')
+                            ->middleware('permission:vehicle.update|vehicles.manage')
+                            ->name('edit');
+                        Route::post('/save', 'save')
+                            ->middleware('permission:vehicle.create|vehicle.update|vehicles.manage')
+                            ->name('save');
+                        Route::delete('/{vehicle}', 'destroy')
+                            ->middleware('permission:vehicle.delete|vehicles.manage')
+                            ->name('destroy');
+                    });
+
                 Route::prefix('images')
                     ->name('images.')
                     ->controller(ImageController::class)
@@ -125,6 +198,32 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                         Route::patch('/{image}/primary', 'setPrimary')
                             ->middleware('permission:product.update|products.manage')
                             ->name('primary');
+                    });
+            });
+
+        Route::prefix('settings')
+            ->name('settings.')
+            ->controller(ShopSettingsController::class)
+            ->group(function () {
+                Route::get('/shop-profile', 'edit')
+                    ->middleware('permission:settings.manage')
+                    ->name('shop-profile.edit');
+
+                Route::prefix('shop-profile')
+                    ->name('shop-profile.')
+                    ->middleware('permission:settings.manage')
+                    ->group(function () {
+                        Route::get('/general', 'general')->name('general');
+                        Route::post('/general/save', 'saveGeneral')->name('general.save');
+
+                        Route::get('/regional', 'regional')->name('regional');
+                        Route::post('/regional/save', 'saveRegional')->name('regional.save');
+
+                        Route::get('/operations', 'operations')->name('operations');
+                        Route::post('/operations/save', 'saveOperations')->name('operations.save');
+
+                        Route::get('/notifications', 'notifications')->name('notifications');
+                        Route::post('/notifications/save', 'saveNotifications')->name('notifications.save');
                     });
             });
     });
