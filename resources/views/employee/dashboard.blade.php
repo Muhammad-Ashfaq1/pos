@@ -11,7 +11,7 @@
 
     $tiles = [
         ['label' => 'Time Clock', 'icon' => 'tabler-clock-hour-4'],
-        ['label' => 'New Order', 'icon' => 'tabler-shopping-bag'],
+        ['label' => 'Create New Order', 'icon' => 'tabler-shopping-bag', 'url' => route('employee.order.new-order') ],
         ['label' => 'Reports', 'icon' => 'tabler-report-search'],
         ['label' => 'Orders', 'icon' => 'tabler-clipboard-data'],
         ['label' => 'Returns', 'icon' => 'tabler-arrow-back-up'],
