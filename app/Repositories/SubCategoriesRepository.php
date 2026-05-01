@@ -85,6 +85,7 @@ class SubCategoriesRepository implements SubCategoryRepositoryInterface
                 $query->where('category_id', $categoryId);
             });
 
+
         $this->applyOrdering($filteredQuery, $filters, $sort);
 
         $recordsTotal = (clone $baseQuery)->count();

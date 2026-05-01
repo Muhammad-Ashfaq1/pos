@@ -18,7 +18,7 @@ class DropdownController extends Controller
         $search = trim((string) $request->string('q')->toString());
         $perPage = min((int) $request->integer('per_page', 20), 50);
         $page = max((int) $request->integer('page', 1), 1);
-        $activeOnly = $request->boolean('active_only', false);
+        $activeOnly = $request->boolean('active_only', true);
 
         $query = Category::query()
             ->select(['id', 'name', 'code', 'slug'])
@@ -52,7 +52,7 @@ class DropdownController extends Controller
         $perPage = min((int) $request->integer('per_page', 20), 50);
         $page = max((int) $request->integer('page', 1), 1);
         $categoryId = $request->integer('category_id') ?: null;
-        $activeOnly = $request->boolean('active_only', false);
+        $activeOnly = $request->boolean('active_only', true);
 
         $query = SubCategory::query()
             ->select(['id', 'category_id', 'name', 'code', 'slug'])
@@ -87,7 +87,7 @@ class DropdownController extends Controller
         $search = trim((string) $request->string('q')->toString());
         $perPage = min((int) $request->integer('per_page', 20), 50);
         $page = max((int) $request->integer('page', 1), 1);
-        $activeOnly = $request->boolean('active_only', false);
+        $activeOnly = $request->boolean('active_only', true);
         $categoryId = $request->integer('category_id') ?: null;
 
         $query = Product::query()

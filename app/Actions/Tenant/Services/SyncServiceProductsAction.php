@@ -4,30 +4,68 @@ namespace App\Actions\Tenant\Services;
 
 use App\Models\Service;
 use Illuminate\Support\Collection;
+use App\Models\Product;
+use Illuminate\Support\Facades\DB;
 
 class SyncServiceProductsAction
 {
     public function execute(Service $service, array $mappings = []): void
     {
-        $normalizedMappings = $this->normalizeMappings(collect($mappings));
+        DB::transaction(function () use ($service, $mappings) {
 
-        $service->serviceProducts()->delete();
 
-        if ($normalizedMappings->isEmpty()) {
-            return;
-        }
 
-        $service->serviceProducts()->createMany(
-            $normalizedMappings
-                ->map(fn (array $mapping) => [
-                    'tenant_id' => $service->tenant_id,
-                    'product_id' => $mapping['product_id'],
-                    'quantity' => $mapping['quantity'],
-                    'unit' => $mapping['unit'],
+            $normalizedMappings = $this->normalizeMappings(collect($mappings));
+
+
+            foreach ($service->serviceProducts as $oldMapping) {
+
+                $product = Product::find($oldMapping->product_id);
+
+                if (!$product) {
+                    continue;
+                }
+
+                $product->increment('current_stock', $oldMapping->quantity);
+            }
+
+
+            $service->serviceProducts()->delete();
+
+            if ($normalizedMappings->isEmpty()) {
+                return;
+            }
+
+            foreach ($normalizedMappings as $mapping) {
+
+                $product = Product::find($mapping['product_id']);
+
+                if (!$product) {
+                    continue;
+                }
+
+                $requestedQty = (float) $mapping['quantity'];
+
+                if ($product->current_stock < $requestedQty) {
+                    throw new \Exception(
+                        "Insufficient stock for {$product->name}. Available: {$product->current_stock}"
+                    );
+                }
+
+                $product->decrement('current_stock', $requestedQty);
+            }
+
+
+            $service->serviceProducts()->createMany(
+                $normalizedMappings->map(fn($mapping) => [
+                    'tenant_id'   => $service->tenant_id,
+                    'product_id'  => $mapping['product_id'],
+                    'quantity'    => $mapping['quantity'],
+                    'unit'        => $mapping['unit'],
                     'is_required' => $mapping['is_required'],
-                ])
-                ->all()
-        );
+                ])->all()
+            );
+        });
     }
 
     private function normalizeMappings(Collection $mappings): Collection

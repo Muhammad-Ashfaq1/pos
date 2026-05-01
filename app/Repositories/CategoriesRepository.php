@@ -51,6 +51,7 @@ class CategoriesRepository implements CategoryRepositoryInterface
         ];
     }
 
+
     public function destroy(Category $category): array
     {
         $category->delete();

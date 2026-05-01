@@ -11,13 +11,14 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use App\Models\Product;
+
 
 class ServicesRepository implements ServiceRepositoryInterface
 {
     public function __construct(
         private readonly SyncServiceProductsAction $syncServiceProductsAction
-    ) {
-    }
+    ) {}
 
     public function index(): View
     {
@@ -80,14 +81,35 @@ class ServicesRepository implements ServiceRepositoryInterface
 
     public function destroy(Service $service): array
     {
-        $service->delete();
+        DB::transaction(function () use ($service) {
+
+
+            $service->load('serviceProducts');
+
+
+            foreach ($service->serviceProducts as $mapping) {
+
+                $product = Product::find($mapping->product_id);
+
+                if (!$product) {
+                    continue;
+                }
+
+                $product->increment('current_stock', (float) $mapping->quantity);
+            }
+
+
+            $service->serviceProducts()->delete();
+
+
+            $service->delete();
+        });
 
         return [
             'success' => true,
             'message' => 'Service deleted successfully.',
         ];
     }
-
     public function getServicesListing(array $filters, ?Authenticatable $user = null): array
     {
         $start = (int) ($filters['start'] ?? 0);
@@ -150,18 +172,18 @@ class ServicesRepository implements ServiceRepositoryInterface
             : null;
 
         $sortableColumns = [
-            'category_name' => fn (Builder $builder, string $direction) => $builder->orderBy(
+            'category_name' => fn(Builder $builder, string $direction) => $builder->orderBy(
                 Category::query()
                     ->select('name')
                     ->whereColumn('categories.id', 'services.category_id')
                     ->limit(1),
                 $direction
             ),
-            'name' => fn (Builder $builder, string $direction) => $builder->orderBy('name', $direction),
-            'code' => fn (Builder $builder, string $direction) => $builder->orderBy('code', $direction),
-            'standard_price' => fn (Builder $builder, string $direction) => $builder->orderBy('standard_price', $direction),
-            'estimated_duration_minutes' => fn (Builder $builder, string $direction) => $builder->orderBy('estimated_duration_minutes', $direction),
-            'created_at' => fn (Builder $builder, string $direction) => $builder->orderBy('created_at', $direction),
+            'name' => fn(Builder $builder, string $direction) => $builder->orderBy('name', $direction),
+            'code' => fn(Builder $builder, string $direction) => $builder->orderBy('code', $direction),
+            'standard_price' => fn(Builder $builder, string $direction) => $builder->orderBy('standard_price', $direction),
+            'estimated_duration_minutes' => fn(Builder $builder, string $direction) => $builder->orderBy('estimated_duration_minutes', $direction),
+            'created_at' => fn(Builder $builder, string $direction) => $builder->orderBy('created_at', $direction),
         ];
 
         if (is_string($orderColumn) && array_key_exists($orderColumn, $sortableColumns)) {
@@ -183,7 +205,7 @@ class ServicesRepository implements ServiceRepositoryInterface
     private function transformServices(Collection $services, ?Authenticatable $user = null): array
     {
         return $services
-            ->map(fn (Service $service) => $this->transformService($service, $user))
+            ->map(fn(Service $service) => $this->transformService($service, $user))
             ->all();
     }
 
@@ -211,17 +233,17 @@ class ServicesRepository implements ServiceRepositoryInterface
                 ?? ($service->relationLoaded('serviceProducts') ? $service->serviceProducts->count() : 0),
             'mappings' => $service->relationLoaded('serviceProducts')
                 ? $service->serviceProducts
-                    ->map(fn ($mapping) => [
-                        'product_id' => $mapping->product_id,
-                        'product_name' => $mapping->product?->name,
-                        'product_sku' => $mapping->product?->sku,
-                        'product_unit' => $mapping->product?->unit,
-                        'quantity' => (string) $mapping->quantity,
-                        'unit' => $mapping->unit,
-                        'is_required' => $mapping->is_required,
-                    ])
-                    ->values()
-                    ->all()
+                ->map(fn($mapping) => [
+                    'product_id' => $mapping->product_id,
+                    'product_name' => $mapping->product?->name,
+                    'product_sku' => $mapping->product?->sku,
+                    'product_unit' => $mapping->product?->unit,
+                    'quantity' => (string) $mapping->quantity,
+                    'unit' => $mapping->unit,
+                    'is_required' => $mapping->is_required,
+                ])
+                ->values()
+                ->all()
                 : [],
             'created_at' => $service->created_at?->format('d M Y'),
             'can_update' => $user?->can('update', $service) ?? false,

@@ -133,6 +133,7 @@ class ProductsRepository implements ProductRepositoryInterface
             ->when($categoryId, function (Builder $query) use ($categoryId): void {
                 $query->where('category_id', $categoryId);
             })
+
             ->when($subCategoryId, function (Builder $query) use ($subCategoryId): void {
                 $query->where('sub_category_id', $subCategoryId);
             })

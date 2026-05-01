@@ -73,7 +73,7 @@ class SaveServiceRequest extends FormRequest
                     fn ($query) => $query->where('tenant_id', $tenantId)
                 ),
             ],
-            'mappings.*.quantity' => ['nullable', 'numeric', 'min:0.001'],
+            'mappings.*.quantity' => ['nullable', 'numeric', 'min:0.001', 'gte:0.001'],
             'mappings.*.unit' => ['nullable', 'string', 'max:50'],
             'mappings.*.is_required' => ['required', 'boolean'],
             'tenant_id' => ['prohibited'],

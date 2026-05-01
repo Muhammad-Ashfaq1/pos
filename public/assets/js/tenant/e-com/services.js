@@ -800,6 +800,7 @@
     });
   };
 
+
   $(function () {
     initStaticSelect2();
     initCategorySelect($formCategory);
