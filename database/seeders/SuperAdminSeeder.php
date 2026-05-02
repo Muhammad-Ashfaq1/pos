@@ -9,15 +9,11 @@ class SuperAdminSeeder extends Seeder
 {
     public function run(): void
     {
-        $email = env('SUPER_ADMIN_EMAIL', 'admin@oilchangepos.test');
-        $password = env('SUPER_ADMIN_PASSWORD', 'password123');
-        $name = env('SUPER_ADMIN_NAME', 'Super Admin');
-
         $user = User::updateOrCreate(
-            ['email' => $email],
+            ['email' => 'superadmin@pos.com'],
             [
-                'name' => $name,
-                'password' => $password,
+                'name' => 'Super Admin',
+                'password' => 'password',
                 'tenant_id' => null,
                 'role' => User::SUPER_ADMIN,
                 'is_active' => true,

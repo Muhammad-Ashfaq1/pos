@@ -10,28 +10,19 @@ use Illuminate\Support\Str;
 
 class ApprovedShopSeeder extends Seeder
 {
-    private const DEFAULT_SHOPS = [
-        [
-            'name' => 'Rapid Lube Downtown',
-            'city' => 'Houston',
-            'state' => 'Texas',
-            'country' => 'USA',
-            'business_type' => 'Oil Change & Quick Service',
-        ],
-        [
-            'name' => 'Prime Auto Care North',
-            'city' => 'Dallas',
-            'state' => 'Texas',
-            'country' => 'USA',
-            'business_type' => 'Auto Service & Preventive Maintenance',
-        ],
-        [
-            'name' => 'Urban Garage West',
-            'city' => 'Austin',
-            'state' => 'Texas',
-            'country' => 'USA',
-            'business_type' => 'Repair, Diagnostics & Tire Service',
-        ],
+    private const SHOP_COUNT = 10;
+
+    private const SHOP_TEMPLATES = [
+        ['name' => 'Rapid Lube Downtown',  'city' => 'Houston',     'state' => 'Texas',      'country' => 'USA', 'business_type' => 'Oil Change & Quick Service'],
+        ['name' => 'Prime Auto Care',       'city' => 'Dallas',      'state' => 'Texas',      'country' => 'USA', 'business_type' => 'Auto Service & Preventive Maintenance'],
+        ['name' => 'Urban Garage',          'city' => 'Austin',      'state' => 'Texas',      'country' => 'USA', 'business_type' => 'Repair, Diagnostics & Tire Service'],
+        ['name' => 'Pit Stop Pro',          'city' => 'San Antonio', 'state' => 'Texas',      'country' => 'USA', 'business_type' => 'Quick Lube & Inspection'],
+        ['name' => 'Velocity Auto Works',   'city' => 'Phoenix',     'state' => 'Arizona',    'country' => 'USA', 'business_type' => 'General Auto Repair'],
+        ['name' => 'Highway Heroes',        'city' => 'Denver',      'state' => 'Colorado',   'country' => 'USA', 'business_type' => 'Roadside & Maintenance'],
+        ['name' => 'Gear Masters',          'city' => 'Seattle',     'state' => 'Washington', 'country' => 'USA', 'business_type' => 'Transmission & Engine'],
+        ['name' => 'Drive Right Auto',      'city' => 'Portland',    'state' => 'Oregon',     'country' => 'USA', 'business_type' => 'Full Auto Service'],
+        ['name' => 'Express Oil Hub',       'city' => 'Miami',       'state' => 'Florida',    'country' => 'USA', 'business_type' => 'Oil Change & Tires'],
+        ['name' => 'Capital Car Care',      'city' => 'Atlanta',     'state' => 'Georgia',    'country' => 'USA', 'business_type' => 'Comprehensive Auto Care'],
     ];
 
     public function run(): void
@@ -42,46 +33,32 @@ class ApprovedShopSeeder extends Seeder
             return;
         }
 
-        $shopCount = max((int) env('DEMO_ACTIVE_SHOPS_COUNT', count(self::DEFAULT_SHOPS)), 1);
-        $shopPassword = env('DEMO_SHOP_PASSWORD', env('TENANT_DEMO_PASSWORD', 'password123'));
         $superAdminId = User::query()->where('role', User::SUPER_ADMIN)->value('id');
-        $websiteBaseUrl = rtrim((string) env('DEMO_SHOP_WEBSITE_BASE_URL', 'https://shops.demo.test'), '/');
 
-        for ($shopNumber = 1; $shopNumber <= $shopCount; $shopNumber++) {
-            $template = self::DEFAULT_SHOPS[($shopNumber - 1) % count(self::DEFAULT_SHOPS)];
-            $isLegacyConfiguredShop = $shopNumber === 1;
+        for ($shopNumber = 1; $shopNumber <= self::SHOP_COUNT; $shopNumber++) {
+            $template = self::SHOP_TEMPLATES[($shopNumber - 1) % count(self::SHOP_TEMPLATES)];
 
-            $shopName = $isLegacyConfiguredShop
-                ? env('DEMO_SHOP_NAME', $template['name'])
-                : sprintf('%s %d', $template['name'], $shopNumber);
-
-            $shopEmail = $isLegacyConfiguredShop
-                ? env('DEMO_SHOP_EMAIL', sprintf('owner+shop%d@example.com', $shopNumber))
-                : sprintf('owner+shop%d@example.com', $shopNumber);
-
-            $shopWebsiteUrl = $isLegacyConfiguredShop
-                ? env('DEMO_SHOP_WEBSITE_URL', sprintf('%s/shop-%d', $websiteBaseUrl, $shopNumber))
-                : sprintf('%s/shop-%d', $websiteBaseUrl, $shopNumber);
-
+            $shopName = sprintf('%s %d', $template['name'], $shopNumber);
+            $adminEmail = sprintf('admin%d@pos.com', $shopNumber);
             $ownerPhone = sprintf('+1 555 010 %04d', 2200 + $shopNumber);
-            $ownerName = sprintf('Demo Shop Owner %d', $shopNumber);
+            $ownerName = sprintf('Shop %d Admin', $shopNumber);
 
             $tenant = Tenant::updateOrCreate(
-                ['owner_email' => $shopEmail],
+                ['owner_email' => $adminEmail],
                 [
                     'name' => $shopName,
-                    'slug' => sprintf('%s-%d', Str::slug($shopName), $shopNumber),
-                    'owner_email' => $shopEmail,
+                    'slug' => sprintf('%s-%d', Str::slug($template['name']), $shopNumber),
+                    'owner_email' => $adminEmail,
                     'owner_phone' => $ownerPhone,
                     'business_name' => $shopName,
-                    'business_email' => $shopEmail,
+                    'business_email' => $adminEmail,
                     'business_phone' => $ownerPhone,
                     'shop_name' => $shopName,
                     'business_type' => $template['business_type'],
                     'owner_name' => $ownerName,
-                    'email' => $shopEmail,
+                    'email' => $adminEmail,
                     'phone' => $ownerPhone,
-                    'website_url' => $shopWebsiteUrl,
+                    'website_url' => sprintf('https://shops.demo.test/shop-%d', $shopNumber),
                     'address' => sprintf('%d Service Bay Road', 1450 + $shopNumber),
                     'city' => $template['city'],
                     'state' => $template['state'],
@@ -98,10 +75,10 @@ class ApprovedShopSeeder extends Seeder
             );
 
             $admin = User::updateOrCreate(
-                ['email' => $shopEmail],
+                ['email' => $adminEmail],
                 [
                     'name' => $ownerName,
-                    'password' => $shopPassword,
+                    'password' => 'password',
                     'tenant_id' => $tenant->id,
                     'role' => User::TENANT_ADMIN,
                     'phone' => $ownerPhone,
