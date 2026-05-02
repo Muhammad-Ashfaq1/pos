@@ -478,7 +478,7 @@
 <body class="employee-admin-preview">
     <div class="preview-shell">
         <header class="preview-header">
-            <div class="preview-container">
+            <div class="preview-container py-0">
                 <div class="preview-header-inner">
                     <a href="{{ route('employee.dashboard') }}" class="preview-brand">
                         <span class="preview-brand-text">OIL<span>POS</span></span>

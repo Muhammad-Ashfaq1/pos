@@ -131,7 +131,7 @@
                             </div>
                         </div>
 
-                        <div class="row g-3">
+                        <div class="row g-3 overflow-auto" style="max-height: 100vh;">
                             <div class="col-md-4">
                                 <div
                                     class="card border-0 rounded-4 text-center p-5 justify-content-center align-items-center category-card bg-label-primary">
@@ -144,6 +144,14 @@
                                     <h4 class="text-primary fw-bold mb-0">Fuel</h4>
                                 </div>
                             </div>
+                            @for ($i = 0 ; $i < 10 ; $i++)
+                            <div class="col-md-4">
+                                <div
+                                    class="card border-0 rounded-4 text-center p-5 justify-content-center align-items-center category-card bg-label-primary">
+                                    <h4 class="text-primary fw-bold mb-0">Fuel</h4>
+                                </div>
+                            </div>
+                            @endfor
                             <div class="col-md-4">
                                 <div
                                     class="card border-0 rounded-4 text-center p-5 justify-content-center align-items-center category-card bg-label-primary">
