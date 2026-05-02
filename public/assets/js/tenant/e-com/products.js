@@ -278,13 +278,18 @@
     return '$' + amount.toFixed(2);
   };
 
+  const tooltipAttrs = function (title) {
+    return window.Helpers && window.Helpers.getTooltipAttributes
+      ? window.Helpers.getTooltipAttributes(title)
+      : 'title="' + title + '"';
+  };
+
   const actionButtonsHtml = function (row) {
     let html = '<div class="d-flex align-items-center justify-content-center">';
 
     if (row.can_update) {
       html +=
         '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect edit-product-btn" ' +
-        'data-bs-toggle="modal" data-bs-target="#productModal" ' +
         'data-id="' + row.id + '" ' +
         'data-category-id="' + (row.category_id || '') + '" ' +
         'data-category-name="' + escapeHtml(row.category_name || '') + '" ' +
@@ -306,7 +311,7 @@
         'data-reorder-level="' + row.reorder_level + '" ' +
         'data-track-inventory="' + (row.track_inventory ? 1 : 0) + '" ' +
         'data-is-active="' + (row.is_active ? 1 : 0) + '" ' +
-        'data-edit-url="' + escapeHtml(row.edit_url || productEditUrl(row.id)) + '" title="Edit">' +
+        'data-edit-url="' + escapeHtml(row.edit_url || productEditUrl(row.id)) + '" ' + tooltipAttrs('Edit') + '>' +
         '<i class="icon-base ti tabler-edit icon-md"></i>' +
         '</button>';
     }
@@ -315,7 +320,7 @@
       html +=
         '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect delete-product-btn" ' +
         'data-url="' + row.delete_url + '" ' +
-        'data-name="' + escapeHtml(row.name) + '" title="Delete">' +
+        'data-name="' + escapeHtml(row.name) + '" ' + tooltipAttrs('Delete') + '>' +
         '<i class="icon-base ti tabler-trash icon-md text-danger"></i>' +
         '</button>';
     }
@@ -574,7 +579,12 @@
             return actionButtonsHtml(row);
           }
         }
-      ]
+      ],
+      drawCallback: function () {
+        if (window.Helpers && window.Helpers.initToolTip) {
+          window.Helpers.initToolTip(this.api().table().container());
+        }
+      }
     });
   };
 
@@ -614,6 +624,11 @@
     $(document).on('click', '.edit-product-btn', function () {
       const $button = $(this);
       const editUrl = $button.data('edit-url') || productEditUrl($button.data('id'));
+
+      const modalEl = document.getElementById('productModal');
+      if (modalEl && window.bootstrap && window.bootstrap.Modal) {
+        window.bootstrap.Modal.getOrCreateInstance(modalEl).show();
+      }
 
       resetForm();
       setSubmitButtonState(true);

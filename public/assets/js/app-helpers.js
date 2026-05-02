@@ -163,6 +163,33 @@
 
   window.appSetButtonLoading = setButtonLoading;
 
+  const initToolTip = function (root) {
+    if (typeof window.bootstrap === 'undefined' || !window.bootstrap.Tooltip) {
+      return;
+    }
+
+    const scope = root && root.querySelectorAll ? root : document;
+    const tooltipTriggerList = [].slice.call(scope.querySelectorAll('[data-bs-toggle="tooltip"]'));
+
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+      const existing = window.bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+      if (existing) {
+        existing.dispose();
+      }
+      new window.bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  };
+
+  const getTooltipAttributes = function (title) {
+    const safeTitle = String(title == null ? '' : title)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    return 'data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-primary" title="' + safeTitle + '"';
+  };
+
   const helpers = ensureHelpers();
   helpers.addLoaderToModalHeader = addLoaderToModalHeader;
   helpers.removeLoaderFromModalHeader = removeLoaderFromModalHeader;
@@ -170,6 +197,8 @@
   helpers.showAppLoading = showLoading;
   helpers.hideAppLoading = hideLoading;
   helpers.makeModalsStatic = makeModalsStatic;
+  helpers.initToolTip = initToolTip;
+  helpers.getTooltipAttributes = getTooltipAttributes;
 
   document.addEventListener('DOMContentLoaded', function () {
     makeModalsStatic(document);
