@@ -491,9 +491,12 @@
                         <button type="button" class="preview-circle-btn preview-circle-btn--slate">
                             <i class="ti tabler-user"></i>
                         </button>
-                        <button type="button" class="preview-circle-btn preview-circle-btn--red">
-                            <i class="ti tabler-logout"></i>
-                        </button>
+                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                            @csrf
+                            <button type="submit" class="preview-circle-btn preview-circle-btn--red" title="Logout">
+                                <i class="ti tabler-logout"></i>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
