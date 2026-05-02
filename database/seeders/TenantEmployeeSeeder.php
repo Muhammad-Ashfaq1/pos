@@ -9,7 +9,7 @@ use Illuminate\Database\Seeder;
 
 class TenantEmployeeSeeder extends Seeder
 {
-    private const DEFAULT_EMPLOYEES_PER_SHOP = 3;
+    private const EMPLOYEES_PER_SHOP = 9;
 
     public function run(): void
     {
@@ -21,22 +21,19 @@ class TenantEmployeeSeeder extends Seeder
 
         app(PermissionSyncService::class)->sync(syncTenantAdmins: false);
 
-        $password = env('TENANT_DEMO_PASSWORD', 'password');
-        $employeesPerShop = max((int) env('DEMO_EMPLOYEES_PER_SHOP', self::DEFAULT_EMPLOYEES_PER_SHOP), 1);
-
         Tenant::query()
             ->orderBy('id')
             ->get()
-            ->each(function (Tenant $tenant) use ($password, $employeesPerShop): void {
-                for ($employeeNumber = 1; $employeeNumber <= $employeesPerShop; $employeeNumber++) {
-                    $email = $this->employeeEmailFor($tenant->id, $employeeNumber);
+            ->each(function (Tenant $tenant): void {
+                for ($employeeNumber = 1; $employeeNumber <= self::EMPLOYEES_PER_SHOP; $employeeNumber++) {
+                    $email = sprintf('employee%d%d@pos.com', $tenant->id, $employeeNumber);
 
                     $user = User::query()->firstOrNew(['email' => $email]);
 
                     $user->fill([
-                        'name' => $user->name ?: sprintf('%s Employee %d', $tenant->display_name, $employeeNumber),
+                        'name' => $user->name ?: sprintf('Shop %d Employee %d', $tenant->id, $employeeNumber),
                         'email' => $email,
-                        'password' => $password,
+                        'password' => 'password',
                         'tenant_id' => $tenant->id,
                         'role' => User::EMPLOYEE,
                         'is_active' => true,
@@ -47,10 +44,5 @@ class TenantEmployeeSeeder extends Seeder
                     $user->assignPrimaryRole(User::EMPLOYEE, $tenant->id);
                 }
             });
-    }
-
-    private function employeeEmailFor(int $tenantId, int $employeeNumber): string
-    {
-        return sprintf('employee%d+shop%d@example.com', $employeeNumber, $tenantId);
     }
 }

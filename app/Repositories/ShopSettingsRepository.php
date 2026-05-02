@@ -177,9 +177,14 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
         ];
     }
 
+    public function getSettingsSections(): array
+    {
+        return $this->settingsSections();
+    }
+
     private function settingsSections(): array
     {
-        return [
+        $sections = [
             [
                 'label' => 'Shop Profile',
                 'route' => 'tenant.settings.shop-profile.general',
@@ -209,6 +214,19 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
                 'description' => 'Communication defaults and loyalty behavior.',
             ],
         ];
+
+        $user = auth()->user();
+        if ($user?->isTenantAdmin() || $user?->can('roles.manage')) {
+            $sections[] = [
+                'label' => 'Roles & Permissions',
+                'route' => 'tenant.settings.roles-permissions.index',
+                'pattern' => 'tenant.settings.roles-permissions.index',
+                'icon' => 'tabler-shield-lock',
+                'description' => 'Manage staff roles, permissions, and impersonation.',
+            ];
+        }
+
+        return $sections;
     }
 
     private function persistTenant(Tenant $tenant): void

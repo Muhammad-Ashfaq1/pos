@@ -16,6 +16,7 @@
             'icon' => 'tabler-building-store',
             'items' => collect([
                 $user?->can('settings.manage') ? ['label' => 'Shop Settings', 'route' => 'tenant.settings.shop-profile.general', 'pattern' => 'tenant.settings.shop-profile.*', 'icon' => 'tabler-settings-cog'] : null,
+                ($user?->isTenantAdmin() || $user?->can('roles.manage')) ? ['label' => 'Roles & Permissions', 'route' => 'tenant.settings.roles-permissions.index', 'pattern' => 'tenant.settings.roles-permissions.*', 'icon' => 'tabler-shield-lock'] : null,
             ])->filter()->values()->all(),
         ],
         [
