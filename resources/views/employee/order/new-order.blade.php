@@ -23,19 +23,37 @@
                     <div class="card-body d-flex flex-column">
 
                         <div class="mb-3">
-                            <h5 class="fw-bold text-primary mb-1">Customer</h5>
-                            <select class="form-select">
-                                <option selected>Select Customer</option>
+                            <label for="customer_type_filter" class="form-label">Customer Type</label>
+                            <select id="customer_type_filter" class="form-select filter-control select2"
+                                data-placeholder="All customer types" data-allow-clear="false">
+                                <option value="">All</option>
+                                @for ($i = 1; $i <= 3; $i++)
+                                    <option value="{{ $i }}">Customer Type {{ $i }}</option>
+                                @endfor
                             </select>
                         </div>
 
-                        <select class="form-select mb-3">
-                            <option selected>Orders</option>
-                        </select>
+                        <div class="mb-3">
+                            <label for="order_type_filter" class="form-label">Orders</label>
+                            <select id="order_type_filter" class="form-select filter-control select2"
+                                data-placeholder="All orders" data-allow-clear="false">
+                                <option value="">All</option>
+                                @for ($i = 1; $i <= 2; $i++)
+                                    <option value="{{ $i }}">Orders {{ $i }}</option>
+                                @endfor
+                            </select>
+                        </div>
 
-                        <select class="form-select mb-3">
-                            <option selected>Add Vehicle</option>
-                        </select>
+                        <div class="mb-3">
+                            <label for="add_vehicle_filter" class="form-label">Add Vehicle</label>
+                            <select id="add_vehicle_filter" class="form-select filter-control select2"
+                                data-placeholder="Add Vehicle" data-allow-clear="false">
+                                <option value="">All</option>
+                                @for ($i = 1; $i <= 5; $i++)
+                                    <option value="{{ $i }}">Add Vehicle {{ $i }}</option>
+                                @endfor
+                            </select>
+                        </div>
 
                         <table class="table table-borderless align-middle mb-2">
                             <thead>
@@ -144,13 +162,13 @@
                                     <h4 class="text-primary fw-bold mb-0">Fuel</h4>
                                 </div>
                             </div>
-                            @for ($i = 0 ; $i < 10 ; $i++)
-                            <div class="col-md-4">
-                                <div
-                                    class="card border-0 rounded-4 text-center p-5 justify-content-center align-items-center category-card bg-label-primary">
-                                    <h4 class="text-primary fw-bold mb-0">Fuel</h4>
+                            @for ($i = 0; $i < 10; $i++)
+                                <div class="col-md-4">
+                                    <div
+                                        class="card border-0 rounded-4 text-center p-5 justify-content-center align-items-center category-card bg-label-primary">
+                                        <h4 class="text-primary fw-bold mb-0">Fuel</h4>
+                                    </div>
                                 </div>
-                            </div>
                             @endfor
                             <div class="col-md-4">
                                 <div
@@ -170,7 +188,8 @@
                         </div>
                         <div class="product-info  mt-4">
                             <h3 class="fw-bold product-name mb-4">Gasoline</h3>
-                            <p class="text-muted mb-4 fs-5">Barcode: <span class="product-barcode text-dark fw-semibold">EreTVgAmKe</span></p>
+                            <p class="text-muted mb-4 fs-5">Barcode: <span
+                                    class="product-barcode text-dark fw-semibold">EreTVgAmKe</span></p>
                             <h5 class="fw-bold mb-4 fs-4"><span class="text-dark">1 Unit:</span> <span
                                     class="text-muted ms-1 product-price">$125.000</span>
                             </h5>
@@ -184,7 +203,8 @@
                             <div class="d-flex justify-content-between mt-5">
                                 <button
                                     class="btn bg-label-secondary text-primary border-0 px-5 py-3 rounded-3 fw-bold btn-clear">Clear</button>
-                                <button class="btn btn-primary px-5 py-3 rounded-3 fw-bold btn-add-to-cart">Add to Cart</button>
+                                <button class="btn btn-primary px-5 py-3 rounded-3 fw-bold btn-add-to-cart">Add to
+                                    Cart</button>
                             </div>
                         </div>
                     </div>
@@ -192,8 +212,8 @@
             </div>
         </div>
     </div>
-@include('employee.order.sidebar-modal');
-@push('page-script')
-    <script src="{{ asset('assets/js/pos.js') }}"></script>
-@endpush
+    @include('employee.order.sidebar-modal');
+    @push('page-script')
+        <script src="{{ asset('assets/js/pos.js') }}"></script>
+    @endpush
 @endsection

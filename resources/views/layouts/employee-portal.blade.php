@@ -88,7 +88,7 @@
         .employee-admin-preview .preview-container {
             /* max-width: 1280px; */
             margin: 0 auto;
-            padding: 1rem;
+            padding: 0rem 1rem;
         }
 
         .employee-admin-preview .preview-header-inner {
@@ -446,7 +446,7 @@
 
         @media (min-width: 768px) {
             .employee-admin-preview .preview-container {
-                padding: 1.25rem 1.5rem;
+                padding: 0rem 1.5rem;
             }
 
             .employee-admin-preview .preview-stats-grid {
@@ -503,7 +503,7 @@
         </header>
 
         <main class="preview-main">
-            <div class="preview-container">
+            <div class="preview-container py-0">
                 @yield('content')
             </div>
         </main>
