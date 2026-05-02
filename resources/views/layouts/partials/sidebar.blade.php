@@ -12,30 +12,48 @@
 
     $tenantMenuGroups = collect([
         [
-            'label' => 'Shop Management',
-            'icon' => 'tabler-building-store',
-            'items' => collect([
-                $user?->can('settings.manage') ? ['label' => 'Shop Settings', 'route' => 'tenant.settings.shop-profile.general', 'pattern' => 'tenant.settings.shop-profile.*', 'icon' => 'tabler-settings-cog'] : null,
-                ($user?->isTenantAdmin() || $user?->can('roles.manage')) ? ['label' => 'Roles & Permissions', 'route' => 'tenant.settings.roles-permissions.index', 'pattern' => 'tenant.settings.roles-permissions.*', 'icon' => 'tabler-shield-lock'] : null,
-            ])->filter()->values()->all(),
-        ],
-        [
-            'label' => 'Catalog & Services',
+            'label' => 'Catalog',
             'icon' => 'tabler-box-seam',
             'items' => collect([
                 $user?->can('category.view') ? ['label' => 'Categories', 'route' => 'tenant.ecommerce.categories.index', 'pattern' => 'tenant.ecommerce.categories.*', 'icon' => 'tabler-category'] : null,
                 $user?->can('subcategory.view') ? ['label' => 'Sub Categories', 'route' => 'tenant.ecommerce.subcategories.index', 'pattern' => 'tenant.ecommerce.subcategories.*', 'icon' => 'tabler-category-plus'] : null,
                 ($user?->can('product.view') || $user?->can('products.view') || $user?->can('products.manage')) ? ['label' => 'Products', 'route' => 'tenant.ecommerce.products.index', 'pattern' => 'tenant.ecommerce.products.*', 'icon' => 'tabler-package'] : null,
+            ])->filter()->values()->all(),
+        ],
+        [
+            'label' => 'Services',
+            'icon' => 'tabler-tool',
+            'items' => collect([
                 $user?->can('service.view') ? ['label' => 'Services', 'route' => 'tenant.ecommerce.services.index', 'pattern' => 'tenant.ecommerce.services.*', 'icon' => 'tabler-tool'] : null,
+            ])->filter()->values()->all(),
+        ],
+        [
+            'label' => 'Sales & Promotions',
+            'icon' => 'tabler-ticket',
+            'items' => collect([
                 $user?->can('discount.manage') ? ['label' => 'Discounts', 'route' => 'tenant.ecommerce.discounts.index', 'pattern' => 'tenant.ecommerce.discounts.*', 'icon' => 'tabler-ticket'] : null,
             ])->filter()->values()->all(),
         ],
         [
-            'label' => 'Customers',
+            'label' => 'Customers & Vehicles',
             'icon' => 'tabler-users',
             'items' => collect([
                 ($user?->can('customer.view') || $user?->can('customers.view')) ? ['label' => 'Customers', 'route' => 'tenant.ecommerce.customers.index', 'pattern' => 'tenant.ecommerce.customers.*', 'icon' => 'tabler-users'] : null,
                 ($user?->can('vehicle.view') || $user?->can('vehicles.view')) ? ['label' => 'Vehicles', 'route' => 'tenant.ecommerce.vehicles.index', 'pattern' => 'tenant.ecommerce.vehicles.*', 'icon' => 'tabler-car'] : null,
+            ])->filter()->values()->all(),
+        ],
+        [
+            'label' => 'Staff & Access',
+            'icon' => 'tabler-shield-lock',
+            'items' => collect([
+                ($user?->isTenantAdmin() || $user?->can('roles.manage')) ? ['label' => 'Roles & Permissions', 'route' => 'tenant.settings.roles-permissions.index', 'pattern' => 'tenant.settings.roles-permissions.*', 'icon' => 'tabler-shield-lock'] : null,
+            ])->filter()->values()->all(),
+        ],
+        [
+            'label' => 'Settings',
+            'icon' => 'tabler-settings-cog',
+            'items' => collect([
+                $user?->can('settings.manage') ? ['label' => 'Shop Settings', 'route' => 'tenant.settings.shop-profile.general', 'pattern' => 'tenant.settings.shop-profile.*', 'icon' => 'tabler-building-store'] : null,
             ])->filter()->values()->all(),
         ],
     ])->filter(fn (array $group): bool => ! empty($group['items']))->values();
