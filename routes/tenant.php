@@ -8,6 +8,7 @@ use App\Http\Controllers\Tenant\DropdownController;
 use App\Http\Controllers\Tenant\EcommerceController;
 use App\Http\Controllers\Tenant\ImageController;
 use App\Http\Controllers\Tenant\ProductController;
+use App\Http\Controllers\Tenant\RolesPermissionsController;
 use App\Http\Controllers\Tenant\ShopSettingsController;
 use App\Http\Controllers\Tenant\ServiceController;
 use App\Http\Controllers\Tenant\SubCategoryController;
@@ -224,6 +225,20 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
 
                         Route::get('/notifications', 'notifications')->name('notifications');
                         Route::post('/notifications/save', 'saveNotifications')->name('notifications.save');
+                    });
+
+                Route::prefix('roles-permissions')
+                    ->name('roles-permissions.')
+                    ->controller(RolesPermissionsController::class)
+                    ->middleware('permission:roles.manage|settings.manage')
+                    ->group(function () {
+                        Route::get('/', 'index')->name('index');
+                        Route::post('/role-permissions', 'rolePermissions')->name('role-permissions');
+                        Route::post('/roles/save', 'saveRole')->name('roles.save');
+                        Route::delete('/roles/{role}', 'deleteRole')->name('roles.destroy');
+                        Route::post('/permissions/sync', 'syncPermissions')->name('permissions.sync');
+                        Route::get('/staff', 'staffListing')->name('staff.listing');
+                        Route::get('/staff/{user}/impersonate', 'impersonateStaff')->name('staff.impersonate');
                     });
             });
     });
