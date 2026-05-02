@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             ApprovedShopSeeder::class,
             TenantEmployeeSeeder::class,
             TenantRoleUserSeeder::class,
+            TenantCatalogSeeder::class,
         ]);
     }
 }
