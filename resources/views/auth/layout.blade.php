@@ -6,7 +6,7 @@
   dir="ltr"
   data-skin="default"
   data-bs-theme="light"
-  data-assets-path="{{ asset('assets') }}"
+  data-assets-path="{{ asset('assets') }}/"
   data-template="vertical-menu-template">
 
 
