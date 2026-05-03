@@ -60,6 +60,7 @@ class SaveShopOperationsSettingsRequest extends BaseShopSettingsRequest
 
                 if (! $open || ! $close) {
                     $validator->errors()->add("business_hours.{$day}.open", 'Open and close times are required for active business days.');
+
                     continue;
                 }
 

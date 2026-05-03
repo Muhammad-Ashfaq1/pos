@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Tenant\Products;
 
-use App\Models\Product;
 use App\Models\Image;
+use App\Models\Product;
 use App\Models\SubCategory;
 use App\Support\Tenancy\TenantContext;
 use Closure;
@@ -57,7 +57,7 @@ class SaveProductRequest extends FormRequest
                         return;
                     }
 
-                    $belongsToCategory = \App\Models\SubCategory::query()
+                    $belongsToCategory = SubCategory::query()
                         ->whereKey($value)
                         ->where('category_id', $categoryId)
                         ->exists();

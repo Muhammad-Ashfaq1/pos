@@ -42,34 +42,34 @@ class TenantCatalogSeeder extends Seeder
             ['name' => 'DOT 4 Brake Fluid 1L',          'brand' => 'Bosch',     'cost' => 7.00,  'price' => 12.99, 'unit' => 'liter', 'type' => Product::TYPE_PART,   'sub' => 'Fluid'],
         ],
         'Batteries' => [
-            ['name' => 'Exide 12V 60Ah Premium',        'brand' => 'Exide',     'cost' => 75.00, 'price' => 119.99,'unit' => 'piece', 'type' => Product::TYPE_PART,   'sub' => '12V Premium'],
-            ['name' => 'AC Delco 12V 70Ah',             'brand' => 'AC Delco',  'cost' => 85.00, 'price' => 134.99,'unit' => 'piece', 'type' => Product::TYPE_PART,   'sub' => '12V Standard'],
+            ['name' => 'Exide 12V 60Ah Premium',        'brand' => 'Exide',     'cost' => 75.00, 'price' => 119.99, 'unit' => 'piece', 'type' => Product::TYPE_PART,   'sub' => '12V Premium'],
+            ['name' => 'AC Delco 12V 70Ah',             'brand' => 'AC Delco',  'cost' => 85.00, 'price' => 134.99, 'unit' => 'piece', 'type' => Product::TYPE_PART,   'sub' => '12V Standard'],
         ],
         'Tires' => [
-            ['name' => 'Michelin Primacy 4 195/65R15',  'brand' => 'Michelin',  'cost' => 90.00, 'price' => 139.99,'unit' => 'piece', 'type' => Product::TYPE_PART,   'sub' => 'Passenger'],
-            ['name' => 'Bridgestone Dueler H/T',        'brand' => 'Bridgestone','cost' => 110.00,'price' => 169.99,'unit' => 'piece','type' => Product::TYPE_PART,   'sub' => 'SUV'],
+            ['name' => 'Michelin Primacy 4 195/65R15',  'brand' => 'Michelin',  'cost' => 90.00, 'price' => 139.99, 'unit' => 'piece', 'type' => Product::TYPE_PART,   'sub' => 'Passenger'],
+            ['name' => 'Bridgestone Dueler H/T',        'brand' => 'Bridgestone', 'cost' => 110.00, 'price' => 169.99, 'unit' => 'piece', 'type' => Product::TYPE_PART,   'sub' => 'SUV'],
         ],
     ];
 
     private const SERVICES_BY_CATEGORY = [
         'Engine Oils' => [
             ['name' => 'Standard Oil Change',     'duration' => 30, 'price' => 49.99,  'reminder_days' => 90,  'mileage' => 5000,  'products' => [['name' => 'Castrol GTX 10W-40',         'qty' => 4, 'unit' => 'liter', 'required' => true], ['name' => 'K&N Oil Filter HP-1004', 'qty' => 1, 'unit' => 'piece', 'required' => true]]],
-            ['name' => 'Full Synthetic Oil Change','duration' => 45, 'price' => 89.99, 'reminder_days' => 180, 'mileage' => 10000, 'products' => [['name' => 'Mobil 1 5W-30 Full Synthetic','qty' => 4, 'unit' => 'liter', 'required' => true], ['name' => 'K&N Oil Filter HP-1004', 'qty' => 1, 'unit' => 'piece', 'required' => true]]],
+            ['name' => 'Full Synthetic Oil Change', 'duration' => 45, 'price' => 89.99, 'reminder_days' => 180, 'mileage' => 10000, 'products' => [['name' => 'Mobil 1 5W-30 Full Synthetic', 'qty' => 4, 'unit' => 'liter', 'required' => true], ['name' => 'K&N Oil Filter HP-1004', 'qty' => 1, 'unit' => 'piece', 'required' => true]]],
         ],
         'Filters' => [
             ['name' => 'Air Filter Replacement',  'duration' => 15, 'price' => 24.99, 'reminder_days' => 365, 'mileage' => 15000, 'products' => [['name' => 'Bosch Premium Air Filter',   'qty' => 1, 'unit' => 'piece', 'required' => true]]],
-            ['name' => 'Cabin Filter Replacement','duration' => 20, 'price' => 29.99, 'reminder_days' => 365, 'mileage' => 15000, 'products' => [['name' => 'Mann Cabin Filter CU 26 009','qty' => 1, 'unit' => 'piece', 'required' => true]]],
+            ['name' => 'Cabin Filter Replacement', 'duration' => 20, 'price' => 29.99, 'reminder_days' => 365, 'mileage' => 15000, 'products' => [['name' => 'Mann Cabin Filter CU 26 009', 'qty' => 1, 'unit' => 'piece', 'required' => true]]],
         ],
         'Brakes' => [
-            ['name' => 'Brake Pad Replacement',   'duration' => 90, 'price' => 149.99,'reminder_days' => null,'mileage' => 50000, 'products' => [['name' => 'Brembo Front Brake Pads',    'qty' => 1, 'unit' => 'set',   'required' => true]]],
+            ['name' => 'Brake Pad Replacement',   'duration' => 90, 'price' => 149.99, 'reminder_days' => null, 'mileage' => 50000, 'products' => [['name' => 'Brembo Front Brake Pads',    'qty' => 1, 'unit' => 'set',   'required' => true]]],
             ['name' => 'Brake Fluid Flush',       'duration' => 45, 'price' => 79.99, 'reminder_days' => 730, 'mileage' => null,  'products' => [['name' => 'DOT 4 Brake Fluid 1L',       'qty' => 2, 'unit' => 'liter', 'required' => true]]],
         ],
         'Batteries' => [
-            ['name' => 'Battery Test & Replace',  'duration' => 30, 'price' => 39.99, 'reminder_days' => null,'mileage' => null,  'products' => [['name' => 'Exide 12V 60Ah Premium',     'qty' => 1, 'unit' => 'piece', 'required' => false]]],
+            ['name' => 'Battery Test & Replace',  'duration' => 30, 'price' => 39.99, 'reminder_days' => null, 'mileage' => null,  'products' => [['name' => 'Exide 12V 60Ah Premium',     'qty' => 1, 'unit' => 'piece', 'required' => false]]],
         ],
         'Tires' => [
             ['name' => 'Tire Rotation',           'duration' => 30, 'price' => 24.99, 'reminder_days' => 180, 'mileage' => 10000, 'products' => []],
-            ['name' => 'Wheel Alignment',         'duration' => 60, 'price' => 89.99, 'reminder_days' => null,'mileage' => 20000, 'products' => []],
+            ['name' => 'Wheel Alignment',         'duration' => 60, 'price' => 89.99, 'reminder_days' => null, 'mileage' => 20000, 'products' => []],
         ],
     ];
 
@@ -96,7 +96,7 @@ class TenantCatalogSeeder extends Seeder
 
     private const DISCOUNTS = [
         ['name' => 'New Customer 10% Off', 'code' => 'WELCOME10', 'type' => Discount::TYPE_PERCENTAGE, 'applies_to' => Discount::APPLIES_TO_BILL,             'value' => 10.00, 'max' => 50.00],
-        ['name' => 'Senior Citizen Discount','code' => 'SENIOR15', 'type' => Discount::TYPE_PERCENTAGE,'applies_to' => Discount::APPLIES_TO_CUSTOMER_PROFILE, 'value' => 15.00, 'max' => 100.00],
+        ['name' => 'Senior Citizen Discount', 'code' => 'SENIOR15', 'type' => Discount::TYPE_PERCENTAGE, 'applies_to' => Discount::APPLIES_TO_CUSTOMER_PROFILE, 'value' => 15.00, 'max' => 100.00],
         ['name' => 'Holiday Promo $20',    'code' => 'HOLIDAY20', 'type' => Discount::TYPE_FIXED,      'applies_to' => Discount::APPLIES_TO_PROMOTION,        'value' => 20.00, 'max' => null],
         ['name' => 'Loyalty Voucher 5%',   'code' => 'LOYAL5',    'type' => Discount::TYPE_PERCENTAGE, 'applies_to' => Discount::APPLIES_TO_VOUCHER,          'value' => 5.00,  'max' => 30.00],
         ['name' => 'Item Clearance 25%',   'code' => 'CLEAR25',   'type' => Discount::TYPE_PERCENTAGE, 'applies_to' => Discount::APPLIES_TO_ITEM,             'value' => 25.00, 'max' => null],

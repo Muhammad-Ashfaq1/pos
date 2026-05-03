@@ -16,8 +16,7 @@ class CustomerController extends Controller
 {
     public function __construct(
         private readonly CustomerRepositoryInterface $repo
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View
     {

@@ -2,11 +2,10 @@
 
 namespace App\Http\Requests\Tenant\Vehicles;
 
-use App\Models\Customer;
 use App\Support\Tenancy\TenantContext;
-use Illuminate\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class SaveVehicleRequest extends FormRequest
 {

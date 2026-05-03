@@ -108,7 +108,7 @@ class SubCategoriesRepository implements SubCategoryRepositoryInterface
         $orderDirection = data_get($filters, 'order.0.dir', 'asc') === 'desc' ? 'desc' : 'asc';
         $columns = $filters['columns'] ?? [];
         $orderColumn = is_numeric($orderColumnIndex)
-            ? data_get($columns, (int) $orderColumnIndex . '.data')
+            ? data_get($columns, (int) $orderColumnIndex.'.data')
             : null;
 
         $sortableColumns = [

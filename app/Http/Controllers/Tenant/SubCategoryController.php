@@ -17,8 +17,7 @@ class SubCategoryController extends Controller
 {
     public function __construct(
         private readonly SubCategoryRepositoryInterface $repo
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View
     {

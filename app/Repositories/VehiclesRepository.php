@@ -2,9 +2,9 @@
 
 namespace App\Repositories;
 
+use App\Http\Requests\Tenant\Vehicles\SaveVehicleRequest;
 use App\Models\Customer;
 use App\Models\Vehicle;
-use App\Http\Requests\Tenant\Vehicles\SaveVehicleRequest;
 use App\Repositories\Interface\VehicleRepositoryInterface;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
@@ -141,7 +141,7 @@ class VehiclesRepository implements VehicleRepositoryInterface
         $orderDirection = data_get($filters, 'order.0.dir', 'asc') === 'desc' ? 'desc' : 'asc';
         $columns = $filters['columns'] ?? [];
         $orderColumn = is_numeric($orderColumnIndex)
-            ? data_get($columns, (int) $orderColumnIndex . '.data')
+            ? data_get($columns, (int) $orderColumnIndex.'.data')
             : null;
 
         $sortableColumns = [
@@ -248,8 +248,7 @@ class VehiclesRepository implements VehicleRepositoryInterface
         array $data,
         ?Authenticatable $user = null,
         ?Vehicle $currentVehicle = null,
-    ): Customer
-    {
+    ): Customer {
         $mode = $data['customer_entry_mode'] ?? SaveVehicleRequest::MODE_EXISTING;
 
         if ($mode === SaveVehicleRequest::MODE_EXISTING) {

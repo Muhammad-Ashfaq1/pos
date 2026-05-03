@@ -19,8 +19,7 @@ class ShopSettingsController extends Controller
     public function __construct(
         private readonly ShopSettingsRepositoryInterface $repo,
         private readonly TenantContext $tenantContext,
-    ) {
-    }
+    ) {}
 
     public function edit(): RedirectResponse
     {

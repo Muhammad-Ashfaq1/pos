@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Models\Tenant;
 use App\Models\User;
+use App\Repositories\Interface\ShopSettingsRepositoryInterface;
 use App\Support\Permissions\PermissionTeamScope;
 use App\Support\Tenancy\TenantContext;
-use App\Repositories\Interface\ShopSettingsRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -241,7 +242,7 @@ class RolesPermissionsController extends Controller
             ->with('info', "You are now impersonating {$user->name}.");
     }
 
-    private function currentTenant(): \App\Models\Tenant
+    private function currentTenant(): Tenant
     {
         return $this->tenantContext->current()
             ?? abort(404, 'Tenant context could not be resolved.');

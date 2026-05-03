@@ -15,8 +15,7 @@ class ImageController extends Controller
 {
     public function __construct(
         private readonly ImageService $imageService
-    ) {
-    }
+    ) {}
 
     public function upload(UploadImageRequest $request): JsonResponse
     {

@@ -16,8 +16,7 @@ class CategoryController extends Controller
 {
     public function __construct(
         private readonly CategoryRepositoryInterface $repo
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View
     {
