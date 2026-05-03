@@ -158,7 +158,7 @@
                         <div class="input-group w-50">
                             <div class="input-group input-group-merge">
                                 <span class="input-group-text"><i class="icon-base ti tabler-search"></i></span>
-                                <input type="text" class="form-control catalog-search"
+                                <input type="text" class="form-control catalog-search px-3"
                                     placeholder="Search Categories, Sub Categories, Products..." />
                                 <button type="button" class="btn btn-icon btn-text-secondary catalog-search-clear d-none"
                                     title="Clear search">
