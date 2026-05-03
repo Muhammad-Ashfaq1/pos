@@ -134,86 +134,108 @@
 
             <div class="col-md-8">
                 <div class="card shadow-sm border-0 h-100 p-4 order-management">
-                    <div class="categories-view">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="fw-bold">Categories</h3>
-                            <div class="input-group w-50">
-                                <div class="input-group input-group-merge">
-                                    <span class="input-group-text" id="basic-addon-search31"><i
-                                            class="icon-base ti tabler-search"></i></span>
-                                    <input type="text" class="form-control"
-                                        placeholder="Search Categories, Sub Categories, Products and Others..."
-                                        aria-label="Search Categories, Sub Categories and Others"
-                                        aria-describedby="basic-addon-search31" />
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="row g-3 overflow-auto" style="max-height: 100vh;">
-                            <div class="col-md-4">
-                                <div
-                                    class="card border-0 rounded-4 text-center p-5 justify-content-center align-items-center category-card bg-label-primary">
-                                    <h4 class="text-primary fw-bold mb-0">Fuel</h4>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div
-                                    class="card border-0 rounded-4 text-center p-5 justify-content-center align-items-center category-card bg-label-primary">
-                                    <h4 class="text-primary fw-bold mb-0">Fuel</h4>
-                                </div>
-                            </div>
-                            @for ($i = 0; $i < 10; $i++)
-                                <div class="col-md-4">
-                                    <div
-                                        class="card border-0 rounded-4 text-center p-5 justify-content-center align-items-center category-card bg-label-primary">
-                                        <h4 class="text-primary fw-bold mb-0">Fuel</h4>
-                                    </div>
-                                </div>
-                            @endfor
-                            <div class="col-md-4">
-                                <div
-                                    class="card border-0 rounded-4 text-center p-5 justify-content-center align-items-center category-card bg-label-primary">
-                                    <h4 class="text-primary fw-bold mb-0">Fuel</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-details-view d-none">
-                        <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
-                            <button
-                                class="btn btn-sm bg-label-secondary text-primary border-0 rounded-pill btn-circle-38 btn-back-to-categories">
+                    {{-- Header (back button + dynamic title + unified search) --}}
+                    <div class="d-flex justify-content-between align-items-center mb-4 catalog-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <button type="button"
+                                class="btn btn-sm bg-label-secondary text-primary border-0 rounded-pill btn-circle-38 catalog-back-btn d-none">
                                 <i class="ti tabler-arrow-left fs-4"></i>
                             </button>
-                            <h4 class="fw-bold mb-0 category-title">Gasoline</h4>
+                            <h3 class="fw-bold mb-0 catalog-title">Categories</h3>
                         </div>
-                        <div class="product-info  mt-4">
-                            <h3 class="fw-bold product-name mb-4">Gasoline</h3>
-                            <p class="text-muted mb-4 fs-5">Barcode: <span
-                                    class="product-barcode text-dark fw-semibold">EreTVgAmKe</span></p>
-                            <h5 class="fw-bold mb-4 fs-4"><span class="text-dark">1 Unit:</span> <span
-                                    class="text-muted ms-1 product-price">$125.000</span>
-                            </h5>
-                            <div class="mb-4">
-                                <label class="form-label fw-bold fs-6">How many units <span
-                                        class="text-danger">*</span></label>
-                                <input type="number" min="1"
-                                    class="form-control form-control-lg border-primary rounded-3 py-3 product-qty-input"
-                                    placeholder="Enter units" value="1">
-                            </div>
-                            <div class="d-flex justify-content-between mt-5">
-                                <button
-                                    class="btn bg-label-secondary text-primary border-0 px-5 py-3 rounded-3 fw-bold btn-clear">Clear</button>
-                                <button class="btn btn-primary px-5 py-3 rounded-3 fw-bold btn-add-to-cart">Add to
-                                    Cart</button>
+                        <div class="input-group w-50">
+                            <div class="input-group input-group-merge">
+                                <span class="input-group-text"><i class="icon-base ti tabler-search"></i></span>
+                                <input type="text" class="form-control catalog-search"
+                                    placeholder="Search Categories, Sub Categories, Products..." />
+                                <button type="button" class="btn btn-icon btn-text-secondary catalog-search-clear d-none"
+                                    title="Clear search">
+                                    <i class="ti tabler-x"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
+
+                    {{-- Catalog Grid (categories / sub-cats / products / search results all render here) --}}
+                    <div class="catalog-view">
+                        <div class="row g-3 overflow-auto catalog-grid" style="max-height: 100vh;"></div>
+                    </div>
+
+                    {{-- Search results split view (only visible during cross-resource search) --}}
+                    <div class="catalog-search-view d-none">
+                        <div class="search-section mb-4">
+                            <h5 class="fw-bold text-muted mb-3 search-categories-heading">
+                                <i class="ti tabler-category"></i> Categories
+                                <span class="badge bg-label-primary ms-2 search-categories-count">0</span>
+                            </h5>
+                            <div class="row g-3 search-categories-grid"></div>
+                        </div>
+                        <div class="search-section mb-4">
+                            <h5 class="fw-bold text-muted mb-3 search-sub-categories-heading">
+                                <i class="ti tabler-category-plus"></i> Sub Categories
+                                <span class="badge bg-label-primary ms-2 search-sub-categories-count">0</span>
+                            </h5>
+                            <div class="row g-3 search-sub-categories-grid"></div>
+                        </div>
+                        <div class="search-section">
+                            <h5 class="fw-bold text-muted mb-3 search-products-heading">
+                                <i class="ti tabler-package"></i> Products
+                                <span class="badge bg-label-primary ms-2 search-products-count">0</span>
+                            </h5>
+                            <div class="row g-3 search-products-grid"></div>
+                        </div>
+                    </div>
+
+                    {{-- Product Detail (qty + Add to Cart) --}}
+                    <div class="product-details-view d-none mt-4">
+                        <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
+                            <button type="button"
+                                class="btn btn-sm bg-label-secondary text-primary border-0 rounded-pill btn-circle-38 btn-back-from-product">
+                                <i class="ti tabler-arrow-left fs-4"></i>
+                            </button>
+                            <h4 class="fw-bold mb-0 product-detail-title">Product</h4>
+                        </div>
+                        <div class="product-info">
+                            <h3 class="fw-bold mb-2 product-name"></h3>
+                            <p class="text-muted mb-2">SKU: <span class="text-dark fw-semibold product-sku">—</span></p>
+                            <p class="text-muted mb-4">Barcode: <span class="text-dark fw-semibold product-barcode">—</span></p>
+                            <h5 class="fw-bold mb-4">
+                                <span class="text-dark">1 Unit:</span>
+                                <span class="text-primary ms-1 product-price">$0.00</span>
+                            </h5>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">How many units <span class="text-danger">*</span></label>
+                                <input type="number" min="1" step="1"
+                                    class="form-control form-control-lg border-primary rounded-3 py-3 product-qty-input"
+                                    value="1" />
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <button type="button"
+                                    class="btn bg-label-secondary text-primary border-0 px-5 py-3 rounded-3 fw-bold btn-clear-qty">Clear</button>
+                                <button type="button"
+                                    class="btn btn-primary px-5 py-3 rounded-3 fw-bold btn-add-to-cart">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
+
+            @include('employee.order.partials.catalog-card')
         </div>
     </div>
     @include('employee.order.sidebar-modal');
     @push('page-script')
-        <script src="{{ asset('assets/js/pos.js') }}"></script>
+        <script>
+            window.catalogRoutes = {
+                categories: @json(route('employee.order.categories')),
+                subCategories: @json(route('employee.order.sub-categories')),
+                products: @json(route('employee.order.products')),
+                search: @json(route('employee.order.search')),
+            };
+        </script>
+        <script src="{{ asset('assets/js/employee/catalog-api.js') }}"></script>
+        <script src="{{ asset('assets/js/employee/new-order.js') }}"></script>
     @endpush
 @endsection
