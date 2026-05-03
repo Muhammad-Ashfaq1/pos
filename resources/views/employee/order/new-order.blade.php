@@ -24,9 +24,13 @@
 
                         <div class="mb-3">
                             <label for="customer_type_filter" class="form-label">Customer Type</label>
-                            <select id="customer_type_filter" class="form-select filter-control select2"
-                                data-placeholder="All customer types" data-allow-clear="false">
-                                <option value="">All</option>
+                            <select
+                                id="customer_type_filter"
+                                class="form-select filter-control select2"
+                                data-placeholder="All customer types"
+                                data-allow-clear="true"
+                                data-minimum-results-for-search="99">
+                                <option value=""></option>
                                 @for ($i = 1; $i <= 3; $i++)
                                     <option value="{{ $i }}">Customer Type {{ $i }}</option>
                                 @endfor
@@ -35,9 +39,13 @@
 
                         <div class="mb-3">
                             <label for="order_type_filter" class="form-label">Orders</label>
-                            <select id="order_type_filter" class="form-select filter-control select2"
-                                data-placeholder="All orders" data-allow-clear="false">
-                                <option value="">All</option>
+                            <select
+                                id="order_type_filter"
+                                class="form-select filter-control select2"
+                                data-placeholder="All orders"
+                                data-allow-clear="true"
+                                data-minimum-results-for-search="99">
+                                <option value=""></option>
                                 @for ($i = 1; $i <= 2; $i++)
                                     <option value="{{ $i }}">Orders {{ $i }}</option>
                                 @endfor
@@ -46,9 +54,12 @@
 
                         <div class="mb-3">
                             <label for="add_vehicle_filter" class="form-label">Add Vehicle</label>
-                            <select id="add_vehicle_filter" class="form-select filter-control select2"
-                                data-placeholder="Add Vehicle" data-allow-clear="false">
-                                <option value="">All</option>
+                            <select
+                                id="add_vehicle_filter"
+                                class="form-select filter-control select2"
+                                data-placeholder="Select a vehicle"
+                                data-allow-clear="true">
+                                <option value=""></option>
                                 @for ($i = 1; $i <= 5; $i++)
                                     <option value="{{ $i }}">Add Vehicle {{ $i }}</option>
                                 @endfor

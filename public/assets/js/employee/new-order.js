@@ -369,6 +369,44 @@
         loadCurrentLevel('');
     });
 
+    // ─── Select2 init (matches tenant admin pattern) ───────────────────
+
+    function parseMinResults(raw) {
+        if (raw == null || raw === '') return 0;
+        if (typeof raw === 'number') return raw;
+        const s = String(raw).trim();
+        if (s.toLowerCase() === 'infinity') return Infinity;
+        const n = Number(s);
+        return Number.isNaN(n) ? 0 : n;
+    }
+
+    function initStaticSelect2() {
+        const $selects = $('.select2');
+
+        if (typeof $.fn.select2 !== 'function' || !$selects.length) {
+            return;
+        }
+
+        $selects.each(function () {
+            const $this = $(this);
+
+            if ($this.data('select2')) return;
+
+            const dropdownParentSelector = $this.data('dropdown-parent');
+
+            if (!dropdownParentSelector && !$this.parent().hasClass('position-relative')) {
+                $this.wrap('<div class="position-relative"></div>');
+            }
+
+            $this.select2({
+                dropdownParent: dropdownParentSelector ? $(dropdownParentSelector) : $this.parent(),
+                placeholder: $this.data('placeholder'),
+                allowClear: Boolean($this.data('allow-clear')),
+                minimumResultsForSearch: parseMinResults($this.data('minimum-results-for-search')),
+            });
+        });
+    }
+
     // ─── Boot ──────────────────────────────────────────────────────────
 
     $(function () {
@@ -377,6 +415,7 @@
         showCatalog();
         loadCategories('');
         renderCart();
+        initStaticSelect2();
     });
 
 })(window.jQuery);
