@@ -23,12 +23,12 @@
                     <div class="card-body d-flex flex-column">
 
                         <div class="mb-3">
-                            <label for="customer_type_filter" class="form-label">Customer Type</label>
-                            <select
-                                id="customer_type_filter"
-                                class="form-select filter-control select2"
-                                data-placeholder="All customer types"
-                                data-allow-clear="true"
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label for="customer_type_filter" class="form-label">Customer</label>
+                                <a href="" id="add-customer" class="text-primary">+ Add Customer</a>
+                            </div>
+                            <select id="customer_type_filter" class="form-select filter-control select2"
+                                data-placeholder="All customer types" data-allow-clear="true"
                                 data-minimum-results-for-search="99">
                                 <option value=""></option>
                                 @for ($i = 1; $i <= 3; $i++)
@@ -39,12 +39,8 @@
 
                         <div class="mb-3">
                             <label for="order_type_filter" class="form-label">Orders</label>
-                            <select
-                                id="order_type_filter"
-                                class="form-select filter-control select2"
-                                data-placeholder="All orders"
-                                data-allow-clear="true"
-                                data-minimum-results-for-search="99">
+                            <select id="order_type_filter" class="form-select filter-control select2"
+                                data-placeholder="All orders" data-allow-clear="true" data-minimum-results-for-search="99">
                                 <option value=""></option>
                                 @for ($i = 1; $i <= 2; $i++)
                                     <option value="{{ $i }}">Orders {{ $i }}</option>
@@ -54,11 +50,8 @@
 
                         <div class="mb-3">
                             <label for="add_vehicle_filter" class="form-label">Add Vehicle</label>
-                            <select
-                                id="add_vehicle_filter"
-                                class="form-select filter-control select2"
-                                data-placeholder="Select a vehicle"
-                                data-allow-clear="true">
+                            <select id="add_vehicle_filter" class="form-select filter-control select2"
+                                data-placeholder="Select a vehicle" data-allow-clear="true">
                                 <option value=""></option>
                                 @for ($i = 1; $i <= 5; $i++)
                                     <option value="{{ $i }}">Add Vehicle {{ $i }}</option>
@@ -210,13 +203,15 @@
                         <div class="product-info">
                             <h3 class="fw-bold mb-2 product-name"></h3>
                             <p class="text-muted mb-2">SKU: <span class="text-dark fw-semibold product-sku">—</span></p>
-                            <p class="text-muted mb-4">Barcode: <span class="text-dark fw-semibold product-barcode">—</span></p>
+                            <p class="text-muted mb-4">Barcode: <span
+                                    class="text-dark fw-semibold product-barcode">—</span></p>
                             <h5 class="fw-bold mb-4">
                                 <span class="text-dark">1 Unit:</span>
                                 <span class="text-primary ms-1 product-price">$0.00</span>
                             </h5>
                             <div class="mb-4">
-                                <label class="form-label fw-bold">How many units <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">How many units <span
+                                        class="text-danger">*</span></label>
                                 <input type="number" min="1" step="1"
                                     class="form-control form-control-lg border-primary rounded-3 py-3 product-qty-input"
                                     value="1" />
@@ -225,7 +220,8 @@
                                 <button type="button"
                                     class="btn bg-label-secondary text-primary border-0 px-5 py-3 rounded-3 fw-bold btn-clear-qty">Clear</button>
                                 <button type="button"
-                                    class="btn btn-primary px-5 py-3 rounded-3 fw-bold btn-add-to-cart">Add to Cart</button>
+                                    class="btn btn-primary px-5 py-3 rounded-3 fw-bold btn-add-to-cart">Add to
+                                    Cart</button>
                             </div>
                         </div>
                     </div>
