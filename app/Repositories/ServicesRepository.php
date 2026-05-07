@@ -215,7 +215,7 @@ class ServicesRepository implements ServiceRepositoryInterface
                         'product_name' => $mapping->product?->name,
                         'product_sku' => $mapping->product?->sku,
                         'product_unit' => $mapping->product?->unit,
-                        'quantity' => (string) $mapping->quantity,
+                        'quantity' => (int) $mapping->quantity,
                         'unit' => $mapping->unit,
                         'is_required' => $mapping->is_required,
                     ])

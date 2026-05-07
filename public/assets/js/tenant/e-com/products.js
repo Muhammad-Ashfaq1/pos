@@ -94,8 +94,13 @@
   const $stockPreview = $('#product_stock_preview');
 
   const formatStock = function (value) {
-    const n = Number(value || 0);
-    return Number.isFinite(n) ? (Math.round(n * 1000) / 1000).toString() : '0';
+    const n = Math.trunc(Number(value || 0));
+    return Number.isFinite(n) ? Math.max(0, n).toString() : '0';
+  };
+
+  const toIntStock = function (value) {
+    const n = Math.trunc(Number(value || 0));
+    return Number.isFinite(n) ? Math.max(0, n) : 0;
   };
 
   const getCurrentStockBaseline = function () {
@@ -388,10 +393,10 @@
     $('#product_cost_price').val(product.cost_price);
     $('#product_sale_price').val(product.sale_price);
     $('#product_tax_percentage').val(product.tax_percentage);
-    $('#product_opening_stock').val(product.opening_stock);
-    $('#product_current_stock').val(product.current_stock);
-    $('#product_minimum_stock_level').val(product.minimum_stock_level);
-    $('#product_reorder_level').val(product.reorder_level);
+    $('#product_opening_stock').val(toIntStock(product.opening_stock));
+    $('#product_current_stock').val(toIntStock(product.current_stock));
+    $('#product_minimum_stock_level').val(toIntStock(product.minimum_stock_level));
+    $('#product_reorder_level').val(toIntStock(product.reorder_level));
     $('#product_is_active').prop('checked', Boolean(product.is_active));
     $('#product_track_inventory_toggle').prop('checked', Boolean(product.track_inventory));
     if (mediaManager) {
@@ -436,10 +441,10 @@
         'data-cost-price="' + row.cost_price + '" ' +
         'data-sale-price="' + row.sale_price + '" ' +
         'data-tax-percentage="' + (row.tax_percentage || '') + '" ' +
-        'data-opening-stock="' + row.opening_stock + '" ' +
-        'data-current-stock="' + row.current_stock + '" ' +
-        'data-minimum-stock-level="' + row.minimum_stock_level + '" ' +
-        'data-reorder-level="' + row.reorder_level + '" ' +
+        'data-opening-stock="' + toIntStock(row.opening_stock) + '" ' +
+        'data-current-stock="' + toIntStock(row.current_stock) + '" ' +
+        'data-minimum-stock-level="' + toIntStock(row.minimum_stock_level) + '" ' +
+        'data-reorder-level="' + toIntStock(row.reorder_level) + '" ' +
         'data-track-inventory="' + (row.track_inventory ? 1 : 0) + '" ' +
         'data-is-active="' + (row.is_active ? 1 : 0) + '" ' +
         'data-edit-url="' + escapeHtml(row.edit_url || productEditUrl(row.id)) + '" ' + tooltipAttrs('Edit') + '>' +
@@ -507,20 +512,25 @@
           max: 100
         },
         opening_stock: {
-          number: true,
+          digits: true,
           min: 0
         },
         current_stock: {
-          number: true,
+          digits: true,
           min: 0
         },
         minimum_stock_level: {
-          number: true,
+          digits: true,
           min: 0
         },
         reorder_level: {
-          number: true,
+          digits: true,
           min: 0
+        },
+        stock_adjustment_quantity: {
+          digits: true,
+          min: 0,
+          max: 9999
         }
       },
       errorElement: 'div',
@@ -682,7 +692,7 @@
           data: null,
           render: function (data, type, row) {
             return '<div class="text-nowrap">' +
-              '<span class="d-block fw-medium">' + escapeHtml(row.current_stock) + '</span>' +
+              '<span class="d-block fw-medium">' + escapeHtml(toIntStock(row.current_stock)) + '</span>' +
               '<small class="badge ' + row.stock_badge_class + '">' + escapeHtml(row.stock_status_label) + '</small>' +
               '</div>';
           }

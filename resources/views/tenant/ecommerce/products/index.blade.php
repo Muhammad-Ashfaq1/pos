@@ -282,12 +282,12 @@
 
                             <div class="col-md-3">
                                 <label for="product_opening_stock" class="form-label">Opening Stock</label>
-                                <input type="number" step="0.001" min="0" class="form-control inventory-field" id="product_opening_stock" name="opening_stock" value="0">
+                                <input type="number" step="1" min="0" inputmode="numeric" pattern="[0-9]*" class="form-control inventory-field" id="product_opening_stock" name="opening_stock" value="0">
                                 <div class="invalid-feedback"></div>
                             </div>
                             <div class="col-md-3" data-stock-current-wrapper>
                                 <label for="product_current_stock" class="form-label">Current Stock</label>
-                                <input type="number" step="0.001" min="0" class="form-control inventory-field" id="product_current_stock" name="current_stock" value="0">
+                                <input type="number" step="1" min="0" inputmode="numeric" pattern="[0-9]*" class="form-control inventory-field" id="product_current_stock" name="current_stock" value="0">
                                 <div class="invalid-feedback"></div>
                             </div>
 
@@ -333,12 +333,12 @@
                             </div>
                             <div class="col-md-3">
                                 <label for="product_minimum_stock_level" class="form-label">Minimum Stock</label>
-                                <input type="number" step="0.001" min="0" class="form-control inventory-field" id="product_minimum_stock_level" name="minimum_stock_level" value="0">
+                                <input type="number" step="1" min="0" inputmode="numeric" pattern="[0-9]*" class="form-control inventory-field" id="product_minimum_stock_level" name="minimum_stock_level" value="0">
                                 <div class="invalid-feedback"></div>
                             </div>
                             <div class="col-md-3">
                                 <label for="product_reorder_level" class="form-label">Reorder Level</label>
-                                <input type="number" step="0.001" min="0" class="form-control inventory-field" id="product_reorder_level" name="reorder_level" value="0">
+                                <input type="number" step="1" min="0" inputmode="numeric" pattern="[0-9]*" class="form-control inventory-field" id="product_reorder_level" name="reorder_level" value="0">
                                 <div class="invalid-feedback"></div>
                             </div>
                         </div>

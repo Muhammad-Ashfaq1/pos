@@ -224,7 +224,7 @@
           '</div>' +
         '</td>' +
         '<td>' +
-          '<input type="number" step="0.001" min="0.001" class="form-control service-mapping-quantity">' +
+          '<input type="number" step="1" min="1" inputmode="numeric" pattern="[0-9]*" class="form-control service-mapping-quantity">' +
           '<div class="invalid-feedback"></div>' +
         '</td>' +
         '<td>' +
@@ -276,7 +276,7 @@
       $productSelect.append(option).trigger('change');
     }
 
-    $quantity.val(mapping && mapping.quantity ? mapping.quantity : '');
+    $quantity.val(mapping && mapping.quantity ? Math.max(0, Math.trunc(Number(mapping.quantity))) : '');
     $unit.val(mapping && mapping.unit ? mapping.unit : '');
     $required.prop('checked', mapping ? Boolean(mapping.is_required) : true);
 
