@@ -16,8 +16,7 @@ class DiscountController extends Controller
 {
     public function __construct(
         private readonly DiscountRepositoryInterface $repo
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View
     {

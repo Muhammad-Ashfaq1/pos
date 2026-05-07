@@ -5,21 +5,21 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\Products\SaveProductRequest;
 use App\Models\Product;
+use App\Models\SubCategory;
 use App\Repositories\Interface\ProductRepositoryInterface;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class ProductController extends Controller
 {
     public function __construct(
         private readonly ProductRepositoryInterface $repo
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View
     {
@@ -66,7 +66,7 @@ class ProductController extends Controller
             ! empty($validated['category_id'])
             && ! empty($validated['sub_category_id'])
         ) {
-            $belongsToCategory = \App\Models\SubCategory::query()
+            $belongsToCategory = SubCategory::query()
                 ->whereKey($validated['sub_category_id'])
                 ->where('category_id', $validated['category_id'])
                 ->exists();

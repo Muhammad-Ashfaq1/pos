@@ -282,22 +282,63 @@
 
                             <div class="col-md-3">
                                 <label for="product_opening_stock" class="form-label">Opening Stock</label>
-                                <input type="number" step="0.001" min="0" class="form-control inventory-field" id="product_opening_stock" name="opening_stock" value="0">
+                                <input type="number" step="1" min="0" inputmode="numeric" pattern="[0-9]*" class="form-control inventory-field" id="product_opening_stock" name="opening_stock" value="0">
                                 <div class="invalid-feedback"></div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-3" data-stock-current-wrapper>
                                 <label for="product_current_stock" class="form-label">Current Stock</label>
-                                <input type="number" step="0.001" min="0" class="form-control inventory-field" id="product_current_stock" name="current_stock" value="0">
+                                <input type="number" step="1" min="0" inputmode="numeric" pattern="[0-9]*" class="form-control inventory-field" id="product_current_stock" name="current_stock" value="0">
                                 <div class="invalid-feedback"></div>
+                            </div>
+
+                            <div class="col-md-6 d-none" data-stock-adjustment-wrapper>
+                                <label for="product_stock_adjustment_mode" class="form-label">
+                                    Adjust Current Stock
+                                    <small class="text-muted ms-1">
+                                        (Now: <strong id="product_stock_now">0</strong>
+                                        → New: <strong id="product_stock_preview" class="text-primary">0</strong>)
+                                    </small>
+                                </label>
+                                <div class="d-flex gap-2">
+                                    <select
+                                        id="product_stock_adjustment_mode"
+                                        name="stock_adjustment_mode"
+                                        class="form-select"
+                                        style="max-width: 140px;">
+                                        <option value="none" selected>No change</option>
+                                        <option value="add">Add</option>
+                                        <option value="subtract">Subtract</option>
+                                    </select>
+
+                                    <div class="input-group flex-grow-1">
+                                        <button type="button" class="btn btn-outline-secondary" id="product_stock_adjustment_minus" disabled>
+                                            <i class="ti tabler-minus"></i>
+                                        </button>
+                                        <input
+                                            type="number"
+                                            step="1"
+                                            min="0"
+                                            max="9999"
+                                            class="form-control text-center"
+                                            id="product_stock_adjustment_quantity"
+                                            name="stock_adjustment_quantity"
+                                            value="0"
+                                            disabled>
+                                        <button type="button" class="btn btn-outline-secondary" id="product_stock_adjustment_plus" disabled>
+                                            <i class="ti tabler-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="invalid-feedback d-block" id="product_stock_adjustment_error"></div>
                             </div>
                             <div class="col-md-3">
                                 <label for="product_minimum_stock_level" class="form-label">Minimum Stock</label>
-                                <input type="number" step="0.001" min="0" class="form-control inventory-field" id="product_minimum_stock_level" name="minimum_stock_level" value="0">
+                                <input type="number" step="1" min="0" inputmode="numeric" pattern="[0-9]*" class="form-control inventory-field" id="product_minimum_stock_level" name="minimum_stock_level" value="0">
                                 <div class="invalid-feedback"></div>
                             </div>
                             <div class="col-md-3">
                                 <label for="product_reorder_level" class="form-label">Reorder Level</label>
-                                <input type="number" step="0.001" min="0" class="form-control inventory-field" id="product_reorder_level" name="reorder_level" value="0">
+                                <input type="number" step="1" min="0" inputmode="numeric" pattern="[0-9]*" class="form-control inventory-field" id="product_reorder_level" name="reorder_level" value="0">
                                 <div class="invalid-feedback"></div>
                             </div>
                         </div>

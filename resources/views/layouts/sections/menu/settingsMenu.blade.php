@@ -2,7 +2,7 @@
     $currentRouteName = request()->route()?->getName();
 @endphp
 
-<div class="col-md-4 col-lg-2 settings-tab-sidebar settings-sidebar">
+<div class="col-md-4 col-lg-3 settings-tab-sidebar card settings-sidebar">
     <ul class="nav flex-column text-start">
         @foreach($settingsSections as $item)
             <li class="nav-item mb-2">

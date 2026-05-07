@@ -1,10 +1,27 @@
 @php
   $authUser = auth()->user();
-  $isEmployeePanel = $authUser?->isEmployee() ?? false;
+  $routeName = request()->route()?->getName() ?? '';
+  $panelContext = trim($__env->yieldContent('panel_context'));
+  $employeeChromePatterns = [
+      'employee.*',
+      'tenant.ecommerce.products.*',
+      'tenant.ecommerce.services.*',
+      'tenant.ecommerce.customers.*',
+      'tenant.ecommerce.vehicles.*',
+  ];
+  $isEmployeePanel = $panelContext === 'employee'
+      || (($authUser?->isEmployee() ?? false)
+          && collect($employeeChromePatterns)->contains(
+              fn (string $pattern): bool => str($routeName)->is($pattern)
+          ));
   $bodyClasses = ' layout-navbar-fixed layout-menu-fixed layout-compact ';
 
-  if (str_starts_with(request()->route()?->getName() ?? '', 'tenant.settings.')) {
+  if (str_starts_with($routeName, 'tenant.settings.')) {
       $bodyClasses .= ' layout-menu-collapsed ';
+  }
+
+  if ($isEmployeePanel) {
+      $bodyClasses .= ' employee-panel ';
   }
 
   $contentContainerClass = trim($__env->yieldContent('content_container_class')) ?: ($isEmployeePanel
@@ -197,7 +214,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-aio-3.2.8.min.js"></script>
     <script src="{{ asset('assets/js/app-helpers.js') }}"></script>
-    <script src="{{ asset('assets/js/dropdowns.js') }}"></script>
     <script src="{{ asset('assets/js/session-notifications.js') }}"></script>
     @stack('page-script')
     @yield('scripts')

@@ -43,17 +43,17 @@ class SyncServiceProductsAction
 
                 return [
                     'product_id' => $productId,
-                    'quantity' => (float) $quantity,
+                    'quantity' => max(0, (int) round((float) $quantity)),
                     'unit' => $this->normalizeNullableString(data_get($mapping, 'unit')),
                     'is_required' => filter_var(data_get($mapping, 'is_required', false), FILTER_VALIDATE_BOOL),
                 ];
             })
-            ->filter()
+            ->filter(fn (?array $mapping) => $mapping !== null && $mapping['quantity'] > 0)
             ->groupBy('product_id')
             ->map(function (Collection $group): array {
                 return [
                     'product_id' => $group->first()['product_id'],
-                    'quantity' => number_format((float) $group->sum('quantity'), 3, '.', ''),
+                    'quantity' => (string) $group->sum('quantity'),
                     'unit' => $group->pluck('unit')->filter()->last(),
                     'is_required' => $group->contains(fn (array $mapping) => $mapping['is_required']),
                 ];

@@ -83,6 +83,140 @@
     $('.inventory-field').prop('disabled', !enabled).toggleClass('bg-label-secondary', !enabled);
   };
 
+  const $stockCurrentWrapper = $('[data-stock-current-wrapper]');
+  const $stockAdjustmentWrapper = $('[data-stock-adjustment-wrapper]');
+  const $stockAdjustmentMode = $('#product_stock_adjustment_mode');
+  const $stockAdjustmentQty = $('#product_stock_adjustment_quantity');
+  const $stockAdjustmentPlus = $('#product_stock_adjustment_plus');
+  const $stockAdjustmentMinus = $('#product_stock_adjustment_minus');
+  const $stockAdjustmentError = $('#product_stock_adjustment_error');
+  const $stockNow = $('#product_stock_now');
+  const $stockPreview = $('#product_stock_preview');
+
+  const formatStock = function (value) {
+    const n = Math.trunc(Number(value || 0));
+    return Number.isFinite(n) ? Math.max(0, n).toString() : '0';
+  };
+
+  const toIntStock = function (value) {
+    const n = Math.trunc(Number(value || 0));
+    return Number.isFinite(n) ? Math.max(0, n) : 0;
+  };
+
+  const getCurrentStockBaseline = function () {
+    return Number($('#product_current_stock').data('baseline') || 0);
+  };
+
+  const setStockBaseline = function (value) {
+    const n = Number(value || 0);
+    $('#product_current_stock').data('baseline', n).val(n);
+    $stockNow.text(formatStock(n));
+  };
+
+  const recomputeStockPreview = function () {
+    const mode = $stockAdjustmentMode.val() || 'none';
+    const baseline = getCurrentStockBaseline();
+
+    if (mode === 'none') {
+      $stockPreview.text(formatStock(baseline));
+      return;
+    }
+
+    let qty = Number($stockAdjustmentQty.val() || 0);
+    if (!Number.isFinite(qty) || qty < 0) qty = 0;
+
+    const next = mode === 'add' ? baseline + qty : Math.max(0, baseline - qty);
+    $stockPreview.text(formatStock(next));
+  };
+
+  const setStepperLimits = function () {
+    const mode = $stockAdjustmentMode.val() || 'none';
+    const baseline = getCurrentStockBaseline();
+
+    if (mode === 'add') {
+      $stockAdjustmentQty.attr({ min: 0, max: 9999 });
+    } else if (mode === 'subtract') {
+      $stockAdjustmentQty.attr({ min: 0, max: baseline });
+    } else {
+      $stockAdjustmentQty.attr({ min: 0, max: 0 });
+    }
+  };
+
+  const clampStockQuantity = function () {
+    const max = Number($stockAdjustmentQty.attr('max') || 0);
+    let qty = Number($stockAdjustmentQty.val() || 0);
+    if (!Number.isFinite(qty) || qty < 0) qty = 0;
+    if (qty > max) qty = max;
+    $stockAdjustmentQty.val(qty);
+    return qty;
+  };
+
+  const refreshCurrentStockFromServer = function () {
+    const productId = $('#product_id').val();
+    if (!productId) return $.Deferred().resolve().promise();
+
+    const editUrl = productEditUrl(productId);
+    if (!editUrl) return $.Deferred().resolve().promise();
+
+    $stockAdjustmentError.text('');
+
+    return $.ajax({ url: editUrl, method: 'GET' })
+      .done(function (response) {
+        const fresh = response?.data?.current_stock;
+        if (fresh !== undefined) setStockBaseline(fresh);
+      })
+      .fail(function () {
+        $stockAdjustmentError.text('Could not refresh current stock. Please try again.');
+      });
+  };
+
+  const onStockModeChange = function () {
+    const mode = $stockAdjustmentMode.val() || 'none';
+    const enabled = mode === 'add' || mode === 'subtract';
+
+    $stockAdjustmentQty.prop('disabled', !enabled).val(0);
+    $stockAdjustmentPlus.prop('disabled', !enabled);
+    $stockAdjustmentMinus.prop('disabled', !enabled);
+    $stockAdjustmentError.text('');
+
+    const continueWith = function () {
+      setStepperLimits();
+      clampStockQuantity();
+      recomputeStockPreview();
+    };
+
+    if (mode === 'subtract') {
+      refreshCurrentStockFromServer().always(continueWith);
+      return;
+    }
+
+    continueWith();
+  };
+
+  const showStockAdjustmentWidget = function (currentStock) {
+    setStockBaseline(currentStock);
+    $stockPreview.text(formatStock(currentStock));
+    $stockCurrentWrapper.addClass('d-none');
+    $stockAdjustmentWrapper.removeClass('d-none');
+    $stockAdjustmentMode.val('none');
+    $stockAdjustmentQty.val(0).prop('disabled', true);
+    $stockAdjustmentPlus.prop('disabled', true);
+    $stockAdjustmentMinus.prop('disabled', true);
+    $stockAdjustmentError.text('');
+    setStepperLimits();
+  };
+
+  const hideStockAdjustmentWidget = function () {
+    $stockCurrentWrapper.removeClass('d-none');
+    $stockAdjustmentWrapper.addClass('d-none');
+    $stockAdjustmentMode.val('none');
+    $stockAdjustmentQty.val(0).prop('disabled', true);
+    $stockAdjustmentPlus.prop('disabled', true);
+    $stockAdjustmentMinus.prop('disabled', true);
+    $stockAdjustmentError.text('');
+    $('#product_current_stock').removeData('baseline');
+  };
+
   const resetValidationState = function () {
     $form.find('.is-invalid').removeClass('is-invalid');
     $form.find('.invalid-feedback').text('');
@@ -239,6 +373,7 @@
       mediaManager.reset();
     }
     $('#productModalLabel').text('Add Product');
+    hideStockAdjustmentWidget();
     setSubmitButtonState(false);
     resetValidationState();
     setInventoryFieldsState();
@@ -258,16 +393,17 @@
     $('#product_cost_price').val(product.cost_price);
     $('#product_sale_price').val(product.sale_price);
     $('#product_tax_percentage').val(product.tax_percentage);
-    $('#product_opening_stock').val(product.opening_stock);
-    $('#product_current_stock').val(product.current_stock);
-    $('#product_minimum_stock_level').val(product.minimum_stock_level);
-    $('#product_reorder_level').val(product.reorder_level);
+    $('#product_opening_stock').val(toIntStock(product.opening_stock));
+    $('#product_current_stock').val(toIntStock(product.current_stock));
+    $('#product_minimum_stock_level').val(toIntStock(product.minimum_stock_level));
+    $('#product_reorder_level').val(toIntStock(product.reorder_level));
     $('#product_is_active').prop('checked', Boolean(product.is_active));
     $('#product_track_inventory_toggle').prop('checked', Boolean(product.track_inventory));
     if (mediaManager) {
       mediaManager.loadExisting(Array.isArray(product.images) ? product.images : []);
     }
     $('#productModalLabel').text('Edit Product');
+    showStockAdjustmentWidget(product.current_stock);
     setSubmitButtonState(false);
     resetValidationState();
     setInventoryFieldsState();
@@ -278,13 +414,18 @@
     return '$' + amount.toFixed(2);
   };
 
+  const tooltipAttrs = function (title) {
+    return window.Helpers && window.Helpers.getTooltipAttributes
+      ? window.Helpers.getTooltipAttributes(title)
+      : 'title="' + title + '"';
+  };
+
   const actionButtonsHtml = function (row) {
     let html = '<div class="d-flex align-items-center justify-content-center">';
 
     if (row.can_update) {
       html +=
         '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect edit-product-btn" ' +
-        'data-bs-toggle="modal" data-bs-target="#productModal" ' +
         'data-id="' + row.id + '" ' +
         'data-category-id="' + (row.category_id || '') + '" ' +
         'data-category-name="' + escapeHtml(row.category_name || '') + '" ' +
@@ -300,13 +441,13 @@
         'data-cost-price="' + row.cost_price + '" ' +
         'data-sale-price="' + row.sale_price + '" ' +
         'data-tax-percentage="' + (row.tax_percentage || '') + '" ' +
-        'data-opening-stock="' + row.opening_stock + '" ' +
-        'data-current-stock="' + row.current_stock + '" ' +
-        'data-minimum-stock-level="' + row.minimum_stock_level + '" ' +
-        'data-reorder-level="' + row.reorder_level + '" ' +
+        'data-opening-stock="' + toIntStock(row.opening_stock) + '" ' +
+        'data-current-stock="' + toIntStock(row.current_stock) + '" ' +
+        'data-minimum-stock-level="' + toIntStock(row.minimum_stock_level) + '" ' +
+        'data-reorder-level="' + toIntStock(row.reorder_level) + '" ' +
         'data-track-inventory="' + (row.track_inventory ? 1 : 0) + '" ' +
         'data-is-active="' + (row.is_active ? 1 : 0) + '" ' +
-        'data-edit-url="' + escapeHtml(row.edit_url || productEditUrl(row.id)) + '" title="Edit">' +
+        'data-edit-url="' + escapeHtml(row.edit_url || productEditUrl(row.id)) + '" ' + tooltipAttrs('Edit') + '>' +
         '<i class="icon-base ti tabler-edit icon-md"></i>' +
         '</button>';
     }
@@ -315,7 +456,7 @@
       html +=
         '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect delete-product-btn" ' +
         'data-url="' + row.delete_url + '" ' +
-        'data-name="' + escapeHtml(row.name) + '" title="Delete">' +
+        'data-name="' + escapeHtml(row.name) + '" ' + tooltipAttrs('Delete') + '>' +
         '<i class="icon-base ti tabler-trash icon-md text-danger"></i>' +
         '</button>';
     }
@@ -371,20 +512,25 @@
           max: 100
         },
         opening_stock: {
-          number: true,
+          digits: true,
           min: 0
         },
         current_stock: {
-          number: true,
+          digits: true,
           min: 0
         },
         minimum_stock_level: {
-          number: true,
+          digits: true,
           min: 0
         },
         reorder_level: {
-          number: true,
+          digits: true,
           min: 0
+        },
+        stock_adjustment_quantity: {
+          digits: true,
+          min: 0,
+          max: 9999
         }
       },
       errorElement: 'div',
@@ -546,7 +692,7 @@
           data: null,
           render: function (data, type, row) {
             return '<div class="text-nowrap">' +
-              '<span class="d-block fw-medium">' + escapeHtml(row.current_stock) + '</span>' +
+              '<span class="d-block fw-medium">' + escapeHtml(toIntStock(row.current_stock)) + '</span>' +
               '<small class="badge ' + row.stock_badge_class + '">' + escapeHtml(row.stock_status_label) + '</small>' +
               '</div>';
           }
@@ -574,7 +720,12 @@
             return actionButtonsHtml(row);
           }
         }
-      ]
+      ],
+      drawCallback: function () {
+        if (window.Helpers && window.Helpers.initToolTip) {
+          window.Helpers.initToolTip(this.api().table().container());
+        }
+      }
     });
   };
 
@@ -601,6 +752,28 @@
     $formCategory.on('change', function () {
       clearSubCategorySelect($formSubCategory);
     });
+
+    $stockAdjustmentMode.on('change', onStockModeChange);
+
+    $stockAdjustmentQty.on('input change', function () {
+      clampStockQuantity();
+      recomputeStockPreview();
+    });
+
+    $stockAdjustmentPlus.on('click', function () {
+      if ($stockAdjustmentQty.prop('disabled')) return;
+      const max = Number($stockAdjustmentQty.attr('max') || 0);
+      const qty = Math.min(max, Number($stockAdjustmentQty.val() || 0) + 1);
+      $stockAdjustmentQty.val(qty);
+      recomputeStockPreview();
+    });
+
+    $stockAdjustmentMinus.on('click', function () {
+      if ($stockAdjustmentQty.prop('disabled')) return;
+      const qty = Math.max(0, Number($stockAdjustmentQty.val() || 0) - 1);
+      $stockAdjustmentQty.val(qty);
+      recomputeStockPreview();
+    });
   };
 
   const bindModalActions = function (validator) {
@@ -614,6 +787,11 @@
     $(document).on('click', '.edit-product-btn', function () {
       const $button = $(this);
       const editUrl = $button.data('edit-url') || productEditUrl($button.data('id'));
+
+      const modalEl = document.getElementById('productModal');
+      if (modalEl && window.bootstrap && window.bootstrap.Modal) {
+        window.bootstrap.Modal.getOrCreateInstance(modalEl).show();
+      }
 
       resetForm();
       setSubmitButtonState(true);

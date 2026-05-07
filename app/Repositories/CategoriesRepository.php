@@ -99,7 +99,7 @@ class CategoriesRepository implements CategoryRepositoryInterface
         $orderDirection = data_get($filters, 'order.0.dir', 'asc');
         $columns = $filters['columns'] ?? [];
         $orderColumn = is_numeric($orderColumnIndex)
-            ? data_get($columns, (int) $orderColumnIndex . '.data')
+            ? data_get($columns, (int) $orderColumnIndex.'.data')
             : null;
 
         $sortableColumns = [

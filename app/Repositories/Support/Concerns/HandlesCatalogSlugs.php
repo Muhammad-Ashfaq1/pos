@@ -15,7 +15,7 @@ trait HandlesCatalogSlugs
         string $fallbackPrefix = 'item'
     ): string {
         /** @var Model $model */
-        $model = new $modelClass();
+        $model = new $modelClass;
         $baseSlug = Str::slug($value);
         $baseSlug = $baseSlug !== '' ? $baseSlug : $fallbackPrefix;
         $slug = $baseSlug;

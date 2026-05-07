@@ -1,6 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.employee')
 
 @section('title', 'Employee Account')
+@section('content_container_class', 'container-fluid flex-grow-1 container-p-y')
 
 @section('content')
 <div class="row g-4">
@@ -12,7 +13,8 @@
                 </span>
                 <h4 class="mb-1">{{ $user->name }}</h4>
                 <p class="text-muted mb-3">{{ $user->email }}</p>
-                <span class="badge bg-label-primary">Employee</span>
+                <span class="badge bg-label-primary">{{ str($user->primaryRoleName() ?? 'employee')->replace('_', ' ')->title() }}</span>
+
                 <div class="mt-4 text-start">
                     <div class="d-flex justify-content-between py-2 border-bottom">
                         <span class="text-muted">Workspace</span>
@@ -38,7 +40,7 @@
             </div>
             <div class="card-body">
                 <p class="text-muted">
-                    This employee account is intentionally restricted to operational screens and view-safe tenant modules. Admin settings, role management, reports, and other dangerous areas remain unavailable unless permissions are changed.
+                    This employee account stays inside the worker-facing panel and view-safe tenant modules. Shop settings, staff management, roles, reports, discounts management, and other admin areas remain outside this flow.
                 </p>
                 <div class="d-flex flex-wrap gap-2">
                     @foreach($permissionBadges as $badge)
@@ -57,25 +59,25 @@
                     <div class="col-md-6">
                         <div class="rounded bg-label-success p-3 h-100">
                             <div class="fw-semibold mb-1">Tenant Scoped</div>
-                            <small class="text-muted">Customer, vehicle, product, and service data is read only within the current tenant context.</small>
+                            <small class="text-muted">Customer, vehicle, product, and service data is constrained by the active tenant context and model policies.</small>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="rounded bg-label-warning p-3 h-100">
                             <div class="fw-semibold mb-1">No Admin Settings</div>
-                            <small class="text-muted">This panel excludes shop settings, role management, discounts management, and central administration.</small>
+                            <small class="text-muted">The employee flow excludes shop settings, role management, discounts management, and central admin tools.</small>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="rounded bg-label-info p-3 h-100">
                             <div class="fw-semibold mb-1">Shared Login, Separate Panel</div>
-                            <small class="text-muted">Employees still use the shared login screen, but successful sign-in routes them into the dedicated employee experience.</small>
+                            <small class="text-muted">Employees still sign in through the shared login screen, but successful authentication sends them into the dedicated employee panel.</small>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="rounded bg-label-primary p-3 h-100">
-                            <div class="fw-semibold mb-1">Future POS Ready</div>
-                            <small class="text-muted">The workspace shell is now prepared for future order and service-job implementation without affecting current modules.</small>
+                            <div class="fw-semibold mb-1">POS Ready Shell</div>
+                            <small class="text-muted">The workspace is structured so future POS, order, or service-job modules can plug in without reshaping the employee UX.</small>
                         </div>
                     </div>
                 </div>

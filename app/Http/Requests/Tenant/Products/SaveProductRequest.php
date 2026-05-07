@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Tenant\Products;
 
-use App\Models\Product;
 use App\Models\Image;
+use App\Models\Product;
 use App\Models\SubCategory;
 use App\Support\Tenancy\TenantContext;
 use Closure;
@@ -57,7 +57,7 @@ class SaveProductRequest extends FormRequest
                         return;
                     }
 
-                    $belongsToCategory = \App\Models\SubCategory::query()
+                    $belongsToCategory = SubCategory::query()
                         ->whereKey($value)
                         ->where('category_id', $categoryId)
                         ->exists();
@@ -103,10 +103,12 @@ class SaveProductRequest extends FormRequest
             'cost_price' => ['required', 'numeric', 'min:0'],
             'sale_price' => ['required', 'numeric', 'min:0'],
             'tax_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'opening_stock' => ['nullable', 'numeric', 'min:0'],
-            'current_stock' => ['nullable', 'numeric', 'min:0'],
-            'minimum_stock_level' => ['nullable', 'numeric', 'min:0'],
-            'reorder_level' => ['nullable', 'numeric', 'min:0'],
+            'opening_stock' => ['nullable', 'integer', 'min:0'],
+            'current_stock' => ['nullable', 'integer', 'min:0'],
+            'minimum_stock_level' => ['nullable', 'integer', 'min:0'],
+            'reorder_level' => ['nullable', 'integer', 'min:0'],
+            'stock_adjustment_mode' => ['nullable', Rule::in(['none', 'add', 'subtract'])],
+            'stock_adjustment_quantity' => ['nullable', 'integer', 'min:0', 'max:9999'],
             'track_inventory' => ['required', 'boolean'],
             'is_active' => ['required', 'boolean'],
             'images' => ['nullable', 'array', 'max:20'],
@@ -236,6 +238,14 @@ class SaveProductRequest extends FormRequest
             'images.*.image' => 'Each uploaded file must be a valid image.',
             'images.*.mimes' => 'Images must be JPG, JPEG, PNG, GIF, or WEBP files.',
             'images.*.max' => 'Each image may not be greater than 5 MB.',
+            'stock_adjustment_mode.in' => 'The stock adjustment mode is invalid.',
+            'stock_adjustment_quantity.integer' => 'The stock adjustment must be a whole number.',
+            'stock_adjustment_quantity.max' => 'You can add at most 9999 units in a single adjustment.',
+            'stock_adjustment_quantity.min' => 'The stock adjustment cannot be negative.',
+            'opening_stock.integer' => 'Opening stock must be a whole number.',
+            'current_stock.integer' => 'Current stock must be a whole number.',
+            'minimum_stock_level.integer' => 'Minimum stock must be a whole number.',
+            'reorder_level.integer' => 'Reorder level must be a whole number.',
         ];
     }
 }

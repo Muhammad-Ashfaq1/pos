@@ -1,9 +1,15 @@
 @php
     $user = auth()->user();
     $workspaceName = $user?->tenant?->display_name ?? 'Employee Workspace';
+    $quickLinks = collect([
+        ($user?->can('customer.view') || $user?->can('customers.view')) ? ['label' => 'Customers', 'route' => route('tenant.ecommerce.customers.index'), 'icon' => 'tabler-users'] : null,
+        ($user?->can('vehicle.view') || $user?->can('vehicles.view')) ? ['label' => 'Vehicles', 'route' => route('tenant.ecommerce.vehicles.index'), 'icon' => 'tabler-car'] : null,
+        ($user?->can('product.view') || $user?->can('products.view')) ? ['label' => 'Products', 'route' => route('tenant.ecommerce.products.index'), 'icon' => 'tabler-package'] : null,
+        ($user?->can('service.view') || $user?->can('services.view')) ? ['label' => 'Services', 'route' => route('tenant.ecommerce.services.index'), 'icon' => 'tabler-tool'] : null,
+    ])->filter()->take(2)->values();
 @endphp
 
-<nav class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
+<nav class="layout-navbar container-fluid navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
     id="layout-navbar">
     <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
         <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
@@ -17,14 +23,35 @@
                 <span class="badge bg-label-primary">Employee Panel</span>
                 <h6 class="mb-0">{{ $workspaceName }}</h6>
             </div>
-            <small class="text-muted">Operator workspace for quick service, lookup, and catalog tasks.</small>
+            <small class="text-muted">{{ now()->format('l, d M Y') }} - Operator workspace for quick service, lookup, and catalog tasks.</small>
         </div>
 
         <ul class="navbar-nav flex-row align-items-center gap-2 ms-auto">
+            @if (session()->has('impersonator_id'))
+                <li class="nav-item me-2">
+                    <div class="d-flex align-items-center gap-2 px-3 py-1 rounded-pill border border-warning bg-label-warning">
+                        <i class="icon-base ti tabler-user-exclamation icon-sm text-warning"></i>
+                        <span class="small fw-medium text-warning d-none d-md-inline">
+                            Impersonating as <strong>{{ $user?->name }}</strong>
+                        </span>
+                        <a href="{{ route('admin.impersonate.stop') }}" class="btn btn-warning btn-sm py-0 px-2">
+                            <i class="icon-base ti tabler-x icon-xs me-1"></i>Stop
+                        </a>
+                    </div>
+                </li>
+            @endif
+            @foreach($quickLinks as $link)
+                <li class="nav-item d-none d-lg-block">
+                    <a href="{{ $link['route'] }}" class="btn btn-label-primary btn-sm">
+                        <i class="icon-base ti {{ $link['icon'] }} me-1"></i>
+                        {{ $link['label'] }}
+                    </a>
+                </li>
+            @endforeach
             <li class="nav-item">
-                <a href="{{ route('employee.workspace') }}" class="btn btn-primary btn-sm">
+                <a href="{{ route('employee.pos') }}" class="btn btn-primary btn-sm">
                     <i class="icon-base ti tabler-cash-register me-1"></i>
-                    Workspace
+                    POS / Workspace
                 </a>
             </li>
 

@@ -10,7 +10,7 @@
     <div class="row ps-4">
         @include('layouts.sections.menu.settingsMenu')
 
-        <div class="col-md-8 col-lg-10">
+        <div class="col-md-8 col-lg-9">
             @hasSection('header-content')
                 @yield('header-content')
             @endif

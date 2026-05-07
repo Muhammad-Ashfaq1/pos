@@ -128,13 +128,19 @@
     updateValueFieldPlaceholder();
   };
 
+  const tooltipAttrs = function (title) {
+    return window.Helpers && window.Helpers.getTooltipAttributes
+      ? window.Helpers.getTooltipAttributes(title)
+      : 'title="' + title + '"';
+  };
+
   const actionButtonsHtml = function (row) {
     let html = '<div class="d-flex align-items-center justify-content-center">';
 
     if (row.can_update) {
       html +=
         '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect edit-discount-btn" ' +
-        'data-id="' + row.id + '" data-edit-url="' + escapeHtml(row.edit_url || discountEditUrl(row.id)) + '" title="Edit">' +
+        'data-id="' + row.id + '" data-edit-url="' + escapeHtml(row.edit_url || discountEditUrl(row.id)) + '" ' + tooltipAttrs('Edit') + '>' +
         '<i class="icon-base ti tabler-edit icon-md"></i>' +
         '</button>';
     }
@@ -142,7 +148,7 @@
     if (row.can_delete && row.delete_url) {
       html +=
         '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect delete-discount-btn" ' +
-        'data-url="' + row.delete_url + '" data-name="' + escapeHtml(row.name) + '" title="Delete">' +
+        'data-url="' + row.delete_url + '" data-name="' + escapeHtml(row.name) + '" ' + tooltipAttrs('Delete') + '>' +
         '<i class="icon-base ti tabler-trash icon-md text-danger"></i>' +
         '</button>';
     }
@@ -342,7 +348,12 @@
             return actionButtonsHtml(row);
           }
         }
-      ]
+      ],
+      drawCallback: function () {
+        if (window.Helpers && window.Helpers.initToolTip) {
+          window.Helpers.initToolTip(this.api().table().container());
+        }
+      }
     });
   };
 

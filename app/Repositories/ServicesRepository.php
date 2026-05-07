@@ -16,8 +16,7 @@ class ServicesRepository implements ServiceRepositoryInterface
 {
     public function __construct(
         private readonly SyncServiceProductsAction $syncServiceProductsAction
-    ) {
-    }
+    ) {}
 
     public function index(): View
     {
@@ -146,7 +145,7 @@ class ServicesRepository implements ServiceRepositoryInterface
         $orderDirection = data_get($filters, 'order.0.dir', 'asc') === 'desc' ? 'desc' : 'asc';
         $columns = $filters['columns'] ?? [];
         $orderColumn = is_numeric($orderColumnIndex)
-            ? data_get($columns, (int) $orderColumnIndex . '.data')
+            ? data_get($columns, (int) $orderColumnIndex.'.data')
             : null;
 
         $sortableColumns = [
@@ -216,7 +215,7 @@ class ServicesRepository implements ServiceRepositoryInterface
                         'product_name' => $mapping->product?->name,
                         'product_sku' => $mapping->product?->sku,
                         'product_unit' => $mapping->product?->unit,
-                        'quantity' => (string) $mapping->quantity,
+                        'quantity' => (int) $mapping->quantity,
                         'unit' => $mapping->unit,
                         'is_required' => $mapping->is_required,
                     ])

@@ -17,8 +17,7 @@ class ServiceController extends Controller
 {
     public function __construct(
         private readonly ServiceRepositoryInterface $repo
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View
     {

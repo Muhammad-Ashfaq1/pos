@@ -17,8 +17,7 @@ class VehicleController extends Controller
 {
     public function __construct(
         private readonly VehicleRepositoryInterface $repo
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View
     {
