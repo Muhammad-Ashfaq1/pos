@@ -305,11 +305,6 @@ class ProductsRepository implements ProductRepositoryInterface
         return number_format((float) $value, 2, '.', '');
     }
 
-    private function normalizeDecimal(mixed $value): string
-    {
-        return number_format((float) $value, 3, '.', '');
-    }
-
     private function normalizeStock(mixed $value): string
     {
         return (string) max(0, (int) round((float) $value));
