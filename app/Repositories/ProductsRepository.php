@@ -48,9 +48,15 @@ class ProductsRepository implements ProductRepositoryInterface
             );
 
             $data['opening_stock'] = $this->normalizeDecimal($data['opening_stock'] ?? 0);
-            $data['current_stock'] = array_key_exists('current_stock', $data)
-                ? $this->normalizeDecimal($data['current_stock'])
-                : ($isUpdate ? $product->current_stock : $data['opening_stock']);
+            
+            if ($isUpdate) {
+                $adjustment = (float) ($data['stock_adjustment'] ?? 0);
+                $data['current_stock'] = $this->normalizeDecimal((float) $product->current_stock + $adjustment);
+            } else {
+                $data['current_stock'] = array_key_exists('current_stock', $data)
+                    ? $this->normalizeDecimal($data['current_stock'])
+                    : $data['opening_stock'];
+            }
             $data['minimum_stock_level'] = $this->normalizeDecimal($data['minimum_stock_level'] ?? 0);
             $data['reorder_level'] = $this->normalizeDecimal($data['reorder_level'] ?? 0);
             $data['tax_percentage'] = $data['tax_percentage'] !== null && $data['tax_percentage'] !== ''

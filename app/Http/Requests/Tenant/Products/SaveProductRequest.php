@@ -105,6 +105,7 @@ class SaveProductRequest extends FormRequest
             'tax_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'opening_stock' => ['nullable', 'numeric', 'min:0'],
             'current_stock' => ['nullable', 'numeric', 'min:0'],
+            'stock_adjustment' => ['nullable', 'numeric'],
             'minimum_stock_level' => ['nullable', 'numeric', 'min:0'],
             'reorder_level' => ['nullable', 'numeric', 'min:0'],
             'track_inventory' => ['required', 'boolean'],

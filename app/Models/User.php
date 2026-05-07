@@ -79,27 +79,35 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function isManager(): bool
     {
-        return $this->hasRole(self::MANAGER);
+        return $this->role === self::MANAGER || $this->hasRole(self::MANAGER);
     }
 
     public function isCashier(): bool
     {
-        return $this->hasRole(self::CASHIER);
+        return $this->role === self::CASHIER || $this->hasRole(self::CASHIER);
     }
 
     public function isTechnician(): bool
     {
-        return $this->hasRole(self::TECHNICIAN);
+        return $this->role === self::TECHNICIAN || $this->hasRole(self::TECHNICIAN);
     }
 
     public function isInventoryClerk(): bool
     {
-        return $this->hasRole(self::INVENTORY_CLERK);
+        return $this->role === self::INVENTORY_CLERK || $this->hasRole(self::INVENTORY_CLERK);
     }
 
     public function isEmployee(): bool
     {
-        return $this->role === self::EMPLOYEE || $this->hasRole(self::EMPLOYEE);
+        $staffRoles = [
+            self::MANAGER,
+            self::CASHIER,
+            self::TECHNICIAN,
+            self::INVENTORY_CLERK,
+            self::EMPLOYEE,
+        ];
+
+        return in_array($this->role, $staffRoles) || $this->hasAnyRole($staffRoles);
     }
 
     public function isCustomer(): bool

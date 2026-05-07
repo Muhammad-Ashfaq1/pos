@@ -287,9 +287,36 @@
                             </div>
                             <div class="col-md-3">
                                 <label for="product_current_stock" class="form-label">Current Stock</label>
-                                <input type="number" step="0.001" min="0" class="form-control inventory-field" id="product_current_stock" name="current_stock" value="0">
+                                <input type="number" step="0.001" min="0" class="form-control inventory-field bg-label-secondary" id="product_current_stock" name="current_stock" value="0" readonly>
                                 <div class="invalid-feedback"></div>
                             </div>
+                            <div class="col-md-6" id="stock_adjustment_wrapper" style="display: none;">
+                                <label class="form-label text-dark small text-uppercase">Stock Action</label>
+                                <div class="d-flex align-items-center gap-1">
+                                    <button type="button" id="adj_sub_btn" class="btn btn-outline-secondary p-0 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                        <span class="fs-4 text-dark">&minus;</span>
+                                    </button>
+                                    <input type="number" id="adj_amount_input" class="form-control text-center fw-bold px-1" style="width: 80px; height: 35px;" value="0" min="0">
+                                    <button type="button" id="adj_inc_btn" class="btn btn-outline-secondary p-0 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                        <span class="fs-4 text-dark">&plus;</span>
+                                    </button>
+                                    
+                                    <div class="ms-3 ps-3 border-start">
+                                        <span id="adj_status_text" class="text-muted d-block small fw-semibold">ESTIMATED NEW STOCK</span>
+                                        <span class="fw-bold fs-5 text-dark" id="adj_result_preview">0.000</span>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="product_stock_adjustment" name="stock_adjustment" value="0">
+                                <input type="hidden" id="adj_mode" value="add">
+
+                                <div id="adj_error_msg" class="position-absolute mt-1" style="display: none; z-index: 10;">
+                                    <span class="text-danger" style="font-size: 0.75rem;">
+                                        <i class="ti tabler-alert-circle" style="font-size: 0.9rem;"></i>
+                                        <span id="adj_error_text">Insufficient stock. Only X units available.</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-12 mt-3"></div> <!-- Spacer to force wrap -->
                             <div class="col-md-3">
                                 <label for="product_minimum_stock_level" class="form-label">Minimum Stock</label>
                                 <input type="number" step="0.001" min="0" class="form-control inventory-field" id="product_minimum_stock_level" name="minimum_stock_level" value="0">

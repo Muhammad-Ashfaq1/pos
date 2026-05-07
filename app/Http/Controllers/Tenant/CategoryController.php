@@ -43,6 +43,7 @@ class CategoryController extends Controller
             'order.*.dir' => ['nullable', Rule::in(['asc', 'desc'])],
         ]);
 
+
         return response()->json(
             $this->repo->getCategoriesListing($validated, $request->user())
         );

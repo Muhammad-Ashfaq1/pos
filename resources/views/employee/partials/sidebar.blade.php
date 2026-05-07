@@ -120,18 +120,6 @@
                 </li>
             @endforeach
         @endforeach
-
-        @if(session()->has('impersonator_id'))
-            <li class="menu-header small text-uppercase">
-                <span class="menu-header-text">Session</span>
-            </li>
-            <li class="menu-item">
-                <a href="{{ route('admin.impersonate.stop') }}" class="menu-link text-warning">
-                    <i class="menu-icon icon-base ti tabler-user-x"></i>
-                    <div>Stop Impersonation</div>
-                </a>
-            </li>
-        @endif
     </ul>
 </aside>
 <div class="menu-mobile-toggler d-xl-none rounded-1">

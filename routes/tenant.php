@@ -239,5 +239,7 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                         Route::get('/staff', 'staffListing')->name('staff.listing');
                         Route::get('/staff/{user}/impersonate', 'impersonateStaff')->name('staff.impersonate');
                     });
+
+                Route::get('/roles-permissions/staff/stop-impersonate', [RolesPermissionsController::class, 'stopImpersonatingStaff'])->name('roles-permissions.staff.stop-impersonate');
             });
     });

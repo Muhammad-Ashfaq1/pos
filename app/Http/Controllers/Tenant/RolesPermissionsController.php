@@ -242,6 +242,33 @@ class RolesPermissionsController extends Controller
             ->with('info', "You are now impersonating {$user->name}.");
     }
 
+    public function stopImpersonatingStaff(): RedirectResponse
+    {
+        $impersonatorId = session('impersonator_id');
+
+        if ($impersonatorId) {
+            $impersonator = User::findOrFail($impersonatorId);
+
+
+            auth()->login($impersonator);
+
+
+            session()->forget('impersonator_id');
+
+
+            if ($impersonator->isSuperAdmin()) {
+                return redirect()->route('admin.shops.index')
+                    ->with('success', 'Stopped impersonating staff.');
+            }
+
+
+            return redirect()->route('tenant.settings.roles-permissions.index')
+                ->with('success', 'Stopped impersonating staff.');
+        }
+
+        return redirect()->home();
+    }
+
     private function currentTenant(): Tenant
     {
         return $this->tenantContext->current()

@@ -25,7 +25,13 @@
         <ul class="navbar-nav flex-row align-items-center gap-3 ms-auto">
             @if (session()->has('impersonator_id'))
                 <li class="nav-item me-3">
-                    <a href="{{ route('admin.impersonate.stop') }}" class="btn btn-warning btn-sm">
+                    @php
+                        $impersonator = \App\Models\User::find(session('impersonator_id'));
+                        $stopRoute = ($impersonator && $impersonator->isSuperAdmin())
+                            ? route('admin.impersonate.stop')
+                            : route('tenant.settings.roles-permissions.staff.stop-impersonate');
+                    @endphp
+                    <a href="{{ $stopRoute }}" class="btn btn-warning btn-sm">
                         Stop Impersonation
                     </a>
                 </li>

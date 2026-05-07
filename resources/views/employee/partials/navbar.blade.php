@@ -35,6 +35,15 @@
                     </a>
                 </li>
             @endforeach
+            @if (session()->has('impersonator_id'))
+                <li class="nav-item me-1">
+                    <a href="{{ route('tenant.settings.roles-permissions.staff.stop-impersonate') }}"
+                        class="btn btn-label-warning btn-sm" title="Stop Impersonation">
+                        <i class="icon-base ti tabler-logout-2 me-1"></i>
+                        Stop
+                    </a>
+                </li>
+            @endif
             <li class="nav-item">
                 <a href="{{ route('employee.pos') }}" class="btn btn-primary btn-sm">
                     <i class="icon-base ti tabler-cash-register me-1"></i>
@@ -92,14 +101,6 @@
                             Account
                         </a>
                     </li>
-                    @if(session()->has('impersonator_id'))
-                        <li>
-                            <a href="{{ route('admin.impersonate.stop') }}" class="dropdown-item text-warning">
-                                <i class="icon-base ti tabler-user-x me-2"></i>
-                                Stop Impersonation
-                            </a>
-                        </li>
-                    @endif
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">

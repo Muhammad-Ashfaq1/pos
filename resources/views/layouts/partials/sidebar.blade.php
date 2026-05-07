@@ -159,8 +159,14 @@
         @endif
 
         @if(session()->has('impersonator_id'))
+            @php
+                $impersonator = \App\Models\User::find(session('impersonator_id'));
+                $stopRoute = ($impersonator && $impersonator->isSuperAdmin())
+                    ? route('admin.impersonate.stop')
+                    : route('tenant.settings.roles-permissions.staff.stop-impersonate');
+            @endphp
             <li class="menu-item">
-                <a href="{{ route('admin.impersonate.stop') }}" class="menu-link text-warning">
+                <a href="{{ $stopRoute }}" class="menu-link text-warning">
                     <i class="menu-icon icon-base ti tabler-user-x"></i>
                     <div>Stop Impersonation</div>
                 </a>

@@ -227,7 +227,13 @@
     $('#product_cost_price').val('0.00');
     $('#product_sale_price').val('0.00');
     $('#product_opening_stock').val('0');
-    $('#product_current_stock').val('0');
+    $('#product_current_stock').val('0').prop('readonly', false).removeClass('bg-label-secondary');
+    $('#adj_amount_input').val('0').removeClass('is-invalid');
+    $('#product_stock_adjustment').val('0');
+    $('#adj_mode').val('add');
+    $('#adj_result_preview').text('0.000');
+    $('#adj_error_msg').hide();
+    $('#stock_adjustment_wrapper').hide();
     $('#product_minimum_stock_level').val('0');
     $('#product_reorder_level').val('0');
     $('#product_is_active').prop('checked', true);
@@ -259,7 +265,13 @@
     $('#product_sale_price').val(product.sale_price);
     $('#product_tax_percentage').val(product.tax_percentage);
     $('#product_opening_stock').val(product.opening_stock);
-    $('#product_current_stock').val(product.current_stock);
+    $('#product_current_stock').val(product.current_stock).prop('readonly', true).addClass('bg-label-secondary');
+    $('#adj_amount_input').val('0').removeClass('is-invalid');
+    $('#product_stock_adjustment').val('0');
+    $('#adj_mode').val('add');
+    $('#adj_result_preview').text(parseFloat(product.current_stock || 0).toFixed(3));
+    $('#adj_error_msg').hide();
+    $('#stock_adjustment_wrapper').show();
     $('#product_minimum_stock_level').val(product.minimum_stock_level);
     $('#product_reorder_level').val(product.reorder_level);
     $('#product_is_active').prop('checked', Boolean(product.is_active));
@@ -382,6 +394,9 @@
         current_stock: {
           number: true,
           min: 0
+        },
+        stock_adjustment: {
+          number: true
         },
         minimum_stock_level: {
           number: true,
@@ -610,6 +625,77 @@
 
     $formCategory.on('change', function () {
       clearSubCategorySelect($formSubCategory);
+    });
+
+    const updateStockAdjustment = function (newAdjustment = null) {
+      const currentStock = parseFloat($('#product_current_stock').val()) || 0;
+      let adjustment = newAdjustment !== null ? newAdjustment : (parseFloat($('#product_stock_adjustment').val()) || 0);
+      
+      // If manual input was used, we use the current sign
+      if (newAdjustment === null) {
+          const amount = Math.abs(parseFloat($('#adj_amount_input').val()) || 0);
+          const currentAdj = parseFloat($('#product_stock_adjustment').val()) || 0;
+          adjustment = currentAdj < 0 ? -amount : amount;
+      }
+
+      const result = currentStock + adjustment;
+      $('#product_stock_adjustment').val(adjustment);
+      $('#adj_amount_input').val(Math.abs(adjustment).toFixed(adjustment % 1 === 0 ? 0 : 3));
+      $('#adj_result_preview').text(result.toFixed(3));
+
+      // Update status text and handle colors
+      const $statusText = $('#adj_status_text');
+      if (adjustment > 0) {
+          $statusText.text('ESTIMATED STOCK (INCREASE)').removeClass('text-muted text-success text-danger').addClass('text-dark');
+      } else if (adjustment < 0) {
+          $statusText.text('ESTIMATED STOCK (DECREASE)').removeClass('text-muted text-success text-danger').addClass('text-dark');
+      } else {
+          $statusText.text('ESTIMATED NEW STOCK').removeClass('text-success text-danger text-dark').addClass('text-muted');
+      }
+
+      let hasError = false;
+      let errorText = '';
+
+      // Specific error for subtraction exceeding stock
+      if (result < 0) {
+        hasError = true;
+        errorText = `Insufficient stock. Only ${currentStock.toFixed(0)} units available.`;
+      }
+
+      if (hasError) {
+        $('#adj_error_text').text(errorText);
+        $('#adj_error_msg').fadeIn(200);
+        $('#adj_amount_input').addClass('is-invalid border-danger');
+        $submitButton.prop('disabled', true);
+      } else {
+        $('#adj_error_msg').hide();
+        $('#adj_amount_input').removeClass('is-invalid border-danger');
+        $submitButton.prop('disabled', false);
+      }
+    };
+
+    $(document).on('input', '#adj_amount_input', function() {
+        updateStockAdjustment();
+    });
+
+    $(document).on('click', '#adj_inc_btn', function() {
+        let currentAdj = parseFloat($('#product_stock_adjustment').val()) || 0;
+        // If we were subtracting, start fresh with adding
+        if (currentAdj < 0) {
+            updateStockAdjustment(1);
+        } else {
+            updateStockAdjustment(currentAdj + 1);
+        }
+    });
+
+    $(document).on('click', '#adj_sub_btn', function() {
+        let currentAdj = parseFloat($('#product_stock_adjustment').val()) || 0;
+        // If we were adding, start fresh with subtracting
+        if (currentAdj > 0) {
+            updateStockAdjustment(-1);
+        } else {
+            updateStockAdjustment(currentAdj - 1);
+        }
     });
   };
 

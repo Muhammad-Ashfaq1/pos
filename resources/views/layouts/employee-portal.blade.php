@@ -151,6 +151,11 @@
             color: #f87171;
         }
 
+        .employee-admin-preview .preview-circle-btn--warning {
+            background: #fffbeb;
+            color: #d97706;
+        }
+
         .employee-admin-preview .preview-main {
             padding-bottom: 8rem;
         }
@@ -486,6 +491,13 @@
                     </a>
 
                     <div class="preview-header-actions">
+                        @if (session()->has('impersonator_id'))
+                            <a href="{{ route('tenant.settings.roles-permissions.staff.stop-impersonate') }}"
+                                class="preview-circle-btn preview-circle-btn--warning"
+                                title="Stop Impersonation">
+                                <i class="ti tabler-logout-2"></i>
+                            </a>
+                        @endif
                         <button type="button" class="preview-circle-btn preview-circle-btn--indigo">
                             <i class="ti tabler-bell"></i>
                         </button>
