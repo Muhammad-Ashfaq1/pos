@@ -83,6 +83,135 @@
     $('.inventory-field').prop('disabled', !enabled).toggleClass('bg-label-secondary', !enabled);
   };
 
+  const $stockCurrentWrapper = $('[data-stock-current-wrapper]');
+  const $stockAdjustmentWrapper = $('[data-stock-adjustment-wrapper]');
+  const $stockAdjustmentMode = $('#product_stock_adjustment_mode');
+  const $stockAdjustmentQty = $('#product_stock_adjustment_quantity');
+  const $stockAdjustmentPlus = $('#product_stock_adjustment_plus');
+  const $stockAdjustmentMinus = $('#product_stock_adjustment_minus');
+  const $stockAdjustmentError = $('#product_stock_adjustment_error');
+  const $stockNow = $('#product_stock_now');
+  const $stockPreview = $('#product_stock_preview');
+
+  const formatStock = function (value) {
+    const n = Number(value || 0);
+    return Number.isFinite(n) ? (Math.round(n * 1000) / 1000).toString() : '0';
+  };
+
+  const getCurrentStockBaseline = function () {
+    return Number($('#product_current_stock').data('baseline') || 0);
+  };
+
+  const setStockBaseline = function (value) {
+    const n = Number(value || 0);
+    $('#product_current_stock').data('baseline', n).val(n);
+    $stockNow.text(formatStock(n));
+  };
+
+  const recomputeStockPreview = function () {
+    const mode = $stockAdjustmentMode.val() || 'none';
+    const baseline = getCurrentStockBaseline();
+
+    if (mode === 'none') {
+      $stockPreview.text(formatStock(baseline));
+      return;
+    }
+
+    let qty = Number($stockAdjustmentQty.val() || 0);
+    if (!Number.isFinite(qty) || qty < 0) qty = 0;
+
+    const next = mode === 'add' ? baseline + qty : Math.max(0, baseline - qty);
+    $stockPreview.text(formatStock(next));
+  };
+
+  const setStepperLimits = function () {
+    const mode = $stockAdjustmentMode.val() || 'none';
+    const baseline = getCurrentStockBaseline();
+
+    if (mode === 'add') {
+      $stockAdjustmentQty.attr({ min: 0, max: 9999 });
+    } else if (mode === 'subtract') {
+      $stockAdjustmentQty.attr({ min: 0, max: baseline });
+    } else {
+      $stockAdjustmentQty.attr({ min: 0, max: 0 });
+    }
+  };
+
+  const clampStockQuantity = function () {
+    const max = Number($stockAdjustmentQty.attr('max') || 0);
+    let qty = Number($stockAdjustmentQty.val() || 0);
+    if (!Number.isFinite(qty) || qty < 0) qty = 0;
+    if (qty > max) qty = max;
+    $stockAdjustmentQty.val(qty);
+    return qty;
+  };
+
+  const refreshCurrentStockFromServer = function () {
+    const productId = $('#product_id').val();
+    if (!productId) return $.Deferred().resolve().promise();
+
+    const editUrl = productEditUrl(productId);
+    if (!editUrl) return $.Deferred().resolve().promise();
+
+    $stockAdjustmentError.text('');
+
+    return $.ajax({ url: editUrl, method: 'GET' })
+      .done(function (response) {
+        const fresh = response?.data?.current_stock;
+        if (fresh !== undefined) setStockBaseline(fresh);
+      })
+      .fail(function () {
+        $stockAdjustmentError.text('Could not refresh current stock. Please try again.');
+      });
+  };
+
+  const onStockModeChange = function () {
+    const mode = $stockAdjustmentMode.val() || 'none';
+    const enabled = mode === 'add' || mode === 'subtract';
+
+    $stockAdjustmentQty.prop('disabled', !enabled).val(0);
+    $stockAdjustmentPlus.prop('disabled', !enabled);
+    $stockAdjustmentMinus.prop('disabled', !enabled);
+    $stockAdjustmentError.text('');
+
+    const continueWith = function () {
+      setStepperLimits();
+      clampStockQuantity();
+      recomputeStockPreview();
+    };
+
+    if (mode === 'subtract') {
+      refreshCurrentStockFromServer().always(continueWith);
+      return;
+    }
+
+    continueWith();
+  };
+
+  const showStockAdjustmentWidget = function (currentStock) {
+    setStockBaseline(currentStock);
+    $stockPreview.text(formatStock(currentStock));
+    $stockCurrentWrapper.addClass('d-none');
+    $stockAdjustmentWrapper.removeClass('d-none');
+    $stockAdjustmentMode.val('none');
+    $stockAdjustmentQty.val(0).prop('disabled', true);
+    $stockAdjustmentPlus.prop('disabled', true);
+    $stockAdjustmentMinus.prop('disabled', true);
+    $stockAdjustmentError.text('');
+    setStepperLimits();
+  };
+
+  const hideStockAdjustmentWidget = function () {
+    $stockCurrentWrapper.removeClass('d-none');
+    $stockAdjustmentWrapper.addClass('d-none');
+    $stockAdjustmentMode.val('none');
+    $stockAdjustmentQty.val(0).prop('disabled', true);
+    $stockAdjustmentPlus.prop('disabled', true);
+    $stockAdjustmentMinus.prop('disabled', true);
+    $stockAdjustmentError.text('');
+    $('#product_current_stock').removeData('baseline');
+  };
+
   const resetValidationState = function () {
     $form.find('.is-invalid').removeClass('is-invalid');
     $form.find('.invalid-feedback').text('');
@@ -239,6 +368,7 @@
       mediaManager.reset();
     }
     $('#productModalLabel').text('Add Product');
+    hideStockAdjustmentWidget();
     setSubmitButtonState(false);
     resetValidationState();
     setInventoryFieldsState();
@@ -268,6 +398,7 @@
       mediaManager.loadExisting(Array.isArray(product.images) ? product.images : []);
     }
     $('#productModalLabel').text('Edit Product');
+    showStockAdjustmentWidget(product.current_stock);
     setSubmitButtonState(false);
     resetValidationState();
     setInventoryFieldsState();
@@ -610,6 +741,28 @@
 
     $formCategory.on('change', function () {
       clearSubCategorySelect($formSubCategory);
+    });
+
+    $stockAdjustmentMode.on('change', onStockModeChange);
+
+    $stockAdjustmentQty.on('input change', function () {
+      clampStockQuantity();
+      recomputeStockPreview();
+    });
+
+    $stockAdjustmentPlus.on('click', function () {
+      if ($stockAdjustmentQty.prop('disabled')) return;
+      const max = Number($stockAdjustmentQty.attr('max') || 0);
+      const qty = Math.min(max, Number($stockAdjustmentQty.val() || 0) + 1);
+      $stockAdjustmentQty.val(qty);
+      recomputeStockPreview();
+    });
+
+    $stockAdjustmentMinus.on('click', function () {
+      if ($stockAdjustmentQty.prop('disabled')) return;
+      const qty = Math.max(0, Number($stockAdjustmentQty.val() || 0) - 1);
+      $stockAdjustmentQty.val(qty);
+      recomputeStockPreview();
     });
   };
 

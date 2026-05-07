@@ -51,6 +51,18 @@ class ProductsRepository implements ProductRepositoryInterface
             $data['current_stock'] = array_key_exists('current_stock', $data)
                 ? $this->normalizeDecimal($data['current_stock'])
                 : ($isUpdate ? $product->current_stock : $data['opening_stock']);
+
+            if ($isUpdate) {
+                $data['current_stock'] = $this->applyStockAdjustment(
+                    currentStock: (float) $product->current_stock,
+                    mode: $data['stock_adjustment_mode'] ?? null,
+                    quantity: $data['stock_adjustment_quantity'] ?? null,
+                    fallback: (float) $data['current_stock'],
+                );
+            }
+
+            unset($data['stock_adjustment_mode'], $data['stock_adjustment_quantity']);
+
             $data['minimum_stock_level'] = $this->normalizeDecimal($data['minimum_stock_level'] ?? 0);
             $data['reorder_level'] = $this->normalizeDecimal($data['reorder_level'] ?? 0);
             $data['tax_percentage'] = $data['tax_percentage'] !== null && $data['tax_percentage'] !== ''
@@ -296,5 +308,20 @@ class ProductsRepository implements ProductRepositoryInterface
     private function normalizeDecimal(mixed $value): string
     {
         return number_format((float) $value, 3, '.', '');
+    }
+
+    private function applyStockAdjustment(float $currentStock, ?string $mode, mixed $quantity, float $fallback): string
+    {
+        if (! in_array($mode, ['add', 'subtract'], true) || $quantity === null || $quantity === '') {
+            return $this->normalizeDecimal($fallback);
+        }
+
+        $delta = max(0.0, min(9999.0, (float) $quantity));
+
+        $next = $mode === 'add'
+            ? $currentStock + $delta
+            : max(0.0, $currentStock - $delta);
+
+        return $this->normalizeDecimal($next);
     }
 }

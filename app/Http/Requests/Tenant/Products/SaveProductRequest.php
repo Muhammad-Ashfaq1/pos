@@ -107,6 +107,8 @@ class SaveProductRequest extends FormRequest
             'current_stock' => ['nullable', 'numeric', 'min:0'],
             'minimum_stock_level' => ['nullable', 'numeric', 'min:0'],
             'reorder_level' => ['nullable', 'numeric', 'min:0'],
+            'stock_adjustment_mode' => ['nullable', Rule::in(['none', 'add', 'subtract'])],
+            'stock_adjustment_quantity' => ['nullable', 'numeric', 'min:0', 'max:9999'],
             'track_inventory' => ['required', 'boolean'],
             'is_active' => ['required', 'boolean'],
             'images' => ['nullable', 'array', 'max:20'],
@@ -236,6 +238,10 @@ class SaveProductRequest extends FormRequest
             'images.*.image' => 'Each uploaded file must be a valid image.',
             'images.*.mimes' => 'Images must be JPG, JPEG, PNG, GIF, or WEBP files.',
             'images.*.max' => 'Each image may not be greater than 5 MB.',
+            'stock_adjustment_mode.in' => 'The stock adjustment mode is invalid.',
+            'stock_adjustment_quantity.numeric' => 'The stock adjustment must be a number.',
+            'stock_adjustment_quantity.max' => 'You can add at most 9999 units in a single adjustment.',
+            'stock_adjustment_quantity.min' => 'The stock adjustment cannot be negative.',
         ];
     }
 }
