@@ -31235,9 +31235,9 @@ li:not(:first-child) .dropdown-item,
     padding-inline: 1.5rem;
 }
 
-.layout-navbar.navbar-detached.container-xxl {
+/* .layout-navbar.navbar-detached.container-xxl {
     max-inline-size: calc(1592px - 1.5rem * 2);
-}
+} */
 
 .layout-navbar-fixed .layout-navbar.navbar-detached {
     inline-size: calc(100% - 1.5rem * 2 - var(--bs-menu-width));

@@ -16,10 +16,6 @@
           ));
   $bodyClasses = ' layout-navbar-fixed layout-menu-fixed layout-compact ';
 
-  if (str_starts_with($routeName, 'tenant.settings.')) {
-      $bodyClasses .= ' layout-menu-collapsed ';
-  }
-
   if ($isEmployeePanel) {
       $bodyClasses .= ' employee-panel ';
   }
@@ -46,6 +42,17 @@
         const theme = localStorage.getItem('templateCustomizer-vertical-menu-template--Theme') || 'light';
         const themeToApply = theme === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme;
         document.documentElement.setAttribute('data-bs-theme', themeToApply);
+
+        // Apply sidebar state as early as possible to prevent flicker
+        const templateName = 'vertical-menu-template';
+        const collapsed = localStorage.getItem('templateCustomizer-' + templateName + '--LayoutCollapsed');
+        if (collapsed !== null) {
+          if (collapsed === 'true') {
+            document.documentElement.classList.add('layout-menu-collapsed');
+          } else {
+            document.documentElement.classList.remove('layout-menu-collapsed');
+          }
+        }
       })();
     </script>
     <meta
