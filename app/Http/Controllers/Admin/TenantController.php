@@ -57,7 +57,10 @@ class TenantController extends Controller
             return back()->with('error', $tenant->status->loginBlockedMessage());
         }
 
-        session(['impersonator_id' => $admin->id]);
+        session([
+            'impersonator_id' => $admin->id,
+            'impersonator_return_url' => route('admin.shops.index'),
+        ]);
 
         auth()->login($shop);
 
@@ -67,12 +70,13 @@ class TenantController extends Controller
     public function stopImpersonate(): RedirectResponse
     {
         $adminId = session('impersonator_id');
+        $returnUrl = session('impersonator_return_url');
 
         if ($adminId) {
             auth()->loginUsingId($adminId);
-            session()->forget('impersonator_id');
+            session()->forget(['impersonator_id', 'impersonator_return_url']);
         }
 
-        return redirect()->route('admin.shops.index');
+        return redirect($returnUrl ?: route('admin.shops.index'));
     }
 }

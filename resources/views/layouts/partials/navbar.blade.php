@@ -24,10 +24,16 @@
 
         <ul class="navbar-nav flex-row align-items-center gap-3 ms-auto">
             @if (session()->has('impersonator_id'))
-                <li class="nav-item me-3">
-                    <a href="{{ route('admin.impersonate.stop') }}" class="btn btn-warning btn-sm">
-                        Stop Impersonation
-                    </a>
+                <li class="nav-item me-2">
+                    <div class="d-flex align-items-center gap-2 px-3 py-1 rounded-pill border border-warning bg-label-warning">
+                        <i class="icon-base ti tabler-user-exclamation icon-sm text-warning"></i>
+                        <span class="small fw-medium text-warning d-none d-sm-inline">
+                            Impersonating as <strong>{{ $user?->name }}</strong>
+                        </span>
+                        <a href="{{ route('admin.impersonate.stop') }}" class="btn btn-warning btn-sm py-0 px-2">
+                            <i class="icon-base ti tabler-x icon-xs me-1"></i>Stop
+                        </a>
+                    </div>
                 </li>
             @endif
             <li class="nav-item dropdown">
