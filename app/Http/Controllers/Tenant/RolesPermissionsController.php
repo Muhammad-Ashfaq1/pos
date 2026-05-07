@@ -235,7 +235,10 @@ class RolesPermissionsController extends Controller
             return back()->with('error', 'Cannot impersonate admin users.');
         }
 
-        session(['impersonator_id' => $currentUser->id]);
+        session([
+            'impersonator_id' => $currentUser->id,
+            'impersonator_return_url' => route('tenant.settings.roles-permissions.index'),
+        ]);
         auth()->login($user);
 
         return redirect()->route('employee.dashboard')

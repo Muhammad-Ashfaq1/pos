@@ -73,7 +73,7 @@ class SaveServiceRequest extends FormRequest
                     fn ($query) => $query->where('tenant_id', $tenantId)
                 ),
             ],
-            'mappings.*.quantity' => ['nullable', 'numeric', 'min:0.001'],
+            'mappings.*.quantity' => ['nullable', 'integer', 'min:1'],
             'mappings.*.unit' => ['nullable', 'string', 'max:50'],
             'mappings.*.is_required' => ['required', 'boolean'],
             'tenant_id' => ['prohibited'],
@@ -141,8 +141,8 @@ class SaveServiceRequest extends FormRequest
             'mileage_interval.integer' => 'Mileage interval must be a whole number.',
             'mileage_interval.min' => 'Mileage interval must be zero or greater.',
             'mappings.*.product_id.exists' => 'The selected product was not found for this shop.',
-            'mappings.*.quantity.numeric' => 'Mapped quantity must be numeric.',
-            'mappings.*.quantity.min' => 'Mapped quantity must be greater than zero.',
+            'mappings.*.quantity.integer' => 'Mapped quantity must be a whole number.',
+            'mappings.*.quantity.min' => 'Mapped quantity must be at least 1.',
             'mappings.*.unit.max' => 'The mapping unit may not be greater than 50 characters.',
         ];
     }

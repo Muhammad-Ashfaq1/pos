@@ -47,12 +47,24 @@ class ProductsRepository implements ProductRepositoryInterface
                 'product'
             );
 
-            $data['opening_stock'] = $this->normalizeDecimal($data['opening_stock'] ?? 0);
+            $data['opening_stock'] = $this->normalizeStock($data['opening_stock'] ?? 0);
             $data['current_stock'] = array_key_exists('current_stock', $data)
-                ? $this->normalizeDecimal($data['current_stock'])
-                : ($isUpdate ? $product->current_stock : $data['opening_stock']);
-            $data['minimum_stock_level'] = $this->normalizeDecimal($data['minimum_stock_level'] ?? 0);
-            $data['reorder_level'] = $this->normalizeDecimal($data['reorder_level'] ?? 0);
+                ? $this->normalizeStock($data['current_stock'])
+                : ($isUpdate ? $this->normalizeStock($product->current_stock) : $data['opening_stock']);
+
+            if ($isUpdate) {
+                $data['current_stock'] = $this->applyStockAdjustment(
+                    currentStock: (int) $product->current_stock,
+                    mode: $data['stock_adjustment_mode'] ?? null,
+                    quantity: $data['stock_adjustment_quantity'] ?? null,
+                    fallback: (int) $data['current_stock'],
+                );
+            }
+
+            unset($data['stock_adjustment_mode'], $data['stock_adjustment_quantity']);
+
+            $data['minimum_stock_level'] = $this->normalizeStock($data['minimum_stock_level'] ?? 0);
+            $data['reorder_level'] = $this->normalizeStock($data['reorder_level'] ?? 0);
             $data['tax_percentage'] = $data['tax_percentage'] !== null && $data['tax_percentage'] !== ''
                 ? $this->normalizeMoney($data['tax_percentage'])
                 : null;
@@ -256,10 +268,10 @@ class ProductsRepository implements ProductRepositoryInterface
             'cost_price' => (string) $product->cost_price,
             'sale_price' => (string) $product->sale_price,
             'tax_percentage' => $product->tax_percentage !== null ? (string) $product->tax_percentage : null,
-            'opening_stock' => (string) $product->opening_stock,
-            'current_stock' => (string) $product->current_stock,
-            'minimum_stock_level' => (string) $product->minimum_stock_level,
-            'reorder_level' => (string) $product->reorder_level,
+            'opening_stock' => (int) $product->opening_stock,
+            'current_stock' => (int) $product->current_stock,
+            'minimum_stock_level' => (int) $product->minimum_stock_level,
+            'reorder_level' => (int) $product->reorder_level,
             'track_inventory' => $product->track_inventory,
             'track_inventory_label' => $product->track_inventory ? 'Tracked' : 'Not Tracked',
             'is_active' => $product->is_active,
@@ -293,8 +305,23 @@ class ProductsRepository implements ProductRepositoryInterface
         return number_format((float) $value, 2, '.', '');
     }
 
-    private function normalizeDecimal(mixed $value): string
+    private function normalizeStock(mixed $value): string
     {
-        return number_format((float) $value, 3, '.', '');
+        return (string) max(0, (int) round((float) $value));
+    }
+
+    private function applyStockAdjustment(int $currentStock, ?string $mode, mixed $quantity, int $fallback): string
+    {
+        if (! in_array($mode, ['add', 'subtract'], true) || $quantity === null || $quantity === '') {
+            return $this->normalizeStock($fallback);
+        }
+
+        $delta = max(0, min(9999, (int) round((float) $quantity)));
+
+        $next = $mode === 'add'
+            ? $currentStock + $delta
+            : max(0, $currentStock - $delta);
+
+        return $this->normalizeStock($next);
     }
 }

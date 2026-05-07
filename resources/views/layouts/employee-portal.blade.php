@@ -151,6 +151,62 @@
             color: #f87171;
         }
 
+        .employee-admin-preview .impersonation-banner {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.45rem 0.85rem;
+            border-radius: 999px;
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            font-size: 0.85rem;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .employee-admin-preview .impersonation-banner > i {
+            font-size: 1.1rem;
+            color: #d97706;
+        }
+
+        .employee-admin-preview .impersonation-banner-text {
+            white-space: nowrap;
+        }
+
+        .employee-admin-preview .impersonation-banner-text strong {
+            font-weight: 700;
+        }
+
+        .employee-admin-preview .impersonation-banner-stop {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 999px;
+            background: #d97706;
+            color: #fff !important;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: background-color 0.15s ease;
+        }
+
+        .employee-admin-preview .impersonation-banner-stop:hover {
+            background: #b45309;
+            color: #fff !important;
+        }
+
+        .employee-admin-preview .impersonation-banner-stop i {
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 767px) {
+            .employee-admin-preview .impersonation-banner-text {
+                display: none;
+            }
+        }
+
         .employee-admin-preview .preview-main {
             padding-bottom: 8rem;
         }
@@ -486,6 +542,18 @@
                     </a>
 
                     <div class="preview-header-actions">
+                        @if (session()->has('impersonator_id'))
+                            <div class="impersonation-banner">
+                                <i class="ti tabler-user-exclamation"></i>
+                                <span class="impersonation-banner-text">
+                                    Impersonating as <strong>{{ auth()->user()?->name }}</strong>
+                                </span>
+                                <a href="{{ route('admin.impersonate.stop') }}" class="impersonation-banner-stop">
+                                    <i class="ti tabler-x"></i>
+                                    <span>Stop</span>
+                                </a>
+                            </div>
+                        @endif
                         <button type="button" class="preview-circle-btn preview-circle-btn--indigo">
                             <i class="ti tabler-bell"></i>
                         </button>

@@ -24,7 +24,7 @@ class ServiceProduct extends Model
         return [
             'service_id' => 'integer',
             'product_id' => 'integer',
-            'quantity' => 'decimal:3',
+            'quantity' => 'integer',
             'is_required' => 'boolean',
         ];
     }
