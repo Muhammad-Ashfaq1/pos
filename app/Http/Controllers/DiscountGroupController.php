@@ -12,7 +12,8 @@ class DiscountGroupController extends Controller
      */
     public function index()
     {
-        return view('tenant.ecommerce.discounts.group.index');
+        $discountGroups = DiscountGroup::latest()->get();
+        return view('tenant.ecommerce.discounts.group.index', compact('discountGroups'));
     }
 
     /**
@@ -39,7 +40,15 @@ class DiscountGroupController extends Controller
         $validated['name'] = $validated['title'] ?? null;
         $validated['slug'] = Str::slug($validated['title'] ?? '');
 
-        DiscountGroup::create($validated);
+        $discountGroup = DiscountGroup::create($validated);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Discount group created successfully',
+                'data'    => $discountGroup,
+            ]);
+        }
 
         return redirect()->route('tenant.discounts.group.index')->with('success', 'Discount group created successfully');
     }
@@ -65,14 +74,42 @@ class DiscountGroupController extends Controller
      */
     public function update(Request $request, DiscountGroup $discountGroup)
     {
-        //
+        // Validate the request data
+        $validated = $request->validate([
+            'title'     => 'required|string|max:255',
+            'type'      => 'required|in:percentage,fixed',
+            'value'     => 'required|numeric|min:0',
+            'is_active' => 'boolean',
+        ]);
+
+        $validated['name'] = $validated['title'] ?? null;
+        $validated['slug'] = Str::slug($validated['title'] ?? '');
+
+        $discountGroup->update($validated);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Discount group updated successfully',
+                'data'    => $discountGroup,
+            ]);
+        }
+
+        return redirect()->route('tenant.discounts.group.index')->with('success', 'Discount group updated successfully');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(DiscountGroup $discountGroup)
+    public function destroy(DiscountGroup $discountGroup, Request $request)
     {
-        //
+        $discountGroup->delete();
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Discount group deleted successfully',
+            ]);
+        }
+        return redirect()->route('tenant.discounts.group.index')->with('success', 'Discount group deleted successfully');
     }
 }

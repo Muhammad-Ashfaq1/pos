@@ -23,7 +23,7 @@
             </button>
         </div>
         <div class="card-datatable table-responsive p-5">
-            <table class="discount-groups-datatables table">
+            <table class="table" data-delete-url-pattern="{{ route('tenant.discounts.group.delete', ':id') }}">
                 <thead class="bg-label-primary">
                     <tr>
                         <th>Title Name</th>
@@ -34,8 +34,36 @@
                         <th class="text-center">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {{-- Data will be loaded via AJAX --}}
+                <tbody id="discount-groups-body">
+                    @foreach ($discountGroups as $group)
+                        <tr>
+                            <td>{{ $group->name }}</td>
+                            <td>{{ $group->slug }}</td>
+                            <td>{{ $group->type === 'percentage' ? $group->value . '%' : '$' . $group->value }}</td>
+                            <td>{{ $group->type }}</td>
+                            <td>
+                                @if ($group->is_active)
+                                    <span class="badge bg-label-success">Yes</span>
+                                @else
+                                    <span class="badge bg-label-danger">No</span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex align-items-center justify-content-center gap-2">
+                                    <a href="javascript:void(0);" class="text-primary edit-discount-group" 
+                                        data-id="{{ $group->id }}"
+                                        data-title="{{ $group->name }}"
+                                        data-type="{{ $group->type }}"
+                                        data-value="{{ $group->value }}"
+                                    ><i class="ti tabler-edit"></i></a>
+                                    <a href="javascript:void(0);" class="text-danger delete-discount-group" 
+                                        data-id="{{ $group->id }}"
+                                        data-url="{{ route('tenant.discounts.group.delete', $group->id) }}"
+                                    ><i class="ti tabler-trash"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>
@@ -47,55 +75,5 @@
 @endsection
 
 @section('scripts')
-    <script>
-        $(function() {
-            // Initialize Select2 dropdowns
-            if (typeof $.fn.select2 === 'function') {
-                $('.select2').each(function() {
-                    const $this = $(this);
-                    const dropdownParentSelector = $this.data('dropdown-parent');
-
-                    if (!dropdownParentSelector && !$this.parent().hasClass('position-relative')) {
-                        $this.wrap('<div class="position-relative"></div>');
-                    }
-
-                    $this.select2({
-                        dropdownParent: dropdownParentSelector ? $(dropdownParentSelector) : $this
-                            .parent(),
-                        placeholder: $this.data('placeholder'),
-                        allowClear: Boolean($this.data('allow-clear')),
-                        minimumResultsForSearch: $this.data('minimum-results-for-search') ?? 0
-                    });
-                });
-            }
-        });
-
-
-        // Handle form submission
-        $('#addDiscountGroupForm').on('submit', function(e) {
-            e.preventDefault();
-            const formData = $(this).serialize();
-
-            $.ajax({
-                url: '{{ route('tenant.discounts.group.store') }}',
-                type: 'POST',
-                data: formData,
-                success: function(response) {
-                    $('#addDiscountGroupModal').modal('hide');
-                    $('#addDiscountGroupForm')[0].reset();
-
-                    // Reload DataTable or show success message
-                    if (typeof discountGroupsTable !== 'undefined') {
-                        discountGroupsTable.ajax.reload();
-                    }
-
-                    alert('Discount group added successfully!');
-                },
-                error: function(xhr) {
-                    // Handle validation errors or other errors
-                    console.log(xhr.responseJSON);
-                }
-            });
-        });
-    </script>
+    <script src="{{ asset('assets/js/tenant/discount-groups.js') }}"></script>
 @endsection

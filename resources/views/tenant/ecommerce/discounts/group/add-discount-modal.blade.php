@@ -7,7 +7,12 @@
                     aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
-                <form id="addDiscountGroupForm">
+                <form id="addDiscountGroupForm" 
+                    data-store-url="{{ route('tenant.discounts.group.store') }}"
+                    data-update-url="{{ route('tenant.discounts.group.update', ':id') }}">
+                    @csrf
+                    <input type="hidden" name="_method" id="form_method">
+                    <input type="hidden" name="id" id="discount_group_id">
                     <div class="row g-4">
                         <div class="col-md-6">
                             <input type="text" class="form-control form-control-lg border shadow-none rounded-3"

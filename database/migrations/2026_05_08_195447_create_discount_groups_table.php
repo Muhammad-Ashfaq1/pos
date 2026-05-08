@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->boolean('is_active')->default(true);
             $table->enum('type', ['percentage', 'fixed'])->default('fixed');
+            $table->decimal('value', 10, 2)->default(0);
+            $table->softDeletes();
             $table->timestamps();
         });
     }

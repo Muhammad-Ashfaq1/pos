@@ -246,6 +246,8 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
             Route::prefix('group')->name('group.')->controller(DiscountGroupController::class)->group(function () {
                 Route::get('/', 'index')->name('index');
                 Route::post('/store', 'store')->name('store');
+                Route::put('/{discountGroup}', 'update')->name('update');
+                Route::delete('/{discountGroup}', 'destroy')->name('delete');
             });
         });
     });
