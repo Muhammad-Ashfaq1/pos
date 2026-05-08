@@ -206,7 +206,7 @@ class RolesPermissionsController extends Controller
             ->where('id', '!=', auth()->id())
             ->orderBy('name')
             ->get()
-            ->map(fn (User $user) => [
+            ->map(fn(User $user) => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
@@ -256,7 +256,7 @@ class RolesPermissionsController extends Controller
         $groups = [];
 
         foreach (self::PERMISSION_GROUPS as $group => $permissions) {
-            $groups[$group] = collect($permissions)->map(fn (string $p) => [
+            $groups[$group] = collect($permissions)->map(fn(string $p) => [
                 'name' => $p,
                 'label' => str($p)->replace('.', ' ')->replace('_', ' ')->title()->toString(),
             ])->toArray();
