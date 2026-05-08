@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DiscountGroups;
 use App\Http\Controllers\Tenant\CategoryController;
 use App\Http\Controllers\Tenant\CustomerController;
 use App\Http\Controllers\Tenant\DashboardController;
@@ -238,6 +239,19 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                         Route::post('/permissions/sync', 'syncPermissions')->name('permissions.sync');
                         Route::get('/staff', 'staffListing')->name('staff.listing');
                         Route::get('/staff/{user}/impersonate', 'impersonateStaff')->name('staff.impersonate');
+                    });
+            });
+
+        Route::prefix('discounts')
+            ->name('discounts.')
+            ->group(function () {
+                Route::prefix('group')
+                    ->name('group.')
+                    ->controller(DiscountGroups::class)
+                    ->group(function () {
+                        Route::get('/', 'index')
+                            ->middleware('role_or_permission:tenant_admin|discount.group.manage')
+                            ->name('index');
                     });
             });
     });
