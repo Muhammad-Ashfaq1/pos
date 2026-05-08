@@ -141,7 +141,7 @@ class DropdownController extends Controller
         return response()->json([
             'results' => $customers->map(fn (Customer $customer) => [
                 'id' => $customer->id,
-                'text' => collect([$customer->name, $customer->phone])->filter()->implode(' - '),
+                'text' => $customer->name,
                 'name' => $customer->name,
                 'customer_type' => $customer->customer_type,
                 'phone' => $customer->phone,
@@ -158,12 +158,16 @@ class DropdownController extends Controller
         $search = trim((string) $request->string('q')->toString());
         $perPage = min((int) $request->integer('per_page', 20), 50);
         $page = max((int) $request->integer('page', 1), 1);
-        $customerId = $request->integer('customer_id') ?: null;
+        $customerId = $request->input('customer_id');
 
         $query = Vehicle::query()
             ->with('customer:id,name')
             ->select(['id', 'customer_id', 'plate_number', 'registration_number', 'make', 'model', 'year', 'is_default'])
-            ->when($customerId, fn ($builder) => $builder->where('customer_id', $customerId))
+            ->when($customerId, function ($q) use ($customerId) {
+                return $q->where('customer_id', $customerId);
+            }, function ($q) {
+                return $q->whereRaw('0 = 1');
+            })
             ->search($search)
             ->orderByDesc('is_default')
             ->orderBy('plate_number')
@@ -177,10 +181,7 @@ class DropdownController extends Controller
         return response()->json([
             'results' => $vehicles->map(fn (Vehicle $vehicle) => [
                 'id' => $vehicle->id,
-                'text' => collect([
-                    $vehicle->plate_number,
-                    trim(collect([$vehicle->make, $vehicle->model, $vehicle->year])->filter()->implode(' ')),
-                ])->filter()->implode(' - '),
+                'text' => trim(collect([$vehicle->make, $vehicle->model, $vehicle->year])->filter()->implode(' ')),
                 'plate_number' => $vehicle->plate_number,
                 'registration_number' => $vehicle->registration_number,
                 'customer_id' => $vehicle->customer_id,

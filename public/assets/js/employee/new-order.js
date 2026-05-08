@@ -380,7 +380,7 @@
         return Number.isNaN(n) ? 0 : n;
     }
 
-    function initStaticSelect2() {
+    function initSelect2() {
         const $selects = $('.select2');
 
         if (typeof $.fn.select2 !== 'function' || !$selects.length) {
@@ -389,21 +389,57 @@
 
         $selects.each(function () {
             const $this = $(this);
-
             if ($this.data('select2')) return;
 
             const dropdownParentSelector = $this.data('dropdown-parent');
-
             if (!dropdownParentSelector && !$this.parent().hasClass('position-relative')) {
                 $this.wrap('<div class="position-relative"></div>');
             }
 
-            $this.select2({
+            const ajaxUrl = $this.data('ajax-url');
+            const options = {
                 dropdownParent: dropdownParentSelector ? $(dropdownParentSelector) : $this.parent(),
                 placeholder: $this.data('placeholder'),
                 allowClear: Boolean($this.data('allow-clear')),
                 minimumResultsForSearch: parseMinResults($this.data('minimum-results-for-search')),
-            });
+            };
+
+            if (ajaxUrl) {
+                options.ajax = {
+                    url: ajaxUrl,
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        const q = {
+                            q: params.term,
+                            page: params.page || 1
+                        };
+
+                        if ($this.attr('id') === 'add_vehicle_filter') {
+                            q.customer_id = $('#customer_type_filter').val();
+                        }
+
+                        return q;
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.results,
+                            pagination: {
+                                more: data.pagination ? data.pagination.more : false
+                            }
+                        };
+                    },
+                    cache: true
+                };
+            }
+
+            $this.select2(options);
+        });
+
+        // Dependency: When customer changes, clear and reset vehicle dropdown
+        $('#customer_type_filter').on('change', function () {
+            const $vehicleSelect = $('#add_vehicle_filter');
+            $vehicleSelect.val(null).trigger('change');
         });
     }
 
@@ -415,7 +451,60 @@
         showCatalog();
         loadCategories('');
         renderCart();
-        initStaticSelect2();
+        initSelect2();
+
+        // Initialize centralized CustomerManager for "Add Customer" modal
+        if (typeof window.CustomerManager === 'function') {
+            new window.CustomerManager({
+                onSaveSuccess: function (response) {
+                    const $customerSelect = $('#customer_type_filter');
+                    const customer = response.data || {};
+
+                    if (customer.id && $customerSelect.length) {
+                        const newOption = new Option(customer.name, customer.id, true, true);
+                        $customerSelect.append(newOption).trigger('change');
+                        $customerSelect.trigger({
+                            type: 'select2:select',
+                            params: { data: { id: customer.id, text: customer.name } }
+                        });
+                    }
+                }
+            });
+        }
+
+        // Initialize centralized VehicleManager for "Add Vehicle" modal
+        if (typeof window.VehicleManager === 'function') {
+            const vehicleManager = new window.VehicleManager({
+                onSaveSuccess: function (response) {
+                    const $vehicleSelect = $('#add_vehicle_filter');
+                    const vehicle = response.data || {};
+
+                    if (vehicle.id && $vehicleSelect.length) {
+                        const text = [vehicle.make, vehicle.model, vehicle.year].filter(Boolean).join(' ') || vehicle.plate_number;
+                        const newOption = new Option(text, vehicle.id, true, true);
+                        $vehicleSelect.append(newOption).trigger('change');
+                        $vehicleSelect.trigger({
+                            type: 'select2:select',
+                            params: { data: { id: vehicle.id, text: text } }
+                        });
+                    }
+                }
+            });
+
+            // Pre-select customer in vehicle modal if already selected in main dropdown
+            $(document).on('click', '.add-vehicle-btn', function () {
+                const customerId = $('#customer_type_filter').val();
+                const customerName = $('#customer_type_filter').find('option:selected').text();
+
+                if (customerId && vehicleManager.$form.length) {
+                    const $modalCustomerSelect = vehicleManager.$form.find('#vehicle_customer_id');
+                    if ($modalCustomerSelect.length) {
+                        const newOption = new Option(customerName, customerId, true, true);
+                        $modalCustomerSelect.append(newOption).trigger('change');
+                    }
+                }
+            });
+        }
     });
 
 })(window.jQuery);

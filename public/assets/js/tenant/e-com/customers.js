@@ -1,18 +1,11 @@
 (function ($) {
   'use strict';
 
-  const csrfToken = $('meta[name="csrf-token"]').attr('content');
-  const $modal = $('#customerModal');
-  const modal = $modal.length ? bootstrap.Modal.getOrCreateInstance($modal[0]) : null;
-  const $form = $('#customerForm');
-  const $submitButton = $('#customerSubmitBtn');
   const $table = $('.customers-datatables');
   let customerTable = null;
+  let customerManager = null;
 
-  const customerEditUrl = function (customerId) {
-    return (window.customerEditUrlTemplate || '').replace('__CUSTOMER__', customerId);
-  };
-
+  const csrfToken = $('meta[name="csrf-token"]').attr('content');
   $.ajaxSetup({
     headers: {
       'X-CSRF-TOKEN': csrfToken,
@@ -20,6 +13,10 @@
       Accept: 'application/json'
     }
   });
+
+  const customerEditUrl = function (customerId) {
+    return (window.customerEditUrlTemplate || '').replace('__CUSTOMER__', customerId);
+  };
 
   const showAlert = function (type, message) {
     if (typeof window.appNotify === 'function') {
@@ -34,90 +31,6 @@
   const money = function (value) {
     const amount = Number(value || 0);
     return '$' + amount.toFixed(2);
-  };
-
-  const setSubmitButtonState = function (loading) {
-    const isEdit = Boolean($('#customer_id').val());
-    const defaultText = isEdit ? $submitButton.data('update-text') : $submitButton.data('create-text');
-
-    if (typeof window.appSetButtonLoading === 'function') {
-      window.appSetButtonLoading($submitButton, loading, 'Saving...', defaultText);
-      return;
-    }
-
-    $submitButton.prop('disabled', loading).text(loading ? 'Saving...' : defaultText);
-  };
-
-  const setSelect2ErrorState = function ($element, invalid) {
-    $element.next('.select2').find('.select2-selection').toggleClass('is-invalid', invalid);
-  };
-
-  const resetValidationState = function () {
-    $form.find('.is-invalid').removeClass('is-invalid');
-    $form.find('.invalid-feedback').text('');
-    setSelect2ErrorState($('#customer_type'), false);
-  };
-
-  const initStaticSelect2 = function () {
-    if (typeof $.fn.select2 !== 'function') {
-      return;
-    }
-
-    $('.select2').each(function () {
-      const $this = $(this);
-
-      if ($this.data('select2')) {
-        return;
-      }
-
-      const dropdownParentSelector = $this.data('dropdown-parent');
-
-      if (!dropdownParentSelector && !$this.parent().hasClass('position-relative')) {
-        $this.wrap('<div class="position-relative"></div>');
-      }
-
-      $this.select2({
-        dropdownParent: dropdownParentSelector ? $(dropdownParentSelector) : $this.parent(),
-        placeholder: $this.data('placeholder'),
-        allowClear: Boolean($this.data('allow-clear')),
-        minimumResultsForSearch: $this.data('minimum-results-for-search') ?? 0
-      }).on('change', function () {
-        setSelect2ErrorState($this, false);
-        $this.closest('.position-relative').find('.invalid-feedback').text('');
-      });
-    });
-  };
-
-  const resetForm = function () {
-    $form[0].reset();
-    $('#customer_id').val('');
-    $('#customer_type').val('registered').trigger('change');
-    $('#customer_total_visits').val(0);
-    $('#customer_lifetime_value').val('0.00');
-    $('#customer_loyalty_points_balance').val(0);
-    $('#customer_credit_balance').val('0.00');
-    $('#customerModalLabel').text('Add Customer');
-    setSubmitButtonState(false);
-    resetValidationState();
-  };
-
-  const fillForm = function (customer) {
-    $('#customer_id').val(customer.id);
-    $('#customer_type').val(customer.customer_type).trigger('change');
-    $('#customer_name').val(customer.name);
-    $('#customer_phone').val(customer.phone);
-    $('#customer_email').val(customer.email);
-    $('#customer_date_of_birth').val(customer.date_of_birth);
-    $('#customer_last_visit_at').val(customer.last_visit_at_form);
-    $('#customer_address').val(customer.address);
-    $('#customer_notes').val(customer.notes);
-    $('#customer_total_visits').val(customer.total_visits);
-    $('#customer_lifetime_value').val(customer.lifetime_value);
-    $('#customer_loyalty_points_balance').val(customer.loyalty_points_balance);
-    $('#customer_credit_balance').val(customer.credit_balance);
-    $('#customerModalLabel').text('Edit Customer');
-    setSubmitButtonState(false);
-    resetValidationState();
   };
 
   const tooltipAttrs = function (title) {
@@ -155,64 +68,6 @@
     html += '</div>';
 
     return html;
-  };
-
-  const bindFormValidation = function () {
-    if (typeof $.fn.validate !== 'function') {
-      return null;
-    }
-
-    return $form.validate({
-      ignore: [],
-      rules: {
-        customer_type: { required: true },
-        name: { required: true, maxlength: 150 },
-        phone: { maxlength: 30 },
-        email: { email: true, maxlength: 150 },
-        address: { maxlength: 1000 },
-        notes: { maxlength: 2000 },
-        total_visits: { number: true, min: 0 },
-        lifetime_value: { number: true },
-        loyalty_points_balance: { number: true, min: 0 },
-        credit_balance: { number: true }
-      },
-      messages: {
-        customer_type: { required: 'Please select a customer type.' },
-        name: { required: 'Please enter a customer name.', maxlength: 'The customer name may not be greater than 150 characters.' },
-        email: { email: 'Please enter a valid email address.' }
-      },
-      errorElement: 'div',
-      errorClass: 'invalid-feedback',
-      highlight: function (element) {
-        const $element = $(element);
-        $element.addClass('is-invalid');
-        if ($element.hasClass('select2-hidden-accessible')) {
-          setSelect2ErrorState($element, true);
-        }
-      },
-      unhighlight: function (element) {
-        const $element = $(element);
-        $element.removeClass('is-invalid');
-        if ($element.hasClass('select2-hidden-accessible')) {
-          setSelect2ErrorState($element, false);
-        }
-      },
-      errorPlacement: function (error, element) {
-        const $element = $(element);
-        if ($element.hasClass('select2-hidden-accessible')) {
-          $element.closest('.position-relative').find('.invalid-feedback').first().text(error.text());
-          return;
-        }
-
-        const $feedback = $element.siblings('.invalid-feedback').first();
-        if ($feedback.length) {
-          $feedback.text(error.text());
-          return;
-        }
-
-        error.insertAfter(element);
-      }
-    });
   };
 
   const initDataTable = function () {
@@ -330,31 +185,6 @@
     });
   };
 
-  const renderValidationErrors = function (errors) {
-    Object.entries(errors || {}).forEach(function (entry) {
-      const field = entry[0];
-      const message = Array.isArray(entry[1]) ? entry[1][0] : entry[1];
-      const $element = $form.find('[name="' + field + '"]');
-
-      if (!$element.length) {
-        return;
-      }
-
-      $element.addClass('is-invalid');
-
-      if ($element.hasClass('select2-hidden-accessible')) {
-        setSelect2ErrorState($element, true);
-        $element.closest('.position-relative').find('.invalid-feedback').first().text(message);
-        return;
-      }
-
-      const $feedback = $element.siblings('.invalid-feedback').first();
-      if ($feedback.length) {
-        $feedback.text(message);
-      }
-    });
-  };
-
   const bindFilters = function () {
     $('#customer_type_filter, #customer_sort').on('change', function () {
       if (customerTable) {
@@ -363,85 +193,27 @@
     });
   };
 
-  const bindModalActions = function (validator) {
-    $(document).on('click', '#addCustomerBtn', function () {
-      resetForm();
-      if (validator) {
-        validator.resetForm();
-      }
-    });
-
+  const bindEditActions = function () {
     $(document).on('click', '.edit-customer-btn', function () {
       const editUrl = $(this).data('edit-url') || customerEditUrl($(this).data('id'));
 
-      resetForm();
       if (window.appLoading && typeof window.appLoading.show === 'function') {
         window.appLoading.show('Loading customer...');
       }
 
       $.get(editUrl)
         .done(function (response) {
-          fillForm(response.data || {});
-          if (modal) {
-            modal.show();
+          if (customerManager) {
+            customerManager.fillForm(response.data || {});
+            if (customerManager.modal) {
+              customerManager.modal.show();
+            }
           }
         })
         .fail(function (xhr) {
           showAlert('error', xhr.responseJSON?.message || 'Unable to load customer.');
         })
         .always(function () {
-          if (window.appLoading && typeof window.appLoading.hide === 'function') {
-            window.appLoading.hide(200);
-          }
-        });
-    });
-
-    $modal.on('hidden.bs.modal', function () {
-      resetForm();
-      if (validator) {
-        validator.resetForm();
-      }
-    });
-  };
-
-  const bindSaveForm = function (validator) {
-    $form.on('submit', function (event) {
-      event.preventDefault();
-      resetValidationState();
-
-      if (validator && !$form.valid()) {
-        return;
-      }
-
-      setSubmitButtonState(true);
-      if (window.appLoading && typeof window.appLoading.show === 'function') {
-        window.appLoading.show('Saving customer...');
-      }
-
-      $.ajax({
-        url: $form.attr('action'),
-        method: 'POST',
-        data: $form.serialize()
-      })
-        .done(function (response) {
-          showAlert('success', response.message || 'Customer saved successfully.');
-          if (modal) {
-            modal.hide();
-          }
-          if (customerTable) {
-            customerTable.ajax.reload(null, false);
-          }
-        })
-        .fail(function (xhr) {
-          if (xhr.status === 422) {
-            renderValidationErrors(xhr.responseJSON?.errors || {});
-            return;
-          }
-
-          showAlert('error', xhr.responseJSON?.message || 'Unable to save customer.');
-        })
-        .always(function () {
-          setSubmitButtonState(false);
           if (window.appLoading && typeof window.appLoading.hide === 'function') {
             window.appLoading.hide(200);
           }
@@ -498,13 +270,20 @@
   };
 
   $(function () {
-    initStaticSelect2();
-    const validator = bindFormValidation();
+    if (typeof window.CustomerManager === 'function') {
+      customerManager = new window.CustomerManager({
+        onSaveSuccess: function () {
+          if (customerTable) {
+            customerTable.ajax.reload(null, false);
+          }
+        }
+      });
+    }
+
     initDataTable();
     bindFilters();
-    bindModalActions(validator);
-    bindSaveForm(validator);
+    bindEditActions();
     bindDeleteActions();
-    resetForm();
   });
 })(window.jQuery);
+

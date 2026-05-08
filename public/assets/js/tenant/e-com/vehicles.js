@@ -1,23 +1,13 @@
 (function ($) {
   'use strict';
 
-  const csrfToken = $('meta[name="csrf-token"]').attr('content');
-  const $modal = $('#vehicleModal');
-  const modal = $modal.length ? bootstrap.Modal.getOrCreateInstance($modal[0]) : null;
-  const $form = $('#vehicleForm');
-  const $submitButton = $('#vehicleSubmitBtn');
   const $table = $('.vehicles-datatables');
-  const $mode = $('#vehicle_customer_entry_mode');
-  const $formCustomer = $('#vehicle_customer_id');
   const $filterCustomer = $('#vehicle_filter_customer');
-  const $walkInSaveCheckbox = $('#save_walk_in_as_customer');
   const initialCustomerId = new URLSearchParams(window.location.search).get('customer_id') || '';
   let vehicleTable = null;
+  let vehicleManager = null;
 
-  const vehicleEditUrl = function (vehicleId) {
-    return (window.vehicleEditUrlTemplate || '').replace('__VEHICLE__', vehicleId);
-  };
-
+  const csrfToken = $('meta[name="csrf-token"]').attr('content');
   $.ajaxSetup({
     headers: {
       'X-CSRF-TOKEN': csrfToken,
@@ -25,6 +15,10 @@
       Accept: 'application/json'
     }
   });
+
+  const vehicleEditUrl = function (vehicleId) {
+    return (window.vehicleEditUrlTemplate || '').replace('__VEHICLE__', vehicleId);
+  };
 
   const showAlert = function (type, message) {
     if (typeof window.appNotify === 'function') {
@@ -36,27 +30,10 @@
     return $('<div>').text(value ?? '').html();
   };
 
-  const setSubmitButtonState = function (loading) {
-    const isEdit = Boolean($('#vehicle_id').val());
-    const defaultText = isEdit ? $submitButton.data('update-text') : $submitButton.data('create-text');
-
-    if (typeof window.appSetButtonLoading === 'function') {
-      window.appSetButtonLoading($submitButton, loading, 'Saving...', defaultText);
-      return;
-    }
-
-    $submitButton.prop('disabled', loading).text(loading ? 'Saving...' : defaultText);
-  };
-
-  const setSelect2ErrorState = function ($element, invalid) {
-    $element.next('.select2').find('.select2-selection').toggleClass('is-invalid', invalid);
-  };
-
-  const resetValidationState = function () {
-    $form.find('.is-invalid').removeClass('is-invalid');
-    $form.find('.invalid-feedback').text('');
-    setSelect2ErrorState($mode, false);
-    setSelect2ErrorState($formCustomer, false);
+  const tooltipAttrs = function (title) {
+    return window.Helpers && window.Helpers.getTooltipAttributes
+      ? window.Helpers.getTooltipAttributes(title)
+      : 'title="' + title + '"';
   };
 
   const ensureSelectOption = function ($select, id, text) {
@@ -72,31 +49,6 @@
     }
 
     $select.val(String(id)).trigger('change');
-  };
-
-  const initStaticSelect2 = function () {
-    if (typeof $.fn.select2 !== 'function') {
-      return;
-    }
-
-    $('.select2').each(function () {
-      const $this = $(this);
-
-      if ($this.data('select2')) {
-        return;
-      }
-
-      if (!$this.parent().hasClass('position-relative')) {
-        $this.wrap('<div class="position-relative"></div>');
-      }
-
-      $this.select2({
-        dropdownParent: $this.parent(),
-        placeholder: $this.data('placeholder'),
-        allowClear: Boolean($this.data('allow-clear')),
-        minimumResultsForSearch: $this.data('minimum-results-for-search') ?? 0
-      });
-    });
   };
 
   const initCustomerSelect = function ($element) {
@@ -133,71 +85,7 @@
           };
         }
       }
-    }).on('change', function () {
-      setSelect2ErrorState($element, false);
-      $element.closest('.position-relative').find('.invalid-feedback').text('');
     });
-  };
-
-  const applyCustomerMode = function () {
-    const mode = $mode.val() || 'existing';
-
-    $('.customer-mode-section').each(function () {
-      const modes = String($(this).data('mode') || '').split(' ');
-      $(this).toggleClass('d-none', !modes.includes(mode));
-    });
-
-    if (mode !== 'walk_in') {
-      $walkInSaveCheckbox.prop('checked', true);
-    }
-  };
-
-  const resetForm = function () {
-    $form[0].reset();
-    $('#vehicle_id').val('');
-    $mode.val(initialCustomerId ? 'existing' : 'existing').trigger('change');
-    ensureSelectOption($formCustomer, initialCustomerId || null, null);
-    $('#inline_customer_name').val('');
-    $('#inline_customer_phone').val('');
-    $('#inline_customer_email').val('');
-    $('#inline_customer_address').val('');
-    $walkInSaveCheckbox.prop('checked', true);
-    $('#vehicle_is_default').prop('checked', false);
-    $('#vehicleModalLabel').text('Add Vehicle');
-    setSubmitButtonState(false);
-    resetValidationState();
-    applyCustomerMode();
-  };
-
-  const fillForm = function (vehicle) {
-    $('#vehicle_id').val(vehicle.id);
-    $mode.val(vehicle.customer_entry_mode || 'existing').trigger('change');
-    ensureSelectOption($formCustomer, vehicle.customer_id, vehicle.customer_name);
-    $('#inline_customer_name').val(vehicle.inline_customer_name || '');
-    $('#inline_customer_phone').val(vehicle.inline_customer_phone || '');
-    $('#inline_customer_email').val(vehicle.inline_customer_email || '');
-    $('#inline_customer_address').val(vehicle.inline_customer_address || '');
-    $walkInSaveCheckbox.prop('checked', Boolean(vehicle.save_walk_in_as_customer));
-    $('#vehicle_plate_number').val(vehicle.plate_number);
-    $('#vehicle_registration_number').val(vehicle.registration_number);
-    $('#vehicle_make').val(vehicle.make);
-    $('#vehicle_model').val(vehicle.model);
-    $('#vehicle_year').val(vehicle.year);
-    $('#vehicle_color').val(vehicle.color);
-    $('#vehicle_engine_type').val(vehicle.engine_type);
-    $('#vehicle_odometer').val(vehicle.odometer);
-    $('#vehicle_notes').val(vehicle.notes);
-    $('#vehicle_is_default').prop('checked', Boolean(vehicle.is_default));
-    $('#vehicleModalLabel').text('Edit Vehicle');
-    setSubmitButtonState(false);
-    resetValidationState();
-    applyCustomerMode();
-  };
-
-  const tooltipAttrs = function (title) {
-    return window.Helpers && window.Helpers.getTooltipAttributes
-      ? window.Helpers.getTooltipAttributes(title)
-      : 'title="' + title + '"';
   };
 
   const actionButtonsHtml = function (row) {
@@ -222,77 +110,6 @@
     html += '</div>';
 
     return html;
-  };
-
-  const bindFormValidation = function () {
-    if (typeof $.fn.validate !== 'function') {
-      return null;
-    }
-
-    return $form.validate({
-      ignore: [],
-      rules: {
-        customer_entry_mode: { required: true },
-        customer_id: {
-          required: {
-            depends: function () {
-              return $mode.val() === 'existing';
-            }
-          }
-        },
-        inline_customer_name: {
-          maxlength: 150
-        },
-        inline_customer_phone: { maxlength: 30 },
-        inline_customer_email: { email: true, maxlength: 150 },
-        inline_customer_address: { maxlength: 1000 },
-        plate_number: { required: true, maxlength: 50 },
-        registration_number: { maxlength: 80 },
-        make: { maxlength: 100 },
-        model: { maxlength: 100 },
-        year: { number: true, min: 1900 },
-        color: { maxlength: 50 },
-        engine_type: { maxlength: 80 },
-        odometer: { number: true, min: 0 },
-        notes: { maxlength: 2000 }
-      },
-      messages: {
-        customer_entry_mode: { required: 'Please select how you want to link this vehicle.' },
-        customer_id: { required: 'Please select a customer.' },
-        plate_number: { required: 'Please enter a plate number.' }
-      },
-      errorElement: 'div',
-      errorClass: 'invalid-feedback',
-      highlight: function (element) {
-        const $element = $(element);
-        $element.addClass('is-invalid');
-        if ($element.hasClass('select2-hidden-accessible')) {
-          setSelect2ErrorState($element, true);
-        }
-      },
-      unhighlight: function (element) {
-        const $element = $(element);
-        $element.removeClass('is-invalid');
-        if ($element.hasClass('select2-hidden-accessible')) {
-          setSelect2ErrorState($element, false);
-        }
-      },
-      errorPlacement: function (error, element) {
-        const $element = $(element);
-        if ($element.hasClass('select2-hidden-accessible')) {
-          $element.closest('.position-relative').find('.invalid-feedback').first().text(error.text());
-          return;
-        }
-
-        const $feedback = $element.siblings('.invalid-feedback').first();
-        if ($feedback.length) {
-          $feedback.text(error.text());
-          return;
-        }
-
-        error.insertAfter(element);
-      }
-    });
   };
 
   const initDataTable = function () {
@@ -422,31 +239,6 @@
     });
   };
 
-  const renderValidationErrors = function (errors) {
-    Object.entries(errors || {}).forEach(function (entry) {
-      const field = entry[0];
-      const message = Array.isArray(entry[1]) ? entry[1][0] : entry[1];
-      const $element = $form.find('[name="' + field + '"]');
-
-      if (!$element.length) {
-        return;
-      }
-
-      $element.addClass('is-invalid');
-
-      if ($element.hasClass('select2-hidden-accessible')) {
-        setSelect2ErrorState($element, true);
-        $element.closest('.position-relative').find('.invalid-feedback').first().text(message);
-        return;
-      }
-
-      const $feedback = $element.siblings('.invalid-feedback').first();
-      if ($feedback.length) {
-        $feedback.text(message);
-      }
-    });
-  };
-
   const bindFilters = function () {
     $('#vehicle_default_filter, #vehicle_sort').on('change', function () {
       if (vehicleTable) {
@@ -461,85 +253,27 @@
     });
   };
 
-  const bindModalActions = function (validator) {
-    $(document).on('click', '#addVehicleBtn', function () {
-      resetForm();
-      if (validator) {
-        validator.resetForm();
-      }
-    });
-
+  const bindEditActions = function () {
     $(document).on('click', '.edit-vehicle-btn', function () {
       const editUrl = $(this).data('edit-url') || vehicleEditUrl($(this).data('id'));
 
-      resetForm();
       if (window.appLoading && typeof window.appLoading.show === 'function') {
         window.appLoading.show('Loading vehicle...');
       }
 
       $.get(editUrl)
         .done(function (response) {
-          fillForm(response.data || {});
-          if (modal) {
-            modal.show();
+          if (vehicleManager) {
+            vehicleManager.fillForm(response.data || {});
+            if (vehicleManager.modal) {
+              vehicleManager.modal.show();
+            }
           }
         })
         .fail(function (xhr) {
           showAlert('error', xhr.responseJSON?.message || 'Unable to load vehicle.');
         })
         .always(function () {
-          if (window.appLoading && typeof window.appLoading.hide === 'function') {
-            window.appLoading.hide(200);
-          }
-        });
-    });
-
-    $modal.on('hidden.bs.modal', function () {
-      resetForm();
-      if (validator) {
-        validator.resetForm();
-      }
-    });
-  };
-
-  const bindSaveForm = function (validator) {
-    $form.on('submit', function (event) {
-      event.preventDefault();
-      resetValidationState();
-
-      if (validator && !$form.valid()) {
-        return;
-      }
-
-      setSubmitButtonState(true);
-      if (window.appLoading && typeof window.appLoading.show === 'function') {
-        window.appLoading.show('Saving vehicle...');
-      }
-
-      $.ajax({
-        url: $form.attr('action'),
-        method: 'POST',
-        data: $form.serialize()
-      })
-        .done(function (response) {
-          showAlert('success', response.message || 'Vehicle saved successfully.');
-          if (modal) {
-            modal.hide();
-          }
-          if (vehicleTable) {
-            vehicleTable.ajax.reload(null, false);
-          }
-        })
-        .fail(function (xhr) {
-          if (xhr.status === 422) {
-            renderValidationErrors(xhr.responseJSON?.errors || {});
-            return;
-          }
-
-          showAlert('error', xhr.responseJSON?.message || 'Unable to save vehicle.');
-        })
-        .always(function () {
-          setSubmitButtonState(false);
           if (window.appLoading && typeof window.appLoading.hide === 'function') {
             window.appLoading.hide(200);
           }
@@ -596,21 +330,23 @@
   };
 
   $(function () {
-    initStaticSelect2();
-    $mode.on('change', function () {
-      applyCustomerMode();
-    });
-    initCustomerSelect($formCustomer);
+    if (typeof window.VehicleManager === 'function') {
+      vehicleManager = new window.VehicleManager({
+        onSaveSuccess: function () {
+          if (vehicleTable) {
+            vehicleTable.ajax.reload(null, false);
+          }
+        }
+      });
+    }
+
     initCustomerSelect($filterCustomer);
     if (initialCustomerId) {
       ensureSelectOption($filterCustomer, initialCustomerId, 'Selected customer');
     }
-    const validator = bindFormValidation();
     initDataTable();
     bindFilters();
-    bindModalActions(validator);
-    bindSaveForm(validator);
+    bindEditActions();
     bindDeleteActions();
-    resetForm();
   });
 })(window.jQuery);
