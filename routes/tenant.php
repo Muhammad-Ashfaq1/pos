@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\DiscountGroups;
+use App\Http\Controllers\DiscountGroupController;
 use App\Http\Controllers\Tenant\CategoryController;
 use App\Http\Controllers\Tenant\CustomerController;
 use App\Http\Controllers\Tenant\DashboardController;
@@ -242,16 +242,10 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                     });
             });
 
-        Route::prefix('discounts')
-            ->name('discounts.')
-            ->group(function () {
-                Route::prefix('group')
-                    ->name('group.')
-                    ->controller(DiscountGroups::class)
-                    ->group(function () {
-                        Route::get('/', 'index')
-                            ->middleware('role_or_permission:tenant_admin|discount.group.manage')
-                            ->name('index');
-                    });
+        Route::prefix('discounts')->name('discounts.')->group(function () {
+            Route::prefix('group')->name('group.')->controller(DiscountGroupController::class)->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::post('/store', 'store')->name('store');
             });
+        });
     });
