@@ -1,0 +1,112 @@
+name: Deploy Laravel Application
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Set up PHP 8.3
+      - name: Set up PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      # Verify PHP version
+      - name: Verify PHP Version
+        run: echo "PHP version $(php -v)"
+
+      # Install Composer 2
+      - name: Install Composer 2
+        run: |
+          curl -sS https://getcomposer.org/installer | php -- --2
+          sudo mv composer.phar /usr/local/bin/composer
+          composer --version
+
+      # Install Laravel Dependencies
+      - name: Install Laravel Dependencies
+        run: |
+          composer install --no-dev --optimize-autoloader
+
+      # Install sshpass
+      - name: Install sshpass
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+      # Deploy files to Hostinger
+      - name: Deploy to Hostinger
+        run: |
+          echo "Deploying files to Hostinger..."
+          sshpass -p '${{ secrets.SSH_PASSWORD }}' rsync -avz \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='.env' \
+            --exclude='.env.backup' \
+            --exclude='.env.production' \
+            --exclude='storage/logs/*' \
+            --exclude='storage/framework/cache/*' \
+            --exclude='storage/framework/sessions/*' \
+            --exclude='storage/framework/views/*' \
+            --exclude='storage/app/public/users/**' \
+            --exclude='storage/app/public/shops/**' \
+            --exclude='storage/app/public/products/**' \
+            -e "ssh -o StrictHostKeyChecking=no -p 65002" \
+            ./ u407529782@82.198.228.66:/home/u407529782/domains/kba-jewellers.com/public_html/pos
+
+      # Run Laravel commands on the server
+      - name: Run Laravel Commands
+        run: |
+          sshpass -p '${{ secrets.SSH_PASSWORD }}' ssh -o StrictHostKeyChecking=no -p 65002 u407529782@82.198.228.66 << 'EOF'
+          cd /home/u407529782/domains/kba-jewellers.com/public_html/pos
+          echo "Running migrations..."
+          php artisan migrate --force
+          echo "Caching config..."
+          php artisan config:cache
+          echo "Caching routes..."
+          php artisan route:cache
+          echo "Caching views..."
+          php artisan view:cache
+          echo "Clearing optimizations..."
+          php artisan optimize:clear
+          # Ensure storage directories exist
+          echo "Creating storage directories..."
+          mkdir -p storage/app/public/users/avatars
+          mkdir -p storage/app/public/shops/logos
+          mkdir -p storage/app/public/products
+          # Remove existing symlink if it exists (broken or incorrect)
+          if [ -L public/storage ] || [ -d public/storage ]; then
+            rm -rf public/storage
+          fi
+          # Create symbolic link for storage
+          echo "Creating storage symlink..."
+          ln -sfn /home/u407529782/domains/kba-jewellers.com/public_html/pos/storage/app/public /home/u407529782/domains/kba-jewellers.com/public_html/pos/public/storage
+          # Verify symlink was created
+          if [ -L public/storage ]; then
+            echo "Storage symlink created successfully"
+            ls -la public/storage
+          else
+            echo "ERROR: Storage symlink creation failed!"
+            exit 1
+          fi
+          # Set correct permissions
+          echo "Setting permissions..."
+          chmod -R 755 storage
+          chmod -R 775 storage/app/public
+          find storage/app/public -type d -exec chmod 775 {} \;
+          find storage/app/public -type f -exec chmod 664 {} \;
+          echo "Deployment commands completed."
+          EOF
+
+      # Completion message
+      - name: Completion Message
+        run: echo "Laravel application deployed successfully!"
