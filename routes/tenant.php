@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DiscountGroupController;
 use App\Http\Controllers\Tenant\CategoryController;
 use App\Http\Controllers\Tenant\CustomerController;
 use App\Http\Controllers\Tenant\DashboardController;
@@ -240,4 +241,13 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                         Route::get('/staff/{user}/impersonate', 'impersonateStaff')->name('staff.impersonate');
                     });
             });
+
+        Route::prefix('discounts')->name('discounts.')->group(function () {
+            Route::prefix('group')->name('group.')->controller(DiscountGroupController::class)->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::post('/store', 'store')->name('store');
+                Route::put('/{discountGroup}', 'update')->name('update');
+                Route::delete('/{discountGroup}', 'destroy')->name('delete');
+            });
+        });
     });

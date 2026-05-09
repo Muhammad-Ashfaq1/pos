@@ -23,46 +23,37 @@
                     <div class="card-body d-flex flex-column">
 
                         <div class="mb-3">
-                            <label for="customer_type_filter" class="form-label">Customer Type</label>
-                            <select
-                                id="customer_type_filter"
-                                class="form-select filter-control select2"
-                                data-placeholder="All customer types"
-                                data-allow-clear="true"
-                                data-minimum-results-for-search="99">
+                            <div class="d-flex justify-content-between">
+                                <label for="customer_type_filter" class="form-label">Customers</label>
+                                <a class="text-primary add-customer-btn" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#customerModal">+ Add Customer</a>
+                            </div>
+                            <select id="customer_type_filter" class="form-select filter-control select2"
+                                data-placeholder="Select a customer" data-allow-clear="false"
+                                data-ajax-url="{{ route('tenant.ecommerce.dropdowns.customers') }}">
                                 <option value=""></option>
-                                @for ($i = 1; $i <= 3; $i++)
-                                    <option value="{{ $i }}">Customer Type {{ $i }}</option>
-                                @endfor
                             </select>
                         </div>
 
                         <div class="mb-3">
-                            <label for="order_type_filter" class="form-label">Orders</label>
-                            <select
-                                id="order_type_filter"
-                                class="form-select filter-control select2"
-                                data-placeholder="All orders"
-                                data-allow-clear="true"
-                                data-minimum-results-for-search="99">
+                            <div class="d-flex justify-content-between">
+                                <label for="order_type_filter" class="form-label">Orders</label>
+                                <a class="text-primary add-order-btn" href="javascript:void(0);">+ Add Order</a>
+                            </div>
+                            <select id="order_type_filter" class="form-select filter-control select2"
+                                data-placeholder="Select order" data-allow-clear="false" data-minimum-results-for-search="Infinity">
                                 <option value=""></option>
-                                @for ($i = 1; $i <= 2; $i++)
-                                    <option value="{{ $i }}">Orders {{ $i }}</option>
-                                @endfor
                             </select>
                         </div>
 
                         <div class="mb-3">
-                            <label for="add_vehicle_filter" class="form-label">Add Vehicle</label>
-                            <select
-                                id="add_vehicle_filter"
-                                class="form-select filter-control select2"
-                                data-placeholder="Select a vehicle"
-                                data-allow-clear="true">
+                            <div class="d-flex justify-content-between">
+                                <label for="add_vehicle_filter" class="form-label">Add Vehicle</label>
+                                <a class="text-primary add-vehicle-btn" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#vehicleModal">+ Add Vehicle</a>
+                            </div>
+                            <select id="add_vehicle_filter" class="form-select filter-control select2"
+                                data-placeholder="Select a vehicle" data-allow-clear="false"
+                                data-ajax-url="{{ route('tenant.ecommerce.dropdowns.vehicles') }}">
                                 <option value=""></option>
-                                @for ($i = 1; $i <= 5; $i++)
-                                    <option value="{{ $i }}">Add Vehicle {{ $i }}</option>
-                                @endfor
                             </select>
                         </div>
 
@@ -210,13 +201,15 @@
                         <div class="product-info">
                             <h3 class="fw-bold mb-2 product-name"></h3>
                             <p class="text-muted mb-2">SKU: <span class="text-dark fw-semibold product-sku">—</span></p>
-                            <p class="text-muted mb-4">Barcode: <span class="text-dark fw-semibold product-barcode">—</span></p>
+                            <p class="text-muted mb-4">Barcode: <span
+                                    class="text-dark fw-semibold product-barcode">—</span></p>
                             <h5 class="fw-bold mb-4">
                                 <span class="text-dark">1 Unit:</span>
                                 <span class="text-primary ms-1 product-price">$0.00</span>
                             </h5>
                             <div class="mb-4">
-                                <label class="form-label fw-bold">How many units <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">How many units <span
+                                        class="text-danger">*</span></label>
                                 <input type="number" min="1" step="1"
                                     class="form-control form-control-lg border-primary rounded-3 py-3 product-qty-input"
                                     value="1" />
@@ -225,7 +218,8 @@
                                 <button type="button"
                                     class="btn bg-label-secondary text-primary border-0 px-5 py-3 rounded-3 fw-bold btn-clear-qty">Clear</button>
                                 <button type="button"
-                                    class="btn btn-primary px-5 py-3 rounded-3 fw-bold btn-add-to-cart">Add to Cart</button>
+                                    class="btn btn-primary px-5 py-3 rounded-3 fw-bold btn-add-to-cart">Add to
+                                    Cart</button>
                             </div>
                         </div>
                     </div>
@@ -237,6 +231,8 @@
         </div>
     </div>
     @include('employee.order.sidebar-modal');
+    @include('tenant.ecommerce.customers.partials.save-modal')
+    @include('tenant.ecommerce.vehicles.partials.save-modal')
     @push('page-script')
         <script>
             window.catalogRoutes = {
@@ -244,9 +240,17 @@
                 subCategories: @json(route('employee.order.sub-categories')),
                 products: @json(route('employee.order.products')),
                 search: @json(route('employee.order.search')),
+                save: @json(route('employee.order.save')),
+                dropdownCustomers: @json(route('tenant.ecommerce.dropdowns.customers')),
+                dropdownVehicles: @json(route('tenant.ecommerce.dropdowns.vehicles')),
             };
         </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"></script>
+        <script src="{{ asset('assets/js/tenant/e-com/customer-manager.js') }}"></script>
+        <script src="{{ asset('assets/js/tenant/e-com/vehicle-manager.js') }}"></script>
+
         <script src="{{ asset('assets/js/employee/catalog-api.js') }}"></script>
         <script src="{{ asset('assets/js/employee/new-order.js') }}"></script>
+
     @endpush
 @endsection

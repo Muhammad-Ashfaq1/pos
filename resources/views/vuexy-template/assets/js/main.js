@@ -401,32 +401,30 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
-  // If current layout is vertical and current window screen is > small
-  // Auto update menu collapsed/expanded based on the themeConfig
+  // Determine the final collapsed state
+  let isCollapsed = false;
+
+  // 1. Check templateCustomizer settings if available
   if (typeof window.templateCustomizer !== 'undefined') {
-    if (window.templateCustomizer.settings.defaultMenuCollapsed) {
-      window.Helpers.setCollapsed(true, false);
-    } else {
-      window.Helpers.setCollapsed(false, false);
-    }
-
+    isCollapsed = window.templateCustomizer.settings.defaultMenuCollapsed;
     if (window.templateCustomizer.settings.semiDark) {
-      document.querySelector('#layout-menu').setAttribute('data-bs-theme', 'dark');
+      const layoutMenu = document.querySelector('#layout-menu');
+      if (layoutMenu) layoutMenu.setAttribute('data-bs-theme', 'dark');
     }
   }
 
-  // Manage menu expanded/collapsed state with local storage support If enableMenuLocalStorage = true in config.js
-  if (typeof config !== 'undefined') {
-    if (config.enableMenuLocalStorage) {
-      try {
-        if (localStorage.getItem('templateCustomizer-' + templateName + '--LayoutCollapsed') !== null)
-          window.Helpers.setCollapsed(
-            localStorage.getItem('templateCustomizer-' + templateName + '--LayoutCollapsed') === 'true',
-            false
-          );
-      } catch (e) {}
-    }
+  // 2. Check localStorage which should override the default
+  if (typeof config !== 'undefined' && config.enableMenuLocalStorage) {
+    try {
+      const storedCollapsed = localStorage.getItem('templateCustomizer-' + templateName + '--LayoutCollapsed');
+      if (storedCollapsed !== null) {
+        isCollapsed = (storedCollapsed === 'true');
+      }
+    } catch (e) {}
   }
+
+  // 3. Apply the final state once
+  window.Helpers.setCollapsed(isCollapsed, false);
 })();
 
 // Search Configuration
