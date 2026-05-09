@@ -11,6 +11,14 @@ use Spatie\Permission\PermissionRegistrar;
 
 class PermissionSyncService
 {
+    private const TENANT_ROLES = [
+        User::MANAGER,
+        User::CASHIER,
+        User::TECHNICIAN,
+        User::INVENTORY_CLERK,
+        User::EMPLOYEE,
+    ];
+
     public function sync(bool $syncTenantAdmins = true): array
     {
         app(RoleSeeder::class)->run();
@@ -20,9 +28,11 @@ class PermissionSyncService
         $superAdmins = $this->syncSuperAdmins();
 
         $tenantAdmins = collect();
+        $tenantRoleUsers = collect();
 
         if ($syncTenantAdmins) {
             $tenantAdmins = $this->syncTenantAdmins();
+            $tenantRoleUsers = $this->syncTenantRoleUsers();
         }
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
@@ -32,6 +42,8 @@ class PermissionSyncService
             'super_admin_ids' => $superAdmins->pluck('id')->all(),
             'tenant_admins_synced' => $tenantAdmins->count(),
             'tenant_admin_ids' => $tenantAdmins->pluck('id')->all(),
+            'tenant_role_users_synced' => $tenantRoleUsers->count(),
+            'tenant_role_user_ids' => $tenantRoleUsers->pluck('id')->all(),
         ];
     }
 
@@ -42,7 +54,7 @@ class PermissionSyncService
             ->get();
 
         $superAdmins->each(function (User $user): void {
-            $user->assignPrimaryRole(User::SUPER_ADMIN);
+            $this->ensureRoleAssigned($user, User::SUPER_ADMIN, 0);
         });
 
         return $superAdmins;
@@ -56,9 +68,32 @@ class PermissionSyncService
             ->get();
 
         $tenantAdmins->each(function (User $user): void {
-            $user->assignPrimaryRole(User::TENANT_ADMIN, $user->tenant_id);
+            $this->ensureRoleAssigned($user, User::TENANT_ADMIN, $user->tenant_id);
         });
 
         return $tenantAdmins;
+    }
+
+    private function syncTenantRoleUsers(): Collection
+    {
+        $users = User::query()
+            ->whereIn('role', self::TENANT_ROLES)
+            ->whereNotNull('tenant_id')
+            ->get();
+
+        $users->each(function (User $user): void {
+            $this->ensureRoleAssigned($user, $user->role, $user->tenant_id);
+        });
+
+        return $users;
+    }
+
+    private function ensureRoleAssigned(User $user, string $role, ?int $tenantId): void
+    {
+        PermissionTeamScope::for($tenantId ?? 0, function () use ($user, $role): void {
+            if (! $user->hasRole($role)) {
+                $user->assignRole($role);
+            }
+        });
     }
 }
