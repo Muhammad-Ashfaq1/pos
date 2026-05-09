@@ -1,4 +1,38 @@
 $(function () {
+    let discountGroupsTable = null;
+
+    const initDataTable = function () {
+        const $table = $('#discountGroupsTable');
+        if (typeof DataTable === 'undefined' || !$table.length) {
+            return;
+        }
+
+        discountGroupsTable = new DataTable($table[0], {
+            order: [[0, 'asc']],
+            dom: '<"row mx-2"' +
+                '<"col-md-2"<"me-3"l>>' +
+                '<"col-md-10"<"dt-action-buttons text-xl-end text-lg-start text-md-end text-start d-flex align-items-center justify-content-end flex-md-row flex-column mb-3 mb-md-0"f>>' +
+                '>t' +
+                '<"row mx-2"' +
+                '<"col-sm-12 col-md-6"i>' +
+                '<"col-sm-12 col-md-6"p>' +
+                '>',
+            language: {
+                sLengthMenu: '_MENU_',
+                search: '',
+                searchPlaceholder: 'Search Group'
+            },
+            columnDefs: [
+                {
+                    // Actions column
+                    targets: -1,
+                    orderable: false,
+                    searchable: false
+                }
+            ]
+        });
+    };
+
     // Initialize Select2 dropdowns
     if (typeof $.fn.select2 === 'function') {
         $('.select2').each(function () {
@@ -66,10 +100,20 @@ $(function () {
 
                 if (isUpdate) {
                     // Update existing row
-                    $(`.edit-discount-group[data-id="${response.data.id}"]`).closest('tr').html(rowHtml);
+                    const $tr = $(`.edit-discount-group[data-id="${response.data.id}"]`).closest('tr');
+                    if (discountGroupsTable) {
+                        discountGroupsTable.row($tr).node().innerHTML = rowHtml;
+                        discountGroupsTable.row($tr).invalidate().draw(false);
+                    } else {
+                        $tr.html(rowHtml);
+                    }
                 } else {
                     // Prepend new row
-                    $('#discount-groups-body').prepend(`<tr>${rowHtml}</tr>`);
+                    if (discountGroupsTable) {
+                        discountGroupsTable.row.add($(`<tr>${rowHtml}</tr>`)).draw(false);
+                    } else {
+                        $('#discount-groups-body').prepend(`<tr>${rowHtml}</tr>`);
+                    }
                 }
 
                 if (typeof Swal !== 'undefined') {
@@ -150,7 +194,11 @@ $(function () {
                             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                         },
                         success: function (response) {
-                            $this.closest('tr').remove();
+                            if (discountGroupsTable) {
+                                discountGroupsTable.row($this.closest('tr')).remove().draw(false);
+                            } else {
+                                $this.closest('tr').remove();
+                            }
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Deleted!',
@@ -166,4 +214,5 @@ $(function () {
             });
         }
     });
+    initDataTable();
 });

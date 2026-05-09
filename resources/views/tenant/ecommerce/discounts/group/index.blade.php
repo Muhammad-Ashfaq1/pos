@@ -23,7 +23,7 @@
             </button>
         </div>
         <div class="card-datatable table-responsive p-5">
-            <table class="table" data-delete-url-pattern="{{ route('tenant.discounts.group.delete', ':id') }}">
+            <table class="table" id="discountGroupsTable" data-delete-url-pattern="{{ route('tenant.discounts.group.delete', ':id') }}">
                 <thead class="bg-label-primary">
                     <tr>
                         <th>Title Name</th>
