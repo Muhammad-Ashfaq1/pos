@@ -197,6 +197,8 @@
         .done(function (response) {
           if (typeof window.appNotify === 'function') {
              window.appNotify('success', response.message || 'Customer saved successfully.');
+          } else if (typeof toastr !== 'undefined') {
+             toastr.success(response.message || 'Customer saved successfully.', 'Success');
           }
           if (_this.modal) _this.modal.hide();
           if (typeof _this.options.onSaveSuccess === 'function') {
@@ -210,6 +212,8 @@
           }
           if (typeof window.appNotify === 'function') {
              window.appNotify('error', xhr.responseJSON?.message || 'Unable to save customer.');
+          } else if (typeof toastr !== 'undefined') {
+             toastr.error(xhr.responseJSON?.message || 'Unable to save customer.', 'Error');
           }
         })
         .always(function () {
