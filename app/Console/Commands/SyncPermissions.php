@@ -23,6 +23,7 @@ class SyncPermissions extends Command
         );
 
         $this->info('Roles and permissions synced successfully.');
+        $this->line('Super admin users synced: '.$result['super_admins_synced']);
         $this->line('Tenant admin users synced: '.$result['tenant_admins_synced']);
 
         return self::SUCCESS;

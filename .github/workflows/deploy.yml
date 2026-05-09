@@ -70,6 +70,10 @@ jobs:
           cd /home/u407529782/domains/kba-jewellers.com/public_html/pos
           echo "Running migrations..."
           php artisan migrate --force
+          echo "Syncing roles and permissions..."
+          php artisan app:sync-permissions
+          echo "Running database seeders..."
+          php artisan db:seed --force
           echo "Caching config..."
           php artisan config:cache
           echo "Caching routes..."

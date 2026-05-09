@@ -104,12 +104,6 @@ class TenantCatalogSeeder extends Seeder
 
     public function run(): void
     {
-        if (app()->environment('production') && ! app()->runningUnitTests()) {
-            $this->command?->warn('Skipping demo catalog data in production.');
-
-            return;
-        }
-
         Tenant::query()->orderBy('id')->get()->each(function (Tenant $tenant): void {
             $this->command?->info("Seeding catalog data for tenant #{$tenant->id} - {$tenant->name}...");
 
