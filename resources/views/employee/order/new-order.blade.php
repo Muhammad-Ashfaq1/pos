@@ -37,14 +37,11 @@
                         <div class="mb-3">
                             <div class="d-flex justify-content-between">
                                 <label for="order_type_filter" class="form-label">Orders</label>
-                                <a class="text-primary" id="add" href="">+ Add Order</a>
+                                <a class="text-primary add-order-btn" href="javascript:void(0);">+ Add Order</a>
                             </div>
                             <select id="order_type_filter" class="form-select filter-control select2"
-                                data-placeholder="All orders" data-allow-clear="false" data-minimum-results-for-search="Infinity">
+                                data-placeholder="Select order" data-allow-clear="false" data-minimum-results-for-search="Infinity">
                                 <option value=""></option>
-                                @for ($i = 1; $i <= 2; $i++)
-                                    <option value="{{ $i }}">Orders {{ $i }}</option>
-                                @endfor
                             </select>
                         </div>
 
@@ -243,13 +240,10 @@
                 subCategories: @json(route('employee.order.sub-categories')),
                 products: @json(route('employee.order.products')),
                 search: @json(route('employee.order.search')),
+                save: @json(route('employee.order.save')),
                 dropdownCustomers: @json(route('tenant.ecommerce.dropdowns.customers')),
                 dropdownVehicles: @json(route('tenant.ecommerce.dropdowns.vehicles')),
             };
-            $(document).on('click', '#add', function(e) {
-                e.preventDefault();
-                console.log("clicked");
-            })
         </script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"></script>
         <script src="{{ asset('assets/js/tenant/e-com/customer-manager.js') }}"></script>

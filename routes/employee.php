@@ -14,6 +14,7 @@ Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.
             ->name('order.')
             ->group(function () {
                 Route::get('/new', [PanelController::class, 'newOrder'])->name('new-order');
+                Route::post('/save', [\App\Http\Controllers\Employee\OrderController::class, 'store'])->name('save');
 
                 Route::controller(SharedDataController::class)->group(function () {
                     Route::get('/categories', 'categories')->name('categories');

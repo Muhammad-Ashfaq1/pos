@@ -67,7 +67,7 @@ class SharedDataController extends Controller
             ->when($search !== '', fn ($q) => $q->search($search))
             ->orderBy('name');
 
-        $products = $query->get(['id', 'name', 'sku', 'barcode', 'brand', 'unit', 'sale_price', 'product_type', 'sub_category_id', 'category_id']);
+        $products = $query->get(['id', 'name', 'sku', 'barcode', 'brand', 'unit', 'sale_price', 'current_stock', 'track_inventory', 'product_type', 'sub_category_id', 'category_id']);
 
         $subCategoryMeta = null;
         if ($subCategoryId) {
@@ -114,7 +114,7 @@ class SharedDataController extends Controller
             ->search($search)
             ->orderBy('name')
             ->limit(40)
-            ->get(['id', 'name', 'sku', 'barcode', 'brand', 'unit', 'sale_price', 'product_type', 'sub_category_id', 'category_id']);
+            ->get(['id', 'name', 'sku', 'barcode', 'brand', 'unit', 'sale_price', 'current_stock', 'track_inventory', 'product_type', 'sub_category_id', 'category_id']);
 
         return response()->json([
             'categories' => $categories->map(fn (Category $c) => $this->mapCategory($c))->all(),
@@ -156,6 +156,8 @@ class SharedDataController extends Controller
             'brand' => $p->brand,
             'unit' => $p->unit,
             'sale_price' => (float) $p->sale_price,
+            'current_stock' => (int) $p->current_stock,
+            'track_inventory' => (bool) $p->track_inventory,
             'product_type' => $p->product_type,
             'sub_category_id' => $p->sub_category_id,
             'category_id' => $p->category_id,

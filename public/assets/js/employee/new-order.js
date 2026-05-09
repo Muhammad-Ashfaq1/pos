@@ -23,7 +23,11 @@
     // Stack of { level: 'categories'|'subCategories'|'products', meta: {...} }
     const navStack = [];
     let searchTimer = null;
-    const cart = []; // [{ id, name, price, qty }]
+    const orders = []; // [{ id, label, items, customer, vehicle }]
+    let activeOrderId = null;
+    let nextOrderNumber = 1;
+    let isRestoringOrderMeta = false;
+    let isSavingOrder = false;
 
     // ─── DOM refs ──────────────────────────────────────────────────────
     const $title = $('.catalog-title');
@@ -34,6 +38,133 @@
     const $grid = $('.catalog-grid');
     const $searchView = $('.catalog-search-view');
     const $productView = $('.product-details-view');
+
+    // Dynamic draft orders
+
+    function getActiveOrder() {
+        return orders.find(function (order) { return order.id === activeOrderId; }) || null;
+    }
+
+    function currentCart() {
+        const order = getActiveOrder();
+        return order ? order.items : [];
+    }
+
+    function ensureActiveOrder() {
+        return getActiveOrder() || createOrder();
+    }
+
+    function readSelectSelection($select) {
+        const value = $select.val();
+        if (!value) return null;
+
+        let text = $select.find('option:selected').text();
+        if (!text && $select.data('select2')) {
+            const selected = $select.select2('data') || [];
+            text = selected[0] ? selected[0].text : '';
+        }
+
+        return { id: value, text: text || value };
+    }
+
+    function setSelectSelection($select, selection) {
+        if (!$select.length) return;
+
+        if (!selection || !selection.id) {
+            $select.val(null);
+            if ($select.data('select2')) {
+                $select.trigger('change.select2');
+            }
+            return;
+        }
+
+        const id = String(selection.id);
+        const $existing = $select.find('option').filter(function () {
+            return String(this.value) === id;
+        }).first();
+
+        if ($existing.length) {
+            $existing.text(selection.text || id);
+        } else {
+            $select.append(new Option(selection.text || id, selection.id, false, false));
+        }
+
+        $select.val(selection.id);
+        if ($select.data('select2')) {
+            $select.trigger('change.select2');
+        }
+    }
+
+    function saveActiveOrderMeta() {
+        const order = getActiveOrder();
+        if (!order) return;
+
+        order.customer = readSelectSelection($('#customer_type_filter'));
+        order.vehicle = readSelectSelection($('#add_vehicle_filter'));
+    }
+
+    function restoreActiveOrderMeta() {
+        const order = getActiveOrder();
+        isRestoringOrderMeta = true;
+        setSelectSelection($('#customer_type_filter'), order ? order.customer : null);
+        setSelectSelection($('#add_vehicle_filter'), order ? order.vehicle : null);
+        isRestoringOrderMeta = false;
+    }
+
+    function formatOrderText(order) {
+        const qty = order.items.reduce(function (sum, item) { return sum + item.qty; }, 0);
+        const total = order.items.reduce(function (sum, item) { return sum + (item.qty * item.price); }, 0);
+
+        if (qty === 0) {
+            return order.label;
+        }
+
+        return order.label + ' - ' + qty + ' item' + (qty === 1 ? '' : 's') + ' - $' + total.toFixed(2);
+    }
+
+    function refreshOrderDropdown() {
+        const $select = $('#order_type_filter');
+        if (!$select.length) return;
+
+        $select.empty().append(new Option('', '', false, false));
+        orders.forEach(function (order) {
+            $select.append(new Option(formatOrderText(order), order.id, false, order.id === activeOrderId));
+        });
+        $select.val(activeOrderId || '');
+
+        if ($select.data('select2')) {
+            $select.trigger('change.select2');
+        }
+    }
+
+    function selectOrder(orderId) {
+        const exists = orders.some(function (order) { return order.id === orderId; });
+        if (!exists) return;
+
+        if (activeOrderId !== orderId) {
+            saveActiveOrderMeta();
+        }
+
+        activeOrderId = orderId;
+        refreshOrderDropdown();
+        restoreActiveOrderMeta();
+        renderCart();
+    }
+
+    function createOrder() {
+        const order = {
+            id: 'draft-' + nextOrderNumber + '-' + Date.now(),
+            label: 'Order ' + nextOrderNumber,
+            items: [],
+            customer: null,
+            vehicle: null
+        };
+
+        nextOrderNumber += 1;
+        orders.push(order);
+        selectOrder(order.id);
+        return order;
+    }
 
     // ─── Card rendering (uses shared <template> partial) ───────────────
 
@@ -229,6 +360,7 @@
     // ─── Cart (front-end only) ─────────────────────────────────────────
 
     function addToCart(product, qty) {
+        const cart = ensureActiveOrder().items;
         const existing = cart.find(function (i) { return i.id === product.id; });
         if (existing) {
             existing.qty += qty;
@@ -239,12 +371,14 @@
     }
 
     function removeFromCart(productId) {
+        const cart = currentCart();
         const idx = cart.findIndex(function (i) { return i.id === productId; });
         if (idx >= 0) cart.splice(idx, 1);
         renderCart();
     }
 
     function changeQty(productId, delta) {
+        const cart = currentCart();
         const item = cart.find(function (i) { return i.id === productId; });
         if (!item) return;
         item.qty = Math.max(1, item.qty + delta);
@@ -252,6 +386,7 @@
     }
 
     function renderCart() {
+        const cart = currentCart();
         const $tbody = $('#cart-items-tbody');
         $tbody.empty();
 
@@ -288,6 +423,7 @@
     }
 
     function updateSummary() {
+        const cart = currentCart();
         const totalQty = cart.reduce(function (s, i) { return s + i.qty; }, 0);
         const totalAmount = cart.reduce(function (s, i) { return s + i.qty * i.price; }, 0);
 
@@ -295,11 +431,68 @@
         $('.summary-subtotal').text('$' + totalAmount.toFixed(2));
         $('.summary-total').text('$' + totalAmount.toFixed(2));
         $('.btn-pay .text-warning:first').text('$' + totalAmount.toFixed(2));
-        $('.btn-pay').prop('disabled', totalAmount <= 0);
+        $('.btn-pay').prop('disabled', totalAmount <= 0 || isSavingOrder);
+        $('.btn-pay .small').text(isSavingOrder ? 'Saving...' : 'Pay');
+        refreshOrderDropdown();
     }
 
     function escape(value) {
         return $('<div>').text(value ?? '').html();
+    }
+
+    function notifyOrder(type, message) {
+        if (typeof toastr !== 'undefined' && typeof toastr[type] === 'function') {
+            toastr[type](message);
+            return;
+        }
+
+        alert(message);
+    }
+
+    function orderErrorMessage(xhr) {
+        const response = xhr.responseJSON || {};
+        const errors = response.errors || {};
+        const firstField = Object.keys(errors)[0];
+
+        if (firstField && errors[firstField] && errors[firstField][0]) {
+            return errors[firstField][0];
+        }
+
+        return response.message || 'Unable to save order.';
+    }
+
+    function currentOrderPayload() {
+        saveActiveOrderMeta();
+
+        const order = getActiveOrder();
+        if (!order || order.items.length === 0) return null;
+
+        return {
+            customer_id: order.customer ? order.customer.id : null,
+            vehicle_id: order.vehicle ? order.vehicle.id : null,
+            items: order.items.map(function (item) {
+                return {
+                    product_id: item.id,
+                    quantity: item.qty
+                };
+            })
+        };
+    }
+
+    function resetSavedOrder() {
+        const savedOrderId = activeOrderId;
+        const savedOrderIndex = orders.findIndex(function (order) { return order.id === savedOrderId; });
+
+        if (savedOrderIndex >= 0) {
+            orders.splice(savedOrderIndex, 1);
+        }
+
+        activeOrderId = null;
+        if (orders.length > 0) {
+            selectOrder(orders[0].id);
+        } else {
+            createOrder();
+        }
     }
 
     $(document).on('click', '.btn-remove-cart-item', function () {
@@ -318,8 +511,51 @@
     });
 
     $(document).on('click', '.btn-cancel-order', function () {
+        const cart = currentCart();
         cart.length = 0;
         renderCart();
+    });
+
+    $(document).on('click', '.btn-pay', function () {
+        const saveUrl = (window.catalogRoutes || {}).save;
+        const payload = currentOrderPayload();
+
+        if (isSavingOrder || !payload) return;
+
+        if (!saveUrl) {
+            notifyOrder('error', 'Order save route is missing.');
+            return;
+        }
+
+        isSavingOrder = true;
+        updateSummary();
+
+        $.ajax({
+            url: saveUrl,
+            method: 'POST',
+            data: JSON.stringify(payload),
+            contentType: 'application/json',
+        }).done(function (response) {
+            notifyOrder('success', response.message || 'Order saved successfully.');
+            resetSavedOrder();
+        }).fail(function (xhr) {
+            notifyOrder('error', orderErrorMessage(xhr));
+        }).always(function () {
+            isSavingOrder = false;
+            updateSummary();
+        });
+    });
+
+    $(document).on('click', '.add-order-btn', function (e) {
+        e.preventDefault();
+        createOrder();
+    });
+
+    $(document).on('change', '#order_type_filter', function () {
+        const orderId = $(this).val();
+        if (orderId && orderId !== activeOrderId) {
+            selectOrder(orderId);
+        }
     });
 
     // ─── Search (unified across categories + sub-cats + products) ──────
@@ -436,10 +672,27 @@
             $this.select2(options);
         });
 
-        // Dependency: When customer changes, clear and reset vehicle dropdown
+        // Dependency: customer and vehicle selections belong to the active draft order.
         $('#customer_type_filter').on('change', function () {
+            if (isRestoringOrderMeta) return;
+
+            const order = getActiveOrder();
+            if (order) {
+                order.customer = readSelectSelection($(this));
+                order.vehicle = null;
+            }
+
             const $vehicleSelect = $('#add_vehicle_filter');
             $vehicleSelect.val(null).trigger('change');
+        });
+
+        $('#add_vehicle_filter').on('change', function () {
+            if (isRestoringOrderMeta) return;
+
+            const order = getActiveOrder();
+            if (order) {
+                order.vehicle = readSelectSelection($(this));
+            }
         });
     }
 
@@ -450,8 +703,8 @@
         updateHeader();
         showCatalog();
         loadCategories('');
-        renderCart();
         initSelect2();
+        createOrder();
 
         // Initialize centralized CustomerManager for "Add Customer" modal
         if (typeof window.CustomerManager === 'function') {
