@@ -6,8 +6,18 @@
     $currentRouteName = request()->route()?->getName();
 
     $adminMenuItems = [
-        ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'pattern' => 'admin.dashboard', 'icon' => 'tabler-smart-home'],
-        ['label' => 'Shops', 'route' => 'admin.shops.index', 'pattern' => 'admin.shops.*', 'icon' => 'tabler-building-store'],
+        [
+            'label' => 'Dashboard',
+            'route' => 'admin.dashboard',
+            'pattern' => 'admin.dashboard',
+            'icon' => 'tabler-smart-home',
+        ],
+        [
+            'label' => 'Shops',
+            'route' => 'admin.shops.index',
+            'pattern' => 'admin.shops.*',
+            'icon' => 'tabler-building-store',
+        ],
     ];
 
     $tenantMenuGroups = collect([
@@ -15,52 +25,152 @@
             'label' => 'Catalog',
             'icon' => 'tabler-box-seam',
             'items' => collect([
-                $user?->can('category.view') ? ['label' => 'Categories', 'route' => 'tenant.ecommerce.categories.index', 'pattern' => 'tenant.ecommerce.categories.*', 'icon' => 'tabler-category'] : null,
-                $user?->can('subcategory.view') ? ['label' => 'Sub Categories', 'route' => 'tenant.ecommerce.subcategories.index', 'pattern' => 'tenant.ecommerce.subcategories.*', 'icon' => 'tabler-category-plus'] : null,
-                ($user?->can('product.view') || $user?->can('products.view') || $user?->can('products.manage')) ? ['label' => 'Products', 'route' => 'tenant.ecommerce.products.index', 'pattern' => 'tenant.ecommerce.products.*', 'icon' => 'tabler-package'] : null,
-            ])->filter()->values()->all(),
+                $user?->can('category.view')
+                    ? [
+                        'label' => 'Categories',
+                        'route' => 'tenant.ecommerce.categories.index',
+                        'pattern' => 'tenant.ecommerce.categories.*',
+                        'icon' => 'tabler-category',
+                    ]
+                    : null,
+                $user?->can('subcategory.view')
+                    ? [
+                        'label' => 'Sub Categories',
+                        'route' => 'tenant.ecommerce.subcategories.index',
+                        'pattern' => 'tenant.ecommerce.subcategories.*',
+                        'icon' => 'tabler-category-plus',
+                    ]
+                    : null,
+                $user?->can('product.view') || $user?->can('products.view') || $user?->can('products.manage')
+                    ? [
+                        'label' => 'Products',
+                        'route' => 'tenant.ecommerce.products.index',
+                        'pattern' => 'tenant.ecommerce.products.*',
+                        'icon' => 'tabler-package',
+                    ]
+                    : null,
+            ])
+                ->filter()
+                ->values()
+                ->all(),
         ],
         [
             'label' => 'Services',
             'icon' => 'tabler-tool',
             'items' => collect([
-                $user?->can('service.view') ? ['label' => 'Services', 'route' => 'tenant.ecommerce.services.index', 'pattern' => 'tenant.ecommerce.services.*', 'icon' => 'tabler-tool'] : null,
-            ])->filter()->values()->all(),
+                $user?->can('service.view')
+                    ? [
+                        'label' => 'Services',
+                        'route' => 'tenant.ecommerce.services.index',
+                        'pattern' => 'tenant.ecommerce.services.*',
+                        'icon' => 'tabler-tool',
+                    ]
+                    : null,
+            ])
+                ->filter()
+                ->values()
+                ->all(),
         ],
         [
             'label' => 'Sales & Promotions',
             'icon' => 'tabler-ticket',
             'items' => collect([
-                $user?->can('discount.manage') ? ['label' => 'Discounts', 'route' => 'tenant.ecommerce.discounts.index', 'pattern' => 'tenant.ecommerce.discounts.*', 'icon' => 'tabler-ticket'] : null,
-            ])->filter()->values()->all(),
+                $user?->can('discount.manage')
+                    ? [
+                        'label' => 'Discounts',
+                        'route' => 'tenant.ecommerce.discounts.index',
+                        'pattern' => 'tenant.ecommerce.discounts.*',
+                        'icon' => 'tabler-ticket',
+                    ]
+                    : null,
+            ])
+                ->filter()
+                ->values()
+                ->all(),
         ],
         [
             'label' => 'Customers & Vehicles',
             'icon' => 'tabler-users',
             'items' => collect([
-                ($user?->can('customer.view') || $user?->can('customers.view')) ? ['label' => 'Customers', 'route' => 'tenant.ecommerce.customers.index', 'pattern' => 'tenant.ecommerce.customers.*', 'icon' => 'tabler-users'] : null,
-                ($user?->can('vehicle.view') || $user?->can('vehicles.view')) ? ['label' => 'Vehicles', 'route' => 'tenant.ecommerce.vehicles.index', 'pattern' => 'tenant.ecommerce.vehicles.*', 'icon' => 'tabler-car'] : null,
-            ])->filter()->values()->all(),
+                $user?->can('customer.view') || $user?->can('customers.view')
+                    ? [
+                        'label' => 'Customers',
+                        'route' => 'tenant.ecommerce.customers.index',
+                        'pattern' => 'tenant.ecommerce.customers.*',
+                        'icon' => 'tabler-users',
+                    ]
+                    : null,
+                $user?->can('vehicle.view') || $user?->can('vehicles.view')
+                    ? [
+                        'label' => 'Vehicles',
+                        'route' => 'tenant.ecommerce.vehicles.index',
+                        'pattern' => 'tenant.ecommerce.vehicles.*',
+                        'icon' => 'tabler-car',
+                    ]
+                    : null,
+            ])
+                ->filter()
+                ->values()
+                ->all(),
         ],
         [
             'label' => 'Staff & Access',
             'icon' => 'tabler-shield-lock',
             'items' => collect([
-                ($user?->isTenantAdmin() || $user?->can('roles.manage')) ? ['label' => 'Roles & Permissions', 'route' => 'tenant.settings.roles-permissions.index', 'pattern' => 'tenant.settings.roles-permissions.*', 'icon' => 'tabler-shield-lock'] : null,
-            ])->filter()->values()->all(),
+                $user?->isTenantAdmin() || $user?->can('roles.manage')
+                    ? [
+                        'label' => 'Roles & Permissions',
+                        'route' => 'tenant.settings.roles-permissions.index',
+                        'pattern' => 'tenant.settings.roles-permissions.*',
+                        'icon' => 'tabler-shield-lock',
+                    ]
+                    : null,
+            ])
+                ->filter()
+                ->values()
+                ->all(),
         ],
         [
             'label' => 'Settings',
             'icon' => 'tabler-settings-cog',
             'items' => collect([
-                $user?->can('settings.manage') ? ['label' => 'Shop Settings', 'route' => 'tenant.settings.shop-profile.general', 'pattern' => 'tenant.settings.shop-profile.*', 'icon' => 'tabler-building-store'] : null,
-            ])->filter()->values()->all(),
+                $user?->can('settings.manage')
+                    ? [
+                        'label' => 'Shop Settings',
+                        'route' => 'tenant.settings.shop-profile.general',
+                        'pattern' => 'tenant.settings.shop-profile.*',
+                        'icon' => 'tabler-building-store',
+                    ]
+                    : null,
+            ])
+                ->filter()
+                ->values()
+                ->all(),
         ],
-    ])->filter(fn (array $group): bool => ! empty($group['items']))->values();
+        [
+            'label' => 'Discounts',
+            'icon' => 'tabler-ticket',
+            'items' => collect([
+                $user?->isTenantAdmin() || $user?->can('discount.group.manage')
+                    ? [
+                        'label' => 'Discount groups',
+                        'route' => 'tenant.discounts.group.index',
+                        'pattern' => 'tenant.discounts.group.*',
+                        'icon' => 'tabler-ticket',
+                    ]
+                    : null,
+            ])
+                ->filter()
+                ->values()
+                ->all(),
+        ],
+    ])
+        ->filter(fn(array $group): bool => !empty($group['items']))
+        ->values();
 
     $isGroupActive = function (array $group) use ($currentRouteName): bool {
         return collect($group['items'])->contains(
-            fn (array $item): bool => str($currentRouteName ?? '')->is($item['pattern'])
+            fn(array $item): bool => str($currentRouteName ?? '')->is($item['pattern']),
         );
     };
 @endphp
@@ -77,7 +187,7 @@
             flex: 0 0 1.375rem;
         }
 
-        #layout-menu .menu-sub > .menu-item > .menu-link::before {
+        #layout-menu .menu-sub>.menu-item>.menu-link::before {
             display: none;
         }
 
@@ -96,9 +206,14 @@
         <a href="{{ route($homeRoute) }}" class="app-brand-link">
             <span class="app-brand-logo demo">
                 <span class="text-primary">
-                    <svg width="32" height="22" viewBox="0 0 32 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M0.00172773 0V6.85398C0.00172773 6.85398 -0.133178 9.01207 1.98092 10.8388L13.6912 21.9964L19.7809 21.9181L18.8042 9.88248L16.4951 7.17289L9.23799 0H0.00172773Z" fill="currentColor" />
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M7.77295 16.3566L23.6563 0H32V6.88383C32 6.88383 31.8262 9.17836 30.6591 10.4057L19.7824 22H13.6938L7.77295 16.3566Z" fill="currentColor" />
+                    <svg width="32" height="22" viewBox="0 0 32 22" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M0.00172773 0V6.85398C0.00172773 6.85398 -0.133178 9.01207 1.98092 10.8388L13.6912 21.9964L19.7809 21.9181L18.8042 9.88248L16.4951 7.17289L9.23799 0H0.00172773Z"
+                            fill="currentColor" />
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M7.77295 16.3566L23.6563 0H32V6.88383C32 6.88383 31.8262 9.17836 30.6591 10.4057L19.7824 22H13.6938L7.77295 16.3566Z"
+                            fill="currentColor" />
                     </svg>
                 </span>
             </span>
@@ -114,8 +229,8 @@
     <div class="menu-inner-shadow"></div>
 
     <ul class="menu-inner py-1">
-        @if($isSuperAdmin)
-            @foreach($adminMenuItems as $item)
+        @if ($isSuperAdmin)
+            @foreach ($adminMenuItems as $item)
                 <li class="menu-item {{ request()->routeIs($item['pattern']) ? 'active' : '' }}">
                     <a href="{{ route($item['route']) }}" class="menu-link">
                         <i class="menu-icon icon-base ti {{ $item['icon'] }}"></i>
@@ -134,7 +249,7 @@
                 </a>
             </li>
 
-            @foreach($tenantMenuGroups as $group)
+            @foreach ($tenantMenuGroups as $group)
                 @php
                     $groupOpen = $isGroupActive($group);
                 @endphp
@@ -145,7 +260,7 @@
                     </a>
 
                     <ul class="menu-sub">
-                        @foreach($group['items'] as $item)
+                        @foreach ($group['items'] as $item)
                             <li class="menu-item {{ request()->routeIs($item['pattern']) ? 'active' : '' }}">
                                 <a href="{{ route($item['route']) }}" class="menu-link">
                                     <i class="menu-icon icon-base ti {{ $item['icon'] }}"></i>
@@ -158,7 +273,7 @@
             @endforeach
         @endif
 
-        @if(session()->has('impersonator_id'))
+        @if (session()->has('impersonator_id'))
             <li class="menu-item">
                 <a href="{{ route('admin.impersonate.stop') }}" class="menu-link text-warning">
                     <i class="menu-icon icon-base ti tabler-user-x"></i>
