@@ -15,6 +15,7 @@ class DiscountGroup extends Model
         'slug',
         'type',
         'value',
+        'min_limit',
         'is_active',
     ];
 }

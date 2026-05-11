@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateDiscountGroupRequest;
 use App\Models\DiscountGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -27,15 +28,10 @@ class DiscountGroupController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateDiscountGroupRequest $request)
     {
         // Validate the request data
-        $validated = $request->validate([
-            'title'     => 'required|string|max:255',
-            'type'      => 'required|in:percentage,fixed',
-            'value'     => 'required|numeric|min:0',
-            'is_active' => 'boolean',
-        ]);
+        $validated = $request->validated();
 
         $validated['name'] = $validated['title'] ?? null;
         $validated['slug'] = Str::slug($validated['title'] ?? '');
@@ -72,15 +68,10 @@ class DiscountGroupController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, DiscountGroup $discountGroup)
+    public function update(CreateDiscountGroupRequest $request, DiscountGroup $discountGroup)
     {
         // Validate the request data
-        $validated = $request->validate([
-            'title'     => 'required|string|max:255',
-            'type'      => 'required|in:percentage,fixed',
-            'value'     => 'required|numeric|min:0',
-            'is_active' => 'boolean',
-        ]);
+        $validated = $request->validated();
 
         $validated['name'] = $validated['title'] ?? null;
         $validated['slug'] = Str::slug($validated['title'] ?? '');
