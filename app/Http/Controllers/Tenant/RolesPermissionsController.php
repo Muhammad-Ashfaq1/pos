@@ -31,6 +31,7 @@ class RolesPermissionsController extends Controller
         'Services' => ['service.view', 'service.create', 'service.update', 'service.delete', 'services.view', 'services.manage'],
         'Inventory' => ['inventory.view', 'inventory.manage'],
         'POS' => ['pos.bill'],
+        'Orders' => ['orders.view', 'orders.create'],
         'Discounts' => ['discount.manage', 'discount.apply_bill', 'discount.apply_item', 'discounts.manage'],
         'Refunds' => ['refunds.manage'],
         'Customers' => ['customer.view', 'customer.create', 'customer.update', 'customer.delete', 'customers.view', 'customers.manage'],
