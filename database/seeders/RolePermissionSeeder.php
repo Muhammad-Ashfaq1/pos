@@ -48,6 +48,8 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('inventory.view', 'web'),
             Permission::findByName('inventory.manage', 'web'),
             Permission::findByName('pos.bill', 'web'),
+            Permission::findByName('orders.view', 'web'),
+            Permission::findByName('orders.create', 'web'),
             Permission::findByName('discount.manage', 'web'),
             Permission::findByName('discount.apply_bill', 'web'),
             Permission::findByName('discount.apply_item', 'web'),
@@ -80,6 +82,8 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('services.view', 'web'),
             Permission::findByName('inventory.view', 'web'),
             Permission::findByName('pos.bill', 'web'),
+            Permission::findByName('orders.view', 'web'),
+            Permission::findByName('orders.create', 'web'),
             Permission::findByName('discount.manage', 'web'),
             Permission::findByName('discount.apply_bill', 'web'),
             Permission::findByName('discount.apply_item', 'web'),
@@ -97,6 +101,8 @@ class RolePermissionSeeder extends Seeder
         Role::findByName(User::CASHIER)->syncPermissions([
             Permission::findByName('dashboard.view', 'web'),
             Permission::findByName('pos.bill', 'web'),
+            Permission::findByName('orders.view', 'web'),
+            Permission::findByName('orders.create', 'web'),
             Permission::findByName('discount.apply_bill', 'web'),
             Permission::findByName('discount.apply_item', 'web'),
             Permission::findByName('customer.view', 'web'),
@@ -111,6 +117,7 @@ class RolePermissionSeeder extends Seeder
 
         Role::findByName(User::TECHNICIAN)->syncPermissions([
             Permission::findByName('dashboard.view', 'web'),
+            Permission::findByName('orders.view', 'web'),
             Permission::findByName('service.view', 'web'),
             Permission::findByName('services.view', 'web'),
             Permission::findByName('customer.view', 'web'),
@@ -130,6 +137,9 @@ class RolePermissionSeeder extends Seeder
 
         Role::findByName(User::EMPLOYEE)->syncPermissions([
             Permission::findByName('dashboard.view', 'web'),
+            Permission::findByName('pos.bill', 'web'),
+            Permission::findByName('orders.view', 'web'),
+            Permission::findByName('orders.create', 'web'),
             Permission::findByName('product.view', 'web'),
             Permission::findByName('products.view', 'web'),
             Permission::findByName('service.view', 'web'),

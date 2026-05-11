@@ -9,11 +9,13 @@ use App\Repositories\DiscountsRepository;
 use App\Repositories\Interface\CategoryRepositoryInterface;
 use App\Repositories\Interface\CustomerRepositoryInterface;
 use App\Repositories\Interface\DiscountRepositoryInterface;
+use App\Repositories\Interface\OrderRepositoryInterface;
 use App\Repositories\Interface\ProductRepositoryInterface;
 use App\Repositories\Interface\ServiceRepositoryInterface;
 use App\Repositories\Interface\ShopSettingsRepositoryInterface;
 use App\Repositories\Interface\SubCategoryRepositoryInterface;
 use App\Repositories\Interface\VehicleRepositoryInterface;
+use App\Repositories\OrdersRepository;
 use App\Repositories\ProductsRepository;
 use App\Repositories\ServicesRepository;
 use App\Repositories\ShopSettingsRepository;
@@ -36,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CustomerRepositoryInterface::class, CustomersRepository::class);
         $this->app->bind(VehicleRepositoryInterface::class, VehiclesRepository::class);
         $this->app->bind(DiscountRepositoryInterface::class, DiscountsRepository::class);
+        $this->app->bind(OrderRepositoryInterface::class, OrdersRepository::class);
         $this->app->bind(ShopSettingsRepositoryInterface::class, ShopSettingsRepository::class);
     }
 

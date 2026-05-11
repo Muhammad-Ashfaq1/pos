@@ -3,6 +3,7 @@
 @section('title', 'Employee Portal Dashboard')
 
 @php
+    $user = auth()->user();
     $summaryCards = [
         ['value' => '0', 'label' => 'Orders', 'meta' => 'Completed Today', 'icon' => 'tabler-calendar-event', 'chip' => 'preview-chip--blue'],
         ['value' => '0', 'label' => 'Orders', 'meta' => 'Incompleted Today', 'icon' => 'tabler-map-pin-share', 'chip' => 'preview-chip--purple'],
@@ -11,14 +12,19 @@
 
     $tiles = [
         ['label' => 'Time Clock', 'icon' => 'tabler-clock-hour-4'],
-        ['label' => 'Create New Order', 'icon' => 'tabler-shopping-bag', 'url' => route('employee.order.new-order') ],
+        ['label' => 'Create New Order', 'icon' => 'tabler-shopping-bag', 'url' => route('employee.order.new-order'), 'permission' => 'orders.create'],
         ['label' => 'Reports', 'icon' => 'tabler-report-search'],
-        ['label' => 'Orders', 'icon' => 'tabler-clipboard-data'],
+        ['label' => 'Orders', 'icon' => 'tabler-clipboard-data', 'url' => route('employee.order.index'), 'permission' => 'orders.view'],
         ['label' => 'Returns', 'icon' => 'tabler-arrow-back-up'],
         ['label' => 'Product Setup', 'icon' => 'tabler-tool'],
         ['label' => 'Invoices', 'icon' => 'tabler-file-invoice'],
         ['label' => 'Discounts', 'icon' => 'tabler-badge'],
     ];
+
+    $tiles = collect($tiles)
+        ->filter(fn ($tile) => empty($tile['permission']) || ($user?->can($tile['permission']) ?? false))
+        ->values()
+        ->all();
 
     $operations = [
         ['label' => 'End of Day Status', 'icon' => 'tabler-sun-low'],

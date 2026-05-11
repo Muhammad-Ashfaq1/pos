@@ -9,6 +9,7 @@
     data-template="vertical-menu-template">
 <head>
     <meta charset="utf-8" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="description" content="@yield('meta_description', 'Employee Portal UI preview for the POS app.')" />
@@ -589,6 +590,31 @@
     <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
     <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
     <script src="{{ asset('assets/js/main.js') }}"></script>
+    <script>
+        window.sessionMessages = window.sessionMessages || {};
+        @if (session('success'))
+            window.sessionMessages.success = @json(session('success'));
+        @endif
+        @if (session('error'))
+            window.sessionMessages.error = @json(session('error'));
+        @endif
+        @if (session('info'))
+            window.sessionMessages.info = @json(session('info'));
+        @endif
+        @if (session('warning'))
+            window.sessionMessages.warning = @json(session('warning'));
+        @endif
+        @if (session('status'))
+            window.sessionMessages.status = @json(session('status'));
+        @endif
+        @if (session('errors') && $errors->any())
+            window.sessionMessages.errors = @json($errors->all());
+        @endif
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-aio-3.2.8.min.js"></script>
+    <script src="{{ asset('assets/js/app-helpers.js') }}"></script>
+    <script src="{{ asset('assets/js/session-notifications.js') }}"></script>
 
     @stack('page-script')
 </body>

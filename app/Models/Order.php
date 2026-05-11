@@ -13,6 +13,10 @@ class Order extends Model
 
     public const STATUS_PENDING = 'pending';
 
+    public const STATUS_PARTIALLY_PAID = 'partially_paid';
+
+    public const STATUS_PAID = 'paid';
+
     protected $fillable = [
         'order_number',
         'customer_id',
@@ -24,6 +28,10 @@ class Order extends Model
         'service_fee_amount',
         'tax_amount',
         'total_amount',
+        'payment_method',
+        'payment_amount',
+        'change_amount',
+        'paid_at',
         'notes',
         'created_by',
         'updated_by',
@@ -40,6 +48,9 @@ class Order extends Model
             'service_fee_amount' => 'decimal:2',
             'tax_amount' => 'decimal:2',
             'total_amount' => 'decimal:2',
+            'payment_amount' => 'decimal:2',
+            'change_amount' => 'decimal:2',
+            'paid_at' => 'datetime',
         ];
     }
 

@@ -1,0 +1,307 @@
+.employee-order-details-page {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0.35rem 0 2rem;
+  color: #111827;
+}
+
+.employee-order-details-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.employee-order-details-back-btn {
+  width: 2.35rem;
+  height: 2.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.55rem;
+  background: #e7e9f5;
+  color: #312e81;
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.employee-order-details-back-btn:hover {
+  background: #d9ddf0;
+  color: #262363;
+  transform: translateY(-1px);
+}
+
+.employee-order-details-back-btn i {
+  font-size: 1.2rem;
+}
+
+.employee-order-details-title {
+  margin: 0;
+  color: #111827;
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.employee-order-details-layout {
+  display: grid;
+  grid-template-columns: minmax(17rem, 0.9fr) minmax(0, 1.8fr);
+  gap: 1rem;
+}
+
+.employee-order-details-panel {
+  border: 1px solid #c7d2fe;
+  border-radius: 0.5rem;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(49, 46, 129, 0.04);
+}
+
+.employee-order-details-items-panel {
+  min-height: 32rem;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+.employee-order-details-payment-panel {
+  min-height: 32rem;
+  padding: 1rem;
+}
+
+.employee-order-details-panel-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.75rem;
+}
+
+.employee-order-details-panel-header h5,
+.employee-order-details-order-title h5 {
+  margin: 0;
+  color: #111827;
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+
+.employee-order-details-table-head,
+.employee-order-details-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 4rem 5rem;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.employee-order-details-table-head {
+  min-height: 2.1rem;
+  color: #111827;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.employee-order-details-table-head span:nth-child(2),
+.employee-order-details-table-head span:nth-child(3),
+.employee-order-details-item-qty,
+.employee-order-details-item-price {
+  text-align: right;
+}
+
+.employee-order-details-items {
+  flex: 1 1 auto;
+}
+
+.employee-order-details-item {
+  min-height: 2.55rem;
+  border-radius: 0.45rem;
+  background: #c9cade;
+  padding: 0.55rem 0.65rem;
+  color: #111827;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.employee-order-details-item + .employee-order-details-item {
+  margin-top: 0.5rem;
+}
+
+.employee-order-details-item-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.employee-order-details-item-price {
+  color: #312e81;
+}
+
+.employee-order-details-empty {
+  min-height: 8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.employee-order-details-summary {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 0.75rem;
+}
+
+.employee-order-details-summary-row,
+.employee-order-details-total-row,
+.employee-order-details-payment-line,
+.employee-order-details-tax-line,
+.employee-order-details-balance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.employee-order-details-summary-row {
+  color: #111827;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.employee-order-details-total-row {
+  margin-top: 0.75rem;
+  color: #111827;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.employee-order-details-total-row strong,
+.employee-order-details-balance strong {
+  color: #312e81;
+  font-size: 1.25rem;
+}
+
+.employee-order-details-order-title {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.75rem;
+}
+
+.employee-order-details-order-title h5 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.employee-order-details-order-title h5 span:last-child {
+  color: #312e81;
+  text-decoration: underline;
+}
+
+.employee-order-details-payment-lines {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.employee-order-details-payment-line,
+.employee-order-details-tax-line {
+  color: #111827;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.employee-order-details-payment-line strong,
+.employee-order-details-tax-line strong {
+  color: #111827;
+  font-weight: 800;
+}
+
+.employee-order-details-payment-line strong.employee-order-details-status {
+  min-width: 5.75rem;
+  height: 1.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.35rem;
+  padding: 0 0.55rem;
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+.employee-order-details-status.success {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.employee-order-details-status.warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.employee-order-details-status.secondary {
+  background: #e5e7eb;
+  color: #475569;
+}
+
+.employee-order-details-tax {
+  margin-top: 1.25rem;
+}
+
+.employee-order-details-tax h6 {
+  margin: 0 0 0.35rem;
+  color: #111827;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.employee-order-details-tax-line {
+  min-height: 1.4rem;
+}
+
+.employee-order-details-tax-line span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.employee-order-details-tax-line strong {
+  flex: 0 0 auto;
+  color: #64748b;
+}
+
+.employee-order-details-balance {
+  margin-top: 1.2rem;
+  color: #111827;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+@media (max-width: 991px) {
+  .employee-order-details-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .employee-order-details-items-panel,
+  .employee-order-details-payment-panel {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 575px) {
+  .employee-order-details-page {
+    padding-bottom: 1rem;
+  }
+
+  .employee-order-details-items-panel,
+  .employee-order-details-payment-panel {
+    padding: 0.85rem;
+  }
+
+  .employee-order-details-table-head,
+  .employee-order-details-item {
+    grid-template-columns: minmax(0, 1fr) 3.35rem 4.25rem;
+  }
+
+  .employee-order-details-total-row strong,
+  .employee-order-details-balance strong {
+    font-size: 1.1rem;
+  }
+}

@@ -5,14 +5,16 @@
  * using the shared <template id="catalog-card-template"> so every level looks identical.
  * Talks to the backend exclusively through window.Catalog (catalog-api.js).
  *
- * Cart is FRONT-END ONLY (no backend persistence) — qty/price aggregation lives
- * in the DOM and the right-hand summary updates client-side.
+ * Draft carts live client-side until checkout; checkout posts the active draft
+ * order to the backend and then resets the saved draft.
  */
 
 (function ($) {
     'use strict';
 
     if (typeof $ === 'undefined') return;
+    if (window.__employeeNewOrderInitialized) return;
+    window.__employeeNewOrderInitialized = true;
 
     const csrfToken = $('meta[name="csrf-token"]').attr('content');
     $.ajaxSetup({
@@ -28,6 +30,8 @@
     let nextOrderNumber = 1;
     let isRestoringOrderMeta = false;
     let isSavingOrder = false;
+    let paymentAmountInput = '';
+    let paymentMethod = '';
 
     // ─── DOM refs ──────────────────────────────────────────────────────
     const $title = $('.catalog-title');
@@ -51,7 +55,7 @@
     }
 
     function ensureActiveOrder() {
-        return getActiveOrder() || createOrder();
+        return getActiveOrder() || createOrder(true);
     }
 
     function readSelectSelection($select) {
@@ -151,13 +155,13 @@
         renderCart();
     }
 
-    function createOrder() {
+    function createOrder(carryCurrentSelection) {
         const order = {
             id: 'draft-' + nextOrderNumber + '-' + Date.now(),
             label: 'Order ' + nextOrderNumber,
             items: [],
-            customer: null,
-            vehicle: null
+            customer: carryCurrentSelection ? readSelectSelection($('#customer_type_filter')) : null,
+            vehicle: carryCurrentSelection ? readSelectSelection($('#add_vehicle_filter')) : null
         };
 
         nextOrderNumber += 1;
@@ -436,17 +440,216 @@
         refreshOrderDropdown();
     }
 
+    function cartTotals() {
+        const cart = currentCart();
+        return {
+            quantity: cart.reduce(function (sum, item) { return sum + item.qty; }, 0),
+            subtotal: cart.reduce(function (sum, item) { return sum + (item.qty * item.price); }, 0),
+        };
+    }
+
+    function formatMoney(amount) {
+        return '$' + (Number(amount) || 0).toFixed(2);
+    }
+
+    function paymentAmountValue() {
+        if (paymentAmountInput === '') return 0;
+
+        return Math.round((parseFloat(paymentAmountInput) || 0) * 100) / 100;
+    }
+
+    function paymentMethodText() {
+        const labels = {
+            cash: 'Cash',
+            card: 'Credit/Debit Card',
+            check: 'Check'
+        };
+
+        return labels[paymentMethod] || 'Select Method';
+    }
+
+    function paymentOrderNumber() {
+        const order = getActiveOrder();
+        if (!order) return 'Draft';
+
+        return order.label.replace(/\s+/g, '-').toUpperCase();
+    }
+
+    function renderPaymentItems() {
+        const cart = currentCart();
+        const $list = $('.payment-items-list');
+
+        if (!$list.length) return;
+
+        if (cart.length === 0) {
+            $list.html('<div class="text-muted text-center py-5">No Items Added</div>');
+            return;
+        }
+
+        $list.html(cart.map(function (item) {
+            const lineTotal = item.qty * item.price;
+
+            return ''
+                + '<div class="payment-item-row">'
+                + '<div>'
+                + '<div class="payment-item-name">' + escape(item.name) + '</div>'
+                + '<div class="payment-item-meta">' + item.qty + ' x ' + formatMoney(item.price) + '</div>'
+                + '</div>'
+                + '<div class="fw-bold text-primary">' + formatMoney(lineTotal) + '</div>'
+                + '</div>';
+        }).join(''));
+    }
+
+    function renderPaymentScreen() {
+        const totals = cartTotals();
+        const amount = paymentAmountValue();
+        const remaining = Math.max(totals.subtotal - amount, 0);
+        const changeDue = Math.max(amount - totals.subtotal, 0);
+        const canCheckout = totals.subtotal > 0 && !isSavingOrder;
+
+        $('.payment-order-number').text(paymentOrderNumber());
+        $('.payment-total').text(formatMoney(totals.subtotal));
+        $('.payment-subtotal').text(formatMoney(totals.subtotal));
+        $('.payment-balance-due').text(formatMoney(remaining));
+        $('.payment-remaining').text(formatMoney(remaining));
+        $('.payment-change-due').text(formatMoney(changeDue));
+        $('.payment-method-label').text(paymentMethodText());
+        $('.payment-amount-display').text(paymentAmountInput === '' ? '$' : '$' + paymentAmountInput);
+        $('.payment-method-btn').removeClass('active')
+            .filter('[data-payment-method="' + paymentMethod + '"]')
+            .addClass('active');
+        $('.payment-methods').toggleClass('is-invalid', false);
+        $('.btn-checkout-order')
+            .prop('disabled', !canCheckout)
+            .text(isSavingOrder ? 'Processing...' : 'Checkout');
+
+        renderPaymentItems();
+    }
+
+    function openPaymentScreen() {
+        paymentAmountInput = '';
+        paymentMethod = '';
+        renderPaymentScreen();
+        $('.order-entry-screen').addClass('d-none');
+        $('.order-payment-screen').removeClass('d-none');
+    }
+
+    function closePaymentScreen() {
+        $('.order-payment-screen').addClass('d-none');
+        $('.order-entry-screen').removeClass('d-none');
+    }
+
+    function setPaymentAmount(value) {
+        const normalized = String(value || '').replace(/[^0-9.]/g, '');
+        const parts = normalized.split('.');
+
+        if (parts.length > 2) return;
+
+        const dollars = parts[0].slice(0, 7);
+        const cents = parts.length === 2 ? parts[1].slice(0, 2) : null;
+        paymentAmountInput = cents === null ? dollars : dollars + '.' + cents;
+
+        if (paymentAmountInput.length > 1 && paymentAmountInput[0] === '0' && paymentAmountInput[1] !== '.') {
+            paymentAmountInput = paymentAmountInput.replace(/^0+/, '') || '0';
+        }
+
+        renderPaymentScreen();
+    }
+
+    function appendPaymentKey(key) {
+        if (key === 'clear') {
+            paymentAmountInput = '';
+            renderPaymentScreen();
+            return;
+        }
+
+        if (key === 'backspace') {
+            paymentAmountInput = paymentAmountInput.slice(0, -1);
+            renderPaymentScreen();
+            return;
+        }
+
+        if (key === '.' && paymentAmountInput.includes('.')) return;
+        if (key === '.' && paymentAmountInput === '') {
+            setPaymentAmount('0.');
+            return;
+        }
+
+        setPaymentAmount(paymentAmountInput + key);
+    }
+
+    function validatePaymentForCheckout() {
+        const amount = paymentAmountValue();
+
+        if (!paymentMethod) {
+            $('.payment-methods').addClass('is-invalid');
+            notifyOrder('error', 'Oops! Please select a payment method.');
+            return false;
+        }
+
+        if (amount <= 0) {
+            notifyOrder('error', 'Please enter the payment amount.');
+            return false;
+        }
+
+        return true;
+    }
+
     function escape(value) {
         return $('<div>').text(value ?? '').html();
     }
 
     function notifyOrder(type, message) {
-        if (typeof toastr !== 'undefined' && typeof toastr[type] === 'function') {
-            toastr[type](message);
+        if (!message) return;
+
+        if (typeof window.appNotify === 'function') {
+            window.appNotify(type, message);
             return;
         }
 
         alert(message);
+    }
+
+    function markSelectInvalid($select, isInvalid) {
+        $select.toggleClass('is-invalid', isInvalid);
+
+        if ($select.data('select2')) {
+            $select.next('.select2-container')
+                .find('.select2-selection')
+                .toggleClass('is-invalid', isInvalid);
+        }
+    }
+
+    function clearOrderValidation() {
+        markSelectInvalid($('#customer_type_filter'), false);
+        markSelectInvalid($('#add_vehicle_filter'), false);
+    }
+
+    function validateOrderForSave() {
+        const order = getActiveOrder();
+        const $customerSelect = $('#customer_type_filter');
+        const $vehicleSelect = $('#add_vehicle_filter');
+
+        clearOrderValidation();
+
+        if (!order || order.items.length === 0) {
+            notifyOrder('error', 'Please add at least one item before saving the order.');
+            return false;
+        }
+
+        if (!$customerSelect.val()) {
+            markSelectInvalid($customerSelect, true);
+            notifyOrder('error', 'Please select a customer before saving the order.');
+            return false;
+        }
+
+        if (!$vehicleSelect.val()) {
+            markSelectInvalid($vehicleSelect, true);
+            notifyOrder('error', 'Please select a vehicle before saving the order.');
+            return false;
+        }
+
+        return true;
     }
 
     function orderErrorMessage(xhr) {
@@ -470,6 +673,10 @@
         return {
             customer_id: order.customer ? order.customer.id : null,
             vehicle_id: order.vehicle ? order.vehicle.id : null,
+            payment: {
+                method: paymentMethod,
+                amount: paymentAmountValue(),
+            },
             items: order.items.map(function (item) {
                 return {
                     product_id: item.id,
@@ -491,7 +698,10 @@
         if (orders.length > 0) {
             selectOrder(orders[0].id);
         } else {
-            createOrder();
+            nextOrderNumber = 1;
+            refreshOrderDropdown();
+            restoreActiveOrderMeta();
+            renderCart();
         }
     }
 
@@ -516,19 +726,75 @@
         renderCart();
     });
 
-    $(document).on('click', '.btn-pay', function () {
-        const saveUrl = (window.catalogRoutes || {}).save;
-        const payload = currentOrderPayload();
+    $(document).on('click', '.add-order-btn', function (event) {
+        event.preventDefault();
 
-        if (isSavingOrder || !payload) return;
+        const activeOrder = getActiveOrder();
+        if (activeOrder && activeOrder.items.length === 0 && !activeOrder.customer && !activeOrder.vehicle) {
+            selectOrder(activeOrder.id);
+            return;
+        }
+
+        createOrder();
+    });
+
+    $(document).on('change', '#order_type_filter', function () {
+        const orderId = $(this).val();
+        if (orderId && orderId !== activeOrderId) {
+            selectOrder(orderId);
+        }
+    });
+
+    $(document).on('click', '.btn-pay', function () {
+        if (isSavingOrder || !validateOrderForSave()) return;
+
+        openPaymentScreen();
+    });
+
+    $(document).on('click', '.payment-back-btn', function () {
+        closePaymentScreen();
+    });
+
+    $(document).on('click', '.payment-key', function () {
+        const quickAmount = $(this).data('payment-quick');
+        const key = $(this).data('payment-key');
+
+        if (quickAmount !== undefined) {
+            setPaymentAmount(String(quickAmount));
+            return;
+        }
+
+        appendPaymentKey(String(key));
+    });
+
+    $(document).on('click', '.payment-method-btn', function () {
+        paymentMethod = $(this).data('payment-method') || '';
+        $('.payment-methods').removeClass('is-invalid');
+
+        if (paymentMethod && paymentMethod !== 'cash' && paymentAmountInput === '') {
+            setPaymentAmount(cartTotals().subtotal.toFixed(2));
+            return;
+        }
+
+        renderPaymentScreen();
+    });
+
+    $(document).on('click', '.btn-checkout-order', function () {
+        const saveUrl = (window.catalogRoutes || {}).save;
+
+        if (isSavingOrder || !validateOrderForSave() || !validatePaymentForCheckout()) return;
 
         if (!saveUrl) {
             notifyOrder('error', 'Order save route is missing.');
             return;
         }
 
+        const payload = currentOrderPayload();
+        if (!payload) return;
+
         isSavingOrder = true;
         updateSummary();
+        renderPaymentScreen();
 
         $.ajax({
             url: saveUrl,
@@ -538,24 +804,14 @@
         }).done(function (response) {
             notifyOrder('success', response.message || 'Order saved successfully.');
             resetSavedOrder();
+            closePaymentScreen();
         }).fail(function (xhr) {
             notifyOrder('error', orderErrorMessage(xhr));
         }).always(function () {
             isSavingOrder = false;
             updateSummary();
+            renderPaymentScreen();
         });
-    });
-
-    $(document).on('click', '.add-order-btn', function (e) {
-        e.preventDefault();
-        createOrder();
-    });
-
-    $(document).on('change', '#order_type_filter', function () {
-        const orderId = $(this).val();
-        if (orderId && orderId !== activeOrderId) {
-            selectOrder(orderId);
-        }
     });
 
     // ─── Search (unified across categories + sub-cats + products) ──────
@@ -674,6 +930,8 @@
 
         // Dependency: customer and vehicle selections belong to the active draft order.
         $('#customer_type_filter').on('change', function () {
+            markSelectInvalid($(this), false);
+
             if (isRestoringOrderMeta) return;
 
             const order = getActiveOrder();
@@ -687,6 +945,8 @@
         });
 
         $('#add_vehicle_filter').on('change', function () {
+            markSelectInvalid($(this), false);
+
             if (isRestoringOrderMeta) return;
 
             const order = getActiveOrder();
@@ -704,7 +964,8 @@
         showCatalog();
         loadCategories('');
         initSelect2();
-        createOrder();
+        refreshOrderDropdown();
+        renderCart();
 
         // Initialize centralized CustomerManager for "Add Customer" modal
         if (typeof window.CustomerManager === 'function') {
@@ -729,8 +990,19 @@
         if (typeof window.VehicleManager === 'function') {
             const vehicleManager = new window.VehicleManager({
                 onSaveSuccess: function (response) {
+                    const $customerSelect = $('#customer_type_filter');
                     const $vehicleSelect = $('#add_vehicle_filter');
                     const vehicle = response.data || {};
+
+                    if (vehicle.customer_id && $customerSelect.length) {
+                        const customerText = vehicle.customer_name || 'Walk-in Customer';
+                        const customerOption = new Option(customerText, vehicle.customer_id, true, true);
+                        $customerSelect.append(customerOption).trigger('change');
+                        $customerSelect.trigger({
+                            type: 'select2:select',
+                            params: { data: { id: vehicle.customer_id, text: customerText } }
+                        });
+                    }
 
                     if (vehicle.id && $vehicleSelect.length) {
                         const text = [vehicle.make, vehicle.model, vehicle.year].filter(Boolean).join(' ') || vehicle.plate_number;

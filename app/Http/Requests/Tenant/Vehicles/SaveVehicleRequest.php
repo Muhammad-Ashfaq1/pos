@@ -62,7 +62,7 @@ class SaveVehicleRequest extends FormRequest
                     fn ($query) => $query->where('tenant_id', $tenantId)
                 ),
             ],
-            'inline_customer_name' => ['nullable', 'string', 'max:150'],
+            'inline_customer_name' => ['nullable', 'required_if:customer_entry_mode,'.self::MODE_WALK_IN, 'string', 'max:150'],
             'inline_customer_phone' => ['nullable', 'string', 'max:30'],
             'inline_customer_email' => ['nullable', 'email', 'max:150'],
             'inline_customer_address' => ['nullable', 'string', 'max:1000'],
@@ -106,18 +106,6 @@ class SaveVehicleRequest extends FormRequest
                 $validator->errors()->add('customer_id', 'Please select a customer.');
             }
 
-            if ($mode === self::MODE_WALK_IN && ! $this->boolean('save_walk_in_as_customer')) {
-                return;
-            }
-
-            if (
-                $mode === self::MODE_WALK_IN
-                && ! $this->filled('inline_customer_name')
-                && ! $this->filled('inline_customer_phone')
-                && ! $this->filled('inline_customer_email')
-            ) {
-                return;
-            }
         });
     }
 
@@ -128,6 +116,7 @@ class SaveVehicleRequest extends FormRequest
             'customer_entry_mode.required' => 'Please select how you want to link this vehicle.',
             'customer_entry_mode.in' => 'Please select a valid customer entry mode.',
             'customer_id.exists' => 'The selected customer was not found for this shop.',
+            'inline_customer_name.required_if' => 'Please enter walk-in customer details.',
             'inline_customer_name.max' => 'The customer name may not be greater than 150 characters.',
             'inline_customer_phone.max' => 'The phone number may not be greater than 30 characters.',
             'inline_customer_email.email' => 'Please enter a valid email address.',
