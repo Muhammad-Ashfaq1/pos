@@ -29,6 +29,129 @@
     box-shadow: 0 0 0 0.25rem rgba(67, 56, 202, 0.1);
 }
 
+.pos-sidebar-card .form-select.is-invalid ~ .select2-container .select2-selection,
+.pos-sidebar-card .select2-selection.is-invalid {
+    border-color: #ea5455 !important;
+}
+
+.payment-layout {
+    min-height: calc(100vh - 190px);
+}
+
+.payment-panel {
+    border: 1px solid #c7d2fe;
+    box-shadow: 0 10px 26px rgba(49, 46, 129, 0.04);
+}
+
+.payment-amount-display {
+    min-height: 118px;
+    display: flex;
+    align-items: center;
+    color: #5d5a9f;
+    font-size: 3.25rem;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.payment-keypad {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+}
+
+.payment-key,
+.payment-method-btn,
+.payment-utility-btn {
+    border: 1px solid transparent;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.payment-key {
+    min-height: 54px;
+    border-radius: 6px;
+    background: #1f1b6d;
+    color: #fbbf24;
+    font-size: 1.55rem;
+    font-weight: 800;
+}
+
+.payment-key:hover,
+.payment-key:focus {
+    background: #312e81;
+}
+
+.payment-methods {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.payment-method-btn {
+    min-height: 40px;
+    border-radius: 6px;
+    background: #e6e6f1;
+    color: #1f1b6d;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.payment-method-btn.active {
+    background: #1f1b6d;
+    color: #fbbf24;
+}
+
+.payment-methods.is-invalid .payment-method-btn {
+    border-color: #ea5455;
+}
+
+.payment-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.payment-utility-btn {
+    min-height: 72px;
+    border-radius: 8px;
+    background: #d7d7ea;
+    color: #1f1b6d;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+.payment-utility-btn i {
+    font-size: 1.35rem;
+}
+
+.payment-items-list {
+    border-top: 1px solid #edf0f7;
+    padding-top: 1rem;
+    overflow-y: auto;
+}
+
+.payment-item-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid #f1f3f8;
+    font-size: 0.85rem;
+}
+
+.payment-item-name {
+    font-weight: 700;
+    color: #374151;
+}
+
+.payment-item-meta {
+    color: #6b7280;
+}
+
 /* Utility Classes */
 .btn-circle-38 {
     width: 38px;

@@ -10,9 +10,4 @@ class PanelController
     {
         return view('employee.dashboard');
     }
-
-    public function newOrder(): View
-    {
-        return view('employee.order.new-order');
-    }
 }

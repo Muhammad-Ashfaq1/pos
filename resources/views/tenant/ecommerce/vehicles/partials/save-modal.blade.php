@@ -53,7 +53,7 @@
                         </div>
 
                         <div class="col-md-6 customer-mode-section d-none" data-mode="walk_in">
-                            <label for="inline_customer_name" class="form-label">Customer Name</label>
+                            <label for="inline_customer_name" class="form-label">Customer Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="inline_customer_name" name="inline_customer_name" maxlength="150" placeholder="Walk-in Customer">
                             <div class="invalid-feedback"></div>
                         </div>

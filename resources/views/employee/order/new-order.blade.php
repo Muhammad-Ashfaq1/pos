@@ -3,11 +3,12 @@
 @section('title', 'Create New Order')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/css/pos.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/pos.css') }}?v={{ filemtime(public_path('assets/css/pos.css')) }}" />
 @endpush
 
 @section('content')
     <div class="container-fluid p-4">
+        <div class="order-entry-screen">
         <div class="d-flex align-items-center mb-4">
             <a href="{{ route('employee.dashboard') }}"
                 class="btn btn-sm bg-label-primary bg-opacity-10 text-primary border-0 rounded-pill btn-circle-38 me-3">
@@ -24,7 +25,7 @@
 
                         <div class="mb-3">
                             <div class="d-flex justify-content-between">
-                                <label for="customer_type_filter" class="form-label">Customers</label>
+                                <label for="customer_type_filter" class="form-label">Customers <span class="text-danger">*</span></label>
                                 <a class="text-primary add-customer-btn" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#customerModal">+ Add Customer</a>
                             </div>
                             <select id="customer_type_filter" class="form-select filter-control select2"
@@ -47,7 +48,7 @@
 
                         <div class="mb-3">
                             <div class="d-flex justify-content-between">
-                                <label for="add_vehicle_filter" class="form-label">Add Vehicle</label>
+                                <label for="add_vehicle_filter" class="form-label">Add Vehicle <span class="text-danger">*</span></label>
                                 <a class="text-primary add-vehicle-btn" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#vehicleModal">+ Add Vehicle</a>
                             </div>
                             <select id="add_vehicle_filter" class="form-select filter-control select2"
@@ -229,28 +230,128 @@
 
             @include('employee.order.partials.catalog-card')
         </div>
+
+        </div>
+
+        <div class="order-payment-screen d-none">
+            <div class="d-flex align-items-center mb-4">
+                <button type="button" class="btn btn-sm bg-label-primary bg-opacity-10 text-primary border-0 rounded-pill btn-circle-38 me-3 payment-back-btn">
+                    <i class="ti tabler-arrow-left fs-4"></i>
+                </button>
+                <h4 class="fw-bold mb-0">New Order</h4>
+            </div>
+
+            <div class="row g-4 payment-layout">
+                <div class="col-lg-6">
+                    <div class="card payment-panel h-100">
+                        <div class="card-body d-flex flex-column">
+                            <div class="payment-summary">
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                                    <h5 class="fw-bold mb-0">Order No. <span class="text-primary text-decoration-underline payment-order-number">Draft</span></h5>
+                                    <span class="badge bg-label-primary payment-method-label">Cash</span>
+                                </div>
+                                <div class="d-flex justify-content-between small mb-3">
+                                    <span>Total:</span>
+                                    <span class="fw-bold payment-total">$0.00</span>
+                                </div>
+                                <div class="d-flex justify-content-between small border-bottom pb-3 mb-3">
+                                    <span>Sub Total:</span>
+                                    <span class="fw-bold payment-subtotal">$0.00</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="fw-bold mb-0">Balance Due:</h5>
+                                    <h3 class="fw-bold text-primary mb-0 payment-balance-due">$0.00</h3>
+                                </div>
+                            </div>
+
+                            <div class="payment-items-list flex-grow-1"></div>
+
+                            <div class="payment-actions-grid mt-4">
+                                <button type="button" class="payment-utility-btn">
+                                    <i class="ti tabler-gift"></i>
+                                    <span>Gift Cards</span>
+                                </button>
+                                <button type="button" class="payment-utility-btn">
+                                    <i class="ti tabler-trophy"></i>
+                                    <span>Reward Cards</span>
+                                </button>
+                                <button type="button" class="payment-utility-btn">
+                                    <i class="ti tabler-mail"></i>
+                                    <span>Email Receipt</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card payment-panel h-100">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="fw-bold border-bottom pb-3 mb-4">Payment Amount</h5>
+
+                            <div class="payment-amount-display mb-3">$</div>
+                            <div class="d-flex justify-content-between small mb-4">
+                                <span>Remaining: <strong class="payment-remaining">$0.00</strong></span>
+                                <span>Change: <strong class="payment-change-due">$0.00</strong></span>
+                            </div>
+
+                            <div class="payment-keypad mt-auto">
+                                <button type="button" class="payment-key" data-payment-key="7">7</button>
+                                <button type="button" class="payment-key" data-payment-key="8">8</button>
+                                <button type="button" class="payment-key" data-payment-key="9">9</button>
+                                <button type="button" class="payment-key" data-payment-quick="10">$10</button>
+                                <button type="button" class="payment-key" data-payment-key="4">4</button>
+                                <button type="button" class="payment-key" data-payment-key="5">5</button>
+                                <button type="button" class="payment-key" data-payment-key="6">6</button>
+                                <button type="button" class="payment-key" data-payment-quick="20">$20</button>
+                                <button type="button" class="payment-key" data-payment-key="1">1</button>
+                                <button type="button" class="payment-key" data-payment-key="2">2</button>
+                                <button type="button" class="payment-key" data-payment-key="3">3</button>
+                                <button type="button" class="payment-key" data-payment-quick="50">$50</button>
+                                <button type="button" class="payment-key" data-payment-key="0">0</button>
+                                <button type="button" class="payment-key" data-payment-key=".">.</button>
+                                <button type="button" class="payment-key" data-payment-key="clear">C</button>
+                                <button type="button" class="payment-key" data-payment-key="backspace">
+                                    <i class="ti tabler-arrow-left"></i>
+                                </button>
+                            </div>
+
+                            <div class="payment-methods mt-3">
+                                <button type="button" class="payment-method-btn" data-payment-method="cash">Cash</button>
+                                <button type="button" class="payment-method-btn" data-payment-method="card">Credit/Debit Card</button>
+                                <button type="button" class="payment-method-btn" data-payment-method="check">Check</button>
+                            </div>
+
+                            <button type="button" class="btn btn-primary w-100 fw-bold mt-3 btn-checkout-order" disabled>
+                                Checkout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    @include('employee.order.sidebar-modal');
+    @include('employee.order.sidebar-modal')
     @include('tenant.ecommerce.customers.partials.save-modal')
     @include('tenant.ecommerce.vehicles.partials.save-modal')
-    @push('page-script')
-        <script>
-            window.catalogRoutes = {
-                categories: @json(route('employee.order.categories')),
-                subCategories: @json(route('employee.order.sub-categories')),
-                products: @json(route('employee.order.products')),
-                search: @json(route('employee.order.search')),
-                save: @json(route('employee.order.save')),
-                dropdownCustomers: @json(route('tenant.ecommerce.dropdowns.customers')),
-                dropdownVehicles: @json(route('tenant.ecommerce.dropdowns.vehicles')),
-            };
-        </script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"></script>
-        <script src="{{ asset('assets/js/tenant/e-com/customer-manager.js') }}"></script>
-        <script src="{{ asset('assets/js/tenant/e-com/vehicle-manager.js') }}"></script>
-
-        <script src="{{ asset('assets/js/employee/catalog-api.js') }}"></script>
-        <script src="{{ asset('assets/js/employee/new-order.js') }}"></script>
-
-    @endpush
 @endsection
+
+@push('page-script')
+    <script>
+        window.catalogRoutes = {
+            categories: @json(route('employee.order.categories')),
+            subCategories: @json(route('employee.order.sub-categories')),
+            products: @json(route('employee.order.products')),
+            search: @json(route('employee.order.search')),
+            save: @json(route('employee.order.save')),
+            dropdownCustomers: @json(route('tenant.ecommerce.dropdowns.customers')),
+            dropdownVehicles: @json(route('tenant.ecommerce.dropdowns.vehicles')),
+        };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"></script>
+    <script src="{{ asset('assets/js/tenant/e-com/customer-manager.js') }}"></script>
+    <script src="{{ asset('assets/js/tenant/e-com/vehicle-manager.js') }}?v={{ filemtime(public_path('assets/js/tenant/e-com/vehicle-manager.js')) }}"></script>
+
+    <script src="{{ asset('assets/js/employee/catalog-api.js') }}"></script>
+    <script src="{{ asset('assets/js/employee/new-order.js') }}?v={{ filemtime(public_path('assets/js/employee/new-order.js')) }}"></script>
+@endpush
