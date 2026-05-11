@@ -61,6 +61,7 @@ class SharedDataController extends Controller
         $categoryId = $request->integer('category_id') ?: null;
 
         $query = Product::query()
+            ->with(['primaryImage'])
             ->where('is_active', true)
             ->when($subCategoryId, fn ($q) => $q->where('sub_category_id', $subCategoryId))
             ->when($categoryId, fn ($q) => $q->where('category_id', $categoryId))
@@ -110,6 +111,7 @@ class SharedDataController extends Controller
             ->get(['id', 'category_id', 'name', 'code', 'slug']);
 
         $products = Product::query()
+            ->with(['primaryImage'])
             ->where('is_active', true)
             ->search($search)
             ->orderBy('name')
@@ -161,6 +163,7 @@ class SharedDataController extends Controller
             'product_type' => $p->product_type,
             'sub_category_id' => $p->sub_category_id,
             'category_id' => $p->category_id,
+            'image_url' => $p->primaryImage?->url,
             'type' => 'product',
         ];
     }
