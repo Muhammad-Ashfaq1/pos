@@ -23,6 +23,7 @@ class Customer extends Model
 
     protected $fillable = [
         'customer_type',
+        'discount_group_id',
         'name',
         'phone',
         'email',
@@ -82,6 +83,11 @@ class Customer extends Model
     public function defaultVehicle(): HasOne
     {
         return $this->hasOne(Vehicle::class)->where('is_default', true);
+    }
+
+    public function discountGroup(): BelongsTo
+    {
+        return $this->belongsTo(DiscountGroup::class);
     }
 
     public function scopeSearch(Builder $query, ?string $term): Builder

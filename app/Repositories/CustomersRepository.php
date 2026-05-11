@@ -18,7 +18,6 @@ class CustomersRepository implements CustomerRepositoryInterface
             'listingUrl'              => route('tenant.ecommerce.customers.listing'),
             'editUrlTemplate'         => route('tenant.ecommerce.customers.edit', ['customer' => '__CUSTOMER__']),
             'customerTypes'           => Customer::typeOptions(),
-            'discountGroups'          => DiscountGroup::where('is_active', true)->get(),
             'vehicleIndexUrlTemplate' => route('tenant.ecommerce.vehicles.index', ['customer_id' => '__CUSTOMER__']),
         ]);
     }
@@ -41,7 +40,7 @@ class CustomersRepository implements CustomerRepositoryInterface
             $customer->save();
         }
 
-        $customer->loadMissing('defaultVehicle:id,customer_id,plate_number');
+        $customer->loadMissing(['defaultVehicle:id,customer_id,plate_number', 'discountGroup:id,name']);
         $customer->loadCount('vehicles');
 
         return [
@@ -71,7 +70,7 @@ class CustomersRepository implements CustomerRepositoryInterface
 
         $baseQuery     = Customer::query();
         $filteredQuery = Customer::query()
-            ->with('defaultVehicle:id,customer_id,plate_number')
+            ->with(['defaultVehicle:id,customer_id,plate_number', 'discountGroup:id,name'])
             ->withCount('vehicles')
             ->search($search)
             ->when($customerType !== '', function (Builder $query) use ($customerType): void {
@@ -97,7 +96,7 @@ class CustomersRepository implements CustomerRepositoryInterface
 
     public function getCustomerFormData(Customer $customer, ?Authenticatable $user = null): array
     {
-        $customer->loadMissing('defaultVehicle:id,customer_id,plate_number');
+        $customer->loadMissing(['defaultVehicle:id,customer_id,plate_number', 'discountGroup:id,name']);
         $customer->loadCount('vehicles');
 
         return $this->transformCustomer($customer, $user);
@@ -105,8 +104,14 @@ class CustomersRepository implements CustomerRepositoryInterface
 
     private function buildPayload(array $data): array
     {
+        $customerType = $data['customer_type'];
+        $discountGroupId = ($customerType === \App\Models\Customer::TYPE_WALK_IN)
+            ? null
+            : $this->normalizeNullableString($data['discount_group'] ?? null);
+
         return [
-            'customer_type'          => $data['customer_type'],
+            'customer_type'          => $customerType,
+            'discount_group_id'      => $discountGroupId,
             'name'                   => $data['name'],
             'phone'                  => $this->normalizeNullableString($data['phone'] ?? null),
             'email'                  => $this->normalizeNullableString($data['email'] ?? null),
@@ -172,6 +177,8 @@ class CustomersRepository implements CustomerRepositoryInterface
             'id'                     => $customer->id,
             'customer_type'          => $customer->customer_type,
             'customer_type_label'    => $typeOptions[$customer->customer_type] ?? ucfirst((string) $customer->customer_type),
+            'discount_group_id'      => $customer->discount_group_id,
+            'discount_group_name'    => $customer->discountGroup?->name,
             'name'                   => $customer->name,
             'phone'                  => $customer->phone,
             'email'                  => $customer->email,

@@ -39,12 +39,36 @@
         $this.wrap('<div class="position-relative"></div>');
       }
 
-      $this.select2({
+      const select2Config = {
         dropdownParent: dropdownParentSelector ? $(dropdownParentSelector) : $this.parent(),
         placeholder: $this.data('placeholder'),
         allowClear: Boolean($this.data('allow-clear')),
         minimumResultsForSearch: $this.data('minimum-results-for-search') ?? 0
-      }).on('change', function () {
+      };
+
+      const ajaxUrl = $this.data('ajax-url');
+      if (ajaxUrl) {
+        select2Config.ajax = {
+          url: ajaxUrl,
+          dataType: 'json',
+          delay: 250,
+          data: function (params) {
+            return {
+              q: params.term,
+              page: params.page
+            };
+          },
+          processResults: function (data) {
+            return {
+              results: data.results,
+              pagination: data.pagination
+            };
+          },
+          cache: true
+        };
+      }
+
+      $this.select2(select2Config).on('change', function () {
         _this.setSelect2ErrorState($this, false);
         $this.closest('.position-relative').find('.invalid-feedback').text('');
       });
@@ -79,6 +103,19 @@
   CustomerManager.prototype.fillForm = function (customer) {
     this.$form.find('#customer_id').val(customer.id);
     this.$form.find('#customer_type').val(customer.customer_type).trigger('change');
+
+    const $discountGroup = this.$form.find('#customer_discount_group');
+    if (customer.discount_group_id) {
+      if (!$discountGroup.find("option[value='" + customer.discount_group_id + "']").length) {
+        const newOption = new Option(customer.discount_group_name, customer.discount_group_id, true, true);
+        $discountGroup.append(newOption).trigger('change');
+      } else {
+        $discountGroup.val(customer.discount_group_id).trigger('change');
+      }
+    } else {
+      $discountGroup.val('').trigger('change');
+    }
+
     this.$form.find('#customer_name').val(customer.name);
     this.$form.find('#customer_phone').val(customer.phone);
     this.$form.find('#customer_email').val(customer.email);

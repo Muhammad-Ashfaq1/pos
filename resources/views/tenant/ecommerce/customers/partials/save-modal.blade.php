@@ -46,11 +46,9 @@
                             <div class="position-relative">
                                 <select id="customer_discount_group" name="discount_group"
                                     class="form-select modal-select2" data-placeholder="Select a discount group"
-                                    data-dropdown-parent="#customerModal">
+                                    data-dropdown-parent="#customerModal"
+                                    data-ajax-url="{{ route('tenant.ecommerce.dropdowns.discount-groups') }}">
                                     <option value="">None</option>
-                                    @foreach ($discountGroups as $group)
-                                        <option value="{{ $group->id }}">{{ $group->name }}</option>
-                                    @endforeach
                                 </select>
                                 <div class="invalid-feedback"></div>
                             </div>

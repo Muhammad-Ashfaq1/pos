@@ -12,7 +12,6 @@ class PanelController
 
     public function newOrder(): View
     {
-        $discountGroups = \App\Models\DiscountGroup::where('is_active', true)->get();
-        return view('employee.order.new-order', compact('discountGroups'));
+        return view('employee.order.new-order');
     }
 }
