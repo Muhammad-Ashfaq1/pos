@@ -22,6 +22,10 @@ class SyncPermissions extends Command
             syncTenantAdmins: ! $this->option('no-tenant-admins')
         );
 
+        $this->info('Roles and permissions synced successfully.');
+        $this->line('Super admin users synced: '.$result['super_admins_synced']);
+        $this->line('Tenant admin users synced: '.$result['tenant_admins_synced']);
+        $this->line('Tenant role users synced: '.$result['tenant_role_users_synced']);
         $this->components->info('Roles and permissions synced successfully.');
 
         if (! $this->option('no-tenant-admins')) {
