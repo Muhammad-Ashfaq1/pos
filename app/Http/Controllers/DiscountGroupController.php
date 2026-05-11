@@ -25,6 +25,12 @@ class DiscountGroupController extends Controller
         $discountGroups = DiscountGroup::all();
     }
 
+    // public function getDiscountGroup(Request $request)
+    // {
+    //     $discountGroups = DiscountGroup::all();
+    //     return response()->json($discountGroups);
+    // }
+
     /**
      * Store a newly created resource in storage.
      */

@@ -13,6 +13,7 @@ class PanelController
 
     public function newOrder(): View
     {
-        return view('employee.order.new-order');
+        $discountGroups = \App\Models\DiscountGroup::where('is_active', true)->get();
+        return view('employee.order.new-order', compact('discountGroups'));
     }
 }

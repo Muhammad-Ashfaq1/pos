@@ -23,6 +23,7 @@
     this.validator = this.bindFormValidation();
     this.bindModalActions();
     this.bindSaveForm();
+    this.bindCustomerTypeToggle();
   };
 
   CustomerManager.prototype.initStaticSelect2 = function () {
@@ -72,6 +73,7 @@
     this.setSubmitButtonState(false);
     this.resetValidationState();
     if (this.validator) this.validator.resetForm();
+    this.toggleDiscountGroupVisibility();
   };
 
   CustomerManager.prototype.fillForm = function (customer) {
@@ -91,6 +93,7 @@
     this.$form.find('#customerModalLabel').text('Edit Customer');
     this.setSubmitButtonState(false);
     this.resetValidationState();
+    this.toggleDiscountGroupVisibility();
   };
 
   CustomerManager.prototype.setSubmitButtonState = function (loading) {
@@ -244,6 +247,30 @@
 
       const $feedback = $element.siblings('.invalid-feedback').first();
       if ($feedback.length) $feedback.text(message);
+    });
+  };
+
+  CustomerManager.prototype.toggleDiscountGroupVisibility = function () {
+    const $customerType = this.$form.find('#customer_type');
+    const $discountGroupDiv = this.$form.find('#discount_group_div');
+    const type = $customerType.val();
+
+    if (type === 'registered' || type === 'corporate') {
+      $discountGroupDiv.removeClass('d-none');
+    } else {
+      $discountGroupDiv.addClass('d-none');
+    }
+  };
+
+  CustomerManager.prototype.bindCustomerTypeToggle = function () {
+    const _this = this;
+    this.$form.find('#customer_type').on('change', function () {
+      _this.toggleDiscountGroupVisibility();
+    });
+
+    // Trigger on modal show
+    this.$modal.on('shown.bs.modal', function () {
+      _this.toggleDiscountGroupVisibility();
     });
   };
 
