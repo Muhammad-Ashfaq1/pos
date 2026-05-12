@@ -43,6 +43,13 @@ class SaveCustomerRequest extends FormRequest
                 'string',
                 Rule::in(array_keys(Customer::typeOptions())),
             ],
+            'discount_group_id' => [
+                'required',
+                'integer',
+                Rule::exists('discount_groups', 'id')->where(
+                    fn ($query) => $query->where('tenant_id', $tenantId)
+                ),
+            ],
             'name' => ['required', 'string', 'max:150'],
             'phone' => ['nullable', 'string', 'max:30'],
             'email' => ['nullable', 'email', 'max:150'],
@@ -66,6 +73,8 @@ class SaveCustomerRequest extends FormRequest
             'id.exists' => 'The selected customer was not found for this shop.',
             'customer_type.required' => 'Please select a customer type.',
             'customer_type.in' => 'Please select a valid customer type.',
+            'discount_group_id.required' => 'Please select a discount group.',
+            'discount_group_id.exists' => 'The selected discount group was not found for this shop.',
             'name.required' => 'Please enter a customer name.',
             'name.max' => 'The customer name may not be greater than 150 characters.',
             'phone.max' => 'The phone number may not be greater than 30 characters.',

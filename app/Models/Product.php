@@ -41,6 +41,7 @@ class Product extends Model
         'cost_price',
         'sale_price',
         'tax_percentage',
+        'discount_id',
         'opening_stock',
         'current_stock',
         'minimum_stock_level',
@@ -59,6 +60,7 @@ class Product extends Model
             'cost_price' => 'decimal:2',
             'sale_price' => 'decimal:2',
             'tax_percentage' => 'decimal:2',
+            'discount_id' => 'integer',
             'opening_stock' => 'integer',
             'current_stock' => 'integer',
             'minimum_stock_level' => 'integer',
@@ -88,6 +90,11 @@ class Product extends Model
     public function subCategory(): BelongsTo
     {
         return $this->belongsTo(SubCategory::class);
+    }
+
+    public function discount(): BelongsTo
+    {
+        return $this->belongsTo(Discount::class);
     }
 
     public function creator(): BelongsTo

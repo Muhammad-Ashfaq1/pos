@@ -63,12 +63,23 @@
         if (!value) return null;
 
         let text = $select.find('option:selected').text();
+        let selectedData = {};
         if (!text && $select.data('select2')) {
             const selected = $select.select2('data') || [];
-            text = selected[0] ? selected[0].text : '';
+            selectedData = selected[0] || {};
+            text = selectedData.text || '';
+        } else if ($select.data('select2')) {
+            const selected = $select.select2('data') || [];
+            selectedData = selected[0] || {};
         }
 
-        return { id: value, text: text || value };
+        const optionGroup = $select.find('option:selected').data('discount-group') || null;
+
+        return {
+            id: value,
+            text: text || value,
+            discount_group: selectedData.discount_group || optionGroup
+        };
     }
 
     function setSelectSelection($select, selection) {
@@ -91,6 +102,10 @@
             $existing.text(selection.text || id);
         } else {
             $select.append(new Option(selection.text || id, selection.id, false, false));
+        }
+
+        if (selection.discount_group) {
+            $select.find('option[value="' + id + '"]').data('discount-group', selection.discount_group);
         }
 
         $select.val(selection.id);
@@ -117,7 +132,7 @@
 
     function formatOrderText(order) {
         const qty = order.items.reduce(function (sum, item) { return sum + item.qty; }, 0);
-        const total = order.items.reduce(function (sum, item) { return sum + (item.qty * item.price); }, 0);
+        const total = calculateCartTotals(order.items, order.customer).total;
 
         if (qty === 0) {
             return order.label;
@@ -190,6 +205,9 @@
         // VISUAL stays identical to category cards — same size, same content.
         if (item.type === 'product') {
             $card.attr('data-price', Number(item.sale_price || 0).toFixed(2));
+            $card.attr('data-discounted-price', Number(item.discounted_price != null ? item.discounted_price : (item.sale_price || 0)).toFixed(2));
+            $card.attr('data-unit-discount-amount', Number(item.unit_discount_amount || 0).toFixed(2));
+            $card.attr('data-discount-name', item.discount_name || '');
             $card.attr('data-sku', item.sku || '');
             $card.attr('data-barcode', item.barcode || '');
         }
@@ -312,7 +330,10 @@
             openProductDetail({
                 id: id,
                 name: name,
-                price: parseFloat($card.data('price')) || 0,
+                originalPrice: parseFloat($card.data('price')) || 0,
+                price: parseFloat($card.data('discounted-price')) || parseFloat($card.data('price')) || 0,
+                unitDiscountAmount: parseFloat($card.data('unit-discount-amount')) || 0,
+                discountName: $card.data('discount-name') || '',
                 sku: $card.data('sku') || '',
                 barcode: $card.data('barcode') || '',
             });
@@ -339,7 +360,9 @@
         $('.product-name').text(product.name);
         $('.product-sku').text(product.sku || '—');
         $('.product-barcode').text(product.barcode || '—');
-        $('.product-price').text('$' + product.price.toFixed(2));
+        $('.product-price').text(product.unitDiscountAmount > 0
+            ? '$' + product.price.toFixed(2) + ' (was $' + product.originalPrice.toFixed(2) + ')'
+            : '$' + product.price.toFixed(2));
         $('.product-qty-input').val(1);
         showProductDetail();
     }
@@ -367,9 +390,21 @@
         const cart = ensureActiveOrder().items;
         const existing = cart.find(function (i) { return i.id === product.id; });
         if (existing) {
+            existing.price = product.price;
+            existing.originalPrice = product.originalPrice || product.price;
+            existing.unitDiscountAmount = product.unitDiscountAmount || 0;
+            existing.discountName = product.discountName || '';
             existing.qty += qty;
         } else {
-            cart.push({ id: product.id, name: product.name, price: product.price, qty: qty });
+            cart.push({
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                originalPrice: product.originalPrice || product.price,
+                unitDiscountAmount: product.unitDiscountAmount || 0,
+                discountName: product.discountName || '',
+                qty: qty
+            });
         }
         renderCart();
     }
@@ -404,6 +439,9 @@
         } else {
             cart.forEach(function (item) {
                 const lineTotal = (item.price * item.qty).toFixed(2);
+                const discountNote = Number(item.unitDiscountAmount || 0) > 0
+                    ? '<small class="d-block text-success">' + escape(item.discountName || 'Item discount') + '</small>'
+                    : '';
                 $tbody.append(
                     '<tr data-product-id="' + item.id + '">'
                     + '<td class="p-0 text-center" style="width:40px;">'
@@ -411,7 +449,7 @@
                     + '<i class="icon-base ti tabler-trash"></i></button></td>'
                     + '<td class="p-0">'
                     + '<div class="bg-label-primary bg-opacity-10 rounded-pill py-2 px-3 shadow-sm row g-0 align-items-center mb-2">'
-                    + '<div class="col-5"><span class="fw-bold text-secondary small">' + escape(item.name) + '</span></div>'
+                    + '<div class="col-5"><span class="fw-bold text-secondary small">' + escape(item.name) + '</span>' + discountNote + '</div>'
                     + '<div class="col-4 text-center d-flex align-items-center justify-content-center">'
                     + '<button type="button" class="btn btn-sm p-0 border-0 text-secondary fw-light cart-qty-minus">—</button>'
                     + '<span class="mx-2 fw-bold text-dark small qty-value">' + item.qty + '</span>'
@@ -427,25 +465,62 @@
     }
 
     function updateSummary() {
-        const cart = currentCart();
-        const totalQty = cart.reduce(function (s, i) { return s + i.qty; }, 0);
-        const totalAmount = cart.reduce(function (s, i) { return s + i.qty * i.price; }, 0);
+        const totals = cartTotals();
 
-        $('.summary-qty').text(totalQty);
-        $('.summary-subtotal').text('$' + totalAmount.toFixed(2));
-        $('.summary-total').text('$' + totalAmount.toFixed(2));
-        $('.btn-pay .text-warning:first').text('$' + totalAmount.toFixed(2));
-        $('.btn-pay').prop('disabled', totalAmount <= 0 || isSavingOrder);
+        $('.summary-qty').text(totals.quantity);
+        $('.summary-subtotal').text('$' + totals.subtotal.toFixed(2));
+        $('.summary-discount').text('-$' + totals.discount.toFixed(2));
+        $('.summary-total').text('$' + totals.total.toFixed(2));
+        $('.btn-pay .text-warning:first').text('$' + totals.total.toFixed(2));
+        $('.btn-pay').prop('disabled', totals.total <= 0 || isSavingOrder);
         $('.btn-pay .small').text(isSavingOrder ? 'Saving...' : 'Pay');
         refreshOrderDropdown();
     }
 
     function cartTotals() {
-        const cart = currentCart();
-        return {
-            quantity: cart.reduce(function (sum, item) { return sum + item.qty; }, 0),
-            subtotal: cart.reduce(function (sum, item) { return sum + (item.qty * item.price); }, 0),
-        };
+        const order = getActiveOrder();
+        return calculateCartTotals(currentCart(), order ? order.customer : null);
+    }
+
+    function calculateCartTotals(cart, customer) {
+        const totals = cart.reduce(function (result, item) {
+            const qty = Number(item.qty || 0);
+            const originalPrice = Number(item.originalPrice || item.price || 0);
+            const unitDiscount = Number(item.unitDiscountAmount || Math.max(originalPrice - Number(item.price || 0), 0));
+
+            result.quantity += qty;
+            result.subtotal += qty * originalPrice;
+            result.itemDiscount += qty * unitDiscount;
+
+            return result;
+        }, { quantity: 0, subtotal: 0, itemDiscount: 0 });
+
+        totals.subtotal = Math.round(totals.subtotal * 100) / 100;
+        totals.itemDiscount = Math.round(totals.itemDiscount * 100) / 100;
+        totals.afterItemDiscount = Math.max(totals.subtotal - totals.itemDiscount, 0);
+        totals.customerDiscount = customerDiscountAmount(customer, totals.afterItemDiscount);
+        totals.discount = Math.round((totals.itemDiscount + totals.customerDiscount) * 100) / 100;
+        totals.total = Math.round(Math.max(totals.subtotal - totals.discount, 0) * 100) / 100;
+
+        return totals;
+    }
+
+    function customerDiscountAmount(customer, amount) {
+        const group = customer ? customer.discount_group : null;
+
+        if (!group || !group.is_active || amount <= 0) {
+            return 0;
+        }
+
+        let discount = 0;
+
+        if (group.type === 'percentage') {
+            discount = amount * (Number(group.value || 0) / 100);
+        } else if (group.type === 'fixed' && amount >= Number(group.min_limit || 0)) {
+            discount = Number(group.value || 0);
+        }
+
+        return Math.round(Math.min(discount, amount) * 100) / 100;
     }
 
     function formatMoney(amount) {
@@ -488,12 +563,16 @@
 
         $list.html(cart.map(function (item) {
             const lineTotal = item.qty * item.price;
+            const discountNote = Number(item.unitDiscountAmount || 0) > 0
+                ? '<div class="payment-item-meta text-success">' + escape(item.discountName || 'Item discount') + '</div>'
+                : '';
 
             return ''
                 + '<div class="payment-item-row">'
                 + '<div>'
                 + '<div class="payment-item-name">' + escape(item.name) + '</div>'
                 + '<div class="payment-item-meta">' + item.qty + ' x ' + formatMoney(item.price) + '</div>'
+                + discountNote
                 + '</div>'
                 + '<div class="fw-bold text-primary">' + formatMoney(lineTotal) + '</div>'
                 + '</div>';
@@ -503,13 +582,14 @@
     function renderPaymentScreen() {
         const totals = cartTotals();
         const amount = paymentAmountValue();
-        const remaining = Math.max(totals.subtotal - amount, 0);
-        const changeDue = Math.max(amount - totals.subtotal, 0);
-        const canCheckout = totals.subtotal > 0 && !isSavingOrder;
+        const remaining = Math.max(totals.total - amount, 0);
+        const changeDue = Math.max(amount - totals.total, 0);
+        const canCheckout = totals.total > 0 && !isSavingOrder;
 
         $('.payment-order-number').text(paymentOrderNumber());
-        $('.payment-total').text(formatMoney(totals.subtotal));
+        $('.payment-total').text(formatMoney(totals.total));
         $('.payment-subtotal').text(formatMoney(totals.subtotal));
+        $('.payment-discount').text('-' + formatMoney(totals.discount));
         $('.payment-balance-due').text(formatMoney(remaining));
         $('.payment-remaining').text(formatMoney(remaining));
         $('.payment-change-due').text(formatMoney(changeDue));
@@ -772,7 +852,7 @@
         $('.payment-methods').removeClass('is-invalid');
 
         if (paymentMethod && paymentMethod !== 'cash' && paymentAmountInput === '') {
-            setPaymentAmount(cartTotals().subtotal.toFixed(2));
+            setPaymentAmount(cartTotals().total.toFixed(2));
             return;
         }
 
@@ -942,6 +1022,7 @@
 
             const $vehicleSelect = $('#add_vehicle_filter');
             $vehicleSelect.val(null).trigger('change');
+            updateSummary();
         });
 
         $('#add_vehicle_filter').on('change', function () {
@@ -976,11 +1057,22 @@
 
                     if (customer.id && $customerSelect.length) {
                         const newOption = new Option(customer.name, customer.id, true, true);
+                        $(newOption).data('discount-group', customer.discount_group || null);
                         $customerSelect.append(newOption).trigger('change');
                         $customerSelect.trigger({
                             type: 'select2:select',
-                            params: { data: { id: customer.id, text: customer.name } }
+                            params: { data: { id: customer.id, text: customer.name, discount_group: customer.discount_group || null } }
                         });
+
+                        const order = getActiveOrder();
+                        if (order) {
+                            order.customer = {
+                                id: customer.id,
+                                text: customer.name,
+                                discount_group: customer.discount_group || null
+                            };
+                            updateSummary();
+                        }
                     }
                 }
             });

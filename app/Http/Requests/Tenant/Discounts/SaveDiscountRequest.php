@@ -75,6 +75,15 @@ class SaveDiscountRequest extends FormRequest
                 }
 
                 if (
+                    $this->input('applies_to') === Discount::APPLIES_TO_ITEM
+                    && $discountType === Discount::TYPE_PERCENTAGE
+                    && $value !== null
+                    && (float) $value > 50
+                ) {
+                    $validator->errors()->add('value', 'Item percentage discounts may not be greater than 50%.');
+                }
+
+                if (
                     $this->input('applies_to') === Discount::APPLIES_TO_CUSTOMER_PROFILE
                     && $this->boolean('requires_manager_approval')
                 ) {

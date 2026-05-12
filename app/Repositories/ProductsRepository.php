@@ -30,6 +30,10 @@ class ProductsRepository implements ProductRepositoryInterface
             'editUrlTemplate' => route('tenant.ecommerce.products.edit', ['product' => '__PRODUCT__']),
             'categoriesDropdownUrl' => route('tenant.ecommerce.dropdowns.categories'),
             'subCategoriesDropdownUrl' => route('tenant.ecommerce.dropdowns.subcategories'),
+            'discountsDropdownUrl' => route('tenant.ecommerce.dropdowns.discounts', [
+                'applies_to' => 'item',
+                'active_only' => 1,
+            ]),
             'productTypes' => Product::typeOptions(),
         ]);
     }
@@ -72,6 +76,7 @@ class ProductsRepository implements ProductRepositoryInterface
             $data['sale_price'] = $this->normalizeMoney($data['sale_price'] ?? 0);
             $data['category_id'] = $data['category_id'] ?: null;
             $data['sub_category_id'] = $data['sub_category_id'] ?: null;
+            $data['discount_id'] = $data['discount_id'] ?? null;
 
             if ($isUpdate) {
                 $product->fill($data);
@@ -96,6 +101,7 @@ class ProductsRepository implements ProductRepositoryInterface
             return $product->fresh([
                 'category:id,name',
                 'subCategory:id,name',
+                'discount:id,name,discount_type,value',
                 'primaryImage',
                 'images',
             ]);
@@ -135,6 +141,7 @@ class ProductsRepository implements ProductRepositoryInterface
             ->with([
                 'category:id,name',
                 'subCategory:id,name',
+                'discount:id,name,discount_type,value',
                 'primaryImage',
             ])
             ->search($search)
@@ -237,6 +244,7 @@ class ProductsRepository implements ProductRepositoryInterface
         $product->loadMissing([
             'category:id,name',
             'subCategory:id,name',
+            'discount:id,name,discount_type,value',
             'primaryImage',
             'images',
         ]);
@@ -268,6 +276,8 @@ class ProductsRepository implements ProductRepositoryInterface
             'cost_price' => (string) $product->cost_price,
             'sale_price' => (string) $product->sale_price,
             'tax_percentage' => $product->tax_percentage !== null ? (string) $product->tax_percentage : null,
+            'discount_id' => $product->discount_id,
+            'discount_name' => $product->discount?->name,
             'opening_stock' => (int) $product->opening_stock,
             'current_stock' => (int) $product->current_stock,
             'minimum_stock_level' => (int) $product->minimum_stock_level,

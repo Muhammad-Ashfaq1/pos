@@ -20,11 +20,14 @@ class Order extends Model
     protected $fillable = [
         'order_number',
         'customer_id',
+        'customer_discount_group_id',
         'vehicle_id',
         'status',
         'total_quantity',
         'subtotal_amount',
         'discount_amount',
+        'item_discount_amount',
+        'customer_discount_amount',
         'service_fee_amount',
         'tax_amount',
         'total_amount',
@@ -41,10 +44,13 @@ class Order extends Model
     {
         return [
             'customer_id' => 'integer',
+            'customer_discount_group_id' => 'integer',
             'vehicle_id' => 'integer',
             'total_quantity' => 'integer',
             'subtotal_amount' => 'decimal:2',
             'discount_amount' => 'decimal:2',
+            'item_discount_amount' => 'decimal:2',
+            'customer_discount_amount' => 'decimal:2',
             'service_fee_amount' => 'decimal:2',
             'tax_amount' => 'decimal:2',
             'total_amount' => 'decimal:2',
@@ -57,6 +63,11 @@ class Order extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function customerDiscountGroup(): BelongsTo
+    {
+        return $this->belongsTo(DiscountGroup::class, 'customer_discount_group_id');
     }
 
     public function vehicle(): BelongsTo

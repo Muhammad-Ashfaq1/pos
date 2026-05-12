@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Customer;
+use App\Models\Discount;
 use App\Models\Order;
 use App\Models\Product;
 use App\Repositories\Interface\OrderRepositoryInterface;
@@ -65,6 +66,7 @@ class OrdersRepository implements OrderRepositoryInterface
                 ->map(fn (Collection $items) => $items->sum(fn ($item) => (int) $item['quantity']));
 
             $products = Product::query()
+                ->with('discount:id,name,discount_type,applies_to,value,max_discount_amount,is_active,starts_at,ends_at')
                 ->whereIn('id', $requestedProductIds->all())
                 ->where('is_active', true)
                 ->lockForUpdate()
@@ -79,51 +81,80 @@ class OrdersRepository implements OrderRepositoryInterface
 
             $this->validateStockAvailability($products, $requestedQuantityByProduct);
 
+            $customer = ! empty($data['customer_id'])
+                ? Customer::query()
+                    ->with('discountGroup:id,name,type,value,min_limit,is_active')
+                    ->find((int) $data['customer_id'])
+                : null;
+
             $totalQuantity = 0;
             $subtotalAmount = 0.0;
+            $itemDiscountAmount = 0.0;
             $orderItems = [];
 
             foreach ($requestedItems as $requestedItem) {
                 $product = $products->get((int) $requestedItem['product_id']);
                 $quantity = (int) $requestedItem['quantity'];
                 $unitPrice = round((float) $product->sale_price, 2);
-                $lineTotal = round($unitPrice * $quantity, 2);
+                $itemDiscount = $this->activeItemDiscount($product);
+                $unitDiscountAmount = $itemDiscount
+                    ? $this->discountAmount($unitPrice, $itemDiscount)
+                    : 0.0;
+                $lineSubtotal = round($unitPrice * $quantity, 2);
+                $lineDiscountAmount = round($unitDiscountAmount * $quantity, 2);
+                $lineTotal = round(max($lineSubtotal - $lineDiscountAmount, 0), 2);
 
                 $totalQuantity += $quantity;
-                $subtotalAmount += $lineTotal;
+                $subtotalAmount += $lineSubtotal;
+                $itemDiscountAmount += $lineDiscountAmount;
 
                 $orderItems[] = [
                     'product_id' => $product->id,
+                    'discount_id' => $itemDiscount?->id,
                     'product_name' => $product->name,
                     'sku' => $product->sku,
                     'unit' => $product->unit,
+                    'discount_name' => $itemDiscount?->name,
+                    'discount_type' => $itemDiscount?->discount_type,
+                    'discount_value' => $itemDiscount?->value,
                     'quantity' => $quantity,
                     'unit_price' => $unitPrice,
+                    'line_subtotal' => $lineSubtotal,
+                    'unit_discount_amount' => $unitDiscountAmount,
+                    'line_discount_amount' => $lineDiscountAmount,
                     'line_total' => $lineTotal,
                 ];
             }
 
             $subtotalAmount = round($subtotalAmount, 2);
+            $itemDiscountAmount = round($itemDiscountAmount, 2);
+            $afterItemDiscountAmount = round(max($subtotalAmount - $itemDiscountAmount, 0), 2);
+            $customerDiscountAmount = $this->customerDiscountAmount($customer, $afterItemDiscountAmount);
+            $discountAmount = round($itemDiscountAmount + $customerDiscountAmount, 2);
+            $totalAmount = round(max($subtotalAmount - $discountAmount, 0), 2);
             $paymentAmount = round((float) data_get($data, 'payment.amount', 0), 2);
             $status = match (true) {
-                $paymentAmount >= $subtotalAmount => Order::STATUS_PAID,
+                $paymentAmount >= $totalAmount => Order::STATUS_PAID,
                 $paymentAmount > 0 => Order::STATUS_PARTIALLY_PAID,
                 default => Order::STATUS_PENDING,
             };
             $isPaid = $status === Order::STATUS_PAID;
-            $changeAmount = round(max($paymentAmount - $subtotalAmount, 0), 2);
+            $changeAmount = round(max($paymentAmount - $totalAmount, 0), 2);
 
             $order = Order::query()->create([
                 'order_number' => $this->makeOrderNumber(),
                 'customer_id' => $data['customer_id'] ?? null,
+                'customer_discount_group_id' => $customer?->discount_group_id,
                 'vehicle_id' => $data['vehicle_id'] ?? null,
                 'status' => $status,
                 'total_quantity' => $totalQuantity,
                 'subtotal_amount' => $subtotalAmount,
-                'discount_amount' => 0,
+                'discount_amount' => $discountAmount,
+                'item_discount_amount' => $itemDiscountAmount,
+                'customer_discount_amount' => $customerDiscountAmount,
                 'service_fee_amount' => 0,
                 'tax_amount' => 0,
-                'total_amount' => $subtotalAmount,
+                'total_amount' => $totalAmount,
                 'payment_method' => data_get($data, 'payment.method'),
                 'payment_amount' => $paymentAmount,
                 'change_amount' => $changeAmount,
@@ -144,6 +175,59 @@ class OrdersRepository implements OrderRepositoryInterface
             'message' => "Order {$order->order_number} saved successfully.",
             'data' => $this->transformOrder($order),
         ];
+    }
+
+    private function activeItemDiscount(Product $product): ?Discount
+    {
+        $discount = $product->discount;
+
+        if (! $discount || $discount->applies_to !== Discount::APPLIES_TO_ITEM || ! $discount->is_active) {
+            return null;
+        }
+
+        $now = now();
+
+        if ($discount->starts_at && $discount->starts_at->gt($now)) {
+            return null;
+        }
+
+        if ($discount->ends_at && $discount->ends_at->lt($now)) {
+            return null;
+        }
+
+        return $discount;
+    }
+
+    private function discountAmount(float $baseAmount, Discount $discount): float
+    {
+        $amount = $discount->discount_type === Discount::TYPE_PERCENTAGE
+            ? $baseAmount * ((float) $discount->value / 100)
+            : (float) $discount->value;
+
+        if ($discount->max_discount_amount !== null) {
+            $amount = min($amount, (float) $discount->max_discount_amount);
+        }
+
+        return round(min($amount, $baseAmount * 0.5), 2);
+    }
+
+    private function customerDiscountAmount(?Customer $customer, float $orderAmount): float
+    {
+        $group = $customer?->discountGroup;
+
+        if (! $group || ! $group->is_active || $orderAmount <= 0) {
+            return 0.0;
+        }
+
+        $amount = match ($group->type) {
+            'percentage' => $orderAmount * ((float) $group->value / 100),
+            'fixed' => $orderAmount >= (float) ($group->min_limit ?? 0)
+                ? (float) $group->value
+                : 0.0,
+            default => 0.0,
+        };
+
+        return round(min($amount, $orderAmount * 0.5), 2);
     }
 
     private function makeOrderNumber(): string
@@ -201,6 +285,8 @@ class OrdersRepository implements OrderRepositoryInterface
             'total_quantity' => $order->total_quantity,
             'subtotal_amount' => (float) $order->subtotal_amount,
             'discount_amount' => (float) $order->discount_amount,
+            'item_discount_amount' => (float) ($order->item_discount_amount ?? 0),
+            'customer_discount_amount' => (float) ($order->customer_discount_amount ?? 0),
             'service_fee_amount' => (float) $order->service_fee_amount,
             'tax_amount' => (float) $order->tax_amount,
             'total_amount' => (float) $order->total_amount,
@@ -214,6 +300,8 @@ class OrdersRepository implements OrderRepositoryInterface
                 'product_name' => $item->product_name,
                 'quantity' => $item->quantity,
                 'unit_price' => (float) $item->unit_price,
+                'line_subtotal' => (float) ($item->line_subtotal ?? $item->line_total),
+                'line_discount_amount' => (float) ($item->line_discount_amount ?? 0),
                 'line_total' => (float) $item->line_total,
             ])->values(),
         ];
@@ -430,6 +518,8 @@ class OrdersRepository implements OrderRepositoryInterface
                 : 'N/A',
             'subtotal_amount_label' => $this->moneyLabel((float) $order->subtotal_amount),
             'discount_amount_label' => $this->moneyLabel((float) $order->discount_amount),
+            'item_discount_amount_label' => $this->moneyLabel((float) ($order->item_discount_amount ?? 0)),
+            'customer_discount_amount_label' => $this->moneyLabel((float) ($order->customer_discount_amount ?? 0)),
             'service_fee_amount_label' => $this->moneyLabel((float) $order->service_fee_amount),
             'tax_amount' => (float) $order->tax_amount,
             'tax_amount_label' => $this->moneyLabel((float) $order->tax_amount),
@@ -446,6 +536,8 @@ class OrdersRepository implements OrderRepositoryInterface
                     'quantity' => (float) $item->quantity,
                     'quantity_label' => number_format((float) $item->quantity, 3),
                     'unit_price_label' => $this->moneyLabel((float) $item->unit_price),
+                    'line_subtotal_label' => $this->moneyLabel((float) ($item->line_subtotal ?? $item->line_total)),
+                    'line_discount_amount_label' => $this->moneyLabel((float) ($item->line_discount_amount ?? 0)),
                     'line_total_label' => $this->moneyLabel((float) $item->line_total),
                     'tax_detail_label' => $item->product_name . ' (x' . number_format((float) $item->quantity, 3) . ')',
                 ])

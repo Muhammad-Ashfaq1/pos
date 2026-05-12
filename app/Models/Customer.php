@@ -23,6 +23,7 @@ class Customer extends Model
 
     protected $fillable = [
         'customer_type',
+        'discount_group_id',
         'name',
         'phone',
         'email',
@@ -42,6 +43,7 @@ class Customer extends Model
     {
         return [
             'date_of_birth' => 'date',
+            'discount_group_id' => 'integer',
             'total_visits' => 'integer',
             'lifetime_value' => 'decimal:2',
             'loyalty_points_balance' => 'integer',
@@ -72,6 +74,11 @@ class Customer extends Model
     public function updater(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function discountGroup(): BelongsTo
+    {
+        return $this->belongsTo(DiscountGroup::class);
     }
 
     public function vehicles(): HasMany

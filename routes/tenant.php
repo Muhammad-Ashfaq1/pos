@@ -37,6 +37,12 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                         Route::get('/products', 'products')
                             ->middleware('permission:product.view|product.create|product.update|products.view|products.manage|service.view|service.create|service.update')
                             ->name('products');
+                        Route::get('/discounts', 'discounts')
+                            ->middleware('permission:discount.manage|product.create|product.update|products.manage')
+                            ->name('discounts');
+                        Route::get('/discount-groups', 'discountGroups')
+                            ->middleware('permission:discount.manage|customer.view|customer.create|customer.update|customers.view|customers.manage|pos.bill')
+                            ->name('discount-groups');
                         Route::get('/customers', 'customers')
                             ->middleware('permission:customer.view|customer.create|customer.update|vehicle.view|vehicle.create|vehicle.update|pos.bill|customers.view|customers.manage')
                             ->name('customers');

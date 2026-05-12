@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Tenant\Products;
 
+use App\Models\Discount;
 use App\Models\Image;
 use App\Models\Product;
 use App\Models\SubCategory;
@@ -103,6 +104,15 @@ class SaveProductRequest extends FormRequest
             'cost_price' => ['required', 'numeric', 'min:0'],
             'sale_price' => ['required', 'numeric', 'min:0'],
             'tax_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'discount_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('discounts', 'id')->where(
+                    fn ($query) => $query
+                        ->where('tenant_id', $tenantId)
+                        ->where('applies_to', Discount::APPLIES_TO_ITEM)
+                ),
+            ],
             'opening_stock' => ['nullable', 'integer', 'min:0'],
             'current_stock' => ['nullable', 'integer', 'min:0'],
             'minimum_stock_level' => ['nullable', 'integer', 'min:0'],
@@ -142,6 +152,32 @@ class SaveProductRequest extends FormRequest
 
                 if (! $belongsToCategory) {
                     $validator->errors()->add('sub_category_id', 'The selected sub category does not belong to the selected category.');
+                }
+            }
+
+            if ($this->filled('discount_id')) {
+                $discount = Discount::query()
+                    ->whereKey($this->integer('discount_id'))
+                    ->where('applies_to', Discount::APPLIES_TO_ITEM)
+                    ->where('is_active', true)
+                    ->first();
+
+                if (! $discount) {
+                    $validator->errors()->add('discount_id', 'Please select an active item discount.');
+                } else {
+                    $salePrice = (float) $this->input('sale_price', 0);
+                    $discountValue = (float) $discount->value;
+
+                    if ($discount->discount_type === Discount::TYPE_PERCENTAGE && $discountValue > 50) {
+                        $validator->errors()->add('discount_id', 'Item percentage discount may not be greater than 50%.');
+                    }
+
+                    if (
+                        $discount->discount_type === Discount::TYPE_FIXED
+                        && $discountValue > round($salePrice / 2, 2)
+                    ) {
+                        $validator->errors()->add('discount_id', 'Fixed item discount may not be greater than half of the product sale price.');
+                    }
                 }
             }
 
@@ -222,6 +258,7 @@ class SaveProductRequest extends FormRequest
             'id.exists' => 'The selected product was not found for this shop.',
             'category_id.exists' => 'The selected category was not found for this shop.',
             'sub_category_id.exists' => 'The selected sub category was not found for this shop.',
+            'discount_id.exists' => 'Please select a valid item discount for this shop.',
             'product_type.required' => 'Please select a product type.',
             'product_type.in' => 'Please select a valid product type.',
             'name.required' => 'Please enter a product name.',

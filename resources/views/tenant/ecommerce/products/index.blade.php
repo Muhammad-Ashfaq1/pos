@@ -271,6 +271,22 @@
                                 <div class="invalid-feedback"></div>
                             </div>
                             <div class="col-md-3">
+                                <label for="product_discount_id" class="form-label">Discount</label>
+                                <div class="position-relative">
+                                    <select
+                                        id="product_discount_id"
+                                        name="discount_id"
+                                        class="form-select select2"
+                                        data-placeholder="No Discount"
+                                        data-allow-clear="true"
+                                        data-dropdown-parent="#productModal"
+                                    >
+                                        <option value=""></option>
+                                    </select>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
                                 <label class="form-label d-block">Track Inventory</label>
                                 <input type="hidden" name="track_inventory" value="0">
                                 <div class="form-check form-switch mt-2">
@@ -365,6 +381,7 @@
         window.productEditUrlTemplate = @json($editUrlTemplate);
         window.categoryDropdownUrl = @json($categoriesDropdownUrl);
         window.subCategoryDropdownUrl = @json($subCategoriesDropdownUrl);
+        window.productDiscountDropdownUrl = @json($discountsDropdownUrl);
         window.productTypes = @json($productTypes);
     </script>
     <script src="{{ asset('assets/js/tenant/e-com/products.js') }}"></script>

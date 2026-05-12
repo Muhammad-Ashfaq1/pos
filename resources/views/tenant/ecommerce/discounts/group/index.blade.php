@@ -30,6 +30,7 @@
                         <th>Slug</th>
                         <th>Discount Value</th>
                         <th>Type</th>
+                        <th>Min Limit</th>
                         <th>Is Active</th>
                         <th class="text-center">Actions</th>
                     </tr>
@@ -41,6 +42,7 @@
                             <td>{{ $group->slug }}</td>
                             <td>{{ $group->type === 'percentage' ? $group->value . '%' : '$' . $group->value }}</td>
                             <td>{{ $group->type }}</td>
+                            <td>{{ $group->type === 'fixed' && $group->min_limit !== null ? '$' . number_format((float) $group->min_limit, 2) : '-' }}</td>
                             <td>
                                 @if ($group->is_active)
                                     <span class="badge bg-label-success">Yes</span>
@@ -49,17 +51,23 @@
                                 @endif
                             </td>
                             <td class="text-center">
-                                <div class="d-flex align-items-center justify-content-center gap-2">
-                                    <a href="javascript:void(0);" class="text-primary edit-discount-group" 
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <button type="button" class="btn btn-icon btn-text-primary rounded-pill waves-effect edit-discount-group" 
                                         data-id="{{ $group->id }}"
                                         data-title="{{ $group->name }}"
                                         data-type="{{ $group->type }}"
                                         data-value="{{ $group->value }}"
-                                    ><i class="ti tabler-edit"></i></a>
-                                    <a href="javascript:void(0);" class="text-danger delete-discount-group" 
+                                        data-min-limit="{{ $group->min_limit }}"
+                                        data-is-active="{{ $group->is_active ? 1 : 0 }}"
+                                        data-bs-toggle="tooltip" data-bs-custom-class="tooltip-primary" title="Edit"
+                                    ><i class="icon-base ti tabler-edit icon-md"></i></button>
+                                    
+                                    <button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect delete-discount-group" 
                                         data-id="{{ $group->id }}"
                                         data-url="{{ route('tenant.discounts.group.delete', $group->id) }}"
-                                    ><i class="ti tabler-trash"></i></a>
+                                        data-name="{{ $group->name }}"
+                                        data-bs-toggle="tooltip" data-bs-custom-class="tooltip-primary" title="Delete"
+                                    ><i class="icon-base ti tabler-trash icon-md text-danger"></i></button>
                                 </div>
                             </td>
                         </tr>

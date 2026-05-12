@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 use App\Models\DiscountGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+
 
 class DiscountGroupController extends Controller
 {
@@ -30,15 +32,27 @@ class DiscountGroupController extends Controller
     public function store(Request $request)
     {
         // Validate the request data
+        $tenantId = app(\App\Support\Tenancy\TenantContext::class)->id();
+
         $validated = $request->validate([
-            'title'     => 'required|string|max:255',
+            'title'     => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('discount_groups', 'name')->where('tenant_id', $tenantId),
+            ],
             'type'      => 'required|in:percentage,fixed',
             'value'     => 'required|numeric|min:0',
+            'min_limit' => 'nullable|required_if:type,fixed|numeric|min:0',
             'is_active' => 'boolean',
         ]);
 
         $validated['name'] = $validated['title'] ?? null;
         $validated['slug'] = Str::slug($validated['title'] ?? '');
+        $validated['min_limit'] = $validated['type'] === DiscountGroup::TYPE_FIXED
+            ? ($validated['min_limit'] ?? 0)
+            : null;
+        $validated['is_active'] = $request->boolean('is_active');
 
         $discountGroup = DiscountGroup::create($validated);
 
@@ -75,15 +89,29 @@ class DiscountGroupController extends Controller
     public function update(Request $request, DiscountGroup $discountGroup)
     {
         // Validate the request data
+        $tenantId = app(\App\Support\Tenancy\TenantContext::class)->id();
+
         $validated = $request->validate([
-            'title'     => 'required|string|max:255',
+            'title'     => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('discount_groups', 'name')
+                    ->where('tenant_id', $tenantId)
+                    ->ignore($discountGroup->id),
+            ],
             'type'      => 'required|in:percentage,fixed',
             'value'     => 'required|numeric|min:0',
+            'min_limit' => 'nullable|required_if:type,fixed|numeric|min:0',
             'is_active' => 'boolean',
         ]);
 
         $validated['name'] = $validated['title'] ?? null;
         $validated['slug'] = Str::slug($validated['title'] ?? '');
+        $validated['min_limit'] = $validated['type'] === DiscountGroup::TYPE_FIXED
+            ? ($validated['min_limit'] ?? 0)
+            : null;
+        $validated['is_active'] = $request->boolean('is_active');
 
         $discountGroup->update($validated);
 
@@ -104,6 +132,7 @@ class DiscountGroupController extends Controller
     public function destroy(DiscountGroup $discountGroup, Request $request)
     {
         $discountGroup->delete();
+
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,

@@ -61,13 +61,14 @@ class SharedDataController extends Controller
         $categoryId = $request->integer('category_id') ?: null;
 
         $query = Product::query()
+            ->with('discount:id,name,discount_type,applies_to,value,max_discount_amount,is_active,starts_at,ends_at')
             ->where('is_active', true)
             ->when($subCategoryId, fn ($q) => $q->where('sub_category_id', $subCategoryId))
             ->when($categoryId, fn ($q) => $q->where('category_id', $categoryId))
             ->when($search !== '', fn ($q) => $q->search($search))
             ->orderBy('name');
 
-        $products = $query->get(['id', 'name', 'sku', 'barcode', 'brand', 'unit', 'sale_price', 'current_stock', 'track_inventory', 'product_type', 'sub_category_id', 'category_id']);
+        $products = $query->get(['id', 'name', 'sku', 'barcode', 'brand', 'unit', 'sale_price', 'discount_id', 'current_stock', 'track_inventory', 'product_type', 'sub_category_id', 'category_id']);
 
         $subCategoryMeta = null;
         if ($subCategoryId) {
@@ -110,11 +111,12 @@ class SharedDataController extends Controller
             ->get(['id', 'category_id', 'name', 'code', 'slug']);
 
         $products = Product::query()
+            ->with('discount:id,name,discount_type,applies_to,value,max_discount_amount,is_active,starts_at,ends_at')
             ->where('is_active', true)
             ->search($search)
             ->orderBy('name')
             ->limit(40)
-            ->get(['id', 'name', 'sku', 'barcode', 'brand', 'unit', 'sale_price', 'current_stock', 'track_inventory', 'product_type', 'sub_category_id', 'category_id']);
+            ->get(['id', 'name', 'sku', 'barcode', 'brand', 'unit', 'sale_price', 'discount_id', 'current_stock', 'track_inventory', 'product_type', 'sub_category_id', 'category_id']);
 
         return response()->json([
             'categories' => $categories->map(fn (Category $c) => $this->mapCategory($c))->all(),
@@ -148,6 +150,9 @@ class SharedDataController extends Controller
 
     private function mapProduct(Product $p): array
     {
+        $unitPrice = (float) $p->sale_price;
+        $unitDiscount = $this->itemDiscountAmount($p);
+
         return [
             'id' => $p->id,
             'name' => $p->name,
@@ -155,7 +160,12 @@ class SharedDataController extends Controller
             'barcode' => $p->barcode,
             'brand' => $p->brand,
             'unit' => $p->unit,
-            'sale_price' => (float) $p->sale_price,
+            'sale_price' => $unitPrice,
+            'discounted_price' => round(max($unitPrice - $unitDiscount, 0), 2),
+            'unit_discount_amount' => $unitDiscount,
+            'discount_name' => $p->discount?->name,
+            'discount_type' => $this->hasActiveItemDiscount($p) ? $p->discount?->discount_type : null,
+            'discount_value' => $this->hasActiveItemDiscount($p) ? (float) $p->discount->value : null,
             'current_stock' => (int) $p->current_stock,
             'track_inventory' => (bool) $p->track_inventory,
             'product_type' => $p->product_type,
@@ -163,5 +173,46 @@ class SharedDataController extends Controller
             'category_id' => $p->category_id,
             'type' => 'product',
         ];
+    }
+
+    private function itemDiscountAmount(Product $product): float
+    {
+        if (! $this->hasActiveItemDiscount($product)) {
+            return 0.0;
+        }
+
+        $price = (float) $product->sale_price;
+        $discount = $product->discount;
+
+        $amount = $discount->discount_type === 'percentage'
+            ? $price * ((float) $discount->value / 100)
+            : (float) $discount->value;
+
+        if ($discount->max_discount_amount !== null) {
+            $amount = min($amount, (float) $discount->max_discount_amount);
+        }
+
+        return round(min($amount, $price), 2);
+    }
+
+    private function hasActiveItemDiscount(Product $product): bool
+    {
+        $discount = $product->discount;
+
+        if (! $discount || $discount->applies_to !== 'item' || ! $discount->is_active) {
+            return false;
+        }
+
+        $now = now();
+
+        if ($discount->starts_at && $discount->starts_at->gt($now)) {
+            return false;
+        }
+
+        if ($discount->ends_at && $discount->ends_at->lt($now)) {
+            return false;
+        }
+
+        return true;
     }
 }

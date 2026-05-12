@@ -95,6 +95,10 @@
                                 <span class="text-muted small">Total (without tax)</span>
                                 <span class="fw-bold small summary-subtotal">$0.00</span>
                             </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted small">Discount</span>
+                                <span class="fw-bold small text-success summary-discount">-$0.00</span>
+                            </div>
                             <div class="d-flex justify-content-between mb-4">
                                 <h5 class="fw-bold">Final Total</h5>
                                 <h5 class="fw-bold text-primary summary-total">$0.00</h5>
@@ -257,6 +261,10 @@
                                 <div class="d-flex justify-content-between small border-bottom pb-3 mb-3">
                                     <span>Sub Total:</span>
                                     <span class="fw-bold payment-subtotal">$0.00</span>
+                                </div>
+                                <div class="d-flex justify-content-between small border-bottom pb-3 mb-3">
+                                    <span>Discount:</span>
+                                    <span class="fw-bold text-success payment-discount">-$0.00</span>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <h5 class="fw-bold mb-0">Balance Due:</h5>

@@ -38,16 +38,60 @@
         $this.wrap('<div class="position-relative"></div>');
       }
 
-      $this.select2({
+      const ajaxUrl = $this.data('ajax-url');
+      const options = {
         dropdownParent: dropdownParentSelector ? $(dropdownParentSelector) : $this.parent(),
         placeholder: $this.data('placeholder'),
         allowClear: Boolean($this.data('allow-clear')),
         minimumResultsForSearch: $this.data('minimum-results-for-search') ?? 0
-      }).on('change', function () {
+      };
+
+      if (ajaxUrl) {
+        options.ajax = {
+          url: ajaxUrl,
+          dataType: 'json',
+          delay: 250,
+          data: function (params) {
+            return {
+              q: params.term || '',
+              page: params.page || 1
+            };
+          },
+          processResults: function (data) {
+            return {
+              results: data.results || [],
+              pagination: {
+                more: data.pagination ? data.pagination.more : false
+              }
+            };
+          },
+          cache: true
+        };
+      }
+
+      $this.select2(options).on('change', function () {
         _this.setSelect2ErrorState($this, false);
         $this.closest('.position-relative').find('.invalid-feedback').text('');
       });
     });
+  };
+
+  CustomerManager.prototype.ensureSelectOption = function ($select, id, text) {
+    if (!$select.length) return;
+
+    if (!id) {
+      $select.val(null).trigger('change');
+      return;
+    }
+
+    let option = $select.find('option[value="' + id + '"]');
+
+    if (!option.length) {
+      option = new Option(text || 'Selected item', id, true, true);
+      $select.append(option);
+    }
+
+    $select.val(String(id)).trigger('change');
   };
 
   CustomerManager.prototype.setSelect2ErrorState = function ($element, invalid) {
@@ -58,12 +102,14 @@
     this.$form.find('.is-invalid').removeClass('is-invalid');
     this.$form.find('.invalid-feedback').text('');
     this.setSelect2ErrorState(this.$form.find('#customer_type'), false);
+    this.setSelect2ErrorState(this.$form.find('#customer_discount_group_id'), false);
   };
 
   CustomerManager.prototype.resetForm = function () {
     this.$form[0].reset();
     this.$form.find('#customer_id').val('');
     this.$form.find('#customer_type').val('registered').trigger('change');
+    this.ensureSelectOption(this.$form.find('#customer_discount_group_id'), null, null);
     this.$form.find('#customer_total_visits').val(0);
     this.$form.find('#customer_lifetime_value').val('0.00');
     this.$form.find('#customer_loyalty_points_balance').val(0);
@@ -77,6 +123,7 @@
   CustomerManager.prototype.fillForm = function (customer) {
     this.$form.find('#customer_id').val(customer.id);
     this.$form.find('#customer_type').val(customer.customer_type).trigger('change');
+    this.ensureSelectOption(this.$form.find('#customer_discount_group_id'), customer.discount_group_id, customer.discount_group_name);
     this.$form.find('#customer_name').val(customer.name);
     this.$form.find('#customer_phone').val(customer.phone);
     this.$form.find('#customer_email').val(customer.email);
@@ -113,6 +160,7 @@
       ignore: [],
       rules: {
         customer_type: { required: true },
+        discount_group_id: { required: true },
         name: { required: true, maxlength: 150 },
         phone: { maxlength: 30 },
         email: { email: true, maxlength: 150 },
@@ -125,6 +173,7 @@
       },
       messages: {
         customer_type: { required: 'Please select a customer type.' },
+        discount_group_id: { required: 'Please select a discount group.' },
         name: { required: 'Please enter a customer name.', maxlength: 'The customer name may not be greater than 150 characters.' },
         email: { email: 'Please enter a valid email address.' }
       },

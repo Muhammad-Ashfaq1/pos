@@ -44,6 +44,14 @@
                         <span>Items:</span>
                         <strong>{{ $order['items_count'] }}</strong>
                     </div>
+                    <div class="employee-order-details-summary-row">
+                        <span>Subtotal:</span>
+                        <strong>{{ $order['subtotal_amount_label'] }}</strong>
+                    </div>
+                    <div class="employee-order-details-summary-row">
+                        <span>Discount:</span>
+                        <strong>{{ $order['discount_amount_label'] }}</strong>
+                    </div>
                     <div class="employee-order-details-total-row">
                         <span>Total</span>
                         <strong>{{ $order['total_amount_label'] }}</strong>

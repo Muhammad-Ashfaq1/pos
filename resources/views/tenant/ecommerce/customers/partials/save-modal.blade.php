@@ -12,7 +12,7 @@
 
                 <div class="modal-body">
                     <div class="row g-3">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label for="customer_type" class="form-label">Customer Type <span class="text-danger">*</span></label>
                             <div class="position-relative">
                                 <select id="customer_type" name="customer_type" class="form-select modal-select2" data-placeholder="Select a customer type" data-dropdown-parent="#customerModal">
@@ -24,15 +24,32 @@
                                 <div class="invalid-feedback"></div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label for="customer_name" class="form-label">Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="customer_name" name="name" maxlength="150">
                             <div class="invalid-feedback"></div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label for="customer_phone" class="form-label">Phone</label>
                             <input type="text" class="form-control" id="customer_phone" name="phone" maxlength="30">
                             <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="customer_discount_group_id" class="form-label">Discount Group <span class="text-danger">*</span></label>
+                            <div class="position-relative">
+                                <select
+                                    id="customer_discount_group_id"
+                                    name="discount_group_id"
+                                    class="form-select modal-select2"
+                                    data-placeholder="Select a discount group"
+                                    data-allow-clear="true"
+                                    data-dropdown-parent="#customerModal"
+                                    data-ajax-url="{{ route('tenant.ecommerce.dropdowns.discount-groups', ['active_only' => 1]) }}"
+                                >
+                                    <option value=""></option>
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
                         </div>
 
                         <div class="col-md-4">

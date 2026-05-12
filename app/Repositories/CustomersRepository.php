@@ -18,6 +18,7 @@ class CustomersRepository implements CustomerRepositoryInterface
             'listingUrl' => route('tenant.ecommerce.customers.listing'),
             'editUrlTemplate' => route('tenant.ecommerce.customers.edit', ['customer' => '__CUSTOMER__']),
             'customerTypes' => Customer::typeOptions(),
+            'discountGroupsDropdownUrl' => route('tenant.ecommerce.dropdowns.discount-groups'),
             'vehicleIndexUrlTemplate' => route('tenant.ecommerce.vehicles.index', ['customer_id' => '__CUSTOMER__']),
         ]);
     }
@@ -40,7 +41,10 @@ class CustomersRepository implements CustomerRepositoryInterface
             $customer->save();
         }
 
-        $customer->loadMissing('defaultVehicle:id,customer_id,plate_number');
+        $customer->loadMissing([
+            'defaultVehicle:id,customer_id,plate_number',
+            'discountGroup:id,name,type,value,min_limit,is_active',
+        ]);
         $customer->loadCount('vehicles');
 
         return [
@@ -70,7 +74,10 @@ class CustomersRepository implements CustomerRepositoryInterface
 
         $baseQuery = Customer::query();
         $filteredQuery = Customer::query()
-            ->with('defaultVehicle:id,customer_id,plate_number')
+            ->with([
+                'defaultVehicle:id,customer_id,plate_number',
+                'discountGroup:id,name,type,value,min_limit,is_active',
+            ])
             ->withCount('vehicles')
             ->search($search)
             ->when($customerType !== '', function (Builder $query) use ($customerType): void {
@@ -96,7 +103,10 @@ class CustomersRepository implements CustomerRepositoryInterface
 
     public function getCustomerFormData(Customer $customer, ?Authenticatable $user = null): array
     {
-        $customer->loadMissing('defaultVehicle:id,customer_id,plate_number');
+        $customer->loadMissing([
+            'defaultVehicle:id,customer_id,plate_number',
+            'discountGroup:id,name,type,value,min_limit,is_active',
+        ]);
         $customer->loadCount('vehicles');
 
         return $this->transformCustomer($customer, $user);
@@ -106,6 +116,7 @@ class CustomersRepository implements CustomerRepositoryInterface
     {
         return [
             'customer_type' => $data['customer_type'],
+            'discount_group_id' => $data['discount_group_id'],
             'name' => $data['name'],
             'phone' => $this->normalizeNullableString($data['phone'] ?? null),
             'email' => $this->normalizeNullableString($data['email'] ?? null),
@@ -171,6 +182,16 @@ class CustomersRepository implements CustomerRepositoryInterface
             'id' => $customer->id,
             'customer_type' => $customer->customer_type,
             'customer_type_label' => $typeOptions[$customer->customer_type] ?? ucfirst((string) $customer->customer_type),
+            'discount_group_id' => $customer->discount_group_id,
+            'discount_group_name' => $customer->discountGroup?->name,
+            'discount_group' => $customer->discountGroup ? [
+                'id' => $customer->discountGroup->id,
+                'name' => $customer->discountGroup->name,
+                'type' => $customer->discountGroup->type,
+                'value' => (float) $customer->discountGroup->value,
+                'min_limit' => $customer->discountGroup->min_limit !== null ? (float) $customer->discountGroup->min_limit : null,
+                'is_active' => (bool) $customer->discountGroup->is_active,
+            ] : null,
             'name' => $customer->name,
             'phone' => $customer->phone,
             'email' => $customer->email,

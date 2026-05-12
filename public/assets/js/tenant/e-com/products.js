@@ -9,6 +9,7 @@
   const $table = $('.products-datatables');
   const $formCategory = $('#product_category_id');
   const $formSubCategory = $('#product_sub_category_id');
+  const $formDiscount = $('#product_discount_id');
   const $filterCategory = $('#product_filter_category');
   const $filterSubCategory = $('#product_filter_sub_category');
   const $trackInventoryToggle = $('#product_track_inventory_toggle');
@@ -222,6 +223,7 @@
     $form.find('.invalid-feedback').text('');
     setSelect2ErrorState($formCategory, false);
     setSelect2ErrorState($formSubCategory, false);
+    setSelect2ErrorState($formDiscount, false);
   };
 
   const ensureSelectOption = function ($select, id, text) {
@@ -251,6 +253,10 @@
       const $this = $(this);
 
       if ($this.data('select2')) {
+        return;
+      }
+
+      if ($this.is($formDiscount)) {
         return;
       }
 
@@ -355,6 +361,38 @@
     $select.find('option').not(':first').remove();
   };
 
+  const initDiscountSelect = function () {
+    if (typeof $.fn.select2 !== 'function' || !$formDiscount.length || $formDiscount.data('select2')) {
+      return;
+    }
+
+    $formDiscount.select2({
+      dropdownParent: $('#productModal'),
+      placeholder: $formDiscount.data('placeholder'),
+      allowClear: true,
+      ajax: {
+        url: window.productDiscountDropdownUrl,
+        delay: 250,
+        dataType: 'json',
+        data: function (params) {
+          return {
+            q: params.term || '',
+            page: params.page || 1
+          };
+        },
+        processResults: function (response) {
+          return {
+            results: response.results || [],
+            pagination: response.pagination || { more: false }
+          };
+        }
+      }
+    }).on('change', function () {
+      setSelect2ErrorState($formDiscount, false);
+      $formDiscount.closest('.position-relative').find('.invalid-feedback').text('');
+    });
+  };
+
   const resetForm = function () {
     $form[0].reset();
     $('#product_id').val('');
@@ -369,6 +407,7 @@
     $('#product_type').val(Object.keys(window.productTypes)[0]).trigger('change');
     ensureSelectOption($formCategory, null, null);
     clearSubCategorySelect($formSubCategory);
+    ensureSelectOption($formDiscount, null, null);
     if (mediaManager) {
       mediaManager.reset();
     }
@@ -393,6 +432,7 @@
     $('#product_cost_price').val(product.cost_price);
     $('#product_sale_price').val(product.sale_price);
     $('#product_tax_percentage').val(product.tax_percentage);
+    ensureSelectOption($formDiscount, product.discount_id, product.discount_name);
     $('#product_opening_stock').val(toIntStock(product.opening_stock));
     $('#product_current_stock').val(toIntStock(product.current_stock));
     $('#product_minimum_stock_level').val(toIntStock(product.minimum_stock_level));
@@ -511,6 +551,7 @@
           min: 0,
           max: 100
         },
+        discount_id: {},
         opening_stock: {
           digits: true,
           min: 0
@@ -969,6 +1010,7 @@
     initSubCategorySelect($filterSubCategory, function () {
       return $filterCategory.val();
     });
+    initDiscountSelect();
 
     const validator = bindFormValidation();
 
