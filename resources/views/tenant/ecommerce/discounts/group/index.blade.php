@@ -30,6 +30,7 @@
                         <th>Slug</th>
                         <th>Discount Value</th>
                         <th>Type</th>
+                        <th>Min Limit</th>
                         <th>Is Active</th>
                         <th class="text-center">Actions</th>
                     </tr>
@@ -41,7 +42,8 @@
                             <td>{{ $group->slug }}</td>
                             <td>{{ $group->type === 'percentage' ? $group->value . '%' : '$' . $group->value }}</td>
                             <td>{{ $group->type }}</td>
-                            <td>
+                            <td>{{ $group->type === 'fixed' ? '$' . $group->min_limit : '-' }}</td>
+                            <td class="text-center">
                                 @if ($group->is_active)
                                     <span class="badge bg-label-success">Yes</span>
                                 @else
@@ -51,10 +53,12 @@
                             <td class="text-center">
                                 <div class="d-flex align-items-center justify-content-center gap-2">
                                     <a href="javascript:void(0);" class="text-primary edit-discount-group" 
-                                        data-id="{{ $group->id }}"
+                                         data-id="{{ $group->id }}"
                                         data-title="{{ $group->name }}"
                                         data-type="{{ $group->type }}"
                                         data-value="{{ $group->value }}"
+                                        data-min-value="{{ $group->min_limit }}"
+                                        data-is-active="{{ $group->is_active }}"
                                     ><i class="ti tabler-edit"></i></a>
                                     <a href="javascript:void(0);" class="text-danger delete-discount-group" 
                                         data-id="{{ $group->id }}"

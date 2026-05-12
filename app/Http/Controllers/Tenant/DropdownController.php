@@ -193,4 +193,25 @@ class DropdownController extends Controller
             ],
         ]);
     }
+
+    public function discountGroups(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->string('q')->toString());
+        $activeOnly = $request->boolean('active_only', true);
+
+        $query = \App\Models\DiscountGroup::query()
+            ->select(['id', 'name'])
+            ->when($activeOnly, fn ($builder) => $builder->where('is_active', true))
+            ->where('name', 'like', "%{$search}%")
+            ->orderBy('name');
+
+        $groups = $query->get();
+
+        return response()->json([
+            'results' => $groups->map(fn ($group) => [
+                'id' => $group->id,
+                'text' => $group->name,
+            ])->all(),
+        ]);
+    }
 }

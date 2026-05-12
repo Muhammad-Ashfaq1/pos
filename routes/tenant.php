@@ -43,6 +43,8 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                         Route::get('/vehicles', 'vehicles')
                             ->middleware('permission:vehicle.view|vehicle.create|vehicle.update|customer.view|customer.create|customer.update|pos.bill|vehicles.view|vehicles.manage')
                             ->name('vehicles');
+                        Route::get('/discount-groups', 'discountGroups')
+                            ->name('discount-groups');
                     });
 
                 Route::prefix('categories')
