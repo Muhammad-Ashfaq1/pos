@@ -44,6 +44,34 @@
                         <span>Items:</span>
                         <strong>{{ $order['items_count'] }}</strong>
                     </div>
+                    <div class="employee-order-details-summary-row">
+                        <span>Sub Total:</span>
+                        <strong>{{ $order['subtotal_amount_label'] }}</strong>
+                    </div>
+                    @if (($order['service_price_amount'] ?? 0) > 0)
+                        <div class="employee-order-details-summary-row employee-order-details-service-fee-row">
+                            <span>Service Price:</span>
+                            <strong>+{{ $order['service_price_amount_label'] }}</strong>
+                        </div>
+                    @endif
+                    @if (($order['manual_service_fee_amount'] ?? $order['service_fee_amount']) > 0)
+                        <div class="employee-order-details-summary-row employee-order-details-service-fee-row">
+                            <span>Service Fee:</span>
+                            <strong>+{{ $order['manual_service_fee_amount_label'] ?? $order['service_fee_amount_label'] }}</strong>
+                        </div>
+                    @endif
+                    @if ($order['discount_amount'] > 0)
+                        <div class="employee-order-details-summary-row employee-order-details-discount-row">
+                            <span>Discount:</span>
+                            <strong>-{{ $order['discount_amount_label'] }}</strong>
+                        </div>
+                    @endif
+                    @if ($order['tax_amount'] > 0)
+                        <div class="employee-order-details-summary-row">
+                            <span>Tax:</span>
+                            <strong>+{{ $order['tax_amount_label'] }}</strong>
+                        </div>
+                    @endif
                     <div class="employee-order-details-total-row">
                         <span>Total</span>
                         <strong>{{ $order['total_amount_label'] }}</strong>
@@ -68,28 +96,37 @@
                         <span>Status:</span>
                         <strong class="employee-order-details-status {{ $order['status_class'] }}">{{ $order['status_label'] }}</strong>
                     </div>
+                    @if (($order['service_price_amount'] ?? 0) > 0)
+                        <div class="employee-order-details-payment-line employee-order-details-service-fee-row">
+                            <span>Service Price:</span>
+                            <strong>+{{ $order['service_price_amount_label'] }}</strong>
+                        </div>
+                    @endif
+                    @if (($order['manual_service_fee_amount'] ?? $order['service_fee_amount']) > 0)
+                        <div class="employee-order-details-payment-line employee-order-details-service-fee-row">
+                            <span>Service Fee:</span>
+                            <strong>+{{ $order['manual_service_fee_amount_label'] ?? $order['service_fee_amount_label'] }}</strong>
+                        </div>
+                    @endif
+                    @if ($order['discount_amount'] > 0)
+                        <div class="employee-order-details-payment-line employee-order-details-discount-row">
+                            <span>Discount:</span>
+                            <strong>-{{ $order['discount_amount_label'] }}</strong>
+                        </div>
+                    @endif
+                    @if ($order['tax_amount'] > 0)
+                        <div class="employee-order-details-payment-line">
+                            <span>Tax:</span>
+                            <strong>+{{ $order['tax_amount_label'] }}</strong>
+                        </div>
+                    @endif
                     <div class="employee-order-details-payment-line">
                         <span>Total:</span>
                         <strong>{{ $order['total_amount_label'] }}</strong>
                     </div>
                 </div>
 
-                <div class="employee-order-details-tax">
-                    <h6>Tax Details:</h6>
-                    @if ($order['tax_amount'] > 0)
-                        @foreach ($order['items'] as $item)
-                            <div class="employee-order-details-tax-line">
-                                <span>{{ $item['tax_detail_label'] }}</span>
-                                <strong>{{ $loop->first ? $order['tax_amount_label'] : '$0.00' }}</strong>
-                            </div>
-                        @endforeach
-                    @else
-                        <div class="employee-order-details-tax-line">
-                            <span>No tax applied</span>
-                            <strong>{{ $order['tax_amount_label'] }}</strong>
-                        </div>
-                    @endif
-                </div>
+
 
                 <div class="employee-order-details-balance">
                     <span>Balance Due:</span>

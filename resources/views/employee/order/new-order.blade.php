@@ -35,6 +35,7 @@
                                     data-ajax-url="{{ route('tenant.ecommerce.dropdowns.customers') }}">
                                     <option value=""></option>
                                 </select>
+                                <div class="customer-discount-banner d-none mt-2"></div>
                             </div>
 
                             <div class="mb-3">
@@ -97,9 +98,29 @@
                                     <span class="fw-bold summary-qty">0</span>
                                 </div>
                                 <div class="d-flex justify-content-between mb-2">
-                                    <span class="text-muted small">Total (without tax)</span>
+                                    <span class="text-muted small">Subtotal:</span>
                                     <span class="fw-bold small summary-subtotal">$0.00</span>
                                 </div>
+                                <div class="summary-service-price-row d-none d-flex justify-content-between mb-2">
+                                    <span class="text-muted small summary-service-price-title">Service Price</span>
+                                    <span class="fw-bold small summary-service-price">$0.00</span>
+                                </div>
+                                <div class="summary-service-price-breakdowns d-none"></div>
+                                <div class="summary-service-fee-row d-none d-flex justify-content-between mb-2">
+                                    <span class="text-muted small summary-service-fee-title">Service fee</span>
+                                    <span class="fw-bold small summary-service-fee">$0.00</span>
+                                </div>
+                                <div class="summary-service-fee-breakdowns d-none"></div>
+                                <div class="summary-discount-lines d-none d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">Discount</span>
+                                    <span class="fw-bold small text-success summary-discount">-$0.00</span>
+                                </div>
+                                <div class="summary-discount-breakdowns d-none"></div>
+                                <div class="summary-tax-row d-none d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">Tax</span>
+                                    <span class="fw-bold small summary-tax">$0.00</span>
+                                </div>
+                                <div class="summary-tax-breakdowns d-none"></div>
                                 <div class="d-flex justify-content-between mb-4">
                                     <h5 class="fw-bold">Final Total</h5>
                                     <h5 class="fw-bold text-primary summary-total">$0.00</h5>
@@ -233,6 +254,11 @@
                                         </div>
                                     </div>
 
+                                    <div class="product-discount-banner d-none mb-3">
+                                        <i class="ti tabler-discount-2"></i>
+                                        <span class="product-discount-label"></span>
+                                    </div>
+
                                     <div class="row g-2 mb-4">
                                         <div class="col-6">
                                             <div class="bg-label-primary bg-opacity-10 p-2 rounded-3 border border-primary border-opacity-10 text-center">
@@ -309,6 +335,34 @@
                                 <div class="d-flex justify-content-between small border-bottom pb-3 mb-3">
                                     <span>Sub Total:</span>
                                     <span class="fw-bold payment-subtotal">$0.00</span>
+                                </div>
+                                <div class="payment-service-price-section d-none border-bottom pb-3 mb-3">
+                                    <div class="payment-service-price-row d-flex justify-content-between small">
+                                        <span class="payment-service-price-title">Service Price:</span>
+                                        <span class="fw-bold payment-service-price">$0.00</span>
+                                    </div>
+                                    <div class="payment-service-price-breakdowns mt-2"></div>
+                                </div>
+                                <div class="payment-service-fee-section d-none border-bottom pb-3 mb-3">
+                                    <div class="payment-service-fee-row d-flex justify-content-between small">
+                                        <span class="payment-service-fee-title">Service Fee:</span>
+                                        <span class="fw-bold payment-service-fee">$0.00</span>
+                                    </div>
+                                    <div class="payment-service-fee-breakdowns mt-2"></div>
+                                </div>
+                                <div class="payment-discount-section d-none border-bottom pb-3 mb-3">
+                                    <div class="payment-discount-lines d-flex justify-content-between small">
+                                        <span>Discount:</span>
+                                        <span class="fw-bold text-success payment-discount">-$0.00</span>
+                                    </div>
+                                    <div class="payment-discount-breakdowns mt-2"></div>
+                                </div>
+                                <div class="payment-tax-section d-none border-bottom pb-3 mb-3">
+                                    <div class="payment-tax-row d-flex justify-content-between small">
+                                        <span>Tax:</span>
+                                        <span class="fw-bold payment-tax">$0.00</span>
+                                    </div>
+                                    <div class="payment-tax-breakdowns mt-2"></div>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <h5 class="fw-bold mb-0">Balance Due:</h5>
@@ -401,6 +455,7 @@
             save: @json(route('employee.order.save')),
             dropdownCustomers: @json(route('tenant.ecommerce.dropdowns.customers')),
             dropdownVehicles: @json(route('tenant.ecommerce.dropdowns.vehicles')),
+            dropdownServices: @json(route('tenant.ecommerce.dropdowns.services')),
         };
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"></script>

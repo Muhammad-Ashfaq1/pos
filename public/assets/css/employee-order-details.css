@@ -165,6 +165,18 @@
   font-weight: 800;
 }
 
+.employee-order-details-summary-row + .employee-order-details-summary-row {
+  margin-top: 0.45rem;
+}
+
+.employee-order-details-discount-row strong {
+  color: #15803d;
+}
+
+.employee-order-details-service-fee-row strong {
+  color: #312e81;
+}
+
 .employee-order-details-total-row {
   margin-top: 0.75rem;
   color: #111827;

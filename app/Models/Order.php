@@ -21,11 +21,16 @@ class Order extends Model
         'order_number',
         'customer_id',
         'vehicle_id',
+        'service_id',
+        'discount_id',
+        'discount_group_id',
+        'discount_details',
         'status',
         'total_quantity',
         'subtotal_amount',
         'discount_amount',
         'service_fee_amount',
+        'service_fee_details',
         'tax_amount',
         'total_amount',
         'payment_method',
@@ -42,10 +47,15 @@ class Order extends Model
         return [
             'customer_id' => 'integer',
             'vehicle_id' => 'integer',
+            'service_id' => 'integer',
+            'discount_id' => 'integer',
+            'discount_group_id' => 'integer',
+            'discount_details' => 'array',
             'total_quantity' => 'integer',
             'subtotal_amount' => 'decimal:2',
             'discount_amount' => 'decimal:2',
             'service_fee_amount' => 'decimal:2',
+            'service_fee_details' => 'array',
             'tax_amount' => 'decimal:2',
             'total_amount' => 'decimal:2',
             'payment_amount' => 'decimal:2',
@@ -62,6 +72,16 @@ class Order extends Model
     public function vehicle(): BelongsTo
     {
         return $this->belongsTo(Vehicle::class);
+    }
+
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    public function discountGroup(): BelongsTo
+    {
+        return $this->belongsTo(DiscountGroup::class);
     }
 
     public function items(): HasMany
