@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Tenant\Products;
 
+use App\Models\Discount;
 use App\Models\Image;
 use App\Models\Product;
 use App\Models\SubCategory;
@@ -66,6 +67,15 @@ class SaveProductRequest extends FormRequest
                         $fail('The selected sub category does not belong to the selected category.');
                     }
                 },
+            ],
+            'discount_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('discounts', 'id')->where(
+                    fn ($query) => $query
+                        ->where('tenant_id', $tenantId)
+                        ->where('applies_to', Discount::APPLIES_TO_ITEM)
+                ),
             ],
             'product_type' => [
                 'required',
@@ -222,6 +232,7 @@ class SaveProductRequest extends FormRequest
             'id.exists' => 'The selected product was not found for this shop.',
             'category_id.exists' => 'The selected category was not found for this shop.',
             'sub_category_id.exists' => 'The selected sub category was not found for this shop.',
+            'discount_id.exists' => 'Please select a valid item discount for this shop.',
             'product_type.required' => 'Please select a product type.',
             'product_type.in' => 'Please select a valid product type.',
             'name.required' => 'Please enter a product name.',

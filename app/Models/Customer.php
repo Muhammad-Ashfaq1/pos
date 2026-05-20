@@ -42,6 +42,7 @@ class Customer extends Model
     protected function casts(): array
     {
         return [
+            'discount_group_id' => 'integer',
             'date_of_birth' => 'date',
             'total_visits' => 'integer',
             'lifetime_value' => 'decimal:2',

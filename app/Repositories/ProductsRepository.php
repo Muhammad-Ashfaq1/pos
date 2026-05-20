@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Category;
+use App\Models\Discount;
 use App\Models\Product;
 use App\Models\SubCategory;
 use App\Repositories\Interface\ProductRepositoryInterface;
@@ -30,6 +31,7 @@ class ProductsRepository implements ProductRepositoryInterface
             'editUrlTemplate' => route('tenant.ecommerce.products.edit', ['product' => '__PRODUCT__']),
             'categoriesDropdownUrl' => route('tenant.ecommerce.dropdowns.categories'),
             'subCategoriesDropdownUrl' => route('tenant.ecommerce.dropdowns.subcategories'),
+            'discountDropdownUrl' => route('tenant.ecommerce.dropdowns.discounts'),
             'productTypes' => Product::typeOptions(),
         ]);
     }
@@ -72,6 +74,7 @@ class ProductsRepository implements ProductRepositoryInterface
             $data['sale_price'] = $this->normalizeMoney($data['sale_price'] ?? 0);
             $data['category_id'] = $data['category_id'] ?: null;
             $data['sub_category_id'] = $data['sub_category_id'] ?: null;
+            $data['discount_id'] = ! empty($data['discount_id']) ? (int) $data['discount_id'] : null;
 
             if ($isUpdate) {
                 $product->fill($data);
@@ -96,6 +99,7 @@ class ProductsRepository implements ProductRepositoryInterface
             return $product->fresh([
                 'category:id,name',
                 'subCategory:id,name',
+                'discount:id,name,code,discount_type,value',
                 'primaryImage',
                 'images',
             ]);
@@ -135,6 +139,7 @@ class ProductsRepository implements ProductRepositoryInterface
             ->with([
                 'category:id,name',
                 'subCategory:id,name',
+                'discount:id,name,code,discount_type,value',
                 'primaryImage',
             ])
             ->search($search)
@@ -237,6 +242,7 @@ class ProductsRepository implements ProductRepositoryInterface
         $product->loadMissing([
             'category:id,name',
             'subCategory:id,name',
+            'discount:id,name,code,discount_type,value',
             'primaryImage',
             'images',
         ]);
@@ -254,8 +260,11 @@ class ProductsRepository implements ProductRepositoryInterface
             'id' => $product->id,
             'category_id' => $product->category_id,
             'sub_category_id' => $product->sub_category_id,
+            'discount_id' => $product->discount_id,
             'category_name' => $product->category?->name,
             'sub_category_name' => $product->subCategory?->name,
+            'discount_name' => $product->discount?->name,
+            'discount_label' => $this->discountLabel($product->discount),
             'product_type' => $product->product_type,
             'product_type_label' => $typeOptions[$product->product_type] ?? ucfirst((string) $product->product_type),
             'name' => $product->name,
@@ -303,6 +312,20 @@ class ProductsRepository implements ProductRepositoryInterface
     private function normalizeMoney(mixed $value): string
     {
         return number_format((float) $value, 2, '.', '');
+    }
+
+    private function discountLabel(?Discount $discount): ?string
+    {
+        if (! $discount) {
+            return null;
+        }
+
+        $value = $discount->discount_type === Discount::TYPE_PERCENTAGE
+            ? rtrim(rtrim(number_format((float) $discount->value, 2, '.', ''), '0'), '.').'%'
+            : '$'.number_format((float) $discount->value, 2);
+        $code = filled($discount->code) ? " ({$discount->code})" : '';
+
+        return "{$discount->name}{$code} - {$value}";
     }
 
     private function normalizeStock(mixed $value): string

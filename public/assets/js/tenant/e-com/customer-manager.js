@@ -83,12 +83,14 @@
     this.$form.find('.is-invalid').removeClass('is-invalid');
     this.$form.find('.invalid-feedback').text('');
     this.setSelect2ErrorState(this.$form.find('#customer_type'), false);
+    this.setSelect2ErrorState(this.$form.find('#customer_discount_group'), false);
   };
 
   CustomerManager.prototype.resetForm = function () {
     this.$form[0].reset();
     this.$form.find('#customer_id').val('');
     this.$form.find('#customer_type').val('registered').trigger('change');
+    this.$form.find('#customer_discount_group').val('').trigger('change');
     this.$form.find('#customer_total_visits').val(0);
     this.$form.find('#customer_lifetime_value').val('0.00');
     this.$form.find('#customer_loyalty_points_balance').val(0);
@@ -295,6 +297,7 @@
     if (type === 'registered' || type === 'corporate') {
       $discountGroupDiv.removeClass('d-none');
     } else {
+      this.$form.find('#customer_discount_group').val('').trigger('change');
       $discountGroupDiv.addClass('d-none');
     }
   };

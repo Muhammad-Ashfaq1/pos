@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Discount;
 use App\Models\Product;
 use App\Models\SubCategory;
 use Illuminate\Http\JsonResponse;
@@ -61,14 +62,14 @@ class SharedDataController extends Controller
         $categoryId = $request->integer('category_id') ?: null;
 
         $query = Product::query()
-            ->with(['primaryImage'])
+            ->with(['discount:id,name,code,discount_type,applies_to,value,max_discount_amount,is_active,starts_at,ends_at', 'primaryImage'])
             ->where('is_active', true)
             ->when($subCategoryId, fn ($q) => $q->where('sub_category_id', $subCategoryId))
             ->when($categoryId, fn ($q) => $q->where('category_id', $categoryId))
             ->when($search !== '', fn ($q) => $q->search($search))
             ->orderBy('name');
 
-        $products = $query->get(['id', 'name', 'sku', 'barcode', 'brand', 'unit', 'sale_price', 'current_stock', 'track_inventory', 'product_type', 'sub_category_id', 'category_id']);
+        $products = $query->get(['id', 'name', 'sku', 'barcode', 'brand', 'unit', 'sale_price', 'tax_percentage', 'current_stock', 'track_inventory', 'product_type', 'sub_category_id', 'category_id', 'discount_id']);
 
         $subCategoryMeta = null;
         if ($subCategoryId) {
@@ -111,12 +112,12 @@ class SharedDataController extends Controller
             ->get(['id', 'category_id', 'name', 'code', 'slug']);
 
         $products = Product::query()
-            ->with(['primaryImage'])
+            ->with(['discount:id,name,code,discount_type,applies_to,value,max_discount_amount,is_active,starts_at,ends_at', 'primaryImage'])
             ->where('is_active', true)
             ->search($search)
             ->orderBy('name')
             ->limit(40)
-            ->get(['id', 'name', 'sku', 'barcode', 'brand', 'unit', 'sale_price', 'current_stock', 'track_inventory', 'product_type', 'sub_category_id', 'category_id']);
+            ->get(['id', 'name', 'sku', 'barcode', 'brand', 'unit', 'sale_price', 'tax_percentage', 'current_stock', 'track_inventory', 'product_type', 'sub_category_id', 'category_id', 'discount_id']);
 
         return response()->json([
             'categories' => $categories->map(fn (Category $c) => $this->mapCategory($c))->all(),
@@ -158,13 +159,56 @@ class SharedDataController extends Controller
             'brand' => $p->brand,
             'unit' => $p->unit,
             'sale_price' => (float) $p->sale_price,
+            'tax_percentage' => $p->tax_percentage !== null ? (float) $p->tax_percentage : 0.0,
             'current_stock' => (int) $p->current_stock,
             'track_inventory' => (bool) $p->track_inventory,
             'product_type' => $p->product_type,
             'sub_category_id' => $p->sub_category_id,
             'category_id' => $p->category_id,
             'image_url' => $p->primaryImage?->url,
+            'discount' => $this->mapDiscount($p->discount),
             'type' => 'product',
         ];
+    }
+
+    private function mapDiscount(?Discount $discount): ?array
+    {
+        if (! $discount || ! $discount->is_active || $discount->applies_to !== Discount::APPLIES_TO_ITEM) {
+            return null;
+        }
+
+        if ($discount->starts_at && $discount->starts_at->isFuture()) {
+            return null;
+        }
+
+        if ($discount->ends_at && $discount->ends_at->isPast()) {
+            return null;
+        }
+
+        return [
+            'id' => $discount->id,
+            'name' => $discount->name,
+            'code' => $discount->code,
+            'discount_type' => $discount->discount_type,
+            'applies_to' => $discount->applies_to,
+            'type' => $discount->discount_type,
+            'value' => (float) $discount->value,
+            'max_discount_amount' => $discount->max_discount_amount !== null ? (float) $discount->max_discount_amount : null,
+            'max_amount' => $discount->max_discount_amount !== null ? (float) $discount->max_discount_amount : null,
+            'is_active' => (bool) $discount->is_active,
+            'starts_at' => $discount->starts_at?->toISOString(),
+            'ends_at' => $discount->ends_at?->toISOString(),
+            'label' => $this->discountLabel($discount),
+        ];
+    }
+
+    private function discountLabel(Discount $discount): string
+    {
+        $value = $discount->discount_type === Discount::TYPE_PERCENTAGE
+            ? rtrim(rtrim(number_format((float) $discount->value, 2, '.', ''), '0'), '.').'%'
+            : '$'.number_format((float) $discount->value, 2);
+        $code = filled($discount->code) ? " ({$discount->code})" : '';
+
+        return "{$discount->name}{$code} - {$value}";
     }
 }
