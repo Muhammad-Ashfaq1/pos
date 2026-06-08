@@ -6,6 +6,7 @@ use App\Helpers\FileUploadManager;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Discount;
+use App\Models\DiscountGroup;
 use App\Models\Image;
 use App\Models\Product;
 use App\Models\ProductType;
@@ -97,14 +98,30 @@ class TenantCatalogSeeder extends Seeder
     ];
 
     private const CUSTOMERS = [
-        ['name' => 'John Smith',         'phone' => '+1 555 100 0001', 'email' => 'john.smith@example.com',     'type' => Customer::TYPE_REGISTERED],
-        ['name' => 'Sarah Johnson',      'phone' => '+1 555 100 0002', 'email' => 'sarah.j@example.com',        'type' => Customer::TYPE_REGISTERED],
-        ['name' => 'Michael Williams',   'phone' => '+1 555 100 0003', 'email' => 'mwilliams@example.com',      'type' => Customer::TYPE_REGISTERED],
-        ['name' => 'Emily Davis',        'phone' => '+1 555 100 0004', 'email' => 'emily.davis@example.com',    'type' => Customer::TYPE_REGISTERED],
-        ['name' => 'Robert Brown',       'phone' => '+1 555 100 0005', 'email' => 'rbrown@example.com',         'type' => Customer::TYPE_REGISTERED],
-        ['name' => 'Acme Logistics Inc', 'phone' => '+1 555 100 0006', 'email' => 'fleet@acme-logistics.com',   'type' => Customer::TYPE_CORPORATE],
-        ['name' => 'Sunrise Cab Co',     'phone' => '+1 555 100 0007', 'email' => 'ops@sunrisecab.com',         'type' => Customer::TYPE_CORPORATE],
-        ['name' => Customer::DEFAULT_WALK_IN_NAME, 'phone' => null,    'email' => null,                         'type' => Customer::TYPE_WALK_IN],
+        ['name' => 'John Smith',         'phone' => '+1 555 100 0001', 'email' => 'john.smith@example.com',     'type' => Customer::TYPE_REGISTERED, 'group' => 'silver-tier'],
+        ['name' => 'Sarah Johnson',      'phone' => '+1 555 100 0002', 'email' => 'sarah.j@example.com',        'type' => Customer::TYPE_REGISTERED, 'group' => 'gold-tier'],
+        ['name' => 'Michael Williams',   'phone' => '+1 555 100 0003', 'email' => 'mwilliams@example.com',      'type' => Customer::TYPE_REGISTERED, 'group' => null],
+        ['name' => 'Emily Davis',        'phone' => '+1 555 100 0004', 'email' => 'emily.davis@example.com',    'type' => Customer::TYPE_REGISTERED, 'group' => 'silver-tier'],
+        ['name' => 'Robert Brown',       'phone' => '+1 555 100 0005', 'email' => 'rbrown@example.com',         'type' => Customer::TYPE_REGISTERED, 'group' => 'platinum-tier'],
+        ['name' => 'Acme Logistics Inc', 'phone' => '+1 555 100 0006', 'email' => 'fleet@acme-logistics.com',   'type' => Customer::TYPE_CORPORATE,  'group' => 'fleet-account'],
+        ['name' => 'Sunrise Cab Co',     'phone' => '+1 555 100 0007', 'email' => 'ops@sunrisecab.com',         'type' => Customer::TYPE_CORPORATE,  'group' => 'platinum-tier'],
+        ['name' => Customer::DEFAULT_WALK_IN_NAME, 'phone' => null,    'email' => null,                         'type' => Customer::TYPE_WALK_IN,    'group' => null],
+    ];
+
+    private const DISCOUNT_GROUPS = [
+        ['name' => 'Silver Tier',   'type' => 'percentage', 'value' => 5.00,  'min_limit' => 100.00],
+        ['name' => 'Gold Tier',     'type' => 'percentage', 'value' => 10.00, 'min_limit' => 250.00],
+        ['name' => 'Platinum Tier', 'type' => 'percentage', 'value' => 15.00, 'min_limit' => 500.00],
+        ['name' => 'Fleet Account', 'type' => 'fixed',      'value' => 25.00, 'min_limit' => 200.00],
+    ];
+
+    /**
+     * Demo products that receive the seeded item-level discount (matched by name).
+     */
+    private const PRODUCTS_WITH_ITEM_DISCOUNT = [
+        'Valvoline Daily Protection',
+        'Bosch Premium Air Filter',
+        'Bridgestone Dueler H/T',
     ];
 
     private const VEHICLES = [
@@ -139,8 +156,10 @@ class TenantCatalogSeeder extends Seeder
             $this->seedProductTypes($tenant, $adminId);
             $this->seedProducts($tenant, $adminId);
             $this->seedServices($tenant, $adminId);
+            $this->seedDiscountGroups($tenant);
             $this->seedCustomersAndVehicles($tenant, $adminId);
             $this->seedDiscounts($tenant, $adminId);
+            $this->assignProductDiscounts($tenant);
         });
     }
 
@@ -419,6 +438,68 @@ class TenantCatalogSeeder extends Seeder
         }
     }
 
+    private function seedDiscountGroups(Tenant $tenant): void
+    {
+        foreach (self::DISCOUNT_GROUPS as $g) {
+            $slug = Str::slug($g['name']);
+
+            $exists = DiscountGroup::withoutTenantScope()
+                ->where('tenant_id', $tenant->id)
+                ->where('slug', $slug)
+                ->exists();
+
+            if ($exists) {
+                continue;
+            }
+
+            $group = new DiscountGroup;
+            $group->tenant_id = $tenant->id;
+            $group->name = $g['name'];
+            $group->slug = $slug;
+            $group->type = $g['type'];
+            $group->value = $g['value'];
+            $group->min_limit = $g['min_limit'];
+            $group->is_active = true;
+            $group->save();
+        }
+    }
+
+    private function discountGroupId(Tenant $tenant, ?string $slug): ?int
+    {
+        if (! $slug) {
+            return null;
+        }
+
+        return DiscountGroup::withoutTenantScope()
+            ->where('tenant_id', $tenant->id)
+            ->where('slug', $slug)
+            ->value('id');
+    }
+
+    /**
+     * Attach the seeded item-level discount to a handful of demo products so the
+     * per-product discount path has data. Idempotent: only fills products that
+     * don't already have a discount assigned.
+     */
+    private function assignProductDiscounts(Tenant $tenant): void
+    {
+        $itemDiscountId = Discount::withoutTenantScope()
+            ->where('tenant_id', $tenant->id)
+            ->where('applies_to', Discount::APPLIES_TO_ITEM)
+            ->where('is_active', true)
+            ->value('id');
+
+        if (! $itemDiscountId) {
+            return;
+        }
+
+        Product::withoutTenantScope()
+            ->where('tenant_id', $tenant->id)
+            ->whereIn('name', self::PRODUCTS_WITH_ITEM_DISCOUNT)
+            ->whereNull('discount_id')
+            ->update(['discount_id' => $itemDiscountId]);
+    }
+
     private function seedCustomersAndVehicles(Tenant $tenant, ?int $adminId): void
     {
         foreach (self::CUSTOMERS as $idx => $c) {
@@ -427,10 +508,13 @@ class TenantCatalogSeeder extends Seeder
                 ->where('name', $c['name'])
                 ->first();
 
+            $groupId = $this->discountGroupId($tenant, $c['group'] ?? null);
+
             if (! $customer) {
                 $customer = new Customer;
                 $customer->tenant_id = $tenant->id;
                 $customer->customer_type = $c['type'];
+                $customer->discount_group_id = $groupId;
                 $customer->name = $c['name'];
                 $customer->phone = $c['phone'];
                 $customer->email = $c['email'];
@@ -441,6 +525,10 @@ class TenantCatalogSeeder extends Seeder
                 $customer->credit_balance = 0;
                 $customer->created_by = $adminId;
                 $customer->updated_by = $adminId;
+                $customer->save();
+            } elseif ($groupId && $customer->discount_group_id === null) {
+                // Backfill the group for customers seeded before discount groups existed.
+                $customer->discount_group_id = $groupId;
                 $customer->save();
             }
 

@@ -48,6 +48,7 @@ This is the canonical schema reference. Files cited live under [database/migrati
 2026_05_18_090000  add_service_id_to_orders_table
 2026_05_20_090000  create_product_types_table                  (CRUD-managed product types)
 2026_05_20_090100  add_product_type_id_to_products_table       (FK + backfill from legacy string)
+2026_05_20_093000  fix_discount_groups_slug_unique_per_tenant   (global slug unique → per-tenant)
 ```
 
 ## Entity relationship overview
@@ -334,7 +335,7 @@ Indexes on `(tenant_id, discount_type)`, `(tenant_id, applies_to)`, `(tenant_id,
 
 ### `discount_groups`
 
-Source: [2026_05_08_195447_create_discount_groups_table.php](../database/migrations/2026_05_08_195447_create_discount_groups_table.php) + [2026_05_15_132808_add_min_limits_in_discount_groups.php](../database/migrations/2026_05_15_132808_add_min_limits_in_discount_groups.php) (idempotent guard).
+Source: [2026_05_08_195447_create_discount_groups_table.php](../database/migrations/2026_05_08_195447_create_discount_groups_table.php) + [2026_05_15_132808_add_min_limits_in_discount_groups.php](../database/migrations/2026_05_15_132808_add_min_limits_in_discount_groups.php) (idempotent guard) + [2026_05_20_093000_fix_discount_groups_slug_unique_per_tenant.php](../database/migrations/2026_05_20_093000_fix_discount_groups_slug_unique_per_tenant.php) (corrects older DBs where `slug` was globally unique instead of per-tenant).
 
 Customer-tier discounts: a group defines a discount that applies once a customer's bill clears a minimum spend (`min_limit`). Assigned to customers via `customers.discount_group_id`.
 
@@ -448,7 +449,7 @@ The `Image` model registers a `deleting` boot hook that removes the underlying f
 | [`ApprovedShopSeeder`](../database/seeders/ApprovedShopSeeder.php) | Creates a demo tenant in `approved` status with a tenant admin. |
 | [`TenantEmployeeSeeder`](../database/seeders/TenantEmployeeSeeder.php) | Adds employees of various roles to the demo tenant. |
 | [`TenantRoleUserSeeder`](../database/seeders/TenantRoleUserSeeder.php) | Wires team-scoped Spatie roles to seeded users. |
-| [`TenantCatalogSeeder`](../database/seeders/TenantCatalogSeeder.php) | Populates demo categories, sub-categories, product types, products, services, discounts, customers, and vehicles. Also pushes a primary image per product from [`database/data/images/products/`](../database/data/images/) onto the `public` disk and records the `images` row (idempotent — see [`seedProductImage()`](../database/seeders/TenantCatalogSeeder.php)). Run `php artisan storage:link` to serve them. |
+| [`TenantCatalogSeeder`](../database/seeders/TenantCatalogSeeder.php) | Populates demo categories, sub-categories, product types, products, services, discounts, **discount groups** (4 tiers, assigned to demo customers), customers, and vehicles. Also attaches the seeded item-level discount to a few products. Also pushes a primary image per product from [`database/data/images/products/`](../database/data/images/) onto the `public` disk and records the `images` row (idempotent — see [`seedProductImage()`](../database/seeders/TenantCatalogSeeder.php)). Run `php artisan storage:link` to serve them. |
 
 Run all of them with:
 
