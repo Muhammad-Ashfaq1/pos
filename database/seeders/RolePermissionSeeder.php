@@ -150,6 +150,8 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('orders.view', 'web'),
             Permission::findByName('orders.create', 'web'),
             Permission::findByName('product.view', 'web'),
+            Permission::findByName('product.create', 'web'),
+            Permission::findByName('product.update', 'web'),
             Permission::findByName('products.view', 'web'),
             Permission::findByName('service.view', 'web'),
             Permission::findByName('services.view', 'web'),

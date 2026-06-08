@@ -13,6 +13,7 @@
             'label' => 'Catalog',
             'items' => [
                 ['label' => 'Products', 'route' => 'tenant.ecommerce.products.index', 'pattern' => 'tenant.ecommerce.products.*', 'icon' => 'tabler-package', 'visible' => $user?->can('product.view') || $user?->can('products.view') || $user?->can('products.manage')],
+                ['label' => 'Manage Products', 'route' => 'employee.products.index', 'pattern' => 'employee.products.*', 'icon' => 'tabler-package-import', 'visible' => $user?->can('product.create') || $user?->can('product.update')],
                 ['label' => 'Services', 'route' => 'tenant.ecommerce.services.index', 'pattern' => 'tenant.ecommerce.services.*', 'icon' => 'tabler-tool', 'visible' => $user?->can('service.view') || $user?->can('services.view')],
             ],
         ],

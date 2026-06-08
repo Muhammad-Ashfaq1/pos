@@ -16,7 +16,7 @@
         ['label' => 'Reports', 'icon' => 'tabler-report-search'],
         ['label' => 'Orders', 'icon' => 'tabler-clipboard-data', 'url' => route('employee.order.index'), 'permission' => 'orders.view'],
         ['label' => 'Returns', 'icon' => 'tabler-arrow-back-up'],
-        ['label' => 'Product Setup', 'icon' => 'tabler-tool'],
+        ['label' => 'Product Setup', 'icon' => 'tabler-package-import', 'url' => route('employee.products.index'), 'permission' => 'product.create'],
         ['label' => 'Invoices', 'icon' => 'tabler-file-invoice'],
         ['label' => 'Discounts', 'icon' => 'tabler-badge'],
     ];

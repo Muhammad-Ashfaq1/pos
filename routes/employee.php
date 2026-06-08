@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Employee\OrderController;
 use App\Http\Controllers\Employee\PanelController;
+use App\Http\Controllers\Employee\ProductController as EmployeeProductController;
 use App\Http\Controllers\SharedDataController;
 use Illuminate\Support\Facades\Route;
 
@@ -68,5 +69,29 @@ Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.
                     ->middleware('permission:orders.view')
                     ->whereNumber('order')
                     ->name('share');
+            });
+
+        // ── Employee Product Management ────────────────────────────────────
+        Route::prefix('products')
+            ->name('products.')
+            ->controller(EmployeeProductController::class)
+            ->group(function () {
+                Route::get('/', 'index')
+                    ->middleware('permission:product.view|products.view')
+                    ->name('index');
+                Route::get('/listing', 'listing')
+                    ->middleware('permission:product.view|products.view')
+                    ->name('listing');
+                Route::get('/{product}/edit', 'edit')
+                    ->middleware('permission:product.update|product.create')
+                    ->whereNumber('product')
+                    ->name('edit');
+                Route::post('/save', 'save')
+                    ->middleware('permission:product.create|product.update')
+                    ->name('save');
+                Route::delete('/{product}', 'destroy')
+                    ->middleware('permission:product.delete|products.manage')
+                    ->whereNumber('product')
+                    ->name('destroy');
             });
     });
