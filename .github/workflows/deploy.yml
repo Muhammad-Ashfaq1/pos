@@ -61,19 +61,17 @@ jobs:
             --exclude='storage/app/public/shops/**' \
             --exclude='storage/app/public/products/**' \
             -e "ssh -o StrictHostKeyChecking=no -p 65002" \
-            ./ u407529782@82.198.228.66:/home/u407529782/domains/kba-jewellers.com/public_html/pos
+            ./ u407529782@145.79.26.191:/home/u407529782/domains/kba-jewellers.com/public_html/pos
 
       # Run Laravel commands on the server
       - name: Run Laravel Commands
         run: |
-          sshpass -p '${{ secrets.SSH_PASSWORD }}' ssh -o StrictHostKeyChecking=no -p 65002 u407529782@82.198.228.66 << 'EOF'
+          sshpass -p '${{ secrets.SSH_PASSWORD }}' ssh -o StrictHostKeyChecking=no -p 65002 u407529782@145.79.26.191 << 'EOF'
           cd /home/u407529782/domains/kba-jewellers.com/public_html/pos
           echo "Running migrations..."
           php artisan migrate --force
-          echo "Syncing roles and permissions..."
+          echo "Syncing roles and permissions to all tenants/admins..."
           php artisan app:sync-permissions
-          echo "Running database seeders..."
-          php artisan db:seed --force
           echo "Caching config..."
           php artisan config:cache
           echo "Caching routes..."
