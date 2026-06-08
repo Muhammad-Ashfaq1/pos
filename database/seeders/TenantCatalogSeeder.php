@@ -638,10 +638,72 @@ class TenantCatalogSeeder extends Seeder
         };
 
         // 1. Seed Estimate
+        // Subtotal = $39.99, Service Fee = $15.00, Discount = $5.00, Taxable Base = $49.99, Tax (5%) = $2.50, Total = $52.49
         $estProduct = $products->first();
         $estQty = 1;
         $estPrice = (float) $estProduct->sale_price;
-        $estTotal = round($estPrice * $estQty, 2);
+        $estSubtotal = round($estPrice * $estQty, 2);
+        $estFee = 15.00;
+        $estDiscount = 5.00;
+        $estTax = round(($estSubtotal + $estFee - $estDiscount) * 0.05, 2);
+        $estTotal = round($estSubtotal + $estFee - $estDiscount + $estTax, 2);
+
+        $estDiscountDetails = [
+            'product_discount_amount' => $estDiscount,
+            'customer_discount_amount' => 0.00,
+            'customer_discount_eligible' => false,
+            'customer_discount_reason' => null,
+            'product_discounts' => [
+                [
+                    'product_id' => $estProduct->id,
+                    'product_name' => $estProduct->name,
+                    'discount_id' => 1,
+                    'discount_name' => 'Clearance Off',
+                    'discount_type' => 'fixed',
+                    'discount_value' => 5.00,
+                    'quantity' => 1,
+                    'amount' => $estDiscount,
+                ],
+            ],
+            'customer_discount' => null,
+            'tax' => [
+                'base_amount' => round($estSubtotal + $estFee - $estDiscount, 2),
+                'amount' => $estTax,
+                'lines' => [
+                    [
+                        'type' => 'Product',
+                        'name' => $estProduct->name,
+                        'quantity' => 1,
+                        'tax_percentage' => 5.00,
+                        'base_amount' => $estSubtotal,
+                        'discount_amount' => $estDiscount,
+                        'taxable_amount' => round($estSubtotal - $estDiscount, 2),
+                        'tax_amount' => round(($estSubtotal - $estDiscount) * 0.05, 2),
+                    ],
+                    [
+                        'type' => 'Service',
+                        'name' => 'Standard Oil Change Service Fee',
+                        'quantity' => 1,
+                        'tax_percentage' => 5.00,
+                        'base_amount' => $estFee,
+                        'discount_amount' => 0.00,
+                        'taxable_amount' => $estFee,
+                        'tax_amount' => round($estFee * 0.05, 2),
+                    ],
+                ],
+            ],
+        ];
+
+        $estServiceFeeDetails = [
+            [
+                'type' => 'service',
+                'service_id' => 1,
+                'name' => 'Standard Oil Change Service Fee',
+                'code' => 'SVC-OIL-001',
+                'amount' => $estFee,
+                'tax_percentage' => 5.00,
+            ],
+        ];
 
         $estimate = Order::create([
             'tenant_id' => $tenant->id,
@@ -650,10 +712,12 @@ class TenantCatalogSeeder extends Seeder
             'vehicle_id' => $vehicle?->id,
             'status' => Order::STATUS_ESTIMATE,
             'total_quantity' => $estQty,
-            'subtotal_amount' => $estTotal,
-            'discount_amount' => 0.00,
-            'service_fee_amount' => 0.00,
-            'tax_amount' => 0.00,
+            'subtotal_amount' => $estSubtotal,
+            'discount_amount' => $estDiscount,
+            'service_fee_amount' => $estFee,
+            'service_fee_details' => $estServiceFeeDetails,
+            'discount_details' => $estDiscountDetails,
+            'tax_amount' => $estTax,
             'total_amount' => $estTotal,
             'payment_method' => null,
             'payment_amount' => 0.00,
@@ -671,14 +735,64 @@ class TenantCatalogSeeder extends Seeder
             'unit' => $estProduct->unit,
             'quantity' => $estQty,
             'unit_price' => $estPrice,
-            'line_total' => $estTotal,
+            'line_total' => $estSubtotal,
         ]);
 
         // 2. Seed Pending Order
+        // Subtotal = 2 * $39.99 = $79.98, Fee = $10.00, Discount = 0.0, Taxable Base = $89.98, Tax (5%) = $4.50, Total = $94.48
         $pendProduct = $products->first();
         $pendQty = 2;
         $pendPrice = (float) $pendProduct->sale_price;
-        $pendTotal = round($pendPrice * $pendQty, 2);
+        $pendSubtotal = round($pendPrice * $pendQty, 2);
+        $pendFee = 10.00;
+        $pendTax = round(($pendSubtotal + $pendFee) * 0.05, 2);
+        $pendTotal = round($pendSubtotal + $pendFee + $pendTax, 2);
+
+        $pendDiscountDetails = [
+            'product_discount_amount' => 0.00,
+            'customer_discount_amount' => 0.00,
+            'customer_discount_eligible' => false,
+            'customer_discount_reason' => null,
+            'product_discounts' => [],
+            'customer_discount' => null,
+            'tax' => [
+                'base_amount' => round($pendSubtotal + $pendFee, 2),
+                'amount' => $pendTax,
+                'lines' => [
+                    [
+                        'type' => 'Product',
+                        'name' => $pendProduct->name,
+                        'quantity' => $pendQty,
+                        'tax_percentage' => 5.00,
+                        'base_amount' => $pendSubtotal,
+                        'discount_amount' => 0.00,
+                        'taxable_amount' => $pendSubtotal,
+                        'tax_amount' => round($pendSubtotal * 0.05, 2),
+                    ],
+                    [
+                        'type' => 'Service',
+                        'name' => 'Disposal & Environmental Fee',
+                        'quantity' => 1,
+                        'tax_percentage' => 5.00,
+                        'base_amount' => $pendFee,
+                        'discount_amount' => 0.00,
+                        'taxable_amount' => $pendFee,
+                        'tax_amount' => round($pendFee * 0.05, 2),
+                    ],
+                ],
+            ],
+        ];
+
+        $pendServiceFeeDetails = [
+            [
+                'type' => 'manual',
+                'service_id' => null,
+                'name' => 'Disposal & Environmental Fee',
+                'code' => null,
+                'amount' => $pendFee,
+                'tax_percentage' => 5.00,
+            ],
+        ];
 
         $pending = Order::create([
             'tenant_id' => $tenant->id,
@@ -687,10 +801,12 @@ class TenantCatalogSeeder extends Seeder
             'vehicle_id' => $vehicle?->id,
             'status' => Order::STATUS_PENDING,
             'total_quantity' => $pendQty,
-            'subtotal_amount' => $pendTotal,
+            'subtotal_amount' => $pendSubtotal,
             'discount_amount' => 0.00,
-            'service_fee_amount' => 0.00,
-            'tax_amount' => 0.00,
+            'service_fee_amount' => $pendFee,
+            'service_fee_details' => $pendServiceFeeDetails,
+            'discount_details' => $pendDiscountDetails,
+            'tax_amount' => $pendTax,
             'total_amount' => $pendTotal,
             'payment_method' => null,
             'payment_amount' => 0.00,
@@ -708,13 +824,103 @@ class TenantCatalogSeeder extends Seeder
             'unit' => $pendProduct->unit,
             'quantity' => $pendQty,
             'unit_price' => $pendPrice,
-            'line_total' => $pendTotal,
+            'line_total' => $pendSubtotal,
         ]);
 
         // 3. Seed Partially Paid Order (with multiple payments)
         $partProduct1 = $products->first();
         $partProduct2 = $products->last();
-        $partTotal = round(((float) $partProduct1->sale_price * 2) + (float) $partProduct2->sale_price, 2);
+        $partSubtotal = round(((float) $partProduct1->sale_price * 2) + (float) $partProduct2->sale_price, 2);
+        $partFee = 25.00;
+        $partDiscount = 10.00;
+        $partTax = round(($partSubtotal + $partFee - $partDiscount) * 0.05, 2);
+        $partTotal = round($partSubtotal + $partFee - $partDiscount + $partTax, 2);
+        $partPaymentAmount = round($partTotal * 0.6, 2); // 60% paid
+
+        $partDiscountDetails = [
+            'product_discount_amount' => $partDiscount,
+            'customer_discount_amount' => 0.00,
+            'customer_discount_eligible' => false,
+            'customer_discount_reason' => null,
+            'product_discounts' => [
+                [
+                    'product_id' => $partProduct1->id,
+                    'product_name' => $partProduct1->name,
+                    'discount_id' => 1,
+                    'discount_name' => 'Promotion Discount',
+                    'discount_type' => 'fixed',
+                    'discount_value' => 10.00,
+                    'quantity' => 2,
+                    'amount' => $partDiscount,
+                ],
+            ],
+            'customer_discount' => null,
+            'tax' => [
+                'base_amount' => round($partSubtotal + $partFee - $partDiscount, 2),
+                'amount' => $partTax,
+                'lines' => [
+                    [
+                        'type' => 'Product',
+                        'name' => $partProduct1->name,
+                        'quantity' => 2,
+                        'tax_percentage' => 5.00,
+                        'base_amount' => round((float) $partProduct1->sale_price * 2, 2),
+                        'discount_amount' => $partDiscount,
+                        'taxable_amount' => round(((float) $partProduct1->sale_price * 2) - $partDiscount, 2),
+                        'tax_amount' => round((((float) $partProduct1->sale_price * 2) - $partDiscount) * 0.05, 2),
+                    ],
+                    [
+                        'type' => 'Product',
+                        'name' => $partProduct2->name,
+                        'quantity' => 1,
+                        'tax_percentage' => 5.00,
+                        'base_amount' => (float) $partProduct2->sale_price,
+                        'discount_amount' => 0.00,
+                        'taxable_amount' => (float) $partProduct2->sale_price,
+                        'tax_amount' => round((float) $partProduct2->sale_price * 0.05, 2),
+                    ],
+                    [
+                        'type' => 'Service',
+                        'name' => 'Standard Oil Change Service Fee',
+                        'quantity' => 1,
+                        'tax_percentage' => 5.00,
+                        'base_amount' => 15.00,
+                        'discount_amount' => 0.00,
+                        'taxable_amount' => 15.00,
+                        'tax_amount' => 0.75,
+                    ],
+                    [
+                        'type' => 'Service',
+                        'name' => 'Disposal & Environmental Fee',
+                        'quantity' => 1,
+                        'tax_percentage' => 5.00,
+                        'base_amount' => 10.00,
+                        'discount_amount' => 0.00,
+                        'taxable_amount' => 10.00,
+                        'tax_amount' => 0.50,
+                    ],
+                ],
+            ],
+        ];
+
+        $partServiceFeeDetails = [
+            [
+                'type' => 'service',
+                'service_id' => 1,
+                'name' => 'Standard Oil Change Service Fee',
+                'code' => 'SVC-OIL-001',
+                'amount' => 15.00,
+                'tax_percentage' => 5.00,
+            ],
+            [
+                'type' => 'manual',
+                'service_id' => null,
+                'name' => 'Disposal & Environmental Fee',
+                'code' => null,
+                'amount' => 10.00,
+                'tax_percentage' => 5.00,
+            ],
+        ];
 
         $partOrder = Order::create([
             'tenant_id' => $tenant->id,
@@ -723,13 +929,15 @@ class TenantCatalogSeeder extends Seeder
             'vehicle_id' => $vehicle?->id,
             'status' => Order::STATUS_PARTIALLY_PAID,
             'total_quantity' => 3,
-            'subtotal_amount' => $partTotal,
-            'discount_amount' => 0.00,
-            'service_fee_amount' => 0.00,
-            'tax_amount' => 0.00,
+            'subtotal_amount' => $partSubtotal,
+            'discount_amount' => $partDiscount,
+            'service_fee_amount' => $partFee,
+            'service_fee_details' => $partServiceFeeDetails,
+            'discount_details' => $partDiscountDetails,
+            'tax_amount' => $partTax,
             'total_amount' => $partTotal,
             'payment_method' => 'card',
-            'payment_amount' => round($partTotal * 0.6, 2), // 60% paid
+            'payment_amount' => $partPaymentAmount,
             'change_amount' => 0.00,
             'created_by' => $adminId,
             'updated_by' => $adminId,
@@ -761,9 +969,9 @@ class TenantCatalogSeeder extends Seeder
         ]);
 
         // Create 3 partial payments
-        $partAmt1 = round($partOrder->payment_amount * 0.3, 2);
-        $partAmt2 = round($partOrder->payment_amount * 0.4, 2);
-        $partAmt3 = round($partOrder->payment_amount - $partAmt1 - $partAmt2, 2);
+        $partAmt1 = round($partPaymentAmount * 0.3, 2);
+        $partAmt2 = round($partPaymentAmount * 0.4, 2);
+        $partAmt3 = round($partPaymentAmount - $partAmt1 - $partAmt2, 2);
 
         $partOrder->payments()->createMany([
             [
@@ -791,7 +999,68 @@ class TenantCatalogSeeder extends Seeder
 
         // 4. Seed Fully Paid Order (with multiple payments summing to total)
         $paidProduct = $products->skip(1)->first() ?? $products->first();
-        $paidTotal = round((float) $paidProduct->sale_price * 3, 2);
+        $paidSubtotal = round((float) $paidProduct->sale_price * 3, 2);
+        $paidFee = 15.00;
+        $paidDiscount = 20.00;
+        $paidTax = round(($paidSubtotal + $paidFee - $paidDiscount) * 0.05, 2);
+        $paidTotal = round($paidSubtotal + $paidFee - $paidDiscount + $paidTax, 2);
+
+        $paidDiscountDetails = [
+            'product_discount_amount' => $paidDiscount,
+            'customer_discount_amount' => 0.00,
+            'customer_discount_eligible' => false,
+            'customer_discount_reason' => null,
+            'product_discounts' => [
+                [
+                    'product_id' => $paidProduct->id,
+                    'product_name' => $paidProduct->name,
+                    'discount_id' => 3,
+                    'discount_name' => 'Holiday Promo $20',
+                    'discount_type' => 'fixed',
+                    'discount_value' => 20.00,
+                    'quantity' => 3,
+                    'amount' => $paidDiscount,
+                ],
+            ],
+            'customer_discount' => null,
+            'tax' => [
+                'base_amount' => round($paidSubtotal + $paidFee - $paidDiscount, 2),
+                'amount' => $paidTax,
+                'lines' => [
+                    [
+                        'type' => 'Product',
+                        'name' => $paidProduct->name,
+                        'quantity' => 3,
+                        'tax_percentage' => 5.00,
+                        'base_amount' => $paidSubtotal,
+                        'discount_amount' => $paidDiscount,
+                        'taxable_amount' => round($paidSubtotal - $paidDiscount, 2),
+                        'tax_amount' => round(($paidSubtotal - $paidDiscount) * 0.05, 2),
+                    ],
+                    [
+                        'type' => 'Service',
+                        'name' => 'Standard Oil Change Service Fee',
+                        'quantity' => 1,
+                        'tax_percentage' => 5.00,
+                        'base_amount' => $paidFee,
+                        'discount_amount' => 0.00,
+                        'taxable_amount' => $paidFee,
+                        'tax_amount' => round($paidFee * 0.05, 2),
+                    ],
+                ],
+            ],
+        ];
+
+        $paidServiceFeeDetails = [
+            [
+                'type' => 'service',
+                'service_id' => 1,
+                'name' => 'Standard Oil Change Service Fee',
+                'code' => 'SVC-OIL-001',
+                'amount' => $paidFee,
+                'tax_percentage' => 5.00,
+            ],
+        ];
 
         $paidOrder = Order::create([
             'tenant_id' => $tenant->id,
@@ -800,10 +1069,12 @@ class TenantCatalogSeeder extends Seeder
             'vehicle_id' => $vehicle?->id,
             'status' => Order::STATUS_PAID,
             'total_quantity' => 3,
-            'subtotal_amount' => $paidTotal,
-            'discount_amount' => 0.00,
-            'service_fee_amount' => 0.00,
-            'tax_amount' => 0.00,
+            'subtotal_amount' => $paidSubtotal,
+            'discount_amount' => $paidDiscount,
+            'service_fee_amount' => $paidFee,
+            'service_fee_details' => $paidServiceFeeDetails,
+            'discount_details' => $paidDiscountDetails,
+            'tax_amount' => $paidTax,
             'total_amount' => $paidTotal,
             'payment_method' => 'card',
             'payment_amount' => $paidTotal,
@@ -823,7 +1094,7 @@ class TenantCatalogSeeder extends Seeder
             'unit' => $paidProduct->unit,
             'quantity' => 3,
             'unit_price' => (float) $paidProduct->sale_price,
-            'line_total' => $paidTotal,
+            'line_total' => $paidSubtotal,
         ]);
 
         // Create 4 payments adding up to total
