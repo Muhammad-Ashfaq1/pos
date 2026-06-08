@@ -8,6 +8,7 @@ use App\Http\Controllers\Tenant\DiscountController;
 use App\Http\Controllers\Tenant\DropdownController;
 use App\Http\Controllers\Tenant\ImageController;
 use App\Http\Controllers\Tenant\ProductController;
+use App\Http\Controllers\Tenant\ProductTypeController;
 use App\Http\Controllers\Tenant\RolesPermissionsController;
 use App\Http\Controllers\Tenant\ServiceController;
 use App\Http\Controllers\Tenant\ShopSettingsController;
@@ -37,12 +38,21 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                         Route::get('/products', 'products')
                             ->middleware('permission:product.view|product.create|product.update|products.view|products.manage|service.view|service.create|service.update')
                             ->name('products');
+                        Route::get('/services', 'services')
+                            ->middleware('permission:service.view|service.create|service.update|orders.create|pos.bill')
+                            ->name('services');
+                        Route::get('/discounts', 'discounts')
+                            ->middleware('permission:discount.manage|discount.apply_item|product.create|product.update|products.manage')
+                            ->name('discounts');
                         Route::get('/customers', 'customers')
                             ->middleware('permission:customer.view|customer.create|customer.update|vehicle.view|vehicle.create|vehicle.update|pos.bill|customers.view|customers.manage')
                             ->name('customers');
                         Route::get('/vehicles', 'vehicles')
                             ->middleware('permission:vehicle.view|vehicle.create|vehicle.update|customer.view|customer.create|customer.update|pos.bill|vehicles.view|vehicles.manage')
                             ->name('vehicles');
+                        Route::get('/discount-groups', 'discountGroups')
+                            ->middleware('permission:discount-group.view|discount-group.manage|customer.create|customer.update|customers.manage')
+                            ->name('discount-groups');
                     });
 
                 Route::prefix('categories')
@@ -78,6 +88,24 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                             ->name('save');
                         Route::delete('/{subCategory}', 'destroy')
                             ->middleware('permission:subcategory.delete')
+                            ->name('destroy');
+                    });
+
+                Route::prefix('product-types')
+                    ->name('product-types.')
+                    ->controller(ProductTypeController::class)
+                    ->group(function () {
+                        Route::get('/', 'index')
+                            ->middleware('permission:product-type.view')
+                            ->name('index');
+                        Route::get('/listing', 'listing')
+                            ->middleware('permission:product-type.view')
+                            ->name('listing');
+                        Route::post('/save', 'save')
+                            ->middleware('permission:product-type.create|product-type.update')
+                            ->name('save');
+                        Route::delete('/{productType}', 'destroy')
+                            ->middleware('permission:product-type.delete')
                             ->name('destroy');
                     });
 
@@ -244,10 +272,18 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
 
         Route::prefix('discounts')->name('discounts.')->group(function () {
             Route::prefix('group')->name('group.')->controller(DiscountGroupController::class)->group(function () {
-                Route::get('/', 'index')->name('index');
-                Route::post('/store', 'store')->name('store');
-                Route::put('/{discountGroup}', 'update')->name('update');
-                Route::delete('/{discountGroup}', 'destroy')->name('delete');
+                Route::get('/', 'index')
+                    ->middleware('permission:discount-group.view|discount-group.manage')
+                    ->name('index');
+                Route::post('/store', 'store')
+                    ->middleware('permission:discount-group.manage')
+                    ->name('store');
+                Route::put('/{discountGroup}', 'update')
+                    ->middleware('permission:discount-group.manage')
+                    ->name('update');
+                Route::delete('/{discountGroup}', 'destroy')
+                    ->middleware('permission:discount-group.manage')
+                    ->name('delete');
             });
         });
     });

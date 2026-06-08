@@ -194,10 +194,26 @@
                             <div class="col-md-4">
                                 <label for="product_type" class="form-label">Product Type <span class="text-danger">*</span></label>
                                 <div class="position-relative">
-                                    <select id="product_type" name="product_type" class="form-select select2" data-placeholder="Select a product type" data-dropdown-parent="#productModal">
+                                    <select id="product_type" name="product_type_id" class="form-select select2" data-placeholder="Select a product type" data-dropdown-parent="#productModal">
                                         @foreach($productTypes as $type => $label)
                                             <option value="{{ $type }}">{{ $label }}</option>
                                         @endforeach
+                                    </select>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="product_discount_id" class="form-label">Item Discount</label>
+                                <div class="position-relative">
+                                    <select
+                                        id="product_discount_id"
+                                        name="discount_id"
+                                        class="form-select discount-select2"
+                                        data-placeholder="Select an item discount"
+                                        data-allow-clear="true"
+                                        data-dropdown-parent="#productModal"
+                                    >
+                                        <option value=""></option>
                                     </select>
                                     <div class="invalid-feedback"></div>
                                 </div>
@@ -365,6 +381,7 @@
         window.productEditUrlTemplate = @json($editUrlTemplate);
         window.categoryDropdownUrl = @json($categoriesDropdownUrl);
         window.subCategoryDropdownUrl = @json($subCategoriesDropdownUrl);
+        window.discountDropdownUrl = @json($discountDropdownUrl);
         window.productTypes = @json($productTypes);
     </script>
     <script src="{{ asset('assets/js/tenant/e-com/products.js') }}"></script>

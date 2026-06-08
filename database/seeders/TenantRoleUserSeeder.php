@@ -19,12 +19,6 @@ class TenantRoleUserSeeder extends Seeder
 
     public function run(): void
     {
-        if (app()->environment('production') && ! app()->runningUnitTests()) {
-            $this->command?->warn('Skipping demo tenant role users in production.');
-
-            return;
-        }
-
         app(PermissionSyncService::class)->sync(syncTenantAdmins: false);
 
         Tenant::query()

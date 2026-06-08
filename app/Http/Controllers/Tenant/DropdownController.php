@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Customer;
+use App\Models\Discount;
+use App\Models\DiscountGroup;
 use App\Models\Product;
+use App\Models\Service;
 use App\Models\SubCategory;
 use App\Models\Vehicle;
+use App\Support\Currency;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -119,6 +123,79 @@ class DropdownController extends Controller
         ]);
     }
 
+    public function services(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->string('q')->toString());
+        $perPage = min((int) $request->integer('per_page', 20), 50);
+        $page = max((int) $request->integer('page', 1), 1);
+        $activeOnly = $request->boolean('active_only', true);
+
+        $query = Service::query()
+            ->with('category:id,name')
+            ->select(['id', 'category_id', 'name', 'code', 'standard_price', 'tax_percentage', 'is_active'])
+            ->when($activeOnly, fn ($builder) => $builder->where('is_active', true))
+            ->search($search)
+            ->orderBy('name')
+            ->orderBy('id');
+
+        $total = (clone $query)->count();
+        $services = $query
+            ->forPage($page, $perPage)
+            ->get();
+
+        return response()->json([
+            'results' => $services->map(fn (Service $service) => [
+                'id' => $service->id,
+                'text' => $this->serviceOptionText($service),
+                'name' => $service->name,
+                'code' => $service->code,
+                'category_name' => $service->category?->name,
+                'standard_price' => (float) $service->standard_price,
+                'tax_percentage' => $service->tax_percentage !== null ? (float) $service->tax_percentage : 0.0,
+            ])->all(),
+            'pagination' => [
+                'more' => ($page * $perPage) < $total,
+            ],
+        ]);
+    }
+
+    public function discounts(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->string('q')->toString());
+        $perPage = min((int) $request->integer('per_page', 20), 50);
+        $page = max((int) $request->integer('page', 1), 1);
+        $activeOnly = $request->boolean('active_only', true);
+        $appliesTo = trim((string) $request->string('applies_to')->toString());
+
+        $query = Discount::query()
+            ->select(['id', 'name', 'code', 'discount_type', 'value', 'applies_to', 'is_active'])
+            ->when($activeOnly, fn ($builder) => $builder->where('is_active', true))
+            ->when($appliesTo !== '', fn ($builder) => $builder->where('applies_to', $appliesTo))
+            ->search($search)
+            ->orderBy('name')
+            ->orderBy('id');
+
+        $total = (clone $query)->count();
+        $discounts = $query
+            ->forPage($page, $perPage)
+            ->get();
+
+        return response()->json([
+            'results' => $discounts->map(fn (Discount $discount) => [
+                'id' => $discount->id,
+                'text' => $this->discountOptionText($discount),
+                'name' => $discount->name,
+                'code' => $discount->code,
+                'discount_type' => $discount->discount_type,
+                'applies_to' => $discount->applies_to,
+                'value' => (float) $discount->value,
+            ])->all(),
+            'pagination' => [
+                'more' => ($page * $perPage) < $total,
+            ],
+        ]);
+    }
+
     public function customers(Request $request): JsonResponse
     {
         $search = trim((string) $request->string('q')->toString());
@@ -127,7 +204,8 @@ class DropdownController extends Controller
         $customerType = trim((string) $request->string('customer_type')->toString());
 
         $query = Customer::query()
-            ->select(['id', 'customer_type', 'name', 'phone', 'email'])
+            ->with('discountGroup:id,name,type,value,min_limit,is_active')
+            ->select(['id', 'customer_type', 'discount_group_id', 'name', 'phone', 'email'])
             ->when($customerType !== '', fn ($builder) => $builder->where('customer_type', $customerType))
             ->search($search)
             ->orderBy('name')
@@ -146,6 +224,7 @@ class DropdownController extends Controller
                 'customer_type' => $customer->customer_type,
                 'phone' => $customer->phone,
                 'email' => $customer->email,
+                'discount_group' => $this->discountGroupPayload($customer->discountGroup),
             ])->all(),
             'pagination' => [
                 'more' => ($page * $perPage) < $total,
@@ -192,5 +271,70 @@ class DropdownController extends Controller
                 'more' => ($page * $perPage) < $total,
             ],
         ]);
+    }
+
+    public function discountGroups(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->string('q')->toString());
+        $activeOnly = $request->boolean('active_only', true);
+
+        $query = DiscountGroup::query()
+            ->select(['id', 'name'])
+            ->when($activeOnly, fn ($builder) => $builder->where('is_active', true))
+            ->where('name', 'like', "%{$search}%")
+            ->orderBy('name');
+
+        $groups = $query->get();
+
+        return response()->json([
+            'results' => $groups->map(fn ($group) => [
+                'id' => $group->id,
+                'text' => $group->name,
+            ])->all(),
+        ]);
+    }
+
+    private function discountOptionText(Discount $discount): string
+    {
+        $value = $discount->discount_type === Discount::TYPE_PERCENTAGE
+            ? rtrim(rtrim(number_format((float) $discount->value, 2, '.', ''), '0'), '.').'%'
+            : Currency::format($discount->value);
+        $code = filled($discount->code) ? " ({$discount->code})" : '';
+
+        return "{$discount->name}{$code} - {$value}";
+    }
+
+    private function serviceOptionText(Service $service): string
+    {
+        $code = filled($service->code) ? " ({$service->code})" : '';
+        $price = Currency::format($service->standard_price);
+
+        return "{$service->name}{$code} - {$price}";
+    }
+
+    private function discountGroupPayload(?DiscountGroup $group): ?array
+    {
+        if (! $group || ! $group->is_active) {
+            return null;
+        }
+
+        return [
+            'id' => $group->id,
+            'name' => $group->name,
+            'type' => $group->type,
+            'value' => (float) $group->value,
+            'min_limit' => (float) $group->min_limit,
+            'is_active' => (bool) $group->is_active,
+            'label' => $this->discountGroupLabel($group),
+        ];
+    }
+
+    private function discountGroupLabel(DiscountGroup $group): string
+    {
+        $value = $group->type === 'percentage'
+            ? rtrim(rtrim(number_format((float) $group->value, 2, '.', ''), '0'), '.').'%'
+            : Currency::format($group->value);
+
+        return trim("{$group->name} - {$value}");
     }
 }

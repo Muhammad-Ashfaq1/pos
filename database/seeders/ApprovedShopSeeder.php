@@ -27,12 +27,6 @@ class ApprovedShopSeeder extends Seeder
 
     public function run(): void
     {
-        if (app()->environment('production') && ! app()->runningUnitTests()) {
-            $this->command?->warn('Skipping demo approved shops in production.');
-
-            return;
-        }
-
         $superAdminId = User::query()->where('role', User::SUPER_ADMIN)->value('id');
 
         for ($shopNumber = 1; $shopNumber <= self::SHOP_COUNT; $shopNumber++) {

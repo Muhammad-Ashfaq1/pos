@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\DemoRequestStatus;
 use App\Enums\TenantStatus;
+use App\Models\DemoRequest;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\View\View;
@@ -16,6 +18,7 @@ class DashboardController
             'tenants_pending' => Tenant::query()->where('status', TenantStatus::Pending->value)->count(),
             'tenants_approved' => Tenant::query()->where('status', TenantStatus::Approved->value)->count(),
             'tenant_admins' => User::query()->where('role', User::TENANT_ADMIN)->count(),
+            'demo_requests_new' => DemoRequest::query()->where('status', DemoRequestStatus::New->value)->count(),
         ];
 
         $recentTenants = Tenant::query()->latest()->take(5)->get();

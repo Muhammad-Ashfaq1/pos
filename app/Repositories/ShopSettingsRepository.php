@@ -8,25 +8,27 @@ use App\Repositories\Interface\ShopSettingsRepositoryInterface;
 class ShopSettingsRepository implements ShopSettingsRepositoryInterface
 {
     private const LOCALE_OPTIONS = [
-        'en' => 'English',
+        'en'    => 'English',
         'en_US' => 'English (United States)',
         'en_GB' => 'English (United Kingdom)',
-        'ar' => 'Arabic',
-        'de' => 'German',
-        'es' => 'Spanish',
-        'fr' => 'French',
+        'en_AU' => 'English (Australia)',
+        'en_CA' => 'English (Canada)',
+        'ar'    => 'Arabic',
+        'ur'    => 'Urdu',
+        'de'    => 'German',
+        'es'    => 'Spanish',
+        'fr'    => 'French',
     ];
 
     private const CURRENCY_OPTIONS = [
-        'USD' => 'US Dollar (USD)',
-        'EUR' => 'Euro (EUR)',
-        'GBP' => 'British Pound (GBP)',
-        'AED' => 'UAE Dirham (AED)',
-        'SAR' => 'Saudi Riyal (SAR)',
-        'PKR' => 'Pakistani Rupee (PKR)',
-        'INR' => 'Indian Rupee (INR)',
-        'CAD' => 'Canadian Dollar (CAD)',
-        'AUD' => 'Australian Dollar (AUD)',
+        'USD' => 'US Dollar (USD)  $',
+        'GBP' => 'British Pound (GBP)  £',
+        'PKR' => 'Pakistani Rupee (PKR)  ₨',
+        'AED' => 'UAE Dirham (AED)  د.إ',
+        'SAR' => 'Saudi Riyal (SAR)  ﷼',
+        'CAD' => 'Canadian Dollar (CAD)  C$',
+        'AUD' => 'Australian Dollar (AUD)  A$',
+        'EUR' => 'Euro (EUR)  €',
     ];
 
     private const WEEKDAYS = [

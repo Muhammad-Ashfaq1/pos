@@ -1,7 +1,7 @@
 @extends('layouts.public')
 
-@section('title', 'OCC - Oil Change POS SaaS for Quick Auto Service Shops')
-@section('meta_description', 'OCC helps oil change shops and quick automotive service businesses manage POS billing, inventory, service history, reminders, loyalty, staff roles, and customer operations in one SaaS platform.')
+@section('title', 'OCC - POS & Operations Software for Car Garages, Oil Change & Auto Service Shops')
+@section('meta_description', 'OCC is an all-in-one SaaS platform for car garages, oil change shops, tire & brake centers, detailing studios and auto service businesses — POS billing, inventory, vehicle & service history, reminders, loyalty, and staff roles in one place.')
 
 @section('content')
 <nav class="navbar navbar-expand-lg landing-navbar sticky-top py-3">
@@ -10,7 +10,7 @@
             <span class="brand-mark">O</span>
             <span>
                 <span class="fw-bolder fs-4 text-heading d-block lh-1">OCC</span>
-                <small class="text-muted">Oil Change POS SaaS</small>
+                <small class="text-muted">Auto Service POS SaaS</small>
             </span>
         </a>
 
@@ -41,24 +41,34 @@
     <section class="landing-section pt-5 pb-5" id="home">
         <div class="container">
             <div class="hero-shell p-4 p-lg-5">
+                <span class="hero-glow"></span>
+                <span class="hero-deco d-none d-lg-inline-flex" style="top: 2.5rem; right: 42%; animation-delay: .2s;"><i class="icon-base ti tabler-tool"></i></span>
+                <span class="hero-deco d-none d-lg-inline-flex" style="bottom: 3rem; right: 46%; animation-delay: 1.1s;"><i class="icon-base ti tabler-droplet"></i></span>
+                <span class="hero-deco d-none d-lg-inline-flex" style="top: 9rem; right: 4%; animation-delay: 1.8s;"><i class="icon-base ti tabler-settings"></i></span>
                 <div class="row align-items-center g-4 g-xl-5 position-relative">
                     <div class="col-lg-7">
-                        <span class="section-kicker mb-3">
-                            <i class="icon-base ti tabler-gas-station"></i>
-                            Built For Oil Change Operations
+                        <span class="section-kicker mb-3 bg-white bg-opacity-10 border-0 text-white">
+                            <i class="icon-base ti tabler-car-garage"></i>
+                            Built For Garages & Auto Service Shops
                         </span>
 
                         <h1 class="hero-title fw-bold text-white mb-3">
-                            Manage your oil change shop with faster billing, cleaner service records, and stronger customer retention.
+                            Run your auto shop with <span class="text-gradient">faster billing</span>, cleaner service records, and stronger customer retention.
                         </h1>
 
                         <p class="hero-copy text-white text-opacity-75 mb-4 hero-subtext">
-                            OCC is a business-focused SaaS platform for oil change shops, quick lube counters, and automotive service centers that need POS billing, inventory visibility, customer and vehicle history, reminders, loyalty, and staff access control in one place.
+                            OCC is an all-in-one SaaS platform for car garages, oil change shops, tire &amp; brake centers, detailing studios, and quick auto service businesses — POS billing, inventory visibility, customer and vehicle history, reminders, loyalty, and staff access control in one place.
                         </p>
+
+                        <div class="hero-chip-row mb-4">
+                            <span class="hero-chip"><i class="icon-base ti tabler-bolt"></i> Faster front-desk billing</span>
+                            <span class="hero-chip"><i class="icon-base ti tabler-history"></i> Full vehicle history</span>
+                            <span class="hero-chip"><i class="icon-base ti tabler-bell-ringing"></i> Service reminders</span>
+                        </div>
 
                         <div class="hero-actions d-flex flex-column flex-sm-row gap-2 gap-lg-3">
                             <a href="{{ route('register') }}" class="btn btn-warning btn-lg">Register Your Shop</a>
-                            <a href="#contact" class="btn btn-outline-light btn-lg">Request Demo</a>
+                            <a href="javascript:void(0);" class="btn btn-outline-light btn-lg" data-bs-toggle="modal" data-bs-target="#demoModal">Request Demo</a>
                         </div>
                     </div>
 
@@ -83,7 +93,30 @@
         </div>
     </section>
 
-    <section class="landing-section" id="features">
+    <section class="pb-2 pt-0">
+        <div class="container">
+            <p class="text-center text-muted text-uppercase fw-semibold small mb-3" style="letter-spacing: .08em;">Built for every corner of the auto service market</p>
+            <div class="industry-strip">
+                @foreach ([
+                    ['icon' => 'tabler-car-garage', 'label' => 'Car Garages'],
+                    ['icon' => 'tabler-droplet', 'label' => 'Oil Change'],
+                    ['icon' => 'tabler-wheel', 'label' => 'Tire & Brake'],
+                    ['icon' => 'tabler-spray', 'label' => 'Detailing'],
+                    ['icon' => 'tabler-engine', 'label' => 'Workshops'],
+                    ['icon' => 'tabler-gauge', 'label' => 'Quick Lube'],
+                ] as $industry)
+                    <span class="industry-chip">
+                        <i class="icon-base ti {{ $industry['icon'] }}"></i>
+                        {{ $industry['label'] }}
+                    </span>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-section has-deco" id="features">
+        <span class="section-deco deco-spin" style="top: -2rem; right: -3rem; font-size: 16rem;"><i class="icon-base ti tabler-settings"></i></span>
+        <span class="deco-dots" style="bottom: 3rem; left: 2%;"></span>
         <div class="container">
             <div class="row align-items-center g-5">
                 <div class="col-lg-5">
@@ -91,9 +124,9 @@
                         <i class="icon-base ti tabler-bolt"></i>
                         Why OCC
                     </span>
-                    <h2 class="fw-bolder mb-3">The system that helps quick-service automotive businesses move beyond manual handling.</h2>
+                    <h2 class="fw-bolder mb-3">The system that helps garages and auto service businesses move beyond manual handling.</h2>
                     <p class="text-muted fs-5 mb-4">
-                        OCC is designed for shops that are still juggling paper slips, WhatsApp follow-ups, disconnected stock notes, or basic billing tools. It gives owners and managers one more professional way to run daily service operations.
+                        OCC is designed for car garages, oil change shops, tire and brake centers, and detailing studios still juggling paper slips, WhatsApp follow-ups, disconnected stock notes, or basic billing tools. It gives owners and managers a professional way to run daily service operations.
                     </p>
 
                     <div class="d-flex flex-column gap-3">
@@ -157,7 +190,10 @@
         </div>
     </section>
 
-    <section class="landing-section section-soft" id="services">
+    <section class="landing-section section-soft has-deco" id="services">
+        <span class="section-deco deco-cyan deco-float" style="top: 4rem; left: -2.5rem; font-size: 13rem;"><i class="icon-base ti tabler-tool"></i></span>
+        <span class="deco-road" style="top: 2.5rem; right: 8%; transform: rotate(-8deg);"></span>
+        <span class="deco-blob" style="bottom: -5rem; right: -4rem;"></span>
         <div class="container">
             <div class="row align-items-start g-5">
                 <div class="col-lg-4">
@@ -165,9 +201,9 @@
                         <i class="icon-base ti tabler-tool"></i>
                         Services Showcase
                     </span>
-                    <h2 class="fw-bolder mb-3">Structured for the actual services quick oil change and workshop teams deliver every day.</h2>
+                    <h2 class="fw-bolder mb-3">Structured for the actual services garages, oil change shops, and workshop teams deliver every day.</h2>
                     <p class="text-muted fs-5 mb-0">
-                        OCC fits routine maintenance services, fast-turn visits, consumable sales, and add-on workshop work that usually happens in high-movement quick service businesses.
+                        OCC fits routine maintenance, repairs, fast-turn visits, consumable sales, and add-on workshop work that happens across busy auto service businesses.
                     </p>
                 </div>
 
@@ -182,9 +218,12 @@
                             'Gear oil replacement',
                             'Coolant service',
                             'Transmission oil service',
-                            'Tire check',
-                            'Car wash',
-                            'Battery water',
+                            'Tire rotation and check',
+                            'Brake pad replacement',
+                            'Battery service',
+                            'Wheel alignment',
+                            'Car wash and detailing',
+                            'Vehicle diagnostics',
                             'Lubrication and greasing',
                             'Add-on consumables and products',
                             'Quick service inspection packages',
@@ -200,7 +239,9 @@
         </div>
     </section>
 
-    <section class="landing-section" id="modules">
+    <section class="landing-section has-deco" id="modules">
+        <span class="section-deco deco-spin" style="bottom: -3rem; left: -3rem; font-size: 15rem;"><i class="icon-base ti tabler-gauge"></i></span>
+        <span class="deco-dots" style="top: 2rem; right: 3%;"></span>
         <div class="container">
             <div class="text-center mx-auto mb-5" style="max-width: 760px;">
                 <span class="section-kicker mb-3">
@@ -209,7 +250,7 @@
                 </span>
                 <h2 class="fw-bolder mb-3">A cleaner business stack for onboarding, service workflow, customer handling, and operational visibility.</h2>
                 <p class="text-muted fs-5 mb-0">
-                    OCC combines shop onboarding, operations, CRM, billing, reminders, and reports in one business-focused system tailored to oil change and quick automotive service businesses.
+                    OCC combines shop onboarding, operations, CRM, billing, reminders, and reports in one business-focused system tailored to car garages, oil change shops, and auto service businesses.
                 </p>
             </div>
 
@@ -240,7 +281,9 @@
         </div>
     </section>
 
-    <section class="landing-section section-soft" id="how-it-works">
+    <section class="landing-section section-soft has-deco" id="how-it-works">
+        <span class="section-deco deco-cyan deco-float" style="top: 3rem; right: -2rem; font-size: 12rem;"><i class="icon-base ti tabler-route"></i></span>
+        <span class="deco-blob" style="top: -4rem; left: -5rem;"></span>
         <div class="container">
             <div class="row g-5 align-items-center">
                 <div class="col-lg-5">
@@ -351,6 +394,7 @@
     <section class="landing-section pt-0">
         <div class="container">
             <div class="stats-band">
+                <span class="section-deco deco-spin" style="bottom: -4rem; left: 2rem; font-size: 13rem; color: #fff; opacity: .06;"><i class="icon-base ti tabler-settings"></i></span>
                 <div class="row g-4 text-center">
                     <div class="col-md-3 stat-item">
                         <div class="display-6 fw-bolder">10+</div>
@@ -548,7 +592,15 @@
 
     <section class="landing-section pt-0" id="contact">
         <div class="container">
+            @if (session('demo_success'))
+                <div class="alert alert-success d-flex align-items-center gap-2 mb-4" role="alert">
+                    <i class="icon-base ti tabler-circle-check fs-4"></i>
+                    <span>{{ session('demo_success') }}</span>
+                </div>
+            @endif
+
             <div class="contact-strip p-4 p-lg-4 mb-4">
+                <span class="section-deco deco-float" style="bottom: -3rem; right: 1rem; font-size: 11rem; color: #fff; opacity: .07;"><i class="icon-base ti tabler-car"></i></span>
                 <div class="row align-items-center g-4">
                     <div class="col-lg-7">
                         <span class="section-kicker mb-3 bg-white text-dark">
@@ -580,7 +632,7 @@
 
                         <div class="d-grid gap-3 mt-3">
                             <a href="{{ route('register') }}" class="btn btn-warning btn-lg">Register Your Shop</a>
-                            <a href="#plans" class="btn btn-outline-light btn-lg">Request Demo</a>
+                            <a href="javascript:void(0);" class="btn btn-outline-light btn-lg" data-bs-toggle="modal" data-bs-target="#demoModal">Request Demo</a>
                         </div>
                     </div>
                 </div>
@@ -593,7 +645,7 @@
                             <i class="icon-base ti tabler-megaphone"></i>
                             Final CTA
                         </span>
-                        <h2 class="fw-bolder text-white mb-3">Start managing your shop smarter with a system built for oil change and quick service operations.</h2>
+                        <h2 class="fw-bolder text-white mb-3">Start managing your shop smarter with a system built for garages, oil change, and auto service operations.</h2>
                         <p class="text-white text-opacity-75 fs-5 mb-0">
                             Move from paper slips, spreadsheet notes, and scattered follow-up into a more structured operating model for billing, service history, stock awareness, and repeat-customer growth.
                         </p>
@@ -601,7 +653,7 @@
                     <div class="col-lg-4">
                         <div class="d-grid gap-3">
                             <a href="{{ route('register') }}" class="btn btn-warning btn-lg">Register Your Shop</a>
-                            <a href="#contact" class="btn btn-outline-light btn-lg">Request Demo</a>
+                            <a href="javascript:void(0);" class="btn btn-outline-light btn-lg" data-bs-toggle="modal" data-bs-target="#demoModal">Request Demo</a>
                             <a href="{{ route('login') }}" class="btn btn-label-light btn-lg">Login</a>
                         </div>
                     </div>
@@ -610,6 +662,76 @@
         </div>
     </section>
 </main>
+
+<div class="modal fade" id="demoModal" tabindex="-1" aria-labelledby="demoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0">
+            <div class="modal-header border-0 pb-0">
+                <div>
+                    <span class="section-kicker mb-2"><i class="icon-base ti tabler-calendar-event"></i> Request A Demo</span>
+                    <h4 class="fw-bolder mb-1" id="demoModalLabel">See OCC in action at your shop</h4>
+                    <p class="text-muted mb-0">Tell us a little about your business and our team will reach out to schedule a walkthrough.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ route('demo.request.store') }}" novalidate>
+                    @csrf
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="demo_name">Your Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('name') is-invalid @enderror" id="demo_name" name="name" value="{{ old('name') }}" required>
+                            @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="demo_business_name">Business Name</label>
+                            <input type="text" class="form-control @error('business_name') is-invalid @enderror" id="demo_business_name" name="business_name" value="{{ old('business_name') }}">
+                            @error('business_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="demo_email">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control @error('email') is-invalid @enderror" id="demo_email" name="email" value="{{ old('email') }}" required>
+                            @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="demo_phone">Phone</label>
+                            <input type="text" class="form-control @error('phone') is-invalid @enderror" id="demo_phone" name="phone" value="{{ old('phone') }}">
+                            @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="demo_business_type">Type Of Business</label>
+                            <select class="form-select @error('business_type') is-invalid @enderror" id="demo_business_type" name="business_type">
+                                <option value="">Select a category</option>
+                                @foreach ([
+                                    'Car garage / workshop',
+                                    'Oil change / quick lube',
+                                    'Tire & brake center',
+                                    'Car wash & detailing',
+                                    'Multi-service auto center',
+                                    'Other',
+                                ] as $type)
+                                    <option value="{{ $type }}" @selected(old('business_type') === $type)>{{ $type }}</option>
+                                @endforeach
+                            </select>
+                            @error('business_type') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="demo_message">What would you like to see?</label>
+                            <textarea class="form-control @error('message') is-invalid @enderror" id="demo_message" name="message" rows="3" placeholder="Tell us about your shop, number of staff, or anything specific you want to cover.">{{ old('message') }}</textarea>
+                            @error('message') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-12 d-grid d-sm-flex gap-2 justify-content-sm-end">
+                            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="icon-base ti tabler-send me-1"></i>Request My Demo
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 <footer class="footer-shell pt-5 pb-4">
     <div class="container">
@@ -623,7 +745,7 @@
                     </div>
                 </div>
                 <p class="mb-3">
-                    OCC is a business-focused SaaS platform for oil change shops, quick automotive service centers, and workshop teams that want POS, inventory, customer records, reminders, and operational visibility in one system.
+                    OCC is a business-focused SaaS platform for car garages, oil change shops, tire and brake centers, detailing studios, and workshop teams that want POS, inventory, customer records, reminders, and operational visibility in one system.
                 </p>
                 <div class="d-flex gap-2">
                     <span class="landing-icon bg-white bg-opacity-10 text-white"><i class="icon-base ti tabler-brand-facebook"></i></span>
@@ -657,7 +779,7 @@
                 <div class="d-flex flex-column gap-2">
                     <a href="{{ route('login') }}">Login</a>
                     <a href="{{ route('register') }}">Register</a>
-                    <a href="#contact">Request Demo</a>
+                    <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#demoModal">Request Demo</a>
                     <a href="#plans">Pricing</a>
                 </div>
             </div>
@@ -680,4 +802,47 @@
         </div>
     </div>
 </footer>
+@endsection
+
+@section('scripts')
+<script>
+    (function () {
+        // Solidify navbar background after scrolling past the hero.
+        var navbar = document.querySelector('.landing-navbar');
+        if (navbar) {
+            var onScroll = function () {
+                navbar.classList.toggle('is-scrolled', window.scrollY > 24);
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
+        }
+
+        // Reveal sections as they enter the viewport.
+        var targets = document.querySelectorAll('.landing-card, .service-pill, .testimonial-card, .plan-card, .stats-band, .timeline-step');
+        if (!('IntersectionObserver' in window) || !targets.length) {
+            return;
+        }
+        targets.forEach(function (el) { el.classList.add('reveal'); });
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12 });
+        targets.forEach(function (el) { observer.observe(el); });
+    })();
+</script>
+
+@if ($errors->any())
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var modalEl = document.getElementById('demoModal');
+        if (modalEl && window.bootstrap) {
+            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        }
+    });
+</script>
+@endif
 @endsection

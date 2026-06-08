@@ -27,11 +27,13 @@ class RolesPermissionsController extends Controller
         'Dashboard' => ['dashboard.view'],
         'Categories' => ['category.view', 'category.create', 'category.update', 'category.delete'],
         'Sub Categories' => ['subcategory.view', 'subcategory.create', 'subcategory.update', 'subcategory.delete'],
+        'Product Types' => ['product-type.view', 'product-type.create', 'product-type.update', 'product-type.delete'],
         'Products' => ['product.view', 'product.create', 'product.update', 'product.delete', 'product.adjust_stock', 'products.view', 'products.manage'],
         'Services' => ['service.view', 'service.create', 'service.update', 'service.delete', 'services.view', 'services.manage'],
         'Inventory' => ['inventory.view', 'inventory.manage'],
         'POS' => ['pos.bill'],
-        'Discounts' => ['discount.manage', 'discount.apply_bill', 'discount.apply_item', 'discounts.manage'],
+        'Orders' => ['orders.view', 'orders.create'],
+        'Discounts' => ['discount.manage', 'discount.apply_bill', 'discount.apply_item', 'discounts.manage', 'discount-group.view', 'discount-group.manage'],
         'Refunds' => ['refunds.manage'],
         'Customers' => ['customer.view', 'customer.create', 'customer.update', 'customer.delete', 'customers.view', 'customers.manage'],
         'Vehicles' => ['vehicle.view', 'vehicle.create', 'vehicle.update', 'vehicle.delete', 'vehicles.view', 'vehicles.manage'],
@@ -206,7 +208,7 @@ class RolesPermissionsController extends Controller
             ->where('id', '!=', auth()->id())
             ->orderBy('name')
             ->get()
-            ->map(fn(User $user) => [
+            ->map(fn (User $user) => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
@@ -256,7 +258,7 @@ class RolesPermissionsController extends Controller
         $groups = [];
 
         foreach (self::PERMISSION_GROUPS as $group => $permissions) {
-            $groups[$group] = collect($permissions)->map(fn(string $p) => [
+            $groups[$group] = collect($permissions)->map(fn (string $p) => [
                 'name' => $p,
                 'label' => str($p)->replace('.', ' ')->replace('_', ' ')->title()->toString(),
             ])->toArray();

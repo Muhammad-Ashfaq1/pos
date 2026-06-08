@@ -1,6 +1,8 @@
 <?php
+
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateDiscountGroupRequest;
 use App\Models\DiscountGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -13,6 +15,7 @@ class DiscountGroupController extends Controller
     public function index()
     {
         $discountGroups = DiscountGroup::latest()->get();
+
         return view('tenant.ecommerce.discounts.group.index', compact('discountGroups'));
     }
 
@@ -24,18 +27,19 @@ class DiscountGroupController extends Controller
         $discountGroups = DiscountGroup::all();
     }
 
+    // public function getDiscountGroup(Request $request)
+    // {
+    //     $discountGroups = DiscountGroup::all();
+    //     return response()->json($discountGroups);
+    // }
+
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateDiscountGroupRequest $request)
     {
         // Validate the request data
-        $validated = $request->validate([
-            'title'     => 'required|string|max:255',
-            'type'      => 'required|in:percentage,fixed',
-            'value'     => 'required|numeric|min:0',
-            'is_active' => 'boolean',
-        ]);
+        $validated = $request->validated();
 
         $validated['name'] = $validated['title'] ?? null;
         $validated['slug'] = Str::slug($validated['title'] ?? '');
@@ -46,7 +50,7 @@ class DiscountGroupController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Discount group created successfully',
-                'data'    => $discountGroup,
+                'data' => $discountGroup,
             ]);
         }
 
@@ -72,15 +76,10 @@ class DiscountGroupController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, DiscountGroup $discountGroup)
+    public function update(CreateDiscountGroupRequest $request, DiscountGroup $discountGroup)
     {
         // Validate the request data
-        $validated = $request->validate([
-            'title'     => 'required|string|max:255',
-            'type'      => 'required|in:percentage,fixed',
-            'value'     => 'required|numeric|min:0',
-            'is_active' => 'boolean',
-        ]);
+        $validated = $request->validated();
 
         $validated['name'] = $validated['title'] ?? null;
         $validated['slug'] = Str::slug($validated['title'] ?? '');
@@ -91,7 +90,7 @@ class DiscountGroupController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Discount group updated successfully',
-                'data'    => $discountGroup,
+                'data' => $discountGroup,
             ]);
         }
 
@@ -110,6 +109,7 @@ class DiscountGroupController extends Controller
                 'message' => 'Discount group deleted successfully',
             ]);
         }
+
         return redirect()->route('tenant.discounts.group.index')->with('success', 'Discount group deleted successfully');
     }
 }

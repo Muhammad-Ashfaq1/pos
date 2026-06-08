@@ -13,12 +13,6 @@ class TenantEmployeeSeeder extends Seeder
 
     public function run(): void
     {
-        if (app()->environment('production') && ! app()->runningUnitTests()) {
-            $this->command?->warn('Skipping demo employee users in production.');
-
-            return;
-        }
-
         app(PermissionSyncService::class)->sync(syncTenantAdmins: false);
 
         Tenant::query()

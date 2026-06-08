@@ -117,6 +117,6 @@
         window.customerDropdownUrl = @json($customersDropdownUrl);
         window.vehicleDropdownUrl = @json($vehiclesDropdownUrl);
     </script>
-    <script src="{{ asset('assets/js/tenant/e-com/vehicle-manager.js') }}"></script>
+    <script src="{{ asset('assets/js/tenant/e-com/vehicle-manager.js') }}?v={{ filemtime(public_path('assets/js/tenant/e-com/vehicle-manager.js')) }}"></script>
     <script src="{{ asset('assets/js/tenant/e-com/vehicles.js') }}"></script>
 @endsection

@@ -13,17 +13,32 @@ class Order extends Model
 
     public const STATUS_PENDING = 'pending';
 
+    public const STATUS_PARTIALLY_PAID = 'partially_paid';
+
+    public const STATUS_PAID = 'paid';
+
+    public const STATUS_ESTIMATE = 'estimate';
+
     protected $fillable = [
         'order_number',
         'customer_id',
         'vehicle_id',
+        'service_id',
+        'discount_id',
+        'discount_group_id',
+        'discount_details',
         'status',
         'total_quantity',
         'subtotal_amount',
         'discount_amount',
         'service_fee_amount',
+        'service_fee_details',
         'tax_amount',
         'total_amount',
+        'payment_method',
+        'payment_amount',
+        'change_amount',
+        'paid_at',
         'notes',
         'created_by',
         'updated_by',
@@ -34,12 +49,20 @@ class Order extends Model
         return [
             'customer_id' => 'integer',
             'vehicle_id' => 'integer',
+            'service_id' => 'integer',
+            'discount_id' => 'integer',
+            'discount_group_id' => 'integer',
+            'discount_details' => 'array',
             'total_quantity' => 'integer',
             'subtotal_amount' => 'decimal:2',
             'discount_amount' => 'decimal:2',
             'service_fee_amount' => 'decimal:2',
+            'service_fee_details' => 'array',
             'tax_amount' => 'decimal:2',
             'total_amount' => 'decimal:2',
+            'payment_amount' => 'decimal:2',
+            'change_amount' => 'decimal:2',
+            'paid_at' => 'datetime',
         ];
     }
 
@@ -53,9 +76,24 @@ class Order extends Model
         return $this->belongsTo(Vehicle::class);
     }
 
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    public function discountGroup(): BelongsTo
+    {
+        return $this->belongsTo(DiscountGroup::class);
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(OrderPayment::class);
     }
 
     public function creator(): BelongsTo

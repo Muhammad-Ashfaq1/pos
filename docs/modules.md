@@ -55,6 +55,19 @@ Nested taxonomy under a category. Used by products only — services live direct
 - **Model**: [`SubCategory`](../app/Models/SubCategory.php) — fields: `category_id`, `name`, `slug`, `code`, `description`, `sort_order`, `is_active`. `belongsTo Category`, `hasMany Product`.
 - **Views**: [resources/views/tenant/ecommerce/sub-categories/](../resources/views/tenant/ecommerce/sub-categories/)
 
+### Product types
+
+CRUD-managed product types (Oil, Filter, Part, …). Replaces the former hardcoded `Product::typeOptions()` constants; products now reference a type via `products.product_type_id`. Follows the same modal + DataTable AJAX pattern as Categories.
+
+- **Routes** — under `/tenant/ecommerce/product-types`: `index`, `listing`, `save`, `destroy`, gated on `permission:product-type.{view,create,update,delete}`.
+- **Controller**: [`Tenant\ProductTypeController`](../app/Http/Controllers/Tenant/ProductTypeController.php)
+- **Validation**: [`SaveProductTypeRequest`](../app/Http/Requests/Tenant/ProductTypes/SaveProductTypeRequest.php)
+- **Repository**: [`ProductTypesRepository`](../app/Repositories/ProductTypesRepository.php) implementing [`ProductTypeRepositoryInterface`](../app/Repositories/Interface/ProductTypeRepositoryInterface.php)
+- **Policy**: [`ProductTypePolicy`](../app/Policies/ProductTypePolicy.php)
+- **Model**: [`ProductType`](../app/Models/ProductType.php) — fields: `name`, `slug`, `code`, `description`, `sort_order`, `is_active`. `hasMany Product`.
+- **Views**: [resources/views/tenant/ecommerce/product-types/](../resources/views/tenant/ecommerce/product-types/) + [public/assets/js/tenant/e-com/product-types.js](../public/assets/js/tenant/e-com/product-types.js)
+- **Notes**: a type in use by ≥1 product cannot be deleted. The product form selects a type via `product_type_id`; the repository keeps the legacy `products.product_type` string in sync with the selected type's slug so the POS catalog feeds and dropdowns that still read it keep working.
+
 ### Products
 
 Sellable inventory items. Used as line items on orders and as components inside services.
@@ -69,7 +82,7 @@ Sellable inventory items. Used as line items on orders and as components inside 
 - **Validation**: [`SaveProductRequest`](../app/Http/Requests/Tenant/Catalog/SaveProductRequest.php)
 - **Repository**: [`ProductsRepository`](../app/Repositories/ProductsRepository.php)
 - **Model**: [`Product`](../app/Models/Product.php) — fields:
-  - **Identification**: `category_id`, `sub_category_id`, `product_type`, `name`, `slug`, `sku`, `barcode`, `brand`, `unit`.
+  - **Identification**: `category_id`, `sub_category_id`, `product_type_id` (FK to the managed [Product types](#product-types); legacy `product_type` slug string kept in sync), `name`, `slug`, `sku`, `barcode`, `brand`, `unit`.
   - **Pricing**: `cost_price`, `sale_price` (decimal:2), `tax_percentage` (decimal:2).
   - **Inventory**: `opening_stock`, `current_stock`, `minimum_stock_level`, `reorder_level` (decimal:3), `track_inventory` (bool).
   - **Lifecycle**: `is_active`, `created_by`, `updated_by`.
@@ -114,6 +127,21 @@ Promotion definitions applicable at bill or item level.
   - **Behaviour flags**: `is_active`, `is_combinable`, `requires_reason`, `requires_manager_approval`.
 - **Views**: [resources/views/tenant/ecommerce/discounts/](../resources/views/tenant/ecommerce/discounts/)
 
+### Discount groups
+
+Customer-tier discounts: a group grants a percentage or fixed discount once a customer's bill clears a minimum spend. Customers are assigned a group via `customers.discount_group_id`, and the order checkout applies it automatically (see [Order checkout](#order-checkout-post-employeeordersave)).
+
+- **Routes** — [routes/tenant.php:253-266](../routes/tenant.php#L253-L266), under prefix `/tenant/discounts/group` (note: a separate top-level group, **not** under `ecommerce`):
+  - `GET    /tenant/discounts/group` (index, perm: `discount-group.view|discount-group.manage`)
+  - `POST   /tenant/discounts/group/store` (perm: `discount-group.manage`)
+  - `PUT    /tenant/discounts/group/{discountGroup}` (perm: `discount-group.manage`)
+  - `DELETE /tenant/discounts/group/{discountGroup}` (perm: `discount-group.manage`)
+- **Controller**: [`DiscountGroupController`](../app/Http/Controllers/DiscountGroupController.php) — note this lives in the root `Http\Controllers\` namespace, not `Tenant\`, and queries the model directly (no repository), unlike the other catalog modules.
+- **Validation**: [`CreateDiscountGroupRequest`](../app/Http/Requests/CreateDiscountGroupRequest.php) — handles both create and update; enforces unique `title` per tenant, percentage value ≤ 100, fixed value ≤ `min_limit`.
+- **Model**: [`DiscountGroup`](../app/Models/DiscountGroup.php) — fields: `name`, `slug`, `type` (`percentage|fixed`), `value`, `min_limit`, `is_active`. Uses `SoftDeletes`.
+- **UI**: a modal-driven DataTable — [resources/views/tenant/ecommerce/discounts/group/](../resources/views/tenant/ecommerce/discounts/group/) with [public/assets/js/tenant/discount-groups.js](../public/assets/js/tenant/discount-groups.js). There is no dedicated create/edit/show page; create and edit share one modal.
+- **Dropdown**: `GET /tenant/ecommerce/dropdowns/discount-groups` ([`DropdownController@discountGroups`](../app/Http/Controllers/Tenant/DropdownController.php)) feeds the customer form's group selector.
+
 ---
 
 ## CRM
@@ -150,6 +178,8 @@ Customer-owned vehicles, used for service history and reminder generation.
 
 Images attach to any model that uses the [`HasImages`](../app/Models/Concerns/HasImages.php) trait. Currently only `Product` does. Each `Image` record stores a file on a Laravel disk and tracks metadata (mime, size, sort, primary flag).
 
+Demo products are seeded **with** a primary image: [`TenantCatalogSeeder`](../database/seeders/TenantCatalogSeeder.php) pushes static files from [`database/data/images/products/`](../database/data/images/) onto the `public` disk and writes the matching `images` rows. Run `php artisan storage:link` to expose them over HTTP.
+
 - **Routes** — [routes/tenant.php:188-201](../routes/tenant.php#L188-L201):
   - `POST   /tenant/ecommerce/images/upload` (perm: `product.create|product.update|products.manage`)
   - `DELETE /tenant/ecommerce/images/{image}` (perm: `product.update|products.manage`)
@@ -175,6 +205,9 @@ The catalog UI populates many `<select>` widgets via JSON endpoints. They live u
 | `GET /tenant/ecommerce/dropdowns/products?sub_category_id=…&category_id=…` | active products | product/service view+manage perms |
 | `GET /tenant/ecommerce/dropdowns/customers` | customers | customer/vehicle/pos view+manage perms |
 | `GET /tenant/ecommerce/dropdowns/vehicles?customer_id=…` | vehicles | vehicle/customer/pos view+manage perms |
+| `GET /tenant/ecommerce/dropdowns/services` | active services | service view + `orders.create`/`pos.bill` |
+| `GET /tenant/ecommerce/dropdowns/discounts` | active discounts | discount/product manage perms |
+| `GET /tenant/ecommerce/dropdowns/discount-groups` | active discount groups | `discount-group.view`/`manage` or customer create/update/manage |
 
 Implemented in [`Tenant\DropdownController`](../app/Http/Controllers/Tenant/DropdownController.php).
 
@@ -196,6 +229,8 @@ Tenant admins configure their shop in four sections, all gated by `permission:se
 - **Validation**: [`SaveShopGeneralSettingsRequest`](../app/Http/Requests/Tenant/Settings/SaveShopGeneralSettingsRequest.php), [`SaveShopRegionalSettingsRequest`](../app/Http/Requests/Tenant/Settings/SaveShopRegionalSettingsRequest.php), [`SaveShopOperationsSettingsRequest`](../app/Http/Requests/Tenant/Settings/SaveShopOperationsSettingsRequest.php), [`SaveShopNotificationsSettingsRequest`](../app/Http/Requests/Tenant/Settings/SaveShopNotificationsSettingsRequest.php)
 - **Storage**: settings are stored as a JSON column on `tenants.settings`. Defaults are merged on read via [`Tenant::mergedSettings()`](../app/Models/Tenant.php#L204-L207); see the `DEFAULT_SETTINGS` constant for the full default tree.
 - **Views**: [resources/views/tenant/settings/shop-profile/](../resources/views/tenant/settings/shop-profile/)
+
+> **Currency** — the `regional.currency` setting drives money formatting across the whole app via [`App\Support\Currency`](../app/Support/Currency.php) (default `USD` → `$`). In Blade use `@money($amount)` (e.g. `@money(1234.5)` → `$1,234.50`) or `@currency` for the bare symbol; in JS read `window.appCurrency.symbol` (injected by both layouts). PHP services/repositories call `Currency::format()` / `Currency::symbol()`. Unknown/unmapped codes fall back to `$`.
 
 ### Default settings tree
 
@@ -248,20 +283,49 @@ The cashier/manager-facing POS surface. Lives under `/employee/*`.
 
 ### Routes
 
-| Route | Handler | Purpose |
-|-------|---------|---------|
-| `GET /employee/dashboard` | [`Employee\PanelController@dashboard`](../app/Http/Controllers/Employee/PanelController.php) | Employee landing screen |
-| `GET /employee/order/new` | [`Employee\PanelController@newOrder`](../app/Http/Controllers/Employee/PanelController.php) | Renders the new-order POS page |
-| `GET /employee/order/categories` | [`SharedDataController@categories`](../app/Http/Controllers/SharedDataController.php#L13-L27) | JSON: active categories (with optional `?q=`) |
-| `GET /employee/order/sub-categories` | [`SharedDataController@subCategories`](../app/Http/Controllers/SharedDataController.php#L29-L55) | JSON: sub-categories filtered by `?category_id=` |
-| `GET /employee/order/products` | [`SharedDataController@products`](../app/Http/Controllers/SharedDataController.php#L57-L84) | JSON: products filtered by `?sub_category_id=` and/or `?category_id=` |
-| `GET /employee/order/search` | [`SharedDataController@search`](../app/Http/Controllers/SharedDataController.php#L86-L124) | JSON: union search across categories, sub-categories, products (limit 20/20/40) |
+[routes/employee.php](../routes/employee.php) — all under the `employee.order.` name prefix, handled by [`Employee\OrderController`](../app/Http/Controllers/Employee/OrderController.php) except the catalog feeds (`SharedDataController`):
+
+| Route | Handler | Permission | Purpose |
+|-------|---------|------------|---------|
+| `GET /employee/dashboard` | [`Employee\PanelController@dashboard`](../app/Http/Controllers/Employee/PanelController.php) | `dashboard.view` | Employee landing screen |
+| `GET /employee/order` | `OrderController@index` | `orders.view` | Order listing page (tabs: Today / All / Pending) |
+| `GET /employee/order/listing` | `OrderController@listing` | `orders.view` | JSON: filtered/sorted/searched order list + tab counts |
+| `GET /employee/order/new` | `OrderController@create` | `orders.create\|pos.bill` | Renders the new-order POS page |
+| `POST /employee/order/save` | `OrderController@store` | `orders.create\|pos.bill` | Persists the cart as an `Order` (see below) |
+| `GET /employee/order/{order}` | `OrderController@show` | `orders.view` | Order detail / receipt view |
+| `GET /employee/order/categories` | [`SharedDataController@categories`](../app/Http/Controllers/SharedDataController.php#L13-L27) | `orders.create\|pos.bill` | JSON: active categories (with optional `?q=`) |
+| `GET /employee/order/sub-categories` | [`SharedDataController@subCategories`](../app/Http/Controllers/SharedDataController.php#L29-L55) | `orders.create\|pos.bill` | JSON: sub-categories filtered by `?category_id=` |
+| `GET /employee/order/products` | [`SharedDataController@products`](../app/Http/Controllers/SharedDataController.php#L57-L84) | `orders.create\|pos.bill` | JSON: products filtered by `?sub_category_id=` and/or `?category_id=` |
+| `GET /employee/order/search` | [`SharedDataController@search`](../app/Http/Controllers/SharedDataController.php#L86-L124) | `orders.create\|pos.bill` | JSON: union search across categories, sub-categories, products (limit 20/20/40) |
 
 ### Frontend behaviour
 
 [resources/views/employee/order/new-order.blade.php](../resources/views/employee/order/new-order.blade.php) uses Select2 + axios to drive a drill-down: pick a category → fetch sub-categories → fetch products → add to cart. The free-text search box hits `/employee/order/search` and presents a unified result list. Layout: [resources/views/layouts/employee-portal.blade.php](../resources/views/layouts/employee-portal.blade.php).
 
-> POS billing/checkout itself (turning a cart into a persisted order with totals, tax, payment) is **not yet implemented**. Permissions exist (`pos.bill`, `discount.apply_*`, `refunds.manage`) and the UI cart is partly there, but no `Order` model or table is in the migrations yet.
+### Order checkout (`POST /employee/order/save`)
+
+POS billing **is implemented**. The cart is validated by [`SaveOrderRequest`](../app/Http/Requests/Employee/Orders/SaveOrderRequest.php) (requires `customer_id`, `vehicle_id`, ≥1 `items[]`, optional `service_fees[]`, a `payment` block with `method` ∈ `cash|card|check` and `amount`) and persisted by [`OrdersRepository::store()`](../app/Repositories/OrdersRepository.php), which in one transaction:
+
+1. **Validates stock** for tracked-inventory products and **deducts** it on success.
+2. **Applies discounts** — per-product (`products.discount_id`) and the customer's **discount group** (`customers.discount_group_id`), honouring `max_discount_amount` caps and the group's `min_limit` spend threshold.
+3. **Adds service fees** — both catalog services (`type: service`) and ad-hoc manual fees (`type: manual`).
+4. **Computes tax** per line with progressive allocation, storing the breakdown in `orders.discount_details`.
+5. **Generates** a unique `order_number` (`ORD-{Ymd-His}-{rand}`) and sets `status` from the payment vs. total (`paid` / `partially_paid` / `pending`), stamping `paid_at` when fully paid.
+6. Creates the `Order` and its `OrderItem` rows (each snapshotting product name/sku/unit).
+
+The listing endpoint supports tab filters (today/all/pending), free-text + field-scoped search, sort options, and date ranges — all handled inside `OrdersRepository::listing()`.
+
+> Gaps (known, not yet built): there is **no `OrderPolicy`** — order access is gated only by the route `permission:` middleware — and no order *edit*, *void*, or *refund* path yet (the `refunds.manage` permission exists but is unused). Orders are created and viewed only.
+
+---
+
+## Tenant dashboard
+
+`GET /tenant/dashboard` ([`Tenant\DashboardController`](../app/Http/Controllers/Tenant/DashboardController.php)) renders a data-driven analytics dashboard for shop owners/managers (employees are redirected to their own panel). All figures are tenant-scoped via the `BelongsToTenant` global scope.
+
+- **Aggregation**: [`TenantDashboardService`](../app/Services/TenantDashboardService.php) builds the payload — stat cards (total sales, collected, outstanding, orders, customers, products, low-stock, avg order, items sold), a 12-month revenue/orders trend, orders-by-status, payment-method split, top products, sales-by-category, customers-by-type, a revenue breakdown (net/tax/fees/discounts), recent orders, low-stock alerts, and an application overview (shop status, onboarding, currency, timezone, catalog/record counts).
+- **Charts**: rendered with **ApexCharts** (already bundled in [layouts/app.blade.php](../resources/views/layouts/app.blade.php)) by [public/assets/js/tenant/dashboard.js](../public/assets/js/tenant/dashboard.js), reading the server payload from `window.dashboardData` and theme colours from `window.config.colors`.
+- **View**: [resources/views/tenant/dashboard.blade.php](../resources/views/tenant/dashboard.blade.php) (Vuexy cards + chart containers).
 
 ---
 
@@ -287,9 +351,11 @@ The status transitions and approval flow are described in detail in [auth-and-on
 |--------|--------------|------------|------------|-------------------|
 | Categories | `/tenant/ecommerce/categories` | `Tenant\CategoryController` | `CategoriesRepository` | `category.*` |
 | Sub-categories | `/tenant/ecommerce/sub-categories` | `Tenant\SubCategoryController` | `SubCategoriesRepository` | `subcategory.*` |
+| Product types | `/tenant/ecommerce/product-types` | `Tenant\ProductTypeController` | `ProductTypesRepository` | `product-type.*` |
 | Products | `/tenant/ecommerce/products` | `Tenant\ProductController` | `ProductsRepository` | `product.*` / `products.*` |
 | Services | `/tenant/ecommerce/services` | `Tenant\ServiceController` | `ServicesRepository` | `service.*` / `services.*` |
 | Discounts | `/tenant/ecommerce/discounts` | `Tenant\DiscountController` | `DiscountsRepository` | `discount.*` / `discounts.*` |
+| Discount groups | `/tenant/discounts/group` | `DiscountGroupController` | direct queries | `discount-group.view` / `discount-group.manage` |
 | Customers | `/tenant/ecommerce/customers` | `Tenant\CustomerController` | `CustomersRepository` | `customer.*` / `customers.*` |
 | Vehicles | `/tenant/ecommerce/vehicles` | `Tenant\VehicleController` | `VehiclesRepository` | `vehicle.*` / `vehicles.*` |
 | Images | `/tenant/ecommerce/images` | `Tenant\ImageController` | (uses `ImageService`) | inherits from product perms |

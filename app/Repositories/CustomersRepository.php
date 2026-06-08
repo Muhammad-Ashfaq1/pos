@@ -3,8 +3,10 @@
 namespace App\Repositories;
 
 use App\Models\Customer;
+use App\Models\DiscountGroup;
 use App\Models\Vehicle;
 use App\Repositories\Interface\CustomerRepositoryInterface;
+use App\Support\Currency;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -40,7 +42,7 @@ class CustomersRepository implements CustomerRepositoryInterface
             $customer->save();
         }
 
-        $customer->loadMissing('defaultVehicle:id,customer_id,plate_number');
+        $customer->loadMissing(['defaultVehicle:id,customer_id,plate_number', 'discountGroup:id,name,type,value,min_limit,is_active']);
         $customer->loadCount('vehicles');
 
         return [
@@ -70,7 +72,7 @@ class CustomersRepository implements CustomerRepositoryInterface
 
         $baseQuery = Customer::query();
         $filteredQuery = Customer::query()
-            ->with('defaultVehicle:id,customer_id,plate_number')
+            ->with(['defaultVehicle:id,customer_id,plate_number', 'discountGroup:id,name,type,value,min_limit,is_active'])
             ->withCount('vehicles')
             ->search($search)
             ->when($customerType !== '', function (Builder $query) use ($customerType): void {
@@ -96,7 +98,7 @@ class CustomersRepository implements CustomerRepositoryInterface
 
     public function getCustomerFormData(Customer $customer, ?Authenticatable $user = null): array
     {
-        $customer->loadMissing('defaultVehicle:id,customer_id,plate_number');
+        $customer->loadMissing(['defaultVehicle:id,customer_id,plate_number', 'discountGroup:id,name,type,value,min_limit,is_active']);
         $customer->loadCount('vehicles');
 
         return $this->transformCustomer($customer, $user);
@@ -104,8 +106,14 @@ class CustomersRepository implements CustomerRepositoryInterface
 
     private function buildPayload(array $data): array
     {
+        $customerType = $data['customer_type'];
+        $discountGroupId = ($customerType === Customer::TYPE_WALK_IN)
+            ? null
+            : $this->normalizeNullableInt($data['discount_group'] ?? null);
+
         return [
-            'customer_type' => $data['customer_type'],
+            'customer_type' => $customerType,
+            'discount_group_id' => $discountGroupId,
             'name' => $data['name'],
             'phone' => $this->normalizeNullableString($data['phone'] ?? null),
             'email' => $this->normalizeNullableString($data['email'] ?? null),
@@ -171,6 +179,13 @@ class CustomersRepository implements CustomerRepositoryInterface
             'id' => $customer->id,
             'customer_type' => $customer->customer_type,
             'customer_type_label' => $typeOptions[$customer->customer_type] ?? ucfirst((string) $customer->customer_type),
+            'discount_group_id' => $customer->discount_group_id,
+            'discount_group_name' => $customer->discountGroup?->name,
+            'discount_group_type' => $customer->discountGroup?->type,
+            'discount_group_value' => $customer->discountGroup ? (float) $customer->discountGroup->value : null,
+            'discount_group_min_limit' => $customer->discountGroup ? (float) $customer->discountGroup->min_limit : null,
+            'discount_group_label' => $this->discountGroupLabel($customer->discountGroup),
+            'discount_group' => $this->discountGroupPayload($customer->discountGroup),
             'name' => $customer->name,
             'phone' => $customer->phone,
             'email' => $customer->email,
@@ -207,6 +222,43 @@ class CustomersRepository implements CustomerRepositoryInterface
         $value = trim((string) $value);
 
         return $value !== '' ? $value : null;
+    }
+
+    private function normalizeNullableInt(mixed $value): ?int
+    {
+        $value = trim((string) $value);
+
+        return $value !== '' ? (int) $value : null;
+    }
+
+    private function discountGroupPayload(?DiscountGroup $group): ?array
+    {
+        if (! $group || ! $group->is_active) {
+            return null;
+        }
+
+        return [
+            'id' => $group->id,
+            'name' => $group->name,
+            'type' => $group->type,
+            'value' => (float) $group->value,
+            'min_limit' => (float) $group->min_limit,
+            'is_active' => (bool) $group->is_active,
+            'label' => $this->discountGroupLabel($group),
+        ];
+    }
+
+    private function discountGroupLabel(?DiscountGroup $group): ?string
+    {
+        if (! $group) {
+            return null;
+        }
+
+        $value = $group->type === 'percentage'
+            ? rtrim(rtrim(number_format((float) $group->value, 2, '.', ''), '0'), '.').'%'
+            : Currency::format($group->value);
+
+        return trim("{$group->name} - {$value}");
     }
 
     private function normalizeMoney(mixed $value): string

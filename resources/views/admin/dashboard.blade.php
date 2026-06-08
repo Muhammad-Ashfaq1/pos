@@ -16,6 +16,12 @@
                         </p>
                         <div class="d-flex gap-2 flex-wrap">
                             <a href="{{ route('admin.shops.index') }}" class="btn btn-light btn-sm">Manage Shops</a>
+                            <a href="{{ route('admin.demo-requests.index') }}" class="btn btn-outline-light btn-sm position-relative">
+                                Demo Requests
+                                @if ($stats['demo_requests_new'] > 0)
+                                    <span class="badge rounded-pill bg-warning text-dark ms-1">{{ $stats['demo_requests_new'] }} new</span>
+                                @endif
+                            </a>
                         </div>
                     </div>
                     <div class="col-lg-4 text-center d-none d-lg-block">

@@ -18,6 +18,15 @@
             'pattern' => 'admin.shops.*',
             'icon' => 'tabler-building-store',
         ],
+        [
+            'label' => 'Demo Requests',
+            'route' => 'admin.demo-requests.index',
+            'pattern' => 'admin.demo-requests.*',
+            'icon' => 'tabler-calendar-event',
+            'badge' => \App\Models\DemoRequest::query()
+                ->where('status', \App\Enums\DemoRequestStatus::New->value)
+                ->count(),
+        ],
     ];
 
     $tenantMenuGroups = collect([
@@ -39,6 +48,14 @@
                         'route' => 'tenant.ecommerce.subcategories.index',
                         'pattern' => 'tenant.ecommerce.subcategories.*',
                         'icon' => 'tabler-category-plus',
+                    ]
+                    : null,
+                $user?->can('product-type.view')
+                    ? [
+                        'label' => 'Product Types',
+                        'route' => 'tenant.ecommerce.product-types.index',
+                        'pattern' => 'tenant.ecommerce.product-types.*',
+                        'icon' => 'tabler-tags',
                     ]
                     : null,
                 $user?->can('product.view') || $user?->can('products.view') || $user?->can('products.manage')
@@ -235,6 +252,9 @@
                     <a href="{{ route($item['route']) }}" class="menu-link">
                         <i class="menu-icon icon-base ti {{ $item['icon'] }}"></i>
                         <div>{{ $item['label'] }}</div>
+                        @if (! empty($item['badge']))
+                            <span class="badge rounded-pill bg-danger ms-auto">{{ $item['badge'] }}</span>
+                        @endif
                     </a>
                 </li>
             @endforeach

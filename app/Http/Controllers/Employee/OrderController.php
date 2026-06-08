@@ -4,110 +4,150 @@ namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Employee\Orders\SaveOrderRequest;
+use App\Mail\ShareOrderMail;
 use App\Models\Order;
-use App\Models\Product;
+use App\Repositories\Interface\OrderRepositoryInterface;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class OrderController extends Controller
 {
-    public function store(SaveOrderRequest $request): JsonResponse
+    public function __construct(
+        private OrderRepositoryInterface $orderRepository
+    ) {}
+
+    public function index(): View
     {
-        $validated = $request->validated();
-        $user = $request->user();
+        return view('employee.order.index');
+    }
 
-        $order = DB::transaction(function () use ($validated, $user): Order {
-            $requestedItems = collect($validated['items']);
-            $products = Product::query()
-                ->whereIn('id', $requestedItems->pluck('product_id')->unique()->all())
-                ->where('is_active', true)
-                ->get()
-                ->keyBy('id');
+    public function create(): View
+    {
+        return view('employee.order.new-order');
+    }
 
-            if ($products->count() !== $requestedItems->pluck('product_id')->unique()->count()) {
-                throw ValidationException::withMessages([
-                    'items' => 'One or more selected products are no longer available.',
-                ]);
-            }
-
-            $totalQuantity = 0;
-            $subtotalAmount = 0.0;
-            $orderItems = [];
-
-            foreach ($requestedItems as $requestedItem) {
-                $product = $products->get((int) $requestedItem['product_id']);
-                $quantity = (int) $requestedItem['quantity'];
-                $unitPrice = round((float) $product->sale_price, 2);
-                $lineTotal = round($unitPrice * $quantity, 2);
-
-                $totalQuantity += $quantity;
-                $subtotalAmount += $lineTotal;
-
-                $orderItems[] = [
-                    'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'sku' => $product->sku,
-                    'unit' => $product->unit,
-                    'quantity' => $quantity,
-                    'unit_price' => $unitPrice,
-                    'line_total' => $lineTotal,
-                ];
-            }
-
-            $subtotalAmount = round($subtotalAmount, 2);
-
-            $order = Order::query()->create([
-                'order_number' => $this->makeOrderNumber(),
-                'customer_id' => $validated['customer_id'] ?? null,
-                'vehicle_id' => $validated['vehicle_id'] ?? null,
-                'status' => Order::STATUS_PENDING,
-                'total_quantity' => $totalQuantity,
-                'subtotal_amount' => $subtotalAmount,
-                'discount_amount' => 0,
-                'service_fee_amount' => 0,
-                'tax_amount' => 0,
-                'total_amount' => $subtotalAmount,
-                'notes' => $validated['notes'] ?? null,
-                'created_by' => $user?->id,
-                'updated_by' => $user?->id,
-            ]);
-
-            $order->items()->createMany($orderItems);
-
-            return $order->load('items');
-        });
-
-        return response()->json([
-            'message' => "Order {$order->order_number} saved successfully.",
-            'data' => [
-                'id' => $order->id,
-                'order_number' => $order->order_number,
-                'status' => $order->status,
-                'total_quantity' => $order->total_quantity,
-                'subtotal_amount' => (float) $order->subtotal_amount,
-                'discount_amount' => (float) $order->discount_amount,
-                'service_fee_amount' => (float) $order->service_fee_amount,
-                'tax_amount' => (float) $order->tax_amount,
-                'total_amount' => (float) $order->total_amount,
-                'items' => $order->items->map(fn ($item) => [
-                    'id' => $item->id,
-                    'product_id' => $item->product_id,
-                    'product_name' => $item->product_name,
-                    'quantity' => $item->quantity,
-                    'unit_price' => (float) $item->unit_price,
-                    'line_total' => (float) $item->line_total,
-                ])->values(),
+    public function listing(Request $request): JsonResponse
+    {
+        $filters = $request->validate([
+            'tab' => ['nullable', 'string', 'in:today,all,pending,estimates'],
+            'q' => ['nullable', 'string', 'max:100'],
+            'sort' => [
+                'nullable',
+                'string',
+                Rule::in([
+                    'latest',
+                    'oldest',
+                    'amount_desc',
+                    'amount_asc',
+                    'customer_name',
+                    'date_opened',
+                    'order_id',
+                    'order_total',
+                ]),
             ],
+            'date_from' => ['nullable', 'date'],
+            'date_to' => ['nullable', 'date'],
+            'search_fields' => ['nullable', 'array'],
+            'search_fields.*' => [
+                'string',
+                Rule::in(['order_number', 'customer_id', 'paid_status', 'retailer', 'time', 'date']),
+            ],
+        ]);
+
+        return response()->json($this->orderRepository->listing($filters));
+    }
+
+    public function show(Order $order): View
+    {
+        return view('employee.order.show', [
+            'order' => $this->orderRepository->details($order),
         ]);
     }
 
-    private function makeOrderNumber(): string
+    public function store(SaveOrderRequest $request): JsonResponse
     {
-        do {
-            $orderNumber = 'ORD-'.now()->format('Ymd-His').'-'.random_int(100, 999);
-        } while (Order::query()->where('order_number', $orderNumber)->exists());
+        $result = $this->orderRepository->store($request->validated(), $request->user());
 
-        return $orderNumber;
+        return response()->json([
+            'message' => $result['message'],
+            'data' => $result['data'],
+        ]);
+    }
+
+    public function pay(Order $order, Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'payment_method' => ['required', 'string', 'in:cash,card,check'],
+            'payment_amount' => ['required', 'numeric', 'min:0.01'],
+        ], [
+            'payment_amount.min' => 'Payment amount must be greater than zero.',
+        ]);
+
+        $result = $this->orderRepository->addPayment($order, $data, $request->user());
+
+        return response()->json($result);
+    }
+
+    public function print(Order $order): View
+    {
+        $details = $this->orderRepository->details($order);
+
+        return view('employee.order.print', [
+            'order' => $order,
+            'details' => $details,
+        ]);
+    }
+
+    public function pdf(Order $order): Response
+    {
+        $details = $this->orderRepository->details($order);
+        $pdf = Pdf::loadView('employee.order.pdf', [
+            'order' => $order,
+            'details' => $details,
+        ]);
+
+        $filename = $order->status === Order::STATUS_ESTIMATE
+            ? "estimate-{$order->order_number}.pdf"
+            : "invoice-{$order->order_number}.pdf";
+
+        return $pdf->download($filename);
+    }
+
+    public function share(Order $order, Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email', 'max:255'],
+        ]);
+
+        $email = $data['email'];
+        $customer = $order->customer;
+
+        if ($customer) {
+            if ($customer->email !== $email) {
+                $customer->update(['email' => $email]);
+            }
+        }
+
+        $details = $this->orderRepository->details($order);
+        $pdf = Pdf::loadView('employee.order.pdf', [
+            'order' => $order,
+            'details' => $details,
+        ]);
+
+        $filename = $order->status === Order::STATUS_ESTIMATE
+            ? "estimate-{$order->order_number}.pdf"
+            : "invoice-{$order->order_number}.pdf";
+
+        Mail::to($email)->send(new ShareOrderMail($order, $pdf->output(), $filename));
+
+        return response()->json([
+            'success' => true,
+            'message' => "Document shared successfully with {$email}.",
+        ]);
     }
 }

@@ -137,6 +137,10 @@
       ignore: [],
       rules: {
         customer_id: { required: function() { return $('#vehicle_customer_entry_mode').val() === 'existing'; } },
+        inline_customer_name: { required: function() { return $('#vehicle_customer_entry_mode').val() === 'walk_in'; }, maxlength: 150 },
+        inline_customer_phone: { maxlength: 30 },
+        inline_customer_email: { email: true, maxlength: 150 },
+        inline_customer_address: { maxlength: 1000 },
         plate_number: { required: true, maxlength: 50 },
         registration_number: { maxlength: 80 },
         make: { maxlength: 100 },
@@ -145,6 +149,11 @@
         color: { maxlength: 50 },
         engine_type: { maxlength: 80 },
         odometer: { number: true, min: 0 }
+      },
+      messages: {
+        customer_id: { required: 'Please select a customer.' },
+        inline_customer_name: { required: 'Please enter walk-in customer details.' },
+        plate_number: { required: 'Please enter a plate number.' }
       },
       errorElement: 'div',
       errorClass: 'invalid-feedback',

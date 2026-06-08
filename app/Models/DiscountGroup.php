@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
@@ -7,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DiscountGroup extends Model
 {
-    use SoftDeletes, BelongsToTenant;
+    use BelongsToTenant, SoftDeletes;
 
     protected $fillable = [
         'tenant_id',
@@ -15,6 +16,16 @@ class DiscountGroup extends Model
         'slug',
         'type',
         'value',
+        'min_limit',
         'is_active',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'value' => 'decimal:2',
+            'min_limit' => 'decimal:2',
+            'is_active' => 'boolean',
+        ];
+    }
 }

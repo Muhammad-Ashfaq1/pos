@@ -30,7 +30,7 @@
 
   const money = function (value) {
     const amount = Number(value || 0);
-    return '$' + amount.toFixed(2);
+    return ((window.appCurrency && window.appCurrency.symbol) || '$') + amount.toFixed(2);
   };
 
   const tooltipAttrs = function (title) {

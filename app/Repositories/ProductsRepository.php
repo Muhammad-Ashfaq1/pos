@@ -3,11 +3,14 @@
 namespace App\Repositories;
 
 use App\Models\Category;
+use App\Models\Discount;
 use App\Models\Product;
+use App\Models\ProductType;
 use App\Models\SubCategory;
 use App\Repositories\Interface\ProductRepositoryInterface;
 use App\Repositories\Support\Concerns\HandlesCatalogSlugs;
 use App\Services\ImageService;
+use App\Support\Currency;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -30,7 +33,13 @@ class ProductsRepository implements ProductRepositoryInterface
             'editUrlTemplate' => route('tenant.ecommerce.products.edit', ['product' => '__PRODUCT__']),
             'categoriesDropdownUrl' => route('tenant.ecommerce.dropdowns.categories'),
             'subCategoriesDropdownUrl' => route('tenant.ecommerce.dropdowns.subcategories'),
-            'productTypes' => Product::typeOptions(),
+            'discountDropdownUrl' => route('tenant.ecommerce.dropdowns.discounts'),
+            'productTypes' => ProductType::query()
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->pluck('name', 'id')
+                ->all(),
         ]);
     }
 
@@ -72,6 +81,13 @@ class ProductsRepository implements ProductRepositoryInterface
             $data['sale_price'] = $this->normalizeMoney($data['sale_price'] ?? 0);
             $data['category_id'] = $data['category_id'] ?: null;
             $data['sub_category_id'] = $data['sub_category_id'] ?: null;
+            $data['discount_id'] = ! empty($data['discount_id']) ? (int) $data['discount_id'] : null;
+            $data['product_type_id'] = ! empty($data['product_type_id']) ? (int) $data['product_type_id'] : null;
+            // Keep the legacy `product_type` string in sync with the selected type's
+            // slug so the POS feeds and dropdowns that still read it keep working.
+            $data['product_type'] = $data['product_type_id']
+                ? (ProductType::query()->whereKey($data['product_type_id'])->value('slug') ?? Product::TYPE_OTHER)
+                : ($product?->product_type ?? Product::TYPE_OTHER);
 
             if ($isUpdate) {
                 $product->fill($data);
@@ -96,6 +112,8 @@ class ProductsRepository implements ProductRepositoryInterface
             return $product->fresh([
                 'category:id,name',
                 'subCategory:id,name',
+                'productType:id,name',
+                'discount:id,name,code,discount_type,value',
                 'primaryImage',
                 'images',
             ]);
@@ -126,7 +144,7 @@ class ProductsRepository implements ProductRepositoryInterface
         $status = $filters['status'] ?? '';
         $categoryId = $filters['category_id'] ?? null;
         $subCategoryId = $filters['sub_category_id'] ?? null;
-        $productType = $filters['product_type'] ?? '';
+        $productTypeId = $filters['product_type_id'] ?? null;
         $trackInventory = $filters['track_inventory'] ?? '';
         $sort = $filters['sort'] ?? 'latest';
 
@@ -135,6 +153,8 @@ class ProductsRepository implements ProductRepositoryInterface
             ->with([
                 'category:id,name',
                 'subCategory:id,name',
+                'productType:id,name',
+                'discount:id,name,code,discount_type,value',
                 'primaryImage',
             ])
             ->search($search)
@@ -147,8 +167,8 @@ class ProductsRepository implements ProductRepositoryInterface
             ->when($subCategoryId, function (Builder $query) use ($subCategoryId): void {
                 $query->where('sub_category_id', $subCategoryId);
             })
-            ->when($productType !== '', function (Builder $query) use ($productType): void {
-                $query->where('product_type', $productType);
+            ->when($productTypeId, function (Builder $query) use ($productTypeId): void {
+                $query->where('product_type_id', $productTypeId);
             })
             ->when($trackInventory !== '', function (Builder $query) use ($trackInventory): void {
                 $query->where('track_inventory', $trackInventory === '1');
@@ -195,7 +215,7 @@ class ProductsRepository implements ProductRepositoryInterface
                     ->limit(1),
                 $direction
             ),
-            'product_type' => fn (Builder $builder, string $direction) => $builder->orderBy('product_type', $direction),
+            'product_type_label' => fn (Builder $builder, string $direction) => $builder->orderBy('product_type', $direction),
             'name' => fn (Builder $builder, string $direction) => $builder->orderBy('name', $direction),
             'sku' => fn (Builder $builder, string $direction) => $builder->orderBy('sku', $direction),
             'barcode' => fn (Builder $builder, string $direction) => $builder->orderBy('barcode', $direction),
@@ -237,6 +257,8 @@ class ProductsRepository implements ProductRepositoryInterface
         $product->loadMissing([
             'category:id,name',
             'subCategory:id,name',
+            'productType:id,name',
+            'discount:id,name,code,discount_type,value',
             'primaryImage',
             'images',
         ]);
@@ -254,10 +276,16 @@ class ProductsRepository implements ProductRepositoryInterface
             'id' => $product->id,
             'category_id' => $product->category_id,
             'sub_category_id' => $product->sub_category_id,
+            'discount_id' => $product->discount_id,
             'category_name' => $product->category?->name,
             'sub_category_name' => $product->subCategory?->name,
+            'discount_name' => $product->discount?->name,
+            'discount_label' => $this->discountLabel($product->discount),
+            'product_type_id' => $product->product_type_id,
             'product_type' => $product->product_type,
-            'product_type_label' => $typeOptions[$product->product_type] ?? ucfirst((string) $product->product_type),
+            'product_type_label' => $product->productType?->name
+                ?? $typeOptions[$product->product_type]
+                ?? ucfirst((string) $product->product_type),
             'name' => $product->name,
             'slug' => $product->slug,
             'sku' => $product->sku,
@@ -303,6 +331,20 @@ class ProductsRepository implements ProductRepositoryInterface
     private function normalizeMoney(mixed $value): string
     {
         return number_format((float) $value, 2, '.', '');
+    }
+
+    private function discountLabel(?Discount $discount): ?string
+    {
+        if (! $discount) {
+            return null;
+        }
+
+        $value = $discount->discount_type === Discount::TYPE_PERCENTAGE
+            ? rtrim(rtrim(number_format((float) $discount->value, 2, '.', ''), '0'), '.').'%'
+            : Currency::format($discount->value);
+        $code = filled($discount->code) ? " ({$discount->code})" : '';
+
+        return "{$discount->name}{$code} - {$value}";
     }
 
     private function normalizeStock(mixed $value): string
