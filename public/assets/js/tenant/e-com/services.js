@@ -40,7 +40,14 @@
 
   const money = function (value) {
     const amount = Number(value || 0);
-    return ((window.appCurrency && window.appCurrency.symbol) || '$') + amount.toFixed(2);
+    const cur = window.appCurrency || {};
+    const code = cur.code || 'USD';
+    const locale = cur.locale || 'en-US';
+    try {
+      return new Intl.NumberFormat(locale, { style: 'currency', currency: code }).format(amount);
+    } catch (e) {
+      return (cur.symbol || '$') + amount.toFixed(2);
+    }
   };
 
   const setSubmitButtonState = function (loading) {

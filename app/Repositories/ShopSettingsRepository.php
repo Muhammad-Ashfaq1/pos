@@ -8,25 +8,33 @@ use App\Repositories\Interface\ShopSettingsRepositoryInterface;
 class ShopSettingsRepository implements ShopSettingsRepositoryInterface
 {
     private const LOCALE_OPTIONS = [
-        'en' => 'English',
-        'en_US' => 'English (United States)',
-        'en_GB' => 'English (United Kingdom)',
-        'ar' => 'Arabic',
-        'de' => 'German',
-        'es' => 'Spanish',
-        'fr' => 'French',
+        // Primary / requested locales
+        'ur-PK' => 'Urdu (Pakistan) - PKR',
+        'ar-AE' => 'Arabic (UAE) - AED',
+        'ar-SA' => 'Arabic (Saudi Arabia) - SAR',
+        'en-US' => 'English (United States) - USD',
+        'en-CA' => 'English (Canada) - CAD',
+        'en-AU' => 'English (Australia) - AUD',
+        'en-GB' => 'English (United Kingdom) - GBP',
+        // Additional locales
+        'en'    => 'English (Generic)',
+        'ar'    => 'Arabic (Generic)',
+        'de-DE' => 'German (Germany) - EUR',
+        'es'    => 'Spanish',
+        'fr'    => 'French',
     ];
 
     private const CURRENCY_OPTIONS = [
-        'USD' => 'US Dollar (USD)',
-        'EUR' => 'Euro (EUR)',
-        'GBP' => 'British Pound (GBP)',
-        'AED' => 'UAE Dirham (AED)',
-        'SAR' => 'Saudi Riyal (SAR)',
-        'PKR' => 'Pakistani Rupee (PKR)',
-        'INR' => 'Indian Rupee (INR)',
-        'CAD' => 'Canadian Dollar (CAD)',
-        'AUD' => 'Australian Dollar (AUD)',
+        'USD' => 'US Dollar (USD)  $',
+        'GBP' => 'British Pound (GBP)  £',
+        'PKR' => 'Pakistani Rupee (PKR)  ₨',
+        'AED' => 'UAE Dirham (AED)  د.إ',
+        'SAR' => 'Saudi Riyal (SAR)  ﷼',
+        'CAD' => 'Canadian Dollar (CAD)  C$',
+        'AUD' => 'Australian Dollar (AUD)  A$',
+        // Additional
+        'EUR' => 'Euro (EUR)  €',
+        'INR' => 'Indian Rupee (INR)  ₹',
     ];
 
     private const WEEKDAYS = [

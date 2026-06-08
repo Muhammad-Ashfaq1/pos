@@ -1389,7 +1389,14 @@
     }
 
     function formatMoney(amount) {
-        return currencySymbol() + (Number(amount) || 0).toFixed(2);
+        const cur = window.appCurrency || {};
+        const code = cur.code || 'USD';
+        const locale = cur.locale || 'en-US';
+        try {
+            return new Intl.NumberFormat(locale, { style: 'currency', currency: code }).format(Number(amount) || 0);
+        } catch (e) {
+            return currencySymbol() + (Number(amount) || 0).toFixed(2);
+        }
     }
 
     function paymentAmountValue() {
