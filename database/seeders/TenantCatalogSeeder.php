@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Helpers\FileUploadManager;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Discount;
+use App\Models\Image;
 use App\Models\Product;
 use App\Models\Service;
 use App\Models\ServiceProduct;
@@ -13,6 +15,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Database\Seeder;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 
 class TenantCatalogSeeder extends Seeder
@@ -27,29 +30,36 @@ class TenantCatalogSeeder extends Seeder
 
     private const PRODUCTS_BY_CATEGORY = [
         'Engine Oils' => [
-            ['name' => 'Mobil 1 5W-30 Full Synthetic',  'brand' => 'Mobil 1',   'cost' => 28.00, 'price' => 39.99, 'unit' => 'liter', 'type' => Product::TYPE_OIL,    'sub' => 'Synthetic'],
-            ['name' => 'Castrol GTX 10W-40',            'brand' => 'Castrol',   'cost' => 18.50, 'price' => 27.99, 'unit' => 'liter', 'type' => Product::TYPE_OIL,    'sub' => 'Semi-Synthetic'],
-            ['name' => 'Shell Helix HX7 5W-40',         'brand' => 'Shell',     'cost' => 22.00, 'price' => 32.50, 'unit' => 'liter', 'type' => Product::TYPE_OIL,    'sub' => 'Semi-Synthetic'],
-            ['name' => 'Valvoline Daily Protection',    'brand' => 'Valvoline', 'cost' => 14.00, 'price' => 22.99, 'unit' => 'liter', 'type' => Product::TYPE_OIL,    'sub' => 'Mineral'],
+            ['name' => 'Mobil 1 5W-30 Full Synthetic',  'brand' => 'Mobil 1',   'cost' => 28.00, 'price' => 39.99, 'unit' => 'liter', 'type' => Product::TYPE_OIL,    'sub' => 'Synthetic',      'image' => 'mobil-1-5w30.jpg'],
+            ['name' => 'Castrol GTX 10W-40',            'brand' => 'Castrol',   'cost' => 18.50, 'price' => 27.99, 'unit' => 'liter', 'type' => Product::TYPE_OIL,    'sub' => 'Semi-Synthetic', 'image' => 'castrol-gtx-10w40.jpg'],
+            ['name' => 'Shell Helix HX7 5W-40',         'brand' => 'Shell',     'cost' => 22.00, 'price' => 32.50, 'unit' => 'liter', 'type' => Product::TYPE_OIL,    'sub' => 'Semi-Synthetic', 'image' => 'shell-helix-hx7.jpg'],
+            ['name' => 'Valvoline Daily Protection',    'brand' => 'Valvoline', 'cost' => 14.00, 'price' => 22.99, 'unit' => 'liter', 'type' => Product::TYPE_OIL,    'sub' => 'Mineral',        'image' => 'valvoline-daily.jpg'],
         ],
         'Filters' => [
-            ['name' => 'K&N Oil Filter HP-1004',        'brand' => 'K&N',       'cost' => 8.50,  'price' => 14.99, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Oil Filter'],
-            ['name' => 'Bosch Premium Air Filter',      'brand' => 'Bosch',     'cost' => 12.00, 'price' => 21.99, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Air Filter'],
-            ['name' => 'Mann Cabin Filter CU 26 009',   'brand' => 'Mann',      'cost' => 9.50,  'price' => 16.99, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Cabin Filter'],
+            ['name' => 'K&N Oil Filter HP-1004',        'brand' => 'K&N',       'cost' => 8.50,  'price' => 14.99, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Oil Filter',     'image' => 'kn-oil-filter.jpg'],
+            ['name' => 'Bosch Premium Air Filter',      'brand' => 'Bosch',     'cost' => 12.00, 'price' => 21.99, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Air Filter',     'image' => 'bosch-air-filter.jpg'],
+            ['name' => 'Mann Cabin Filter CU 26 009',   'brand' => 'Mann',      'cost' => 9.50,  'price' => 16.99, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Cabin Filter',   'image' => 'mann-cabin-filter.jpg'],
         ],
         'Brakes' => [
-            ['name' => 'Brembo Front Brake Pads',       'brand' => 'Brembo',    'cost' => 45.00, 'price' => 79.99, 'unit' => 'set',   'type' => Product::TYPE_PART,   'sub' => 'Pads'],
-            ['name' => 'DOT 4 Brake Fluid 1L',          'brand' => 'Bosch',     'cost' => 7.00,  'price' => 12.99, 'unit' => 'liter', 'type' => Product::TYPE_PART,   'sub' => 'Fluid'],
+            ['name' => 'Brembo Front Brake Pads',       'brand' => 'Brembo',    'cost' => 45.00, 'price' => 79.99, 'unit' => 'set',   'type' => Product::TYPE_PART,   'sub' => 'Pads',           'image' => 'brembo-brake-pads.jpg'],
+            ['name' => 'DOT 4 Brake Fluid 1L',          'brand' => 'Bosch',     'cost' => 7.00,  'price' => 12.99, 'unit' => 'liter', 'type' => Product::TYPE_PART,   'sub' => 'Fluid',          'image' => 'dot4-brake-fluid.jpg'],
         ],
         'Batteries' => [
-            ['name' => 'Exide 12V 60Ah Premium',        'brand' => 'Exide',     'cost' => 75.00, 'price' => 119.99, 'unit' => 'piece', 'type' => Product::TYPE_PART,   'sub' => '12V Premium'],
-            ['name' => 'AC Delco 12V 70Ah',             'brand' => 'AC Delco',  'cost' => 85.00, 'price' => 134.99, 'unit' => 'piece', 'type' => Product::TYPE_PART,   'sub' => '12V Standard'],
+            ['name' => 'Exide 12V 60Ah Premium',        'brand' => 'Exide',     'cost' => 75.00, 'price' => 119.99, 'unit' => 'piece', 'type' => Product::TYPE_PART,   'sub' => '12V Premium',    'image' => 'exide-battery.jpg'],
+            ['name' => 'AC Delco 12V 70Ah',             'brand' => 'AC Delco',  'cost' => 85.00, 'price' => 134.99, 'unit' => 'piece', 'type' => Product::TYPE_PART,   'sub' => '12V Standard',   'image' => 'acdelco-battery.jpg'],
         ],
         'Tires' => [
-            ['name' => 'Michelin Primacy 4 195/65R15',  'brand' => 'Michelin',  'cost' => 90.00, 'price' => 139.99, 'unit' => 'piece', 'type' => Product::TYPE_PART,   'sub' => 'Passenger'],
-            ['name' => 'Bridgestone Dueler H/T',        'brand' => 'Bridgestone', 'cost' => 110.00, 'price' => 169.99, 'unit' => 'piece', 'type' => Product::TYPE_PART,   'sub' => 'SUV'],
+            ['name' => 'Michelin Primacy 4 195/65R15',  'brand' => 'Michelin',  'cost' => 90.00, 'price' => 139.99, 'unit' => 'piece', 'type' => Product::TYPE_PART,   'sub' => 'Passenger',      'image' => 'michelin-primacy4.jpg'],
+            ['name' => 'Bridgestone Dueler H/T',        'brand' => 'Bridgestone', 'cost' => 110.00, 'price' => 169.99, 'unit' => 'piece', 'type' => Product::TYPE_PART,   'sub' => 'SUV',            'image' => 'bridgestone-dueler.jpg'],
         ],
     ];
+
+    /**
+     * Local source directory for seed product images, relative to the project base path.
+     * Files here are pushed onto the configured storage disk by the seeder and their
+     * stored paths are recorded as `images` rows (see seedProductImage()).
+     */
+    private const IMAGE_SOURCE_DIR = 'database/data/images/products';
 
     private const SERVICES_BY_CATEGORY = [
         'Engine Oils' => [
@@ -184,47 +194,101 @@ class TenantCatalogSeeder extends Seeder
             foreach ($products as $idx => $p) {
                 $sku = sprintf('%s-%s-%03d', $category->code, strtoupper(Str::slug($p['brand'], '')), $idx + 1);
 
-                $exists = Product::withoutTenantScope()
+                $product = Product::withoutTenantScope()
                     ->where('tenant_id', $tenant->id)
                     ->where('sku', $sku)
-                    ->exists();
-
-                if ($exists) {
-                    continue;
-                }
-
-                $sub = SubCategory::withoutTenantScope()
-                    ->where('tenant_id', $tenant->id)
-                    ->where('category_id', $category->id)
-                    ->where('slug', Str::slug($p['sub']))
                     ->first();
 
-                $product = new Product;
-                $product->tenant_id = $tenant->id;
-                $product->category_id = $category->id;
-                $product->sub_category_id = $sub?->id;
-                $product->product_type = $p['type'];
-                $product->name = $p['name'];
-                $product->slug = Str::slug($p['name']);
-                $product->sku = $sku;
-                $product->barcode = (string) random_int(1000000000000, 9999999999999);
-                $product->brand = $p['brand'];
-                $product->unit = $p['unit'];
-                $product->description = "{$p['brand']} - {$p['name']}";
-                $product->cost_price = $p['cost'];
-                $product->sale_price = $p['price'];
-                $product->tax_percentage = 5.00;
-                $product->opening_stock = 100;
-                $product->current_stock = 100;
-                $product->minimum_stock_level = 10;
-                $product->reorder_level = 20;
-                $product->track_inventory = true;
-                $product->is_active = true;
-                $product->created_by = $adminId;
-                $product->updated_by = $adminId;
-                $product->save();
+                if (! $product) {
+                    $sub = SubCategory::withoutTenantScope()
+                        ->where('tenant_id', $tenant->id)
+                        ->where('category_id', $category->id)
+                        ->where('slug', Str::slug($p['sub']))
+                        ->first();
+
+                    $product = new Product;
+                    $product->tenant_id = $tenant->id;
+                    $product->category_id = $category->id;
+                    $product->sub_category_id = $sub?->id;
+                    $product->product_type = $p['type'];
+                    $product->name = $p['name'];
+                    $product->slug = Str::slug($p['name']);
+                    $product->sku = $sku;
+                    $product->barcode = (string) random_int(1000000000000, 9999999999999);
+                    $product->brand = $p['brand'];
+                    $product->unit = $p['unit'];
+                    $product->description = "{$p['brand']} - {$p['name']}";
+                    $product->cost_price = $p['cost'];
+                    $product->sale_price = $p['price'];
+                    $product->tax_percentage = 5.00;
+                    $product->opening_stock = 100;
+                    $product->current_stock = 100;
+                    $product->minimum_stock_level = 10;
+                    $product->reorder_level = 20;
+                    $product->track_inventory = true;
+                    $product->is_active = true;
+                    $product->created_by = $adminId;
+                    $product->updated_by = $adminId;
+                    $product->save();
+                }
+
+                $this->seedProductImage($tenant, $product, $p['image'] ?? null, $adminId);
             }
         }
+    }
+
+    /**
+     * Push a local seed image onto the storage disk and record it as a primary
+     * `images` row for the product. Idempotent: a product that already has an
+     * image is left untouched, so the seeder is safe to re-run.
+     */
+    private function seedProductImage(Tenant $tenant, Product $product, ?string $imageFile, ?int $adminId): void
+    {
+        if (! $imageFile || $product->images()->exists()) {
+            return;
+        }
+
+        $sourcePath = base_path(self::IMAGE_SOURCE_DIR.'/'.$imageFile);
+
+        if (! is_file($sourcePath)) {
+            $this->command?->warn("  Missing seed image, skipping: {$imageFile}");
+
+            return;
+        }
+
+        $upload = new UploadedFile(
+            $sourcePath,
+            $imageFile,
+            mime_content_type($sourcePath) ?: 'image/jpeg',
+            null,
+            true, // test mode: bypass is_uploaded_file() so it works outside an HTTP request
+        );
+
+        $prefix = sprintf('tenants/%s/%s/%s/images/', $tenant->id, $product->getTable(), $product->getKey());
+        $stored = FileUploadManager::uploadFile($upload, $prefix, 'public');
+
+        if (($stored['path'] ?? null) === null) {
+            $this->command?->warn("  Failed to store seed image: {$imageFile}");
+
+            return;
+        }
+
+        $image = new Image;
+        $image->tenant_id = $tenant->id;
+        $image->imageable_type = $product->getMorphClass();
+        $image->imageable_id = $product->getKey();
+        $image->disk = 'public';
+        $image->path = $stored['path'];
+        $image->file_name = $stored['doc_name'] ?? null;
+        $image->original_name = $stored['original_doc_name'] ?? $imageFile;
+        $image->extension = $stored['doc_type'] ?? 'jpg';
+        $image->mime_type = $upload->getClientMimeType();
+        $image->size = filesize($sourcePath) ?: 0;
+        $image->collection = 'gallery';
+        $image->sort_order = 1;
+        $image->is_primary = true;
+        $image->uploaded_by = $adminId;
+        $image->save();
     }
 
     private function seedServices(Tenant $tenant, ?int $adminId): void

@@ -165,6 +165,8 @@ Customer-owned vehicles, used for service history and reminder generation.
 
 Images attach to any model that uses the [`HasImages`](../app/Models/Concerns/HasImages.php) trait. Currently only `Product` does. Each `Image` record stores a file on a Laravel disk and tracks metadata (mime, size, sort, primary flag).
 
+Demo products are seeded **with** a primary image: [`TenantCatalogSeeder`](../database/seeders/TenantCatalogSeeder.php) pushes static files from [`database/data/images/products/`](../database/data/images/) onto the `public` disk and writes the matching `images` rows. Run `php artisan storage:link` to expose them over HTTP.
+
 - **Routes** — [routes/tenant.php:188-201](../routes/tenant.php#L188-L201):
   - `POST   /tenant/ecommerce/images/upload` (perm: `product.create|product.update|products.manage`)
   - `DELETE /tenant/ecommerce/images/{image}` (perm: `product.update|products.manage`)

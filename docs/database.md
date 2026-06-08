@@ -439,7 +439,7 @@ The `Image` model registers a `deleting` boot hook that removes the underlying f
 | [`ApprovedShopSeeder`](../database/seeders/ApprovedShopSeeder.php) | Creates a demo tenant in `approved` status with a tenant admin. |
 | [`TenantEmployeeSeeder`](../database/seeders/TenantEmployeeSeeder.php) | Adds employees of various roles to the demo tenant. |
 | [`TenantRoleUserSeeder`](../database/seeders/TenantRoleUserSeeder.php) | Wires team-scoped Spatie roles to seeded users. |
-| [`TenantCatalogSeeder`](../database/seeders/TenantCatalogSeeder.php) | Populates demo categories, sub-categories, products, services, discounts, customers, and vehicles. |
+| [`TenantCatalogSeeder`](../database/seeders/TenantCatalogSeeder.php) | Populates demo categories, sub-categories, products, services, discounts, customers, and vehicles. Also pushes a primary image per product from [`database/data/images/products/`](../database/data/images/) onto the `public` disk and records the `images` row (idempotent — see [`seedProductImage()`](../database/seeders/TenantCatalogSeeder.php)). Run `php artisan storage:link` to serve them. |
 
 Run all of them with:
 
