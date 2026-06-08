@@ -16,13 +16,11 @@ class Currency
 {
     public const DEFAULT_CODE   = 'USD';
     public const DEFAULT_SYMBOL = '$';
-    public const DEFAULT_LOCALE = 'en-US';
 
     /**
-     * Supported currencies: ISO code => display symbol.
+     * ISO currency code => display symbol.
      *
-     * Symbols are used for quick server-side formatting. Frontend formatting
-     * should use Intl.NumberFormat with the locale from LOCALES.
+     * Symbols are used for quick server-side formatting.
      */
     public const SYMBOLS = [
         'USD' => '$',
@@ -58,44 +56,6 @@ class Currency
         'OMR' => 'ر.ع.',
     ];
 
-    /**
-     * ISO currency code => BCP-47 locale tag.
-     * Used by JavaScript's Intl.NumberFormat for correct local number formatting.
-     */
-    public const LOCALES = [
-        'USD' => 'en-US',
-        'GBP' => 'en-GB',
-        'PKR' => 'ur-PK',
-        'AED' => 'ar-AE',
-        'SAR' => 'ar-SA',
-        'CAD' => 'en-CA',
-        'AUD' => 'en-AU',
-        // Extended
-        'EUR' => 'de-DE',
-        'INR' => 'en-IN',
-        'NZD' => 'en-NZ',
-        'JPY' => 'ja-JP',
-        'CNY' => 'zh-CN',
-        'BDT' => 'bn-BD',
-        'NGN' => 'en-NG',
-        'ZAR' => 'en-ZA',
-        'BRL' => 'pt-BR',
-        'TRY' => 'tr-TR',
-        'RUB' => 'ru-RU',
-        'KRW' => 'ko-KR',
-        'CHF' => 'de-CH',
-        'MYR' => 'ms-MY',
-        'SGD' => 'en-SG',
-        'HKD' => 'zh-HK',
-        'THB' => 'th-TH',
-        'IDR' => 'id-ID',
-        'PHP' => 'fil-PH',
-        'EGP' => 'ar-EG',
-        'QAR' => 'ar-QA',
-        'KWD' => 'ar-KW',
-        'OMR' => 'ar-OM',
-    ];
-
     /** @var array<int|string, string> per-tenant resolved symbols for the current request. */
     private static array $symbolCache = [];
 
@@ -123,17 +83,6 @@ class Currency
         $key = $tenant?->getKey() ?? 'central';
 
         return self::$symbolCache[$key] ??= self::symbol(self::code($tenant));
-    }
-
-    /**
-     * The BCP-47 locale tag for the given (or current) currency/tenant.
-     * Used by JavaScript Intl.NumberFormat for correct regional formatting.
-     */
-    public static function locale(?string $code = null): string
-    {
-        $resolvedCode = $code ?? self::code();
-
-        return self::LOCALES[$resolvedCode] ?? self::DEFAULT_LOCALE;
     }
 
     /**

@@ -8,18 +8,14 @@ use App\Repositories\Interface\ShopSettingsRepositoryInterface;
 class ShopSettingsRepository implements ShopSettingsRepositoryInterface
 {
     private const LOCALE_OPTIONS = [
-        // Primary / requested locales
-        'ur-PK' => 'Urdu (Pakistan) - PKR',
-        'ar-AE' => 'Arabic (UAE) - AED',
-        'ar-SA' => 'Arabic (Saudi Arabia) - SAR',
-        'en-US' => 'English (United States) - USD',
-        'en-CA' => 'English (Canada) - CAD',
-        'en-AU' => 'English (Australia) - AUD',
-        'en-GB' => 'English (United Kingdom) - GBP',
-        // Additional locales
-        'en'    => 'English (Generic)',
-        'ar'    => 'Arabic (Generic)',
-        'de-DE' => 'German (Germany) - EUR',
+        'en'    => 'English',
+        'en_US' => 'English (United States)',
+        'en_GB' => 'English (United Kingdom)',
+        'en_AU' => 'English (Australia)',
+        'en_CA' => 'English (Canada)',
+        'ar'    => 'Arabic',
+        'ur'    => 'Urdu',
+        'de'    => 'German',
         'es'    => 'Spanish',
         'fr'    => 'French',
     ];

@@ -199,11 +199,7 @@
     <!-- Page JS -->
     <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>
     <script>
-      window.appCurrency = {
-        symbol: @json(\App\Support\Currency::symbol()),
-        code:   @json(\App\Support\Currency::code()),
-        locale: @json(\App\Support\Currency::locale()),
-      };
+      window.appCurrency = { symbol: @json(\App\Support\Currency::symbol()), code: @json(\App\Support\Currency::code()) };
     </script>
     <script>
       window.sessionMessages = window.sessionMessages || {};
