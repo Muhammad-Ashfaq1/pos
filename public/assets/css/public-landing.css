@@ -579,6 +579,158 @@ body {
     color: #fff !important;
 }
 
+/* ===== Decorative doodles ===== */
+.has-deco {
+    overflow: hidden;
+}
+
+.landing-section > .container {
+    position: relative;
+    z-index: 1;
+}
+
+.section-deco {
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+    user-select: none;
+    line-height: 0;
+    color: var(--occ-primary);
+    opacity: 0.06;
+}
+
+.section-deco i {
+    font-size: inherit;
+}
+
+.section-deco.deco-cyan {
+    color: var(--occ-cyan);
+}
+
+.deco-spin {
+    animation: deco-spin 26s linear infinite;
+}
+
+.deco-float {
+    animation: deco-float 7s ease-in-out infinite;
+}
+
+@keyframes deco-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes deco-float {
+    0%, 100% { transform: translateY(0) rotate(-8deg); }
+    50% { transform: translateY(-14px) rotate(-8deg); }
+}
+
+/* dotted grid doodle */
+.deco-dots {
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+    width: 9rem;
+    height: 9rem;
+    background-image: radial-gradient(rgba(37, 99, 235, 0.35) 1.6px, transparent 1.6px);
+    background-size: 16px 16px;
+    opacity: 0.5;
+    -webkit-mask-image: radial-gradient(circle, #000, transparent 72%);
+    mask-image: radial-gradient(circle, #000, transparent 72%);
+}
+
+/* soft color blob */
+.deco-blob {
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+    width: 16rem;
+    height: 16rem;
+    border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(6, 182, 212, 0.12));
+    filter: blur(6px);
+}
+
+/* dashed road line doodle */
+.deco-road {
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+    height: 3px;
+    width: 12rem;
+    background: repeating-linear-gradient(90deg, rgba(37, 99, 235, 0.4) 0 18px, transparent 18px 32px);
+    opacity: 0.55;
+    border-radius: 4px;
+}
+
+/* hero floating automotive icons */
+.hero-deco {
+    position: absolute;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.1rem;
+    height: 3.1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #a5f3fc;
+    font-size: 1.4rem;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 12px 28px rgba(2, 32, 71, 0.25);
+    animation: deco-float 6s ease-in-out infinite;
+}
+
+/* industries marquee strip */
+.industry-strip {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+}
+
+.industry-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.6rem 1.05rem;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid var(--occ-border);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+    font-weight: 600;
+    color: var(--occ-ink);
+    transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.industry-chip i {
+    color: var(--occ-primary);
+    font-size: 1.15rem;
+}
+
+.industry-chip:hover {
+    transform: translateY(-0.25rem);
+    border-color: rgba(6, 182, 212, 0.4);
+    color: var(--occ-primary-deep);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .deco-spin,
+    .deco-float,
+    .hero-deco {
+        animation: none;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .section-deco {
+        display: none;
+    }
+    .hero-deco {
+        display: none;
+    }
+}
+
 /* ===== Scroll reveal ===== */
 .reveal {
     opacity: 0;

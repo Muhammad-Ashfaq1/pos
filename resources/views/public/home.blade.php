@@ -42,6 +42,9 @@
         <div class="container">
             <div class="hero-shell p-4 p-lg-5">
                 <span class="hero-glow"></span>
+                <span class="hero-deco d-none d-lg-inline-flex" style="top: 2.5rem; right: 42%; animation-delay: .2s;"><i class="icon-base ti tabler-tool"></i></span>
+                <span class="hero-deco d-none d-lg-inline-flex" style="bottom: 3rem; right: 46%; animation-delay: 1.1s;"><i class="icon-base ti tabler-droplet"></i></span>
+                <span class="hero-deco d-none d-lg-inline-flex" style="top: 9rem; right: 4%; animation-delay: 1.8s;"><i class="icon-base ti tabler-settings"></i></span>
                 <div class="row align-items-center g-4 g-xl-5 position-relative">
                     <div class="col-lg-7">
                         <span class="section-kicker mb-3 bg-white bg-opacity-10 border-0 text-white">
@@ -90,7 +93,30 @@
         </div>
     </section>
 
-    <section class="landing-section" id="features">
+    <section class="pb-2 pt-0">
+        <div class="container">
+            <p class="text-center text-muted text-uppercase fw-semibold small mb-3" style="letter-spacing: .08em;">Built for every corner of the auto service market</p>
+            <div class="industry-strip">
+                @foreach ([
+                    ['icon' => 'tabler-car-garage', 'label' => 'Car Garages'],
+                    ['icon' => 'tabler-droplet', 'label' => 'Oil Change'],
+                    ['icon' => 'tabler-wheel', 'label' => 'Tire & Brake'],
+                    ['icon' => 'tabler-spray', 'label' => 'Detailing'],
+                    ['icon' => 'tabler-engine', 'label' => 'Workshops'],
+                    ['icon' => 'tabler-gauge', 'label' => 'Quick Lube'],
+                ] as $industry)
+                    <span class="industry-chip">
+                        <i class="icon-base ti {{ $industry['icon'] }}"></i>
+                        {{ $industry['label'] }}
+                    </span>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-section has-deco" id="features">
+        <span class="section-deco deco-spin" style="top: -2rem; right: -3rem; font-size: 16rem;"><i class="icon-base ti tabler-settings"></i></span>
+        <span class="deco-dots" style="bottom: 3rem; left: 2%;"></span>
         <div class="container">
             <div class="row align-items-center g-5">
                 <div class="col-lg-5">
@@ -164,7 +190,10 @@
         </div>
     </section>
 
-    <section class="landing-section section-soft" id="services">
+    <section class="landing-section section-soft has-deco" id="services">
+        <span class="section-deco deco-cyan deco-float" style="top: 4rem; left: -2.5rem; font-size: 13rem;"><i class="icon-base ti tabler-tool"></i></span>
+        <span class="deco-road" style="top: 2.5rem; right: 8%; transform: rotate(-8deg);"></span>
+        <span class="deco-blob" style="bottom: -5rem; right: -4rem;"></span>
         <div class="container">
             <div class="row align-items-start g-5">
                 <div class="col-lg-4">
@@ -210,7 +239,9 @@
         </div>
     </section>
 
-    <section class="landing-section" id="modules">
+    <section class="landing-section has-deco" id="modules">
+        <span class="section-deco deco-spin" style="bottom: -3rem; left: -3rem; font-size: 15rem;"><i class="icon-base ti tabler-gauge"></i></span>
+        <span class="deco-dots" style="top: 2rem; right: 3%;"></span>
         <div class="container">
             <div class="text-center mx-auto mb-5" style="max-width: 760px;">
                 <span class="section-kicker mb-3">
@@ -250,7 +281,9 @@
         </div>
     </section>
 
-    <section class="landing-section section-soft" id="how-it-works">
+    <section class="landing-section section-soft has-deco" id="how-it-works">
+        <span class="section-deco deco-cyan deco-float" style="top: 3rem; right: -2rem; font-size: 12rem;"><i class="icon-base ti tabler-route"></i></span>
+        <span class="deco-blob" style="top: -4rem; left: -5rem;"></span>
         <div class="container">
             <div class="row g-5 align-items-center">
                 <div class="col-lg-5">
@@ -361,6 +394,7 @@
     <section class="landing-section pt-0">
         <div class="container">
             <div class="stats-band">
+                <span class="section-deco deco-spin" style="bottom: -4rem; left: 2rem; font-size: 13rem; color: #fff; opacity: .06;"><i class="icon-base ti tabler-settings"></i></span>
                 <div class="row g-4 text-center">
                     <div class="col-md-3 stat-item">
                         <div class="display-6 fw-bolder">10+</div>
@@ -566,6 +600,7 @@
             @endif
 
             <div class="contact-strip p-4 p-lg-4 mb-4">
+                <span class="section-deco deco-float" style="bottom: -3rem; right: 1rem; font-size: 11rem; color: #fff; opacity: .07;"><i class="icon-base ti tabler-car"></i></span>
                 <div class="row align-items-center g-4">
                     <div class="col-lg-7">
                         <span class="section-kicker mb-3 bg-white text-dark">
