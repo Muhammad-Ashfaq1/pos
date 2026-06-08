@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\DiscountGroup;
 use App\Models\Image;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductType;
 use App\Models\Service;
@@ -160,6 +161,7 @@ class TenantCatalogSeeder extends Seeder
             $this->seedCustomersAndVehicles($tenant, $adminId);
             $this->seedDiscounts($tenant, $adminId);
             $this->assignProductDiscounts($tenant);
+            $this->seedOrders($tenant, $adminId);
         });
     }
 
@@ -608,5 +610,257 @@ class TenantCatalogSeeder extends Seeder
             $discount->updated_by = $adminId;
             $discount->save();
         }
+    }
+
+    private function seedOrders(Tenant $tenant, ?int $adminId): void
+    {
+        // Check if orders already exist to ensure idempotency.
+        if (Order::withoutTenantScope()->where('tenant_id', $tenant->id)->count() > 1) {
+            return;
+        }
+
+        $customer = Customer::withoutTenantScope()->where('tenant_id', $tenant->id)->first();
+        $vehicle = Vehicle::withoutTenantScope()->where('tenant_id', $tenant->id)->where('customer_id', $customer?->id)->first();
+        $products = Product::withoutTenantScope()->where('tenant_id', $tenant->id)->limit(3)->get();
+
+        if (! $customer || ! $products->count()) {
+            return;
+        }
+
+        // Helper to generate a unique order number.
+        $makeOrderNumber = function (string $prefix) use ($tenant) {
+            $idx = 1;
+            do {
+                $num = sprintf('%s-T%d-%s-%03d', $prefix, $tenant->id, now()->format('Ymd'), $idx++);
+            } while (Order::withoutTenantScope()->where('tenant_id', $tenant->id)->where('order_number', $num)->exists());
+
+            return $num;
+        };
+
+        // 1. Seed Estimate
+        $estProduct = $products->first();
+        $estQty = 1;
+        $estPrice = (float) $estProduct->sale_price;
+        $estTotal = round($estPrice * $estQty, 2);
+
+        $estimate = Order::create([
+            'tenant_id' => $tenant->id,
+            'order_number' => $makeOrderNumber('EST'),
+            'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle?->id,
+            'status' => Order::STATUS_ESTIMATE,
+            'total_quantity' => $estQty,
+            'subtotal_amount' => $estTotal,
+            'discount_amount' => 0.00,
+            'service_fee_amount' => 0.00,
+            'tax_amount' => 0.00,
+            'total_amount' => $estTotal,
+            'payment_method' => null,
+            'payment_amount' => 0.00,
+            'change_amount' => 0.00,
+            'created_by' => $adminId,
+            'updated_by' => $adminId,
+            'created_at' => now()->subDays(5),
+            'updated_at' => now()->subDays(5),
+        ]);
+        $estimate->items()->create([
+            'tenant_id' => $tenant->id,
+            'product_id' => $estProduct->id,
+            'product_name' => $estProduct->name,
+            'sku' => $estProduct->sku,
+            'unit' => $estProduct->unit,
+            'quantity' => $estQty,
+            'unit_price' => $estPrice,
+            'line_total' => $estTotal,
+        ]);
+
+        // 2. Seed Pending Order
+        $pendProduct = $products->first();
+        $pendQty = 2;
+        $pendPrice = (float) $pendProduct->sale_price;
+        $pendTotal = round($pendPrice * $pendQty, 2);
+
+        $pending = Order::create([
+            'tenant_id' => $tenant->id,
+            'order_number' => $makeOrderNumber('ORD'),
+            'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle?->id,
+            'status' => Order::STATUS_PENDING,
+            'total_quantity' => $pendQty,
+            'subtotal_amount' => $pendTotal,
+            'discount_amount' => 0.00,
+            'service_fee_amount' => 0.00,
+            'tax_amount' => 0.00,
+            'total_amount' => $pendTotal,
+            'payment_method' => null,
+            'payment_amount' => 0.00,
+            'change_amount' => 0.00,
+            'created_by' => $adminId,
+            'updated_by' => $adminId,
+            'created_at' => now()->subDays(4),
+            'updated_at' => now()->subDays(4),
+        ]);
+        $pending->items()->create([
+            'tenant_id' => $tenant->id,
+            'product_id' => $pendProduct->id,
+            'product_name' => $pendProduct->name,
+            'sku' => $pendProduct->sku,
+            'unit' => $pendProduct->unit,
+            'quantity' => $pendQty,
+            'unit_price' => $pendPrice,
+            'line_total' => $pendTotal,
+        ]);
+
+        // 3. Seed Partially Paid Order (with multiple payments)
+        $partProduct1 = $products->first();
+        $partProduct2 = $products->last();
+        $partTotal = round(((float) $partProduct1->sale_price * 2) + (float) $partProduct2->sale_price, 2);
+
+        $partOrder = Order::create([
+            'tenant_id' => $tenant->id,
+            'order_number' => $makeOrderNumber('ORD'),
+            'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle?->id,
+            'status' => Order::STATUS_PARTIALLY_PAID,
+            'total_quantity' => 3,
+            'subtotal_amount' => $partTotal,
+            'discount_amount' => 0.00,
+            'service_fee_amount' => 0.00,
+            'tax_amount' => 0.00,
+            'total_amount' => $partTotal,
+            'payment_method' => 'card',
+            'payment_amount' => round($partTotal * 0.6, 2), // 60% paid
+            'change_amount' => 0.00,
+            'created_by' => $adminId,
+            'updated_by' => $adminId,
+            'created_at' => now()->subDays(3),
+            'updated_at' => now()->subDays(3),
+        ]);
+
+        $partOrder->items()->createMany([
+            [
+                'tenant_id' => $tenant->id,
+                'product_id' => $partProduct1->id,
+                'product_name' => $partProduct1->name,
+                'sku' => $partProduct1->sku,
+                'unit' => $partProduct1->unit,
+                'quantity' => 2,
+                'unit_price' => (float) $partProduct1->sale_price,
+                'line_total' => round((float) $partProduct1->sale_price * 2, 2),
+            ],
+            [
+                'tenant_id' => $tenant->id,
+                'product_id' => $partProduct2->id,
+                'product_name' => $partProduct2->name,
+                'sku' => $partProduct2->sku,
+                'unit' => $partProduct2->unit,
+                'quantity' => 1,
+                'unit_price' => (float) $partProduct2->sale_price,
+                'line_total' => (float) $partProduct2->sale_price,
+            ],
+        ]);
+
+        // Create 3 partial payments
+        $partAmt1 = round($partOrder->payment_amount * 0.3, 2);
+        $partAmt2 = round($partOrder->payment_amount * 0.4, 2);
+        $partAmt3 = round($partOrder->payment_amount - $partAmt1 - $partAmt2, 2);
+
+        $partOrder->payments()->createMany([
+            [
+                'tenant_id' => $tenant->id,
+                'amount' => $partAmt1,
+                'payment_method' => 'cash',
+                'created_by' => $adminId,
+                'created_at' => now()->subDays(3)->addHours(1),
+            ],
+            [
+                'tenant_id' => $tenant->id,
+                'amount' => $partAmt2,
+                'payment_method' => 'card',
+                'created_by' => $adminId,
+                'created_at' => now()->subDays(3)->addHours(3),
+            ],
+            [
+                'tenant_id' => $tenant->id,
+                'amount' => $partAmt3,
+                'payment_method' => 'check',
+                'created_by' => $adminId,
+                'created_at' => now()->subDays(2),
+            ],
+        ]);
+
+        // 4. Seed Fully Paid Order (with multiple payments summing to total)
+        $paidProduct = $products->skip(1)->first() ?? $products->first();
+        $paidTotal = round((float) $paidProduct->sale_price * 3, 2);
+
+        $paidOrder = Order::create([
+            'tenant_id' => $tenant->id,
+            'order_number' => $makeOrderNumber('ORD'),
+            'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle?->id,
+            'status' => Order::STATUS_PAID,
+            'total_quantity' => 3,
+            'subtotal_amount' => $paidTotal,
+            'discount_amount' => 0.00,
+            'service_fee_amount' => 0.00,
+            'tax_amount' => 0.00,
+            'total_amount' => $paidTotal,
+            'payment_method' => 'card',
+            'payment_amount' => $paidTotal,
+            'change_amount' => 0.00,
+            'paid_at' => now()->subDays(1),
+            'created_by' => $adminId,
+            'updated_by' => $adminId,
+            'created_at' => now()->subDays(2),
+            'updated_at' => now()->subDays(1),
+        ]);
+
+        $paidOrder->items()->create([
+            'tenant_id' => $tenant->id,
+            'product_id' => $paidProduct->id,
+            'product_name' => $paidProduct->name,
+            'sku' => $paidProduct->sku,
+            'unit' => $paidProduct->unit,
+            'quantity' => 3,
+            'unit_price' => (float) $paidProduct->sale_price,
+            'line_total' => $paidTotal,
+        ]);
+
+        // Create 4 payments adding up to total
+        $amt1 = round($paidTotal * 0.2, 2);
+        $amt2 = round($paidTotal * 0.3, 2);
+        $amt3 = round($paidTotal * 0.25, 2);
+        $amt4 = round($paidTotal - $amt1 - $amt2 - $amt3, 2);
+
+        $paidOrder->payments()->createMany([
+            [
+                'tenant_id' => $tenant->id,
+                'amount' => $amt1,
+                'payment_method' => 'cash',
+                'created_by' => $adminId,
+                'created_at' => now()->subDays(2)->addHours(2),
+            ],
+            [
+                'tenant_id' => $tenant->id,
+                'amount' => $amt2,
+                'payment_method' => 'card',
+                'created_by' => $adminId,
+                'created_at' => now()->subDays(2)->addHours(5),
+            ],
+            [
+                'tenant_id' => $tenant->id,
+                'amount' => $amt3,
+                'payment_method' => 'cash',
+                'created_by' => $adminId,
+                'created_at' => now()->subDays(1)->addHours(1),
+            ],
+            [
+                'tenant_id' => $tenant->id,
+                'amount' => $amt4,
+                'payment_method' => 'card',
+                'created_by' => $adminId,
+                'created_at' => now()->subDays(1)->addHours(4),
+            ],
+        ]);
     }
 }

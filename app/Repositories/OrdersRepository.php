@@ -1005,6 +1005,8 @@ class OrdersRepository implements OrderRepositoryInterface
                     'paid_at' => $status === Order::STATUS_PAID ? now() : null,
                     'updated_by' => $userId,
                 ])->save();
+            }
+
             $order->payments()->create([
                 'tenant_id' => $order->tenant_id,
                 'amount' => $paymentAmountAdded,
