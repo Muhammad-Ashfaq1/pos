@@ -18,9 +18,21 @@ class SaveOrderRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $serviceFees = collect($this->input('service_fees', []))
+            ->filter(fn ($fee) => is_array($fee))
+            ->map(fn (array $fee) => [
+                'type' => trim((string) ($fee['type'] ?? '')),
+                'service_id' => filled($fee['service_id'] ?? null) ? (int) $fee['service_id'] : null,
+                'name' => $this->normalizeNullableString($fee['name'] ?? null),
+                'amount' => filled($fee['amount'] ?? null) ? (float) $fee['amount'] : null,
+            ])
+            ->values()
+            ->all();
+
         $this->merge([
             'customer_id' => $this->filled('customer_id') ? (int) $this->input('customer_id') : null,
             'vehicle_id' => $this->filled('vehicle_id') ? (int) $this->input('vehicle_id') : null,
+            'service_fees' => $serviceFees,
             'notes' => $this->normalizeNullableString($this->input('notes')),
         ]);
     }
@@ -55,9 +67,22 @@ class SaveOrderRequest extends FormRequest
                 ),
             ],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:9999'],
+            'service_fees' => ['nullable', 'array', 'max:50'],
+            'service_fees.*.type' => ['required', Rule::in(['service', 'manual'])],
+            'service_fees.*.service_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('services', 'id')->where(
+                    fn ($query) => $query
+                        ->where('tenant_id', $tenantId)
+                        ->where('is_active', true)
+                ),
+            ],
+            'service_fees.*.name' => ['nullable', 'string', 'max:150'],
+            'service_fees.*.amount' => ['nullable', 'numeric', 'min:0', 'max:999999.99'],
             'payment' => ['required', 'array'],
             'payment.method' => ['required', Rule::in(['cash', 'card', 'check'])],
-            'payment.amount' => ['required', 'numeric', 'min:0.01'],
+            'payment.amount' => ['required', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'tenant_id' => ['prohibited'],
             'created_by' => ['prohibited'],
@@ -68,6 +93,8 @@ class SaveOrderRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
+            $this->validateServiceFees($validator);
+
             if (! $this->filled('customer_id') || ! $this->filled('vehicle_id')) {
                 return;
             }
@@ -104,11 +131,17 @@ class SaveOrderRequest extends FormRequest
             'items.min' => 'Please add at least one item before saving the order.',
             'items.*.product_id.exists' => 'One or more selected products are no longer available.',
             'items.*.quantity.min' => 'Item quantity must be at least 1.',
+            'service_fees.max' => 'You can add up to 50 service fees on one order.',
+            'service_fees.*.type.in' => 'Please select a valid service fee type.',
+            'service_fees.*.service_id.exists' => 'One or more selected services are no longer available.',
+            'service_fees.*.name.max' => 'Manual service fee title may not be greater than 150 characters.',
+            'service_fees.*.amount.min' => 'Service fee amount cannot be negative.',
+            'service_fees.*.amount.max' => 'Service fee amount is too large.',
             'payment.required' => 'Please enter payment details before checkout.',
             'payment.method.required' => 'Please select a payment method.',
             'payment.method.in' => 'Please select a valid payment method.',
             'payment.amount.required' => 'Please enter the payment amount.',
-            'payment.amount.min' => 'Payment amount must be greater than zero.',
+            'payment.amount.min' => 'Payment amount cannot be negative.',
         ];
     }
 
@@ -136,5 +169,44 @@ class SaveOrderRequest extends FormRequest
             || filled($vehicle->registration_number)
             || filled($vehicle->make)
             || filled($vehicle->model);
+    }
+
+    private function validateServiceFees(Validator $validator): void
+    {
+        $serviceFees = $this->input('service_fees', []);
+        $selectedServiceIds = [];
+
+        foreach ($serviceFees as $index => $fee) {
+            $type = $fee['type'] ?? null;
+            $serviceId = $fee['service_id'] ?? null;
+
+            if ($type === 'service') {
+                if (! $serviceId) {
+                    $validator->errors()->add("service_fees.{$index}.service_id", 'Please select a service.');
+                    continue;
+                }
+            }
+
+            if ($serviceId) {
+                $serviceKey = "{$type}:{$serviceId}";
+
+                if (in_array($serviceKey, $selectedServiceIds, true)) {
+                    $validator->errors()->add("service_fees.{$index}.service_id", 'This service is already added to the order.');
+                    continue;
+                }
+
+                $selectedServiceIds[] = $serviceKey;
+            }
+
+            if ($type === 'manual') {
+                if (! filled($fee['name'] ?? null)) {
+                    $validator->errors()->add("service_fees.{$index}.name", 'Please enter a manual service fee title.');
+                }
+
+                if (! filled($fee['amount'] ?? null) || (float) $fee['amount'] <= 0) {
+                    $validator->errors()->add("service_fees.{$index}.amount", 'Please enter a manual service fee amount.');
+                }
+            }
+        }
     }
 }

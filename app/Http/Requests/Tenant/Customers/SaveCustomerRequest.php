@@ -16,7 +16,12 @@ class SaveCustomerRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $customerType = (string) $this->input('customer_type');
+
         $this->merge([
+            'discount_group' => $customerType === Customer::TYPE_WALK_IN
+                ? null
+                : ($this->filled('discount_group') ? (int) $this->input('discount_group') : null),
             'name' => trim((string) $this->input('name')),
             'phone' => $this->normalizeNullableString($this->input('phone')),
             'email' => $this->normalizeNullableString(mb_strtolower((string) $this->input('email'))),
@@ -43,6 +48,15 @@ class SaveCustomerRequest extends FormRequest
                 'string',
                 Rule::in(array_keys(Customer::typeOptions())),
             ],
+            'discount_group' => [
+                'nullable',
+                'integer',
+                Rule::exists('discount_groups', 'id')->where(
+                    fn ($query) => $query
+                        ->where('tenant_id', $tenantId)
+                        ->whereNull('deleted_at')
+                ),
+            ],
             'name' => ['required', 'string', 'max:150'],
             'phone' => ['nullable', 'string', 'max:30'],
             'email' => ['nullable', 'email', 'max:150'],
@@ -66,6 +80,7 @@ class SaveCustomerRequest extends FormRequest
             'id.exists' => 'The selected customer was not found for this shop.',
             'customer_type.required' => 'Please select a customer type.',
             'customer_type.in' => 'Please select a valid customer type.',
+            'discount_group.exists' => 'Please select a valid discount group for this shop.',
             'name.required' => 'Please enter a customer name.',
             'name.max' => 'The customer name may not be greater than 150 characters.',
             'phone.max' => 'The phone number may not be greater than 30 characters.',

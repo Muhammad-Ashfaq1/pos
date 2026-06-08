@@ -41,14 +41,14 @@
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col d-none" id="discount_group_div">
-                            <label for="customer_discount_group" class="form-label">Discount Group <span
-                                    class="text-danger">*</span></label>
+                            <label for="customer_discount_group" class="form-label">Discount Group</label>
                             <div class="position-relative">
                                 <select id="customer_discount_group" name="discount_group"
                                     class="form-select modal-select2" data-placeholder="Select a discount group"
+                                    data-allow-clear="true"
                                     data-dropdown-parent="#customerModal"
                                     data-ajax-url="{{ route('tenant.ecommerce.dropdowns.discount-groups') }}">
-                                    <option value="">None</option>
+                                    <option value=""></option>
                                 </select>
                                 <div class="invalid-feedback"></div>
                             </div>

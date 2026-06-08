@@ -3,8 +3,11 @@
 namespace App\Repositories;
 
 use App\Models\Customer;
+use App\Models\Discount;
+use App\Models\DiscountGroup;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Service;
 use App\Repositories\Interface\OrderRepositoryInterface;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
@@ -65,11 +68,18 @@ class OrdersRepository implements OrderRepositoryInterface
                 ->map(fn (Collection $items) => $items->sum(fn ($item) => (int) $item['quantity']));
 
             $products = Product::query()
+                ->with('discount:id,name,code,discount_type,applies_to,value,max_discount_amount,is_active,starts_at,ends_at')
                 ->whereIn('id', $requestedProductIds->all())
                 ->where('is_active', true)
                 ->lockForUpdate()
                 ->get()
                 ->keyBy('id');
+
+            $customer = ! empty($data['customer_id'])
+                ? Customer::query()
+                    ->with('discountGroup:id,name,type,value,min_limit,is_active')
+                    ->find((int) $data['customer_id'])
+                : null;
 
             if ($products->count() !== $requestedProductIds->count()) {
                 throw ValidationException::withMessages([
@@ -81,16 +91,35 @@ class OrdersRepository implements OrderRepositoryInterface
 
             $totalQuantity = 0;
             $subtotalAmount = 0.0;
+            $productDiscountAmount = 0.0;
             $orderItems = [];
+            $productDiscountDetails = [];
+            $taxLines = [];
 
             foreach ($requestedItems as $requestedItem) {
                 $product = $products->get((int) $requestedItem['product_id']);
                 $quantity = (int) $requestedItem['quantity'];
                 $unitPrice = round((float) $product->sale_price, 2);
-                $lineTotal = round($unitPrice * $quantity, 2);
+                $lineSubtotal = round($unitPrice * $quantity, 2);
+                $lineDiscount = $this->productDiscountAmount($product->discount, $unitPrice, $quantity);
+                $lineTotal = round(max($lineSubtotal - $lineDiscount, 0), 2);
 
                 $totalQuantity += $quantity;
-                $subtotalAmount += $lineTotal;
+                $subtotalAmount += $lineSubtotal;
+                $productDiscountAmount += $lineDiscount;
+
+                if ($lineDiscount > 0 && $product->discount) {
+                    $productDiscountDetails[] = [
+                        'product_id' => $product->id,
+                        'product_name' => $product->name,
+                        'discount_id' => $product->discount->id,
+                        'discount_name' => $product->discount->name,
+                        'discount_type' => $product->discount->discount_type,
+                        'discount_value' => (float) $product->discount->value,
+                        'quantity' => $quantity,
+                        'amount' => $lineDiscount,
+                    ];
+                }
 
                 $orderItems[] = [
                     'product_id' => $product->id,
@@ -101,29 +130,69 @@ class OrdersRepository implements OrderRepositoryInterface
                     'unit_price' => $unitPrice,
                     'line_total' => $lineTotal,
                 ];
+
+                $taxLines[] = [
+                    'type' => 'Product',
+                    'name' => $product->name,
+                    'quantity' => $quantity,
+                    'base' => $lineTotal,
+                    'tax_percentage' => (float) ($product->tax_percentage ?? 0),
+                ];
             }
 
             $subtotalAmount = round($subtotalAmount, 2);
+            $productDiscountAmount = round($productDiscountAmount, 2);
+            $afterProductDiscounts = round(max($subtotalAmount - $productDiscountAmount, 0), 2);
+            $serviceFees = $this->serviceFees($data['service_fees'] ?? []);
+            $serviceFeeAmount = $serviceFees['amount'];
+            foreach ($serviceFees['tax_lines'] as $serviceTaxLine) {
+                $taxLines[] = $serviceTaxLine;
+            }
+
+            $customerDiscountBase = round($afterProductDiscounts + $serviceFeeAmount, 2);
+            $customerDiscount = $this->customerDiscount($customer?->discountGroup, $customerDiscountBase);
+            $customerDiscountAmount = round($customerDiscount['amount'], 2);
+            $discountAmount = round(min($subtotalAmount + $serviceFeeAmount, $productDiscountAmount + $customerDiscountAmount), 2);
+            $tax = $this->taxSummary($taxLines, $customerDiscountAmount);
+            $taxAmount = $tax['amount'];
+            $taxBaseAmount = $tax['base'];
+            $totalAmount = round(max($subtotalAmount + $serviceFeeAmount - $discountAmount, 0) + $taxAmount, 2);
             $paymentAmount = round((float) data_get($data, 'payment.amount', 0), 2);
             $status = match (true) {
-                $paymentAmount >= $subtotalAmount => Order::STATUS_PAID,
+                $paymentAmount >= $totalAmount => Order::STATUS_PAID,
                 $paymentAmount > 0 => Order::STATUS_PARTIALLY_PAID,
                 default => Order::STATUS_PENDING,
             };
             $isPaid = $status === Order::STATUS_PAID;
-            $changeAmount = round(max($paymentAmount - $subtotalAmount, 0), 2);
+            $changeAmount = round(max($paymentAmount - $totalAmount, 0), 2);
+            $discountDetails = [
+                'product_discount_amount' => $productDiscountAmount,
+                'customer_discount_amount' => $customerDiscount['amount'],
+                'customer_discount_eligible' => $customerDiscount['eligible'],
+                'customer_discount_reason' => $customerDiscount['reason'],
+                'product_discounts' => $productDiscountDetails,
+                'customer_discount' => $customerDiscount['group'],
+                'tax' => [
+                    'base_amount' => $taxBaseAmount,
+                    'amount' => $taxAmount,
+                    'lines' => $tax['lines'],
+                ],
+            ];
 
             $order = Order::query()->create([
                 'order_number' => $this->makeOrderNumber(),
                 'customer_id' => $data['customer_id'] ?? null,
                 'vehicle_id' => $data['vehicle_id'] ?? null,
+                'discount_group_id' => $customerDiscount['group']['id'] ?? null,
+                'discount_details' => $discountDetails,
                 'status' => $status,
                 'total_quantity' => $totalQuantity,
                 'subtotal_amount' => $subtotalAmount,
-                'discount_amount' => 0,
-                'service_fee_amount' => 0,
-                'tax_amount' => 0,
-                'total_amount' => $subtotalAmount,
+                'discount_amount' => $discountAmount,
+                'service_fee_amount' => $serviceFeeAmount,
+                'service_fee_details' => $serviceFees['details'],
+                'tax_amount' => $taxAmount,
+                'total_amount' => $totalAmount,
                 'payment_method' => data_get($data, 'payment.method'),
                 'payment_amount' => $paymentAmount,
                 'change_amount' => $changeAmount,
@@ -146,10 +215,261 @@ class OrdersRepository implements OrderRepositoryInterface
         ];
     }
 
+    private function productDiscountAmount(?Discount $discount, float $unitPrice, int $quantity): float
+    {
+        if (! $this->discountIsActive($discount)) {
+            return 0.0;
+        }
+
+        $lineSubtotal = round($unitPrice * $quantity, 2);
+
+        if ($discount->discount_type === Discount::TYPE_PERCENTAGE) {
+            $amount = round($lineSubtotal * ((float) $discount->value / 100), 2);
+
+            if ($discount->max_discount_amount !== null) {
+                $amount = min($amount, (float) $discount->max_discount_amount);
+            }
+
+            return round(min($amount, $lineSubtotal), 2);
+        }
+
+        if ($discount->discount_type === Discount::TYPE_FIXED) {
+            return round(min((float) $discount->value * $quantity, $lineSubtotal), 2);
+        }
+
+        return 0.0;
+    }
+
+    private function discountIsActive(?Discount $discount): bool
+    {
+        if (! $discount || ! $discount->is_active || $discount->applies_to !== Discount::APPLIES_TO_ITEM) {
+            return false;
+        }
+
+        if ($discount->starts_at && $discount->starts_at->isFuture()) {
+            return false;
+        }
+
+        if ($discount->ends_at && $discount->ends_at->isPast()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function customerDiscount(?DiscountGroup $group, float $baseAmount): array
+    {
+        $empty = [
+            'amount' => 0.0,
+            'eligible' => false,
+            'reason' => null,
+            'group' => null,
+        ];
+
+        if (! $group || ! $group->is_active) {
+            return $empty;
+        }
+
+        $payload = [
+            'id' => $group->id,
+            'name' => $group->name,
+            'type' => $group->type,
+            'value' => (float) $group->value,
+            'min_limit' => (float) $group->min_limit,
+        ];
+
+        if ($baseAmount <= 0) {
+            return [
+                'amount' => 0.0,
+                'eligible' => false,
+                'reason' => 'No eligible amount remains after item discounts.',
+                'group' => $payload,
+            ];
+        }
+
+        if ((float) $group->min_limit > 0 && $baseAmount < (float) $group->min_limit) {
+            return [
+                'amount' => 0.0,
+                'eligible' => false,
+                'reason' => 'Minimum amount not reached.',
+                'group' => $payload,
+            ];
+        }
+
+        $amount = match ($group->type) {
+            'percentage' => round($baseAmount * ((float) $group->value / 100), 2),
+            'fixed' => round((float) $group->value, 2),
+            default => 0.0,
+        };
+
+        return [
+            'amount' => round(min($amount, $baseAmount), 2),
+            'eligible' => true,
+            'reason' => null,
+            'group' => $payload,
+        ];
+    }
+
+    private function serviceFees(array $requestedFees): array
+    {
+        $requestedFees = collect($requestedFees)
+            ->filter(fn ($fee) => is_array($fee) && in_array($fee['type'] ?? null, ['service', 'manual'], true))
+            ->values();
+
+        if ($requestedFees->isEmpty()) {
+            return [
+                'amount' => 0.0,
+                'details' => null,
+                'tax_lines' => [],
+            ];
+        }
+
+        $serviceIds = $requestedFees
+            ->pluck('service_id')
+            ->filter()
+            ->map(fn ($serviceId) => (int) $serviceId)
+            ->unique()
+            ->values();
+
+        $services = Service::query()
+            ->select(['id', 'name', 'code', 'standard_price', 'tax_percentage'])
+            ->whereIn('id', $serviceIds->all())
+            ->where('is_active', true)
+            ->get()
+            ->keyBy('id');
+
+        if ($services->count() !== $serviceIds->count()) {
+            throw ValidationException::withMessages([
+                'service_fees' => 'One or more selected services are no longer available.',
+            ]);
+        }
+
+        $details = [];
+
+        foreach ($requestedFees as $fee) {
+            if (($fee['type'] ?? null) === 'service') {
+                $service = $services->get((int) ($fee['service_id'] ?? 0));
+
+                if (! $service) {
+                    continue;
+                }
+
+                $amount = round((float) $service->standard_price, 2);
+                $details[] = [
+                    'type' => 'service',
+                    'service_id' => $service->id,
+                    'name' => $service->name,
+                    'code' => $service->code,
+                    'amount' => $amount,
+                    'tax_percentage' => (float) ($service->tax_percentage ?? 0),
+                ];
+
+                continue;
+            }
+
+            $amount = round((float) ($fee['amount'] ?? 0), 2);
+            if ($amount <= 0) {
+                continue;
+            }
+
+            $service = ! empty($fee['service_id'])
+                ? $services->get((int) $fee['service_id'])
+                : null;
+            $name = trim((string) ($fee['name'] ?? ''));
+
+            $details[] = [
+                'type' => 'manual',
+                'service_id' => $service?->id,
+                'name' => $name !== '' ? $name : ($service?->name ?? 'Manual Service Fee'),
+                'code' => $service?->code,
+                'service_name' => $service?->name,
+                'amount' => $amount,
+                'tax_percentage' => (float) ($service?->tax_percentage ?? 0),
+            ];
+        }
+
+        $amount = round(collect($details)->sum(fn ($fee) => (float) $fee['amount']), 2);
+        $taxLines = collect($details)
+            ->map(fn (array $fee) => [
+                'type' => 'Service',
+                'name' => $fee['name'] ?? 'Service Fee',
+                'quantity' => 1,
+                'base' => (float) ($fee['amount'] ?? 0),
+                'tax_percentage' => (float) ($fee['tax_percentage'] ?? 0),
+            ])
+            ->values()
+            ->all();
+
+        return [
+            'amount' => $amount,
+            'details' => $details === [] ? null : $details,
+            'tax_lines' => $taxLines,
+        ];
+    }
+
+    private function taxSummary(array $lines, float $customerDiscountAmount): array
+    {
+        $activeLines = collect($lines)
+            ->map(function (array $line): array {
+                return [
+                    'type' => (string) ($line['type'] ?? 'Line'),
+                    'name' => (string) ($line['name'] ?? 'Line'),
+                    'quantity' => (float) ($line['quantity'] ?? 1),
+                    'base' => round(max((float) ($line['base'] ?? 0), 0), 2),
+                    'tax_percentage' => round(max((float) ($line['tax_percentage'] ?? 0), 0), 2),
+                ];
+            })
+            ->filter(fn (array $line) => $line['base'] > 0)
+            ->values();
+
+        if ($activeLines->isEmpty()) {
+            return [
+                'base' => 0.0,
+                'amount' => 0.0,
+                'lines' => [],
+            ];
+        }
+
+        $baseBeforeCustomerDiscount = round($activeLines->sum(fn (array $line) => $line['base']), 2);
+        $discountToAllocate = round(min(max($customerDiscountAmount, 0), $baseBeforeCustomerDiscount), 2);
+        $remainingDiscount = $discountToAllocate;
+        $lastIndex = $activeLines->count() - 1;
+        $details = [];
+
+        foreach ($activeLines as $index => $line) {
+            $base = (float) $line['base'];
+            $allocatedDiscount = $index === $lastIndex
+                ? $remainingDiscount
+                : round($discountToAllocate * ($base / $baseBeforeCustomerDiscount), 2);
+            $allocatedDiscount = round(min(max($allocatedDiscount, 0), $base, $remainingDiscount), 2);
+            $taxableAmount = round(max($base - $allocatedDiscount, 0), 2);
+            $taxPercentage = (float) $line['tax_percentage'];
+            $taxAmount = round($taxableAmount * ($taxPercentage / 100), 2);
+            $remainingDiscount = round(max($remainingDiscount - $allocatedDiscount, 0), 2);
+
+            $details[] = [
+                'type' => $line['type'],
+                'name' => $line['name'],
+                'quantity' => $line['quantity'],
+                'tax_percentage' => $taxPercentage,
+                'base_amount' => $base,
+                'discount_amount' => $allocatedDiscount,
+                'taxable_amount' => $taxableAmount,
+                'tax_amount' => $taxAmount,
+            ];
+        }
+
+        return [
+            'base' => round(collect($details)->sum(fn (array $line) => (float) $line['taxable_amount']), 2),
+            'amount' => round(collect($details)->sum(fn (array $line) => (float) $line['tax_amount']), 2),
+            'lines' => $details,
+        ];
+    }
+
     private function makeOrderNumber(): string
     {
         do {
-            $orderNumber = 'ORD-' . now()->format('Ymd-His') . '-' . random_int(100, 999);
+            $orderNumber = 'ORD-'.now()->format('Ymd-His').'-'.random_int(100, 999);
         } while (Order::query()->where('order_number', $orderNumber)->exists());
 
         return $orderNumber;
@@ -201,7 +521,9 @@ class OrdersRepository implements OrderRepositoryInterface
             'total_quantity' => $order->total_quantity,
             'subtotal_amount' => (float) $order->subtotal_amount,
             'discount_amount' => (float) $order->discount_amount,
+            'discount_details' => $order->discount_details,
             'service_fee_amount' => (float) $order->service_fee_amount,
+            'service_fee_details' => $order->service_fee_details,
             'tax_amount' => (float) $order->tax_amount,
             'total_amount' => (float) $order->total_amount,
             'payment_method' => $order->payment_method,
@@ -403,8 +725,8 @@ class OrdersRepository implements OrderRepositoryInterface
             'status_label' => $this->statusLabel($status),
             'status_class' => $this->listingStatusClass($status),
             'total_amount' => (float) $order->total_amount,
-            'total_amount_label' => '$' . number_format((float) $order->total_amount, 2),
-            'created_at_label' => 'Retail | ' . $order->created_at?->format('M j, h:i A'),
+            'total_amount_label' => '$'.number_format((float) $order->total_amount, 2),
+            'created_at_label' => 'Retail | '.$order->created_at?->format('M j, h:i A'),
             'items_count' => (int) ($order->items_count ?? 0),
         ];
     }
@@ -414,6 +736,8 @@ class OrdersRepository implements OrderRepositoryInterface
         $totalAmount = (float) $order->total_amount;
         $paymentAmount = (float) $order->payment_amount;
         $status = $this->paymentAwareStatus($order);
+        $servicePriceAmount = $this->serviceChargeAmount($order, 'service');
+        $manualServiceFeeAmount = $this->serviceChargeAmount($order, 'manual');
         $balanceDue = $status === Order::STATUS_PAID
             ? 0.0
             : max($totalAmount - $paymentAmount, 0);
@@ -428,11 +752,20 @@ class OrdersRepository implements OrderRepositoryInterface
             'payment_method_label' => filled($order->payment_method)
                 ? str((string) $order->payment_method)->replace('_', ' ')->title()->toString()
                 : 'N/A',
+            'subtotal_amount' => (float) $order->subtotal_amount,
             'subtotal_amount_label' => $this->moneyLabel((float) $order->subtotal_amount),
+            'discount_amount' => (float) $order->discount_amount,
             'discount_amount_label' => $this->moneyLabel((float) $order->discount_amount),
+            'service_fee_amount' => (float) $order->service_fee_amount,
             'service_fee_amount_label' => $this->moneyLabel((float) $order->service_fee_amount),
+            'service_fee_details' => $order->service_fee_details,
+            'service_price_amount' => $servicePriceAmount,
+            'service_price_amount_label' => $this->moneyLabel($servicePriceAmount),
+            'manual_service_fee_amount' => $manualServiceFeeAmount,
+            'manual_service_fee_amount_label' => $this->moneyLabel($manualServiceFeeAmount),
             'tax_amount' => (float) $order->tax_amount,
             'tax_amount_label' => $this->moneyLabel((float) $order->tax_amount),
+            'tax_lines' => $this->taxDetailLines($order),
             'total_amount' => $totalAmount,
             'total_amount_label' => $this->moneyLabel($totalAmount),
             'payment_amount_label' => $this->moneyLabel($paymentAmount),
@@ -447,15 +780,58 @@ class OrdersRepository implements OrderRepositoryInterface
                     'quantity_label' => number_format((float) $item->quantity, 3),
                     'unit_price_label' => $this->moneyLabel((float) $item->unit_price),
                     'line_total_label' => $this->moneyLabel((float) $item->line_total),
-                    'tax_detail_label' => $item->product_name . ' (x' . number_format((float) $item->quantity, 3) . ')',
+                    'tax_detail_label' => $item->product_name.' (x'.number_format((float) $item->quantity, 3).')',
                 ])
                 ->values(),
         ];
     }
 
+    private function serviceChargeAmount(Order $order, string $type): float
+    {
+        $details = $order->service_fee_details;
+
+        if (! is_array($details) || $details === []) {
+            return $type === 'manual' ? (float) $order->service_fee_amount : 0.0;
+        }
+
+        return round(collect($details)
+            ->filter(fn ($fee) => is_array($fee) && ($fee['type'] ?? null) === $type)
+            ->sum(fn ($fee) => (float) ($fee['amount'] ?? 0)), 2);
+    }
+
+    private function taxDetailLines(Order $order): array
+    {
+        $lines = data_get($order->discount_details, 'tax.lines', []);
+
+        if (! is_array($lines) || $lines === []) {
+            return [];
+        }
+
+        return collect($lines)
+            ->filter(fn ($line) => is_array($line) && (float) ($line['tax_amount'] ?? 0) > 0)
+            ->map(fn (array $line) => [
+                'label' => $this->taxLineLabel($line),
+                'rate_label' => rtrim(rtrim(number_format((float) ($line['tax_percentage'] ?? 0), 2, '.', ''), '0'), '.').'%',
+                'taxable_amount_label' => $this->moneyLabel((float) ($line['taxable_amount'] ?? 0)),
+                'tax_amount_label' => $this->moneyLabel((float) ($line['tax_amount'] ?? 0)),
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function taxLineLabel(array $line): string
+    {
+        $name = trim((string) ($line['name'] ?? 'Taxable line'));
+        $type = trim((string) ($line['type'] ?? ''));
+        $quantity = (float) ($line['quantity'] ?? 1);
+        $quantityLabel = $quantity > 1 ? ' x'.number_format($quantity, 0) : '';
+
+        return trim($type.' - '.$name.$quantityLabel, ' -');
+    }
+
     private function moneyLabel(float $amount): string
     {
-        return '$' . number_format($amount, 2);
+        return '$'.number_format($amount, 2);
     }
 
     private function paymentAwareStatus(Order $order): string
