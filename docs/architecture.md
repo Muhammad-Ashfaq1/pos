@@ -24,14 +24,15 @@ app/
 │   ├── Admin/ChangeTenantStatusAction.php
 │   ├── Auth/RegisterTenantShopAction.php
 │   └── Tenant/Services/SyncServiceProductsAction.php
-├── Enums/TenantStatus.php
+├── Enums/TenantStatus.php, DemoRequestStatus.php
 ├── Exceptions/InvalidTenantStatusTransitionException.php
 ├── Helpers/FileUploadManager.php
 ├── Http/
 │   ├── Controllers/
-│   │   ├── Admin/             super-admin screens
+│   │   ├── Admin/             super-admin screens (tenants, demo requests)
 │   │   ├── Auth/              register, login, password reset, verify
 │   │   ├── Employee/          employee panel + POS new-order
+│   │   ├── Public/            unauthenticated endpoints (demo request capture)
 │   │   ├── Tenant/            per-shop catalog, customers, settings, roles
 │   │   └── SharedDataController.php
 │   ├── Middleware/            7 custom middlewares — see table below
@@ -157,7 +158,7 @@ Used when an operation spans models or wraps a transaction:
 
 ### 5. Models (`app/Models/`)
 
-Eloquent models for `User`, `Tenant`, `Category`, `SubCategory`, `ProductType`, `Product`, `Service`, `ServiceProduct`, `Customer`, `Vehicle`, `Discount`, `DiscountGroup`, `Order`, `OrderItem`, `Image`. All tenant-owned models use the `BelongsToTenant` trait; `Product` additionally uses `HasImages` for polymorphic image attachments; `Tenant` and `DiscountGroup` use `SoftDeletes`.
+Eloquent models for `User`, `Tenant`, `Category`, `SubCategory`, `ProductType`, `Product`, `Service`, `ServiceProduct`, `Customer`, `Vehicle`, `Discount`, `DiscountGroup`, `Order`, `OrderItem`, `OrderPayment`, `Image`, `DemoRequest`. Most tenant-owned models use the `BelongsToTenant` trait; `Product` additionally uses `HasImages` for polymorphic image attachments; `Tenant` and `DiscountGroup` use `SoftDeletes`. **`DemoRequest` is a central model** (public landing leads) — it carries no `tenant_id` and is not tenant-scoped.
 
 ## Multi-tenancy mechanism
 

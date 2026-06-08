@@ -331,17 +331,38 @@ The listing endpoint supports tab filters (today/all/pending), free-text + field
 
 ## Super-admin module
 
-Routes live under `/admin/*` (see [routes/admin.php](../routes/admin.php)). Two pages:
+Routes live under `/admin/*` (see [routes/admin.php](../routes/admin.php)). Pages:
 
 | Route | Handler | Purpose |
 |-------|---------|---------|
-| `GET /admin/dashboard` | [`Admin\DashboardController`](../app/Http/Controllers/Admin/DashboardController.php) | Platform overview |
+| `GET /admin/dashboard` | [`Admin\DashboardController`](../app/Http/Controllers/Admin/DashboardController.php) | Platform overview (tenant counts + new-demo-request count) |
 | `GET /admin/shops` | [`Admin\TenantController@index`](../app/Http/Controllers/Admin/TenantController.php#L19-L29) | List all tenants with admin user |
 | `POST /admin/shops/{tenant}/status/{action}` | [`@changeStatus`](../app/Http/Controllers/Admin/TenantController.php#L31-L42) | approve / reject / suspend / reactivate |
 | `GET /admin/shops/impersonate/{tenant}` | [`@impersonate`](../app/Http/Controllers/Admin/TenantController.php#L44-L65) | Log in as the tenant admin |
 | `GET /admin/impersonate/stop` | [`@stopImpersonate`](../app/Http/Controllers/Admin/TenantController.php#L67-L77) | Restore the original session |
+| `GET /admin/demo-requests` | [`Admin\DemoRequestController@index`](../app/Http/Controllers/Admin/DemoRequestController.php) | Lead inbox — list + stats |
+| `POST /admin/demo-requests/{demoRequest}/status` | [`@updateStatus`](../app/Http/Controllers/Admin/DemoRequestController.php) | AJAX: change status + save internal notes |
+| `DELETE /admin/demo-requests/{demoRequest}` | [`@destroy`](../app/Http/Controllers/Admin/DemoRequestController.php) | Remove a lead |
 
 The status transitions and approval flow are described in detail in [auth-and-onboarding.md](auth-and-onboarding.md#super-admin-approval).
+
+### Demo requests (public lead capture)
+
+The public landing page ("Request a Demo") captures sales leads into the central `demo_requests` table; super admins triage them under `/admin/demo-requests`. The table is **not tenant-scoped** — see [database.md](database.md#demo_requests-central--non-tenant).
+
+**Public submission** (no auth):
+
+- `POST /demo-request` (name `demo.request.store`, middleware `throttle:5,1`) → [`Public\DemoRequestController@store`](../app/Http/Controllers/Public/DemoRequestController.php).
+- Validated by [`StoreDemoRequestRequest`](../app/Http/Requests/Public/StoreDemoRequestRequest.php) — `name` and `email` required; `business_name`, `phone`, `business_type`, `message` optional.
+- The controller stores the row (status defaults to `new`, captures `request()->ip()`) and redirects back to the landing `#contact` anchor with a `demo_success` flash. The form lives in a Bootstrap modal in [resources/views/public/home.blade.php](../resources/views/public/home.blade.php); validation errors re-open the modal.
+
+**Super-admin triage**:
+
+- [`Admin\DemoRequestController@index`](../app/Http/Controllers/Admin/DemoRequestController.php) renders [resources/views/admin/demo-requests/index.blade.php](../resources/views/admin/demo-requests/index.blade.php) — stat cards (total / new / scheduled / closed) plus a DataTable. A "Manage" modal updates status + internal notes via AJAX (`@updateStatus`), stamping `handled_by` / `handled_at`.
+- The sidebar ([layouts/partials/sidebar.blade.php](../resources/views/layouts/partials/sidebar.blade.php)) shows a live count of `new` leads next to the "Demo Requests" item; the admin dashboard surfaces the same count.
+- Status lifecycle (`new → contacted → scheduled → closed`) is defined by the [`DemoRequestStatus`](../app/Enums/DemoRequestStatus.php) enum (with `label()` + `badgeClass()`).
+
+> Access is gated entirely by the `/admin/*` middleware group (`super_admin`); there is no dedicated policy for demo requests.
 
 ---
 
@@ -364,3 +385,5 @@ The status transitions and approval flow are described in detail in [auth-and-on
 | Roles & staff | `/tenant/settings/roles-permissions` | `Tenant\RolesPermissionsController` | direct + `ShopSettingsRepository` | `roles.manage` / `settings.manage` |
 | Employee POS | `/employee` | `Employee\PanelController`, `SharedDataController` | direct queries | role-based via `employee.panel` middleware |
 | Admin shops | `/admin/shops` | `Admin\TenantController` | direct + `ChangeTenantStatusAction` | super_admin only |
+| Admin demo requests | `/admin/demo-requests` | `Admin\DemoRequestController` | direct queries | super_admin only |
+| Public demo capture | `POST /demo-request` | `Public\DemoRequestController` | direct queries | public (guest), `throttle:5,1` |

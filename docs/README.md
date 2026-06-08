@@ -1,6 +1,6 @@
 # POS Application — Documentation
 
-A multi-tenant Point of Sale + auto-service shop platform built on Laravel 13. Each tenant (shop) gets isolated catalog, customers, staff, roles, settings, and a POS panel. A single super-admin tier oversees tenant onboarding and lifecycle.
+A multi-tenant Point of Sale + auto-service shop platform built on Laravel 13. Each tenant (shop) gets isolated catalog, customers, staff, roles, settings, and a POS panel. A single super-admin tier oversees tenant onboarding and lifecycle, and triages demo-request leads captured from the public landing page.
 
 ## What this app is
 

@@ -8,7 +8,7 @@ This is the canonical schema reference. Files cited live under [database/migrati
 - Composite uniqueness uses `(tenant_id, …)` so two tenants can share the same name/slug/code/SKU/barcode without conflict.
 - `created_by` / `updated_by` are nullable foreign keys to `users.id` with `nullOnDelete`.
 - Decimal precision: prices `(12, 2)`, stock quantities `(12, 3)`, percentages `(5, 2)`.
-- Timestamps default to `created_at` / `updated_at`. Soft deletes only on `tenants`.
+- Timestamps default to `created_at` / `updated_at`. Soft deletes on `tenants` and `discount_groups`.
 
 ## Migration timeline
 
@@ -49,6 +49,8 @@ This is the canonical schema reference. Files cited live under [database/migrati
 2026_05_20_090000  create_product_types_table                  (CRUD-managed product types)
 2026_05_20_090100  add_product_type_id_to_products_table       (FK + backfill from legacy string)
 2026_05_20_093000  fix_discount_groups_slug_unique_per_tenant   (global slug unique → per-tenant)
+2026_06_09_000000  create_order_payments_table                 (per-order payment history)
+2026_06_09_010000  create_demo_requests_table                  (public landing lead capture — central, no tenant_id)
 ```
 
 ## Entity relationship overview
@@ -388,7 +390,7 @@ Persisted POS bills. Final column list (all migrations applied):
 
 Indexes: unique `(tenant_id, order_number)`, plus `(tenant_id, customer_id)`, `(tenant_id, vehicle_id)`, `(tenant_id, status)`, `(tenant_id, service_id)`.
 
-Model: [`Order`](../app/Models/Order.php) — status constants `STATUS_PENDING`, `STATUS_PARTIALLY_PAID`, `STATUS_PAID`. Relations: `customer`, `vehicle`, `service`, `discountGroup`, `items`, `creator`, `updater`. All order calculation logic (discounts, service fees, progressive tax allocation, stock deduction) lives in [`OrdersRepository`](../app/Repositories/OrdersRepository.php).
+Model: [`Order`](../app/Models/Order.php) — status constants `STATUS_PENDING`, `STATUS_PARTIALLY_PAID`, `STATUS_PAID`. Relations: `customer`, `vehicle`, `service`, `discountGroup`, `items`, `payments`, `creator`, `updater`. All order calculation logic (discounts, service fees, progressive tax allocation, stock deduction) lives in [`OrdersRepository`](../app/Repositories/OrdersRepository.php).
 
 ### `order_items`
 
@@ -409,6 +411,24 @@ Source: [2026_05_09_090000_create_orders_table.php](../database/migrations/2026_
 | `created_at` / `updated_at` | timestamps | |
 
 Indexes: `(tenant_id, order_id)`, `(tenant_id, product_id)`. Model: [`OrderItem`](../app/Models/OrderItem.php) (`BelongsToTenant`). Line items snapshot the product's name/sku/unit so historical orders survive later catalog edits.
+
+### `order_payments`
+
+Source: [2026_06_09_000000_create_order_payments_table.php](../database/migrations/2026_06_09_000000_create_order_payments_table.php).
+
+Individual payment entries against an order — the running payment history behind an order's `payment_amount` / `status`. One order can have many payments (supports partial/split settlement over time).
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | bigint PK | |
+| `tenant_id` | bigint, FK → tenants(id), cascade | |
+| `order_id` | bigint, FK → orders(id), cascadeOnDelete | |
+| `amount` | decimal(12,2) | payment amount for this entry |
+| `payment_method` | string(30) | `cash`, `card`, `check` |
+| `created_by` | bigint, nullable, FK → users(id), nullOnDelete | cashier who recorded it |
+| `created_at` / `updated_at` | timestamps | |
+
+Index: `(tenant_id, order_id)`. Model: [`OrderPayment`](../app/Models/OrderPayment.php) (`BelongsToTenant`), `belongsTo Order` / `creator`. [`OrdersRepository`](../app/Repositories/OrdersRepository.php) writes the first payment row at checkout and appends further rows when additional payments are recorded; `$order->payments` powers the order's payment-history view.
 
 ### `images` (polymorphic)
 
@@ -435,6 +455,30 @@ Source: [2026_04_23_020000_create_images_table.php](../database/migrations/2026_
 Indexes: `(tenant_id, collection)`, `(tenant_id, is_primary)`, `(tenant_id, imageable_type, imageable_id)`.
 
 The `Image` model registers a `deleting` boot hook that removes the underlying file from disk when the record is destroyed.
+
+### `demo_requests` (central / non-tenant)
+
+Source: [2026_06_09_010000_create_demo_requests_table.php](../database/migrations/2026_06_09_010000_create_demo_requests_table.php).
+
+Leads captured by the public landing page's "Request a Demo" form. **This table is central — it has no `tenant_id`** and is not scoped by `BelongsToTenant`; it belongs to the platform, not to any shop. Only super admins read it (under `/admin/demo-requests`).
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | bigint PK | |
+| `name` | string | required — contact name |
+| `business_name` | string, nullable | |
+| `email` | string | required |
+| `phone` | string(40), nullable | |
+| `business_type` | string, nullable | e.g. "Car garage / workshop", "Oil change / quick lube" |
+| `message` | text, nullable | free-text request |
+| `status` | string | cast to [`DemoRequestStatus`](../app/Enums/DemoRequestStatus.php): `new` (default), `contacted`, `scheduled`, `closed` |
+| `admin_notes` | text, nullable | internal follow-up notes |
+| `handled_by` | bigint, nullable, FK → users(id), nullOnDelete | super admin who actioned it |
+| `handled_at` | timestamp, nullable | set on status update |
+| `ip_address` | string, nullable | submitter IP (`request()->ip()`) |
+| `created_at` / `updated_at` | timestamps | |
+
+Indexes: `status`, `created_at`. Model: [`DemoRequest`](../app/Models/DemoRequest.php) — plain Eloquent model (no tenant scope), `belongsTo` `handler`, with a `search` scope over name/business/email/phone and a model-level default `status = new`. See [modules.md](modules.md#demo-requests-public-lead-capture) for the request/admin flow.
 
 ## Seeders
 
