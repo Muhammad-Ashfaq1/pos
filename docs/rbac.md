@@ -69,7 +69,7 @@ The boolean predicates (`isSuperAdmin()`, `isTenantAdmin()`, `isEmployee()`) che
 
 ## Permissions
 
-55 permissions are seeded by [`PermissionSeeder`](../database/seeders/PermissionSeeder.php). They follow two naming conventions:
+58 permissions are seeded by [`PermissionSeeder`](../database/seeders/PermissionSeeder.php). They follow two naming conventions:
 
 - **Granular**: `category.view`, `category.create`, `category.update`, `category.delete`.
 - **Aggregate**: `products.view`, `products.manage` (added later for screens that group create/update/delete).
@@ -90,7 +90,8 @@ Routes use either form — many use `permission:product.update|products.manage` 
 | **Services** | `service.view`, `service.create`, `service.update`, `service.delete`, `services.view`, `services.manage` |
 | **Inventory** | `inventory.view`, `inventory.manage` |
 | **POS** | `pos.bill` |
-| **Discounts** | `discount.manage`, `discount.apply_bill`, `discount.apply_item`, `discounts.manage` |
+| **Orders** | `orders.view`, `orders.create` |
+| **Discounts** | `discount.manage`, `discount.apply_bill`, `discount.apply_item`, `discounts.manage`, `discount-group.view`, `discount-group.manage` |
 | **Refunds** | `refunds.manage` |
 | **Customers** | `customer.view`, `customer.create`, `customer.update`, `customer.delete`, `customers.view`, `customers.manage` |
 | **Vehicles** | `vehicle.view`, `vehicle.create`, `vehicle.update`, `vehicle.delete`, `vehicles.view`, `vehicles.manage` |
@@ -137,8 +138,11 @@ Seeded by [`RolePermissionSeeder`](../database/seeders/RolePermissionSeeder.php)
 | inventory.view | ✅ | ✅ | ✅ |   |   | ✅ |   |   |
 | inventory.manage | ✅ | ✅ |   |   |   | ✅ |   |   |
 | pos.bill | ✅ | ✅ | ✅ | ✅ |   |   |   |   |
+| orders.view | ✅ | ✅ | ✅ | ✅ | ✅ |   | ✅ |   |
+| orders.create | ✅ | ✅ | ✅ | ✅ |   |   | ✅ |   |
 | discount.manage / discounts.manage | ✅ | ✅ | ✅ |   |   |   |   |   |
 | discount.apply_bill / apply_item | ✅ | ✅ | ✅ | ✅ |   |   |   |   |
+| discount-group.view / manage | ✅ | ✅ | ✅ |   |   |   |   |   |
 | refunds.manage | ✅ | ✅ |   |   |   |   |   |   |
 | customer.view / customers.view | ✅ | ✅ | ✅ | ✅ | ✅ |   | ✅ |   |
 | customer.create / update | ✅ | ✅ | ✅ | ✅ |   |   |   |   |

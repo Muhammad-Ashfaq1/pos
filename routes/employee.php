@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Employee\PanelController;
 use App\Http\Controllers\Employee\OrderController;
+use App\Http\Controllers\Employee\PanelController;
 use App\Http\Controllers\SharedDataController;
 use Illuminate\Support\Facades\Route;
 

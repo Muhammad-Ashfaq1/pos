@@ -52,6 +52,8 @@ class PermissionSeeder extends Seeder
             'discount.apply_bill',
             'discount.apply_item',
             'discounts.manage',
+            'discount-group.view',
+            'discount-group.manage',
             'refunds.manage',
             'customer.view',
             'customer.create',

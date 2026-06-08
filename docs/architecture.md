@@ -141,6 +141,7 @@ Each tenant resource has an interface in `Repositories/Interface/` and a concret
 | `CustomerRepositoryInterface` | `CustomersRepository` |
 | `VehicleRepositoryInterface` | `VehiclesRepository` |
 | `DiscountRepositoryInterface` | `DiscountsRepository` |
+| `OrderRepositoryInterface` | `OrdersRepository` |
 | `ShopSettingsRepositoryInterface` | `ShopSettingsRepository` |
 
 Repositories own search scopes, slug generation (via `HandlesCatalogSlugs` trait), and pagination.
@@ -155,7 +156,7 @@ Used when an operation spans models or wraps a transaction:
 
 ### 5. Models (`app/Models/`)
 
-Eloquent models for `User`, `Tenant`, `Category`, `SubCategory`, `Product`, `Service`, `ServiceProduct`, `Customer`, `Vehicle`, `Discount`, `Image`. All tenant-owned models use the `BelongsToTenant` trait; `Product` additionally uses `HasImages` for polymorphic image attachments.
+Eloquent models for `User`, `Tenant`, `Category`, `SubCategory`, `Product`, `Service`, `ServiceProduct`, `Customer`, `Vehicle`, `Discount`, `DiscountGroup`, `Order`, `OrderItem`, `Image`. All tenant-owned models use the `BelongsToTenant` trait; `Product` additionally uses `HasImages` for polymorphic image attachments; `Tenant` and `DiscountGroup` use `SoftDeletes`.
 
 ## Multi-tenancy mechanism
 
@@ -217,7 +218,7 @@ See [rbac.md](rbac.md) for the full role/permission matrix.
 
 ## Service container bindings
 
-`AppServiceProvider::register()` binds all eight repository interfaces to their concrete implementations. The permission team resolver is bound by `config/permission.php`:
+`AppServiceProvider::register()` binds all nine repository interfaces to their concrete implementations. The permission team resolver is bound by `config/permission.php`:
 
 ```php
 // config/permission.php

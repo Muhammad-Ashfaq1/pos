@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateDiscountGroupRequest;
@@ -14,6 +15,7 @@ class DiscountGroupController extends Controller
     public function index()
     {
         $discountGroups = DiscountGroup::latest()->get();
+
         return view('tenant.ecommerce.discounts.group.index', compact('discountGroups'));
     }
 
@@ -48,7 +50,7 @@ class DiscountGroupController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Discount group created successfully',
-                'data'    => $discountGroup,
+                'data' => $discountGroup,
             ]);
         }
 
@@ -88,7 +90,7 @@ class DiscountGroupController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Discount group updated successfully',
-                'data'    => $discountGroup,
+                'data' => $discountGroup,
             ]);
         }
 
@@ -107,6 +109,7 @@ class DiscountGroupController extends Controller
                 'message' => 'Discount group deleted successfully',
             ]);
         }
+
         return redirect()->route('tenant.discounts.group.index')->with('success', 'Discount group deleted successfully');
     }
 }

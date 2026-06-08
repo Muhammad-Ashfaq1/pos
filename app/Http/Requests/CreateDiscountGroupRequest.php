@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -31,11 +32,11 @@ class CreateDiscountGroupRequest extends FormRequest
     public function rules(): array
     {
         $tenantId = auth()->user()->tenant_id;
-        $id       = $this->route('discount_group') ? $this->route('discount_group')->id : $this->id;
-        $slug     = Str::slug($this->title);
+        $id = $this->route('discount_group') ? $this->route('discount_group')->id : $this->id;
+        $slug = Str::slug($this->title);
 
         return [
-            'title'     => [
+            'title' => [
                 'required',
                 'string',
                 'max:255',
@@ -43,8 +44,8 @@ class CreateDiscountGroupRequest extends FormRequest
                     ->where('tenant_id', $tenantId)
                     ->ignore($id),
             ],
-            'type'      => 'required|in:percentage,fixed',
-            'value'     => [
+            'type' => 'required|in:percentage,fixed',
+            'value' => [
                 'required',
                 'numeric',
                 'min:0',
@@ -59,8 +60,8 @@ class CreateDiscountGroupRequest extends FormRequest
     {
         return [
             'title.unique' => 'Customer Discount Group already exists in records',
-            'value.max'    => 'The discount percentage cannot exceed 100%.',
-            'value.lte'    => 'The discount amount cannot exceed the minimum purchase limit.',
+            'value.max' => 'The discount percentage cannot exceed 100%.',
+            'value.lte' => 'The discount amount cannot exceed the minimum purchase limit.',
         ];
     }
 }

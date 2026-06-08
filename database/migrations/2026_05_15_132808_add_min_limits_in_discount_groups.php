@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('discount_groups', function (Blueprint $table) {
-            if(! Schema::hasColumn('discount_groups', 'min_limit')) {
+            if (! Schema::hasColumn('discount_groups', 'min_limit')) {
                 $table->decimal('min_limit', 10, 2)->nullable()->default(0)->after('is_active');
             }
         });

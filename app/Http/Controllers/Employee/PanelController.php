@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Employee;
 
 use Illuminate\View\View;

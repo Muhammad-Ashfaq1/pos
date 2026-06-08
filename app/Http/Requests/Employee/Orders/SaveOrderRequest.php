@@ -183,6 +183,7 @@ class SaveOrderRequest extends FormRequest
             if ($type === 'service') {
                 if (! $serviceId) {
                     $validator->errors()->add("service_fees.{$index}.service_id", 'Please select a service.');
+
                     continue;
                 }
             }
@@ -192,6 +193,7 @@ class SaveOrderRequest extends FormRequest
 
                 if (in_array($serviceKey, $selectedServiceIds, true)) {
                     $validator->errors()->add("service_fees.{$index}.service_id", 'This service is already added to the order.');
+
                     continue;
                 }
 

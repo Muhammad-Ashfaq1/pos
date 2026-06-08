@@ -35,6 +35,17 @@ This is the canonical schema reference. Files cited live under [database/migrati
 2026_04_23_040000  create_customers_table
 2026_04_23_040100  create_vehicles_table
 2026_04_23_050000  create_discounts_table
+2026_05_07_140000  convert_stock_columns_to_integer            (products stock → integer)
+2026_05_08_195447  create_discount_groups_table                (customer-tier discounts)
+2026_05_09_090000  create_orders_table                         (POS orders + order_items)
+2026_05_11_080000  add_payment_fields_to_orders_table
+2026_05_11_210732  add_discount_group_id_to_customers_table
+2026_05_13_162448  add_discount_fields_to_orders_table
+2026_05_15_132808  add_min_limits_in_discount_groups           (idempotent guard)
+2026_05_15_150000  add_discount_id_to_products_table
+2026_05_15_160000  add_discount_id_to_customers_table
+2026_05_15_170000  add_service_fee_details_to_orders_table
+2026_05_18_090000  add_service_id_to_orders_table
 ```
 
 ## Entity relationship overview
@@ -171,6 +182,7 @@ Source: [2026_04_23_010000_create_products_table.php](../database/migrations/202
 | `tenant_id` | bigint, FK → tenants(id), cascade | |
 | `category_id` | bigint, nullable, FK → categories(id), nullOnDelete | |
 | `sub_category_id` | bigint, nullable, FK → sub_categories(id), nullOnDelete | |
+| `discount_id` | bigint, nullable, FK → discounts(id), nullOnDelete | per-product discount (added 2026_05_15) |
 | `product_type` | string(50) | one of `inventory`, `oil`, `filter`, `part`, `additive`, `other` |
 | `name` | string(150) | unique per tenant |
 | `slug` | string(170), nullable | unique per tenant |
@@ -182,10 +194,10 @@ Source: [2026_04_23_010000_create_products_table.php](../database/migrations/202
 | `cost_price` | decimal(12,2) | default 0 |
 | `sale_price` | decimal(12,2) | default 0 |
 | `tax_percentage` | decimal(5,2), nullable | |
-| `opening_stock` | decimal(12,3) | default 0 |
-| `current_stock` | decimal(12,3) | default 0 |
-| `minimum_stock_level` | decimal(12,3) | default 0 |
-| `reorder_level` | decimal(12,3) | default 0 |
+| `opening_stock` | unsignedInteger | default 0 — converted from decimal(12,3) by [2026_05_07_140000](../database/migrations/2026_05_07_140000_convert_stock_columns_to_integer.php) |
+| `current_stock` | unsignedInteger | default 0 |
+| `minimum_stock_level` | unsignedInteger | default 0 |
+| `reorder_level` | unsignedInteger | default 0 |
 | `track_inventory` | bool | default true |
 | `is_active` | bool | default true |
 | `created_by` / `updated_by` | bigint, nullable, FK → users(id) | |
@@ -227,7 +239,7 @@ Source: [2026_04_23_030100_create_service_products_table.php](../database/migrat
 | `tenant_id` | bigint, FK → tenants(id), cascade | |
 | `service_id` | bigint, FK → services(id), cascade | |
 | `product_id` | bigint, FK → products(id), cascade | |
-| `quantity` | decimal(12,3) | required |
+| `quantity` | unsignedInteger | required — converted from decimal(12,3) by [2026_05_07_140000](../database/migrations/2026_05_07_140000_convert_stock_columns_to_integer.php) |
 | `unit` | string(50), nullable | typically inherits product unit |
 | `is_required` | bool | default true |
 | `created_at` / `updated_at` | timestamps | |
@@ -243,6 +255,8 @@ Source: [2026_04_23_040000_create_customers_table.php](../database/migrations/20
 | `id` | bigint PK | |
 | `tenant_id` | bigint, FK → tenants(id), cascade | |
 | `customer_type` | string(30) | `registered` (default), `walk_in`, `corporate` |
+| `discount_group_id` | bigint, nullable, FK → discount_groups(id), nullOnDelete | customer-tier discount group (added 2026_05_11) |
+| `discount_id` | bigint, nullable, FK → discounts(id), nullOnDelete | customer-specific discount (added 2026_05_15) |
 | `name` | string(150) | walk-ins default to "Walk-in Customer" |
 | `phone` | string(30), nullable | |
 | `email` | string(150), nullable | |
@@ -309,6 +323,83 @@ Source: [2026_04_23_050000_create_discounts_table.php](../database/migrations/20
 
 Indexes on `(tenant_id, discount_type)`, `(tenant_id, applies_to)`, `(tenant_id, is_active)`, `(tenant_id, starts_at, ends_at)`, `(tenant_id, name)`.
 
+### `discount_groups`
+
+Source: [2026_05_08_195447_create_discount_groups_table.php](../database/migrations/2026_05_08_195447_create_discount_groups_table.php) + [2026_05_15_132808_add_min_limits_in_discount_groups.php](../database/migrations/2026_05_15_132808_add_min_limits_in_discount_groups.php) (idempotent guard).
+
+Customer-tier discounts: a group defines a discount that applies once a customer's bill clears a minimum spend (`min_limit`). Assigned to customers via `customers.discount_group_id`.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | bigint PK | |
+| `tenant_id` | bigint, FK → tenants(id), cascade | |
+| `name` | string, nullable | display name |
+| `slug` | string | unique per tenant; auto-generated from name |
+| `type` | enum(`percentage`, `fixed`) | default `fixed` |
+| `value` | decimal(10,2) | default 0 — percent or fixed amount |
+| `min_limit` | decimal(10,2), nullable | default 0 — minimum bill to qualify |
+| `is_active` | bool | default true |
+| `created_at` / `updated_at` / `deleted_at` | timestamps | **soft deletes enabled** |
+
+Model: [`DiscountGroup`](../app/Models/DiscountGroup.php) (`BelongsToTenant` + `SoftDeletes`).
+
+### `orders`
+
+Source: [2026_05_09_090000_create_orders_table.php](../database/migrations/2026_05_09_090000_create_orders_table.php) + [add_payment_fields](../database/migrations/2026_05_11_080000_add_payment_fields_to_orders_table.php) + [add_discount_fields](../database/migrations/2026_05_13_162448_add_discount_fields_to_orders_table.php) + [add_service_fee_details](../database/migrations/2026_05_15_170000_add_service_fee_details_to_orders_table.php) + [add_service_id](../database/migrations/2026_05_18_090000_add_service_id_to_orders_table.php).
+
+Persisted POS bills. Final column list (all migrations applied):
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | bigint PK | |
+| `tenant_id` | bigint, FK → tenants(id), cascade | |
+| `order_number` | string(50) | unique per tenant; `ORD-{Ymd-His}-{rand}` |
+| `customer_id` | bigint, nullable, FK → customers(id) | |
+| `vehicle_id` | bigint, nullable, FK → vehicles(id) | |
+| `service_id` | bigint, nullable, FK → services(id) | primary service link (added 2026_05_18) |
+| `discount_id` | bigint, nullable, FK → discounts(id) | applied discount (added 2026_05_13) |
+| `discount_group_id` | bigint, nullable, FK → discount_groups(id) | applied customer-tier group |
+| `discount_details` | json, nullable | per-line discount + tax breakdown |
+| `status` | string(30) | `pending` (default), `partially_paid`, `paid` |
+| `total_quantity` | unsignedInteger | default 0 |
+| `subtotal_amount` | decimal(12,2) | default 0 |
+| `discount_amount` | decimal(12,2) | default 0 |
+| `service_fee_amount` | decimal(12,2) | default 0 |
+| `service_fee_details` | json, nullable | catalog + manual service fee lines (added 2026_05_15) |
+| `tax_amount` | decimal(12,2) | default 0 |
+| `total_amount` | decimal(12,2) | default 0 |
+| `payment_method` | string(30), nullable | `cash`, `card`, `check` (added 2026_05_11) |
+| `payment_amount` | decimal(12,2) | default 0 |
+| `change_amount` | decimal(12,2) | default 0 |
+| `paid_at` | timestamp, nullable | set when fully paid |
+| `notes` | text, nullable | |
+| `created_by` / `updated_by` | bigint, nullable, FK → users(id) | |
+| `created_at` / `updated_at` | timestamps | |
+
+Indexes: unique `(tenant_id, order_number)`, plus `(tenant_id, customer_id)`, `(tenant_id, vehicle_id)`, `(tenant_id, status)`, `(tenant_id, service_id)`.
+
+Model: [`Order`](../app/Models/Order.php) — status constants `STATUS_PENDING`, `STATUS_PARTIALLY_PAID`, `STATUS_PAID`. Relations: `customer`, `vehicle`, `service`, `discountGroup`, `items`, `creator`, `updater`. All order calculation logic (discounts, service fees, progressive tax allocation, stock deduction) lives in [`OrdersRepository`](../app/Repositories/OrdersRepository.php).
+
+### `order_items`
+
+Source: [2026_05_09_090000_create_orders_table.php](../database/migrations/2026_05_09_090000_create_orders_table.php) (same migration as `orders`).
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | bigint PK | |
+| `tenant_id` | bigint, FK → tenants(id), cascade | |
+| `order_id` | bigint, FK → orders(id), cascadeOnDelete | |
+| `product_id` | bigint, nullable, FK → products(id) | |
+| `product_name` | string(150) | snapshot at sale time |
+| `sku` | string(80), nullable | snapshot |
+| `unit` | string(50), nullable | snapshot |
+| `quantity` | unsignedInteger | |
+| `unit_price` | decimal(12,2) | |
+| `line_total` | decimal(12,2) | |
+| `created_at` / `updated_at` | timestamps | |
+
+Indexes: `(tenant_id, order_id)`, `(tenant_id, product_id)`. Model: [`OrderItem`](../app/Models/OrderItem.php) (`BelongsToTenant`). Line items snapshot the product's name/sku/unit so historical orders survive later catalog edits.
+
 ### `images` (polymorphic)
 
 Source: [2026_04_23_020000_create_images_table.php](../database/migrations/2026_04_23_020000_create_images_table.php).
@@ -342,7 +433,7 @@ The `Image` model registers a `deleting` boot hook that removes the underlying f
 | Seeder | Effect |
 |--------|--------|
 | [`RoleSeeder`](../database/seeders/RoleSeeder.php) | Creates the 8 named roles (`super_admin`, `tenant_admin`, `manager`, `cashier`, `technician`, `inventory_clerk`, `employee`, `customer`). |
-| [`PermissionSeeder`](../database/seeders/PermissionSeeder.php) | Creates the 55 permission strings. Re-runnable via `php artisan permissions:sync`. |
+| [`PermissionSeeder`](../database/seeders/PermissionSeeder.php) | Creates the 58 permission strings. Re-runnable via `php artisan permissions:sync`. |
 | [`RolePermissionSeeder`](../database/seeders/RolePermissionSeeder.php) | Attaches permissions to each role per the matrix in [rbac.md](rbac.md). |
 | [`SuperAdminSeeder`](../database/seeders/SuperAdminSeeder.php) | Creates the platform super admin (no `tenant_id`). |
 | [`ApprovedShopSeeder`](../database/seeders/ApprovedShopSeeder.php) | Creates a demo tenant in `approved` status with a tenant admin. |
