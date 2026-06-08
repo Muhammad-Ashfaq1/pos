@@ -43,8 +43,12 @@
     }
   };
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialTab = urlParams.get('tab');
+  const supportedTabs = ['today', 'all', 'pending', 'estimates'];
+
   const state = {
-    tab: 'all',
+    tab: (supportedTabs.indexOf(initialTab) >= 0) ? initialTab : 'all',
     q: '',
     sort: readStoredSort(),
     date_from: '',
@@ -251,7 +255,7 @@
   };
 
   const makeStatusClass = function (statusClass) {
-    const supported = ['success', 'warning', 'secondary'];
+    const supported = ['success', 'warning', 'secondary', 'info'];
 
     return supported.indexOf(statusClass) >= 0 ? statusClass : 'secondary';
   };
@@ -439,6 +443,10 @@
   };
 
   $(function () {
+    // Sync active tab class in UI based on initial state
+    $('[data-order-tab]').removeClass('active');
+    $('[data-order-tab="' + state.tab + '"]').addClass('active');
+
     initSelect2();
     bindEvents();
     syncDatePreset(state.date_preset);

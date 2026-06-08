@@ -317,13 +317,46 @@
                     </div>
 
                     <h6 class="mb-3">Catalog &amp; Records</h6>
+                    <?php
+                        $catalogUrls = [
+                            'Categories' => route('tenant.ecommerce.categories.index'),
+                            'Sub Categories' => route('tenant.ecommerce.subcategories.index'),
+                            'Product Types' => route('tenant.ecommerce.product-types.index'),
+                            'Products' => route('tenant.ecommerce.products.index'),
+                            'Services' => route('tenant.ecommerce.services.index'),
+                            'Discounts' => route('tenant.ecommerce.discounts.index'),
+                            'Discount Groups' => route('tenant.discounts.group.index'),
+                            'Customers' => route('tenant.ecommerce.customers.index'),
+                            'Vehicles' => route('tenant.ecommerce.vehicles.index'),
+                            'Orders' => route('employee.order.index'),
+                            'Estimates' => route('employee.order.index', ['tab' => 'estimates']),
+                        ];
+                    ?>
+                    <style>
+                        .catalog-card-link {
+                            text-decoration: none !important;
+                            display: block;
+                        }
+                        .catalog-card-item {
+                            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+                            border: 1px solid transparent;
+                        }
+                        .catalog-card-item:hover {
+                            transform: translateY(-4px);
+                            box-shadow: 0 8px 16px rgba(115, 103, 240, 0.12);
+                            border-color: rgba(115, 103, 240, 0.3);
+                        }
+                    </style>
                     <div class="row g-3">
                         @foreach ($application['catalog'] as $label => $count)
+                            @php($targetUrl = $catalogUrls[$label] ?? '#')
                             <div class="col-lg-2 col-md-3 col-4">
-                                <div class="rounded bg-label-secondary p-3 text-center h-100">
-                                    <h5 class="mb-0">{{ number_format($count) }}</h5>
-                                    <small class="text-muted">{{ $label }}</small>
-                                </div>
+                                <a href="{{ $targetUrl }}" class="catalog-card-link h-100">
+                                    <div class="rounded bg-label-secondary p-3 text-center h-100 catalog-card-item">
+                                        <h5 class="mb-0 text-heading">{{ number_format($count) }}</h5>
+                                        <small class="text-muted">{{ $label }}</small>
+                                    </div>
+                                </a>
                             </div>
                         @endforeach
                     </div>
