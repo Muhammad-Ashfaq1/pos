@@ -32,7 +32,6 @@ class Currency
         'AUD' => 'A$',
         // Extended set (not in primary list but kept for compatibility)
         'EUR' => '€',
-        'INR' => '₹',
         'NZD' => 'NZ$',
         'JPY' => '¥',
         'CNY' => '¥',

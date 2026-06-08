@@ -9,7 +9,7 @@ class SaveShopRegionalSettingsRequest extends BaseShopSettingsRequest
     /** Supported currency codes — matches Currency::SYMBOLS keys. */
     private const ALLOWED_CURRENCIES = [
         'USD', 'GBP', 'PKR', 'AED', 'SAR', 'CAD', 'AUD',
-        'EUR', 'INR', 'NZD', 'JPY', 'CNY', 'BDT', 'NGN', 'ZAR',
+        'EUR', 'NZD', 'JPY', 'CNY', 'BDT', 'NGN', 'ZAR',
         'BRL', 'TRY', 'RUB', 'KRW', 'CHF', 'MYR', 'SGD', 'HKD',
         'THB', 'IDR', 'PHP', 'EGP', 'QAR', 'KWD', 'OMR',
     ];

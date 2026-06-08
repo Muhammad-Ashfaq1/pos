@@ -28,9 +28,7 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
         'SAR' => 'Saudi Riyal (SAR)  ﷼',
         'CAD' => 'Canadian Dollar (CAD)  C$',
         'AUD' => 'Australian Dollar (AUD)  A$',
-        // Additional
         'EUR' => 'Euro (EUR)  €',
-        'INR' => 'Indian Rupee (INR)  ₹',
     ];
 
     private const WEEKDAYS = [
