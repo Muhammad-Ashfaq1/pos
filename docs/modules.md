@@ -230,6 +230,8 @@ Tenant admins configure their shop in four sections, all gated by `permission:se
 - **Storage**: settings are stored as a JSON column on `tenants.settings`. Defaults are merged on read via [`Tenant::mergedSettings()`](../app/Models/Tenant.php#L204-L207); see the `DEFAULT_SETTINGS` constant for the full default tree.
 - **Views**: [resources/views/tenant/settings/shop-profile/](../resources/views/tenant/settings/shop-profile/)
 
+> **Currency** — the `regional.currency` setting drives money formatting across the whole app via [`App\Support\Currency`](../app/Support/Currency.php) (default `USD` → `$`). In Blade use `@money($amount)` (e.g. `@money(1234.5)` → `$1,234.50`) or `@currency` for the bare symbol; in JS read `window.appCurrency.symbol` (injected by both layouts). PHP services/repositories call `Currency::format()` / `Currency::symbol()`. Unknown/unmapped codes fall back to `$`.
+
 ### Default settings tree
 
 ```php

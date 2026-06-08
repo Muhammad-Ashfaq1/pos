@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\Service;
 use App\Models\SubCategory;
 use App\Models\Vehicle;
+use App\Support\Currency;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -297,7 +298,7 @@ class DropdownController extends Controller
     {
         $value = $discount->discount_type === Discount::TYPE_PERCENTAGE
             ? rtrim(rtrim(number_format((float) $discount->value, 2, '.', ''), '0'), '.').'%'
-            : '$'.number_format((float) $discount->value, 2);
+            : Currency::format($discount->value);
         $code = filled($discount->code) ? " ({$discount->code})" : '';
 
         return "{$discount->name}{$code} - {$value}";
@@ -306,7 +307,7 @@ class DropdownController extends Controller
     private function serviceOptionText(Service $service): string
     {
         $code = filled($service->code) ? " ({$service->code})" : '';
-        $price = '$'.number_format((float) $service->standard_price, 2);
+        $price = Currency::format($service->standard_price);
 
         return "{$service->name}{$code} - {$price}";
     }
@@ -332,7 +333,7 @@ class DropdownController extends Controller
     {
         $value = $group->type === 'percentage'
             ? rtrim(rtrim(number_format((float) $group->value, 2, '.', ''), '0'), '.').'%'
-            : '$'.number_format((float) $group->value, 2);
+            : Currency::format($group->value);
 
         return trim("{$group->name} - {$value}");
     }

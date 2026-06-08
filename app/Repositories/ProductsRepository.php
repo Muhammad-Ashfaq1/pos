@@ -10,6 +10,7 @@ use App\Models\SubCategory;
 use App\Repositories\Interface\ProductRepositoryInterface;
 use App\Repositories\Support\Concerns\HandlesCatalogSlugs;
 use App\Services\ImageService;
+use App\Support\Currency;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -340,7 +341,7 @@ class ProductsRepository implements ProductRepositoryInterface
 
         $value = $discount->discount_type === Discount::TYPE_PERCENTAGE
             ? rtrim(rtrim(number_format((float) $discount->value, 2, '.', ''), '0'), '.').'%'
-            : '$'.number_format((float) $discount->value, 2);
+            : Currency::format($discount->value);
         $code = filled($discount->code) ? " ({$discount->code})" : '';
 
         return "{$discount->name}{$code} - {$value}";

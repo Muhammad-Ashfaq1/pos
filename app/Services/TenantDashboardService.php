@@ -14,6 +14,7 @@ use App\Models\Service;
 use App\Models\SubCategory;
 use App\Models\Tenant;
 use App\Models\Vehicle;
+use App\Support\Currency;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -24,15 +25,10 @@ use Illuminate\Support\Collection;
  */
 class TenantDashboardService
 {
-    private const CURRENCY_SYMBOLS = [
-        'USD' => '$', 'EUR' => '€', 'GBP' => '£', 'PKR' => '₨', 'INR' => '₹',
-        'AED' => 'د.إ', 'SAR' => '﷼', 'CAD' => 'C$', 'AUD' => 'A$', 'JPY' => '¥',
-    ];
-
     public function metrics(?Tenant $tenant): array
     {
-        $currency = (string) ($tenant?->setting('regional.currency', 'USD') ?? 'USD');
-        $symbol = self::CURRENCY_SYMBOLS[$currency] ?? ($currency.' ');
+        $currency = Currency::code($tenant);
+        $symbol = Currency::symbol($currency);
 
         return [
             'currency' => $currency,

@@ -40,9 +40,9 @@
                         <tr>
                             <td>{{ $group->name }}</td>
                             <td>{{ $group->slug }}</td>
-                            <td>{{ $group->type === 'percentage' ? $group->value . '%' : '$' . $group->value }}</td>
+                            <td>{{ $group->type === 'percentage' ? $group->value . '%' : \App\Support\Currency::format($group->value) }}</td>
                             <td>{{ $group->type }}</td>
-                            <td>{{ $group->type === 'fixed' ? '$' . $group->min_limit : '-' }}</td>
+                            <td>{{ $group->type === 'fixed' ? \App\Support\Currency::format($group->min_limit) : '-' }}</td>
                             <td class="text-center">
                                 @if ($group->is_active)
                                     <span class="badge bg-label-success">Yes</span>

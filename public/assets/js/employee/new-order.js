@@ -230,7 +230,7 @@
             labels.push(serviceCount + ' service' + (serviceCount === 1 ? '' : 's'));
         }
 
-        return order.label + ' - ' + labels.join(', ') + ' - $' + totals.total.toFixed(2);
+        return order.label + ' - ' + labels.join(', ') + ' - ' + formatMoney(totals.total);
     }
 
     function refreshOrderDropdown() {
@@ -479,7 +479,7 @@
         $('.product-name').text(product.name);
         $('.product-sku').text(product.sku || '—');
         $('.product-barcode').text(product.barcode || '—');
-        $('.product-price').text('$' + product.price.toFixed(2));
+        $('.product-price').text(formatMoney(product.price));
         $('.product-discount-banner').addClass('d-none');
         $('.product-discount-label').text('');
         $('.product-qty-input').val(1);
@@ -1383,8 +1383,12 @@
         return totalsForOrder(getActiveOrder());
     }
 
+    function currencySymbol() {
+        return (window.appCurrency && window.appCurrency.symbol) || '$';
+    }
+
     function formatMoney(amount) {
-        return '$' + (Number(amount) || 0).toFixed(2);
+        return currencySymbol() + (Number(amount) || 0).toFixed(2);
     }
 
     function paymentAmountValue() {
@@ -1604,7 +1608,7 @@
         $('.payment-remaining').text(formatMoney(remaining));
         $('.payment-change-due').text(formatMoney(changeDue));
         $('.payment-method-label').text(paymentMethodText());
-        $('.payment-amount-display').text(paymentAmountInput === '' ? '$' : '$' + paymentAmountInput);
+        $('.payment-amount-display').text(paymentAmountInput === '' ? currencySymbol() : currencySymbol() + paymentAmountInput);
         $('.payment-method-btn').removeClass('active')
             .filter('[data-payment-method="' + paymentMethod + '"]')
             .addClass('active');

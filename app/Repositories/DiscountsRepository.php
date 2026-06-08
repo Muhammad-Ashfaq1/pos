@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Discount;
 use App\Repositories\Interface\DiscountRepositoryInterface;
+use App\Support\Currency;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -186,10 +187,10 @@ class DiscountsRepository implements DiscountRepositoryInterface
             'value' => (string) $discount->value,
             'value_label' => $discount->discount_type === Discount::TYPE_PERCENTAGE
                 ? rtrim(rtrim(number_format((float) $discount->value, 2, '.', ''), '0'), '.').'%'
-                : '$'.number_format((float) $discount->value, 2),
+                : Currency::format($discount->value),
             'max_discount_amount' => $discount->max_discount_amount !== null ? (string) $discount->max_discount_amount : null,
             'max_discount_amount_label' => $discount->max_discount_amount !== null
-                ? '$'.number_format((float) $discount->max_discount_amount, 2)
+                ? Currency::format($discount->max_discount_amount)
                 : null,
             'starts_at' => $discount->starts_at?->format('Y-m-d\TH:i'),
             'starts_at_label' => $discount->starts_at?->format('d M Y h:i A'),

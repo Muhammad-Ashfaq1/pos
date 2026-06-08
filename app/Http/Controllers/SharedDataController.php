@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Discount;
 use App\Models\Product;
 use App\Models\SubCategory;
+use App\Support\Currency;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -206,7 +207,7 @@ class SharedDataController extends Controller
     {
         $value = $discount->discount_type === Discount::TYPE_PERCENTAGE
             ? rtrim(rtrim(number_format((float) $discount->value, 2, '.', ''), '0'), '.').'%'
-            : '$'.number_format((float) $discount->value, 2);
+            : Currency::format($discount->value);
         $code = filled($discount->code) ? " ({$discount->code})" : '';
 
         return "{$discount->name}{$code} - {$value}";

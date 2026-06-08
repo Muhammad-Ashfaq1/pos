@@ -23,6 +23,7 @@ use App\Repositories\ServicesRepository;
 use App\Repositories\ShopSettingsRepository;
 use App\Repositories\SubCategoriesRepository;
 use App\Repositories\VehiclesRepository;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -53,5 +54,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(function (User $user): ?bool {
             return $user->isSuperAdmin() ? true : null;
         });
+
+        // Currency rendering helpers — honour the tenant's configured currency.
+        // @money(1234.5) => "$1,234.50"  |  @currency => "$"
+        Blade::directive('money', fn (string $expr) => "<?php echo \App\Support\Currency::format($expr); ?>");
+        Blade::directive('currency', fn () => '<?php echo \App\Support\Currency::symbol(); ?>');
     }
 }

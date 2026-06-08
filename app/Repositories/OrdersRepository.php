@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Service;
 use App\Repositories\Interface\OrderRepositoryInterface;
+use App\Support\Currency;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -725,7 +726,7 @@ class OrdersRepository implements OrderRepositoryInterface
             'status_label' => $this->statusLabel($status),
             'status_class' => $this->listingStatusClass($status),
             'total_amount' => (float) $order->total_amount,
-            'total_amount_label' => '$'.number_format((float) $order->total_amount, 2),
+            'total_amount_label' => $this->moneyLabel((float) $order->total_amount),
             'created_at_label' => 'Retail | '.$order->created_at?->format('M j, h:i A'),
             'items_count' => (int) ($order->items_count ?? 0),
         ];
@@ -831,7 +832,7 @@ class OrdersRepository implements OrderRepositoryInterface
 
     private function moneyLabel(float $amount): string
     {
-        return '$'.number_format($amount, 2);
+        return Currency::format($amount);
     }
 
     private function paymentAwareStatus(Order $order): string

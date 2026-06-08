@@ -99,31 +99,31 @@
                                 </div>
                                 <div class="d-flex justify-content-between mb-2">
                                     <span class="text-muted small">Subtotal:</span>
-                                    <span class="fw-bold small summary-subtotal">$0.00</span>
+                                    <span class="fw-bold small summary-subtotal">@money(0)</span>
                                 </div>
                                 <div class="summary-service-price-row d-none d-flex justify-content-between mb-2">
                                     <span class="text-muted small summary-service-price-title">Service Price</span>
-                                    <span class="fw-bold small summary-service-price">$0.00</span>
+                                    <span class="fw-bold small summary-service-price">@money(0)</span>
                                 </div>
                                 <div class="summary-service-price-breakdowns d-none"></div>
                                 <div class="summary-service-fee-row d-none d-flex justify-content-between mb-2">
                                     <span class="text-muted small summary-service-fee-title">Service fee</span>
-                                    <span class="fw-bold small summary-service-fee">$0.00</span>
+                                    <span class="fw-bold small summary-service-fee">@money(0)</span>
                                 </div>
                                 <div class="summary-service-fee-breakdowns d-none"></div>
                                 <div class="summary-discount-lines d-none d-flex justify-content-between mb-2">
                                     <span class="text-muted small">Discount</span>
-                                    <span class="fw-bold small text-success summary-discount">-$0.00</span>
+                                    <span class="fw-bold small text-success summary-discount">-@money(0)</span>
                                 </div>
                                 <div class="summary-discount-breakdowns d-none"></div>
                                 <div class="summary-tax-row d-none d-flex justify-content-between mb-2">
                                     <span class="text-muted small">Tax</span>
-                                    <span class="fw-bold small summary-tax">$0.00</span>
+                                    <span class="fw-bold small summary-tax">@money(0)</span>
                                 </div>
                                 <div class="summary-tax-breakdowns d-none"></div>
                                 <div class="d-flex justify-content-between mb-4">
                                     <h5 class="fw-bold">Final Total</h5>
-                                    <h5 class="fw-bold text-primary summary-total">$0.00</h5>
+                                    <h5 class="fw-bold text-primary summary-total">@money(0)</h5>
                                 </div>
 
                                 <div class="row g-2 mb-3 align-items-stretch">
@@ -137,7 +137,7 @@
                                         <button
                                             class="btn btn-primary w-100 h-100 fw-bold d-flex flex-column align-items-center cursor-pointer justify-content-center py-2 btn-pay"
                                             disabled>
-                                            <div class="fs-5 text-warning">$0.00</div>
+                                            <div class="fs-5 text-warning">@money(0)</div>
                                             <div class="small fw-semibold text-warning">Pay</div>
                                         </button>
                                     </div>
@@ -250,7 +250,7 @@
                                     <div class="bg-light p-3 rounded-4 mb-3 border-start border-primary border-5">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="text-muted fw-semibold">Unit Price</span>
-                                            <h3 class="fw-bold text-primary mb-0 product-price">$0.00</h3>
+                                            <h3 class="fw-bold text-primary mb-0 product-price">@money(0)</h3>
                                         </div>
                                     </div>
 
@@ -330,43 +330,43 @@
                                 </div>
                                 <div class="d-flex justify-content-between small mb-3">
                                     <span>Total:</span>
-                                    <span class="fw-bold payment-total">$0.00</span>
+                                    <span class="fw-bold payment-total">@money(0)</span>
                                 </div>
                                 <div class="d-flex justify-content-between small border-bottom pb-3 mb-3">
                                     <span>Sub Total:</span>
-                                    <span class="fw-bold payment-subtotal">$0.00</span>
+                                    <span class="fw-bold payment-subtotal">@money(0)</span>
                                 </div>
                                 <div class="payment-service-price-section d-none border-bottom pb-3 mb-3">
                                     <div class="payment-service-price-row d-flex justify-content-between small">
                                         <span class="payment-service-price-title">Service Price:</span>
-                                        <span class="fw-bold payment-service-price">$0.00</span>
+                                        <span class="fw-bold payment-service-price">@money(0)</span>
                                     </div>
                                     <div class="payment-service-price-breakdowns mt-2"></div>
                                 </div>
                                 <div class="payment-service-fee-section d-none border-bottom pb-3 mb-3">
                                     <div class="payment-service-fee-row d-flex justify-content-between small">
                                         <span class="payment-service-fee-title">Service Fee:</span>
-                                        <span class="fw-bold payment-service-fee">$0.00</span>
+                                        <span class="fw-bold payment-service-fee">@money(0)</span>
                                     </div>
                                     <div class="payment-service-fee-breakdowns mt-2"></div>
                                 </div>
                                 <div class="payment-discount-section d-none border-bottom pb-3 mb-3">
                                     <div class="payment-discount-lines d-flex justify-content-between small">
                                         <span>Discount:</span>
-                                        <span class="fw-bold text-success payment-discount">-$0.00</span>
+                                        <span class="fw-bold text-success payment-discount">-@money(0)</span>
                                     </div>
                                     <div class="payment-discount-breakdowns mt-2"></div>
                                 </div>
                                 <div class="payment-tax-section d-none border-bottom pb-3 mb-3">
                                     <div class="payment-tax-row d-flex justify-content-between small">
                                         <span>Tax:</span>
-                                        <span class="fw-bold payment-tax">$0.00</span>
+                                        <span class="fw-bold payment-tax">@money(0)</span>
                                     </div>
                                     <div class="payment-tax-breakdowns mt-2"></div>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <h5 class="fw-bold mb-0">Balance Due:</h5>
-                                    <h3 class="fw-bold text-primary mb-0 payment-balance-due">$0.00</h3>
+                                    <h3 class="fw-bold text-primary mb-0 payment-balance-due">@money(0)</h3>
                                 </div>
                             </div>
 
@@ -397,23 +397,23 @@
 
                             <div class="payment-amount-display mb-3">$</div>
                             <div class="d-flex justify-content-between small mb-4">
-                                <span>Remaining: <strong class="payment-remaining">$0.00</strong></span>
-                                <span>Change: <strong class="payment-change-due">$0.00</strong></span>
+                                <span>Remaining: <strong class="payment-remaining">@money(0)</strong></span>
+                                <span>Change: <strong class="payment-change-due">@money(0)</strong></span>
                             </div>
 
                             <div class="payment-keypad mt-auto">
                                 <button type="button" class="payment-key" data-payment-key="7">7</button>
                                 <button type="button" class="payment-key" data-payment-key="8">8</button>
                                 <button type="button" class="payment-key" data-payment-key="9">9</button>
-                                <button type="button" class="payment-key" data-payment-quick="10">$10</button>
+                                <button type="button" class="payment-key" data-payment-quick="10">{{ \App\Support\Currency::symbol() }}10</button>
                                 <button type="button" class="payment-key" data-payment-key="4">4</button>
                                 <button type="button" class="payment-key" data-payment-key="5">5</button>
                                 <button type="button" class="payment-key" data-payment-key="6">6</button>
-                                <button type="button" class="payment-key" data-payment-quick="20">$20</button>
+                                <button type="button" class="payment-key" data-payment-quick="20">{{ \App\Support\Currency::symbol() }}20</button>
                                 <button type="button" class="payment-key" data-payment-key="1">1</button>
                                 <button type="button" class="payment-key" data-payment-key="2">2</button>
                                 <button type="button" class="payment-key" data-payment-key="3">3</button>
-                                <button type="button" class="payment-key" data-payment-quick="50">$50</button>
+                                <button type="button" class="payment-key" data-payment-quick="50">{{ \App\Support\Currency::symbol() }}50</button>
                                 <button type="button" class="payment-key" data-payment-key="0">0</button>
                                 <button type="button" class="payment-key" data-payment-key=".">.</button>
                                 <button type="button" class="payment-key" data-payment-key="clear">C</button>

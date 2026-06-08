@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\DiscountGroup;
 use App\Models\Vehicle;
 use App\Repositories\Interface\CustomerRepositoryInterface;
+use App\Support\Currency;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -255,7 +256,7 @@ class CustomersRepository implements CustomerRepositoryInterface
 
         $value = $group->type === 'percentage'
             ? rtrim(rtrim(number_format((float) $group->value, 2, '.', ''), '0'), '.').'%'
-            : '$'.number_format((float) $group->value, 2);
+            : Currency::format($group->value);
 
         return trim("{$group->name} - {$value}");
     }
