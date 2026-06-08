@@ -331,6 +331,19 @@
                             'Orders' => route('employee.order.index'),
                             'Estimates' => route('employee.order.index', ['tab' => 'estimates']),
                         ];
+                        $catalogMeta = [
+                            'Categories' => ['icon' => 'tabler-category', 'color' => 'primary'],
+                            'Sub Categories' => ['icon' => 'tabler-folders', 'color' => 'info'],
+                            'Product Types' => ['icon' => 'tabler-components', 'color' => 'dark'],
+                            'Products' => ['icon' => 'tabler-package', 'color' => 'success'],
+                            'Services' => ['icon' => 'tabler-settings', 'color' => 'danger'],
+                            'Discounts' => ['icon' => 'tabler-tag', 'color' => 'warning'],
+                            'Discount Groups' => ['icon' => 'tabler-tags', 'color' => 'secondary'],
+                            'Customers' => ['icon' => 'tabler-users', 'color' => 'primary'],
+                            'Vehicles' => ['icon' => 'tabler-car', 'color' => 'info'],
+                            'Orders' => ['icon' => 'tabler-shopping-cart', 'color' => 'success'],
+                            'Estimates' => ['icon' => 'tabler-file-analytics', 'color' => 'warning'],
+                        ];
                     ?>
                     <style>
                         .catalog-card-link {
@@ -349,12 +362,20 @@
                     </style>
                     <div class="row g-3">
                         @foreach ($application['catalog'] as $label => $count)
-                            @php($targetUrl = $catalogUrls[$label] ?? '#')
-                            <div class="col-lg-2 col-md-3 col-4">
+                            <?php
+                                $targetUrl = $catalogUrls[$label] ?? '#';
+                                $meta = $catalogMeta[$label] ?? ['icon' => 'tabler-circle', 'color' => 'secondary'];
+                                $icon = $meta['icon'];
+                                $color = $meta['color'];
+                            ?>
+                            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
                                 <a href="{{ $targetUrl }}" class="catalog-card-link h-100">
-                                    <div class="rounded bg-label-secondary p-3 text-center h-100 catalog-card-item">
-                                        <h5 class="mb-0 text-heading">{{ number_format($count) }}</h5>
-                                        <small class="text-muted">{{ $label }}</small>
+                                    <div class="rounded bg-label-{{ $color }} p-3 text-center h-100 catalog-card-item d-flex flex-column align-items-center justify-content-center">
+                                        <div class="avatar avatar-sm mb-2">
+                                            <span class="avatar-initial rounded bg-{{ $color }}"><i class="ti {{ $icon }} fs-4 text-white"></i></span>
+                                        </div>
+                                        <h5 class="mb-0 fw-bold text-heading mt-1">{{ number_format($count) }}</h5>
+                                        <small class="text-muted text-nowrap">{{ $label }}</small>
                                     </div>
                                 </a>
                             </div>
