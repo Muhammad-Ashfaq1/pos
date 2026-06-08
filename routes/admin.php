@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DemoRequestController;
 use App\Http\Controllers\Admin\TenantController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,10 @@ Route::middleware(['web', 'auth', 'verified', 'active.user', 'central.user', 'su
         Route::post('/shops/{tenant}/status/{action}', [TenantController::class, 'changeStatus'])->name('shops.status.change');
 
         Route::get('/shops/impersonate/{tenant}', [TenantController::class, 'impersonate'])->name('shops.impersonate');
+
+        Route::get('/demo-requests', [DemoRequestController::class, 'index'])->name('demo-requests.index');
+        Route::post('/demo-requests/{demoRequest}/status', [DemoRequestController::class, 'updateStatus'])->name('demo-requests.status');
+        Route::delete('/demo-requests/{demoRequest}', [DemoRequestController::class, 'destroy'])->name('demo-requests.destroy');
     });
 
 Route::middleware(['web', 'auth', 'impersonating'])
