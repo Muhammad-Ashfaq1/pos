@@ -1,82 +1,348 @@
 @extends('layouts.app')
 
-@section('title', 'Tenant Dashboard')
+@section('title', 'Dashboard')
+
+@php($sym = $currencySymbol)
 
 @section('content')
-<div class="row g-4">
-    <div class="col-12">
-        <div class="card bg-primary text-white overflow-hidden">
-            <div class="card-body p-4 p-lg-5">
-                <div class="row align-items-center">
-                    <div class="col-lg-8">
-                        <span class="badge bg-white text-primary mb-3">Tenant Workspace</span>
-                        <h2 class="text-white mb-2">{{ $tenant?->display_name ?? 'Shop Dashboard' }}</h2>
-                        <p class="mb-0 text-white-50">
-                            Your shop is signed in under its isolated tenant context. This is the starting point for POS, services, customers, and vehicles.
+    <div class="row g-4 mb-4">
+        {{-- Welcome / shop hero --}}
+        <div class="col-xl-8">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+                    <div>
+                        <span class="badge bg-label-primary mb-2">{{ ucfirst($application['status']) }} workspace</span>
+                        <h4 class="mb-1">Welcome back to {{ $application['name'] }} 👋</h4>
+                        <p class="mb-3 text-muted">
+                            Here's how your shop is performing. You've booked
+                            <span class="fw-semibold text-heading">{{ $sym }}{{ number_format($cards['total_sales'], 2) }}</span>
+                            across <span class="fw-semibold text-heading">{{ number_format($cards['orders_total']) }}</span> orders.
                         </p>
+                        <a href="{{ route('employee.order.new-order') }}" class="btn btn-sm btn-primary">
+                            <i class="ti tabler-plus me-1"></i> New Order
+                        </a>
+                        <a href="{{ route('employee.order.index') }}" class="btn btn-sm btn-label-secondary">View Orders</a>
                     </div>
-                    <div class="col-lg-4 text-center d-none d-lg-block">
-                        <img src="{{ asset('assets/img/illustrations/girl-with-laptop-light.png') }}" alt="Tenant dashboard" class="img-fluid" style="max-height: 200px;">
+                    <div class="d-none d-lg-block text-center">
+                        <img src="{{ asset('assets/img/illustrations/girl-with-laptop-light.png') }}" alt="Dashboard" class="img-fluid" style="max-height: 150px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Sales this month highlight --}}
+        <div class="col-xl-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="text-muted d-block mb-1">Sales this month</span>
+                            <h4 class="mb-1">{{ $sym }}{{ number_format($cards['sales_this_month'], 2) }}</h4>
+                            @php($up = $cards['sales_month_change'] >= 0)
+                            <span class="badge bg-label-{{ $up ? 'success' : 'danger' }}">
+                                <i class="ti tabler-trending-{{ $up ? 'up' : 'down' }} me-1"></i>{{ $up ? '+' : '' }}{{ $cards['sales_month_change'] }}%
+                            </span>
+                            <small class="text-muted ms-1">vs last month</small>
+                        </div>
+                        <div class="avatar">
+                            <span class="avatar-initial rounded bg-label-primary"><i class="ti tabler-chart-pie"></i></span>
+                        </div>
+                    </div>
+                    <div id="salesMonthChart" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Stat cards --}}
+    <div class="row g-4 mb-4">
+        @php($statCards = [
+            ['label' => 'Total Sales', 'value' => $sym.number_format($cards['total_sales'], 2), 'icon' => 'tabler-currency-dollar', 'color' => 'primary', 'sub' => 'Avg order '.$sym.number_format($cards['avg_order_value'], 2)],
+            ['label' => 'Orders', 'value' => number_format($cards['orders_total']), 'icon' => 'tabler-shopping-cart', 'color' => 'info', 'sub' => $cards['orders_this_month'].' this month'],
+            ['label' => 'Customers', 'value' => number_format($cards['customers_total']), 'icon' => 'tabler-users', 'color' => 'success', 'sub' => $cards['items_sold'].' items sold'],
+            ['label' => 'Products', 'value' => number_format($cards['products_total']), 'icon' => 'tabler-package', 'color' => $cards['low_stock_count'] > 0 ? 'warning' : 'secondary', 'sub' => $cards['low_stock_count'].' low / out of stock'],
+        ])
+        @foreach ($statCards as $c)
+            <div class="col-xl-3 col-sm-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="avatar">
+                                <span class="avatar-initial rounded bg-label-{{ $c['color'] }}"><i class="ti {{ $c['icon'] }}"></i></span>
+                            </div>
+                        </div>
+                        <span class="text-muted d-block">{{ $c['label'] }}</span>
+                        <h4 class="mb-1">{{ $c['value'] }}</h4>
+                        <small class="text-muted">{{ $c['sub'] }}</small>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    {{-- Secondary key figures --}}
+    <div class="row g-4 mb-4">
+        @php($figures = [
+            ['label' => 'Collected', 'value' => $sym.number_format($cards['collected'], 2), 'icon' => 'tabler-cash', 'color' => 'success'],
+            ['label' => 'Outstanding', 'value' => $sym.number_format($cards['outstanding'], 2), 'icon' => 'tabler-clock-dollar', 'color' => 'danger'],
+            ['label' => 'Avg Order Value', 'value' => $sym.number_format($cards['avg_order_value'], 2), 'icon' => 'tabler-receipt', 'color' => 'info'],
+            ['label' => 'Items Sold', 'value' => number_format($cards['items_sold']), 'icon' => 'tabler-box', 'color' => 'primary'],
+        ])
+        @foreach ($figures as $f)
+            <div class="col-xl-3 col-sm-6">
+                <div class="card h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="avatar">
+                            <span class="avatar-initial rounded bg-label-{{ $f['color'] }}"><i class="ti {{ $f['icon'] }}"></i></span>
+                        </div>
+                        <div>
+                            <span class="text-muted d-block">{{ $f['label'] }}</span>
+                            <h5 class="mb-0">{{ $f['value'] }}</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    {{-- Sales overview + orders by status --}}
+    <div class="row g-4 mb-4">
+        <div class="col-xl-8">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">Sales Overview</h5>
+                        <small class="text-muted">Revenue &amp; orders, last 12 months</small>
+                    </div>
+                    <span class="badge bg-label-primary">{{ $sym }}{{ number_format(array_sum($revenueTrend['revenue']), 2) }}</span>
+                </div>
+                <div class="card-body">
+                    <div id="salesOverviewChart"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card h-100">
+                <div class="card-header"><h5 class="mb-0">Orders by Status</h5></div>
+                <div class="card-body">
+                    <div id="ordersStatusChart"></div>
+                    <div class="mt-3">
+                        @foreach ($ordersByStatus as $s)
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted">{{ $s['label'] }}</span>
+                                <span class="fw-semibold">{{ number_format($s['count']) }}</span>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="col-xl-4 col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <span class="text-muted d-block mb-2">Shop</span>
-                <h4 class="mb-0">{{ $tenant?->display_name ?? 'Shop Dashboard' }}</h4>
+    {{-- Payment methods + top products --}}
+    <div class="row g-4 mb-4">
+        <div class="col-xl-4">
+            <div class="card h-100">
+                <div class="card-header"><h5 class="mb-0">Payment Methods</h5></div>
+                <div class="card-body">
+                    @if (count($paymentMethods))
+                        <div id="paymentMethodsChart"></div>
+                        <div class="mt-3">
+                            @foreach ($paymentMethods as $p)
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted"><i class="ti tabler-point-filled me-1"></i>{{ $p['label'] }}</span>
+                                    <span class="fw-semibold">{{ $sym }}{{ number_format($p['amount'], 2) }} <small class="text-muted">({{ $p['orders'] }})</small></span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-muted text-center my-5">No payments recorded yet.</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-8">
+            <div class="card h-100">
+                <div class="card-header"><h5 class="mb-0">Top Selling Products</h5></div>
+                <div class="card-body">
+                    @if (count($topProducts))
+                        <div id="topProductsChart"></div>
+                    @else
+                        <p class="text-muted text-center my-5">No products sold yet.</p>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-xl-4 col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <span class="text-muted d-block mb-2">Approval Status</span>
-                <h4 class="mb-0 text-capitalize">{{ $stats['status'] }}</h4>
+
+    {{-- Category sales + customers by type + revenue breakdown --}}
+    <div class="row g-4 mb-4">
+        <div class="col-xl-6">
+            <div class="card h-100">
+                <div class="card-header"><h5 class="mb-0">Sales by Category</h5></div>
+                <div class="card-body">
+                    @if (count($salesByCategory))
+                        <div id="categorySalesChart"></div>
+                    @else
+                        <p class="text-muted text-center my-5">No category sales yet.</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100">
+                <div class="card-header"><h5 class="mb-0">Customers</h5></div>
+                <div class="card-body">
+                    <div id="customersTypeChart"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100">
+                <div class="card-header"><h5 class="mb-0">Revenue Breakdown</h5></div>
+                <div class="card-body">
+                    <div id="revenueBreakdownChart"></div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-xl-4 col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <span class="text-muted d-block mb-2">Team Members</span>
-                <h4 class="mb-0">{{ $stats['team_members'] }}</h4>
+
+    {{-- Recent orders + low stock --}}
+    <div class="row g-4 mb-4">
+        <div class="col-xl-7">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Orders</h5>
+                    <a href="{{ route('employee.order.index') }}" class="btn btn-sm btn-label-primary">View all</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Customer</th>
+                                <th>Status</th>
+                                <th class="text-end">Total</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($recentOrders as $o)
+                                <tr>
+                                    <td><span class="fw-medium">{{ $o['order_number'] }}</span></td>
+                                    <td>{{ $o['customer'] }}</td>
+                                    <td><span class="badge {{ $o['status_class'] }}">{{ $o['status_label'] }}</span></td>
+                                    <td class="text-end fw-medium">{{ $o['total'] }}</td>
+                                    <td><small class="text-muted text-nowrap">{{ $o['created_at'] }}</small></td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="5" class="text-center text-muted py-5">No orders yet.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-5">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Low Stock Alerts</h5>
+                    <a href="{{ route('tenant.ecommerce.products.index') }}" class="btn btn-sm btn-label-primary">Manage</a>
+                </div>
+                <div class="card-body">
+                    @forelse ($lowStock as $item)
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="avatar avatar-sm">
+                                    <span class="avatar-initial rounded bg-label-{{ $item['is_out'] ? 'danger' : 'warning' }}"><i class="ti tabler-package"></i></span>
+                                </div>
+                                <div>
+                                    <span class="fw-medium d-block">{{ \Illuminate\Support\Str::limit($item['name'], 32) }}</span>
+                                    <small class="text-muted">{{ $item['sku'] ?? '—' }}</small>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-label-{{ $item['is_out'] ? 'danger' : 'warning' }}">{{ $item['current_stock'] }} {{ $item['unit'] }}</span>
+                                <small class="text-muted d-block">reorder @ {{ $item['reorder_level'] }}</small>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center text-muted py-5">
+                            <i class="ti tabler-circle-check icon-lg text-success d-block mb-2"></i>
+                            All products are well stocked.
+                        </div>
+                    @endforelse
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-12">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="mb-3">Workspace Readiness</h5>
-                <p class="text-muted">
-                    Your tenant session is active and isolated. Current onboarding status:
-                    <span class="fw-semibold text-capitalize">{{ $stats['onboarding_status'] }}</span>.
-                </p>
-                <div class="row g-3 mt-1">
-                    <div class="col-md-4">
-                        <div class="rounded bg-label-primary p-3 h-100">
-                            <div class="fw-medium mb-1">Customers & Vehicles</div>
-                            <small class="text-muted">Next step: add tenant-scoped customer and vehicle modules using the new tenant concern.</small>
+
+    {{-- Application overview --}}
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">Application Overview</h5></div>
+                <div class="card-body">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3 col-6">
+                            <span class="text-muted d-block">Shop</span>
+                            <span class="fw-medium">{{ $application['name'] }}</span>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <span class="text-muted d-block">Status</span>
+                            <span class="badge bg-label-success text-capitalize">{{ $application['status'] }}</span>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <span class="text-muted d-block">Onboarding</span>
+                            <span class="fw-medium text-capitalize">{{ str_replace('_', ' ', $application['onboarding']) }}</span>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <span class="text-muted d-block">Team Members</span>
+                            <span class="fw-medium">{{ $application['team_members'] }}</span>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <span class="text-muted d-block">Currency</span>
+                            <span class="fw-medium">{{ $application['currency'] }}</span>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <span class="text-muted d-block">Timezone</span>
+                            <span class="fw-medium">{{ $application['timezone'] }}</span>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <span class="text-muted d-block">Established</span>
+                            <span class="fw-medium">{{ $application['created_at'] ?? '—' }}</span>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="rounded bg-label-success p-3 h-100">
-                            <div class="fw-medium mb-1">POS Readiness</div>
-                            <small class="text-muted">Service catalog, product inventory, and billing are ready to be built on top of this tenant shell.</small>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="rounded bg-label-warning p-3 h-100">
-                            <div class="fw-medium mb-1">Security</div>
-                            <small class="text-muted">Verified, approved, active tenant users are now protected before they can access this workspace.</small>
-                        </div>
+
+                    <h6 class="mb-3">Catalog &amp; Records</h6>
+                    <div class="row g-3">
+                        @foreach ($application['catalog'] as $label => $count)
+                            <div class="col-lg-2 col-md-3 col-4">
+                                <div class="rounded bg-label-secondary p-3 text-center h-100">
+                                    <h5 class="mb-0">{{ number_format($count) }}</h5>
+                                    <small class="text-muted">{{ $label }}</small>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+@endsection
+
+@section('scripts')
+    <script>
+        window.dashboardData = {
+            currencySymbol: @json($currencySymbol),
+            revenueTrend: @json($revenueTrend),
+            ordersByStatus: @json($ordersByStatus),
+            paymentMethods: @json($paymentMethods),
+            topProducts: @json($topProducts),
+            salesByCategory: @json($salesByCategory),
+            customersByType: @json($customersByType),
+            revenueBreakdown: @json($revenueBreakdown),
+        };
+    </script>
+    <script src="{{ asset('assets/js/tenant/dashboard.js') }}"></script>
 @endsection

@@ -317,6 +317,16 @@ The listing endpoint supports tab filters (today/all/pending), free-text + field
 
 ---
 
+## Tenant dashboard
+
+`GET /tenant/dashboard` ([`Tenant\DashboardController`](../app/Http/Controllers/Tenant/DashboardController.php)) renders a data-driven analytics dashboard for shop owners/managers (employees are redirected to their own panel). All figures are tenant-scoped via the `BelongsToTenant` global scope.
+
+- **Aggregation**: [`TenantDashboardService`](../app/Services/TenantDashboardService.php) builds the payload — stat cards (total sales, collected, outstanding, orders, customers, products, low-stock, avg order, items sold), a 12-month revenue/orders trend, orders-by-status, payment-method split, top products, sales-by-category, customers-by-type, a revenue breakdown (net/tax/fees/discounts), recent orders, low-stock alerts, and an application overview (shop status, onboarding, currency, timezone, catalog/record counts).
+- **Charts**: rendered with **ApexCharts** (already bundled in [layouts/app.blade.php](../resources/views/layouts/app.blade.php)) by [public/assets/js/tenant/dashboard.js](../public/assets/js/tenant/dashboard.js), reading the server payload from `window.dashboardData` and theme colours from `window.config.colors`.
+- **View**: [resources/views/tenant/dashboard.blade.php](../resources/views/tenant/dashboard.blade.php) (Vuexy cards + chart containers).
+
+---
+
 ## Super-admin module
 
 Routes live under `/admin/*` (see [routes/admin.php](../routes/admin.php)). Two pages:
