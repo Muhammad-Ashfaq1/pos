@@ -143,6 +143,15 @@
                                     </div>
                                 </div>
 
+                                <div class="mb-3">
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-primary w-100 fw-bold py-2 btn-save-estimate"
+                                        disabled>
+                                        <i class="ti tabler-file-text me-1"></i> Save Estimate
+                                    </button>
+                                </div>
+
                                 <div class="d-flex justify-content-between mt-3">
                                     <div class="text-primary cursor-pointer d-flex flex-column align-items-center"
                                         data-bs-toggle="offcanvas" data-bs-target="#offcanvasDiscount">
@@ -453,6 +462,7 @@
             products: @json(route('employee.order.products')),
             search: @json(route('employee.order.search')),
             save: @json(route('employee.order.save')),
+            show: @json(route('employee.order.show', ['order' => '__ORDER_ID__'])),
             dropdownCustomers: @json(route('tenant.ecommerce.dropdowns.customers')),
             dropdownVehicles: @json(route('tenant.ecommerce.dropdowns.vehicles')),
             dropdownServices: @json(route('tenant.ecommerce.dropdowns.services')),

@@ -132,7 +132,166 @@
                     <span>Balance Due:</span>
                     <strong>{{ $order['balance_due_label'] }}</strong>
                 </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    @if($order['status'] === 'estimate')
+                        <button type="button" class="btn btn-primary btn-lg w-100 fw-bold btn-process-order" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                            <i class="ti tabler-check me-1"></i> Process Order
+                        </button>
+                    @elseif($order['status'] !== 'paid')
+                        <button type="button" class="btn btn-primary btn-lg w-100 fw-bold btn-pay-balance" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                            <i class="ti tabler-coin me-1"></i> Pay Balance
+                        </button>
+                    @endif
+                </div>
+
+                <div class="row g-2 mt-2">
+                    <div class="col-4">
+                        <a href="{{ route('employee.order.print', $order['id']) }}" target="_blank" class="btn btn-outline-secondary w-100 py-2">
+                            <i class="ti tabler-printer"></i><br><small class="fw-bold">Print</small>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a href="{{ route('employee.order.pdf', $order['id']) }}" class="btn btn-outline-secondary w-100 py-2">
+                            <i class="ti tabler-download"></i><br><small class="fw-bold">PDF</small>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <button type="button" class="btn btn-outline-secondary w-100 py-2 btn-share-pdf" data-order-id="{{ $order['id'] }}">
+                            <i class="ti tabler-send"></i><br><small class="fw-bold">Share</small>
+                        </button>
+                    </div>
+                </div>
             </section>
         </div>
     </div>
+
+    <!-- Payment Modal -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-start">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold" id="paymentModalLabel">
+                        {{ $order['status'] === 'estimate' ? 'Process Order' : 'Collect Payment' }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="payment-form" method="POST" action="{{ route('employee.order.pay', $order['id']) }}">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Balance Due</label>
+                            <div class="fs-4 fw-bold text-primary">{{ $order['balance_due_label'] }}</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="payment_method" class="form-label fw-bold">Payment Method <span class="text-danger">*</span></label>
+                            <select id="payment_method" name="payment_method" class="form-select" required>
+                                <option value="cash">Cash</option>
+                                <option value="card">Credit/Debit Card</option>
+                                <option value="check">Check</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="payment_amount" class="form-label fw-bold">Payment Amount <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">{{ \App\Support\Currency::symbol() }}</span>
+                                <input type="number" id="payment_amount" name="payment_amount" class="form-control" 
+                                    step="0.01" min="0.01" max="999999.99" 
+                                    value="{{ round(max($order['total_amount'] - $order['payment_amount'], 0), 2) }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary fw-bold" id="btn-submit-payment">
+                            Submit Payment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
+
+@push('page-script')
+    <script>
+        $(function() {
+            const paymentModal = $('#paymentModal');
+            const paymentForm = $('#payment-form');
+            const submitBtn = $('#btn-submit-payment');
+
+            paymentForm.on('submit', function(e) {
+                e.preventDefault();
+
+                if (submitBtn.prop('disabled')) return;
+
+                submitBtn.prop('disabled', true).text('Processing...');
+
+                $.ajax({
+                    url: paymentForm.attr('action'),
+                    method: 'POST',
+                    data: paymentForm.serialize(),
+                    dataType: 'json'
+                }).done(function(response) {
+                    if (typeof window.appNotify === 'function') {
+                        window.appNotify('success', response.message);
+                    } else if (window.Notiflix && window.Notiflix.Notify) {
+                        window.Notiflix.Notify.success(response.message);
+                    }
+                    paymentModal.modal('hide');
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1000);
+                }).fail(function(xhr) {
+                    const message = xhr.responseJSON && xhr.responseJSON.message
+                        ? xhr.responseJSON.message
+                        : 'An error occurred while processing the payment.';
+                    
+                    if (typeof window.appNotify === 'function') {
+                        window.appNotify('error', message);
+                    } else if (window.Notiflix && window.Notiflix.Notify) {
+                        window.Notiflix.Notify.failure(message);
+                    }
+                    submitBtn.prop('disabled', false).text('Submit Payment');
+                });
+            });
+
+            // Share button handling
+            $('.btn-share-pdf').on('click', function() {
+                const btn = $(this);
+
+                if (btn.prop('disabled')) return;
+
+                const originalHtml = btn.html();
+                btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+
+                $.ajax({
+                    url: '{{ route('employee.order.share', $order['id']) }}',
+                    method: 'POST',
+                    data: { _token: '{{ csrf_token() }}' },
+                    dataType: 'json'
+                }).done(function(response) {
+                    if (typeof window.appNotify === 'function') {
+                        window.appNotify('success', response.message);
+                    } else if (window.Notiflix && window.Notiflix.Notify) {
+                        window.Notiflix.Notify.success(response.message);
+                    }
+                }).fail(function(xhr) {
+                    const message = xhr.responseJSON && xhr.responseJSON.message
+                        ? xhr.responseJSON.message
+                        : 'An error occurred while sharing the document.';
+                    
+                    if (typeof window.appNotify === 'function') {
+                        window.appNotify('error', message);
+                    } else if (window.Notiflix && window.Notiflix.Notify) {
+                        window.Notiflix.Notify.failure(message);
+                    }
+                }).always(function() {
+                    btn.prop('disabled', false).html(originalHtml);
+                });
+            });
+        });
+    </script>
+@endpush

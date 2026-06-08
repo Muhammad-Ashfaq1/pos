@@ -48,5 +48,25 @@ Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.
                     ->middleware('permission:orders.view')
                     ->whereNumber('order')
                     ->name('show');
+
+                Route::post('/{order}/pay', [OrderController::class, 'pay'])
+                    ->middleware('permission:orders.create|pos.bill')
+                    ->whereNumber('order')
+                    ->name('pay');
+
+                Route::get('/{order}/print', [OrderController::class, 'print'])
+                    ->middleware('permission:orders.view')
+                    ->whereNumber('order')
+                    ->name('print');
+
+                Route::get('/{order}/pdf', [OrderController::class, 'pdf'])
+                    ->middleware('permission:orders.view')
+                    ->whereNumber('order')
+                    ->name('pdf');
+
+                Route::post('/{order}/share', [OrderController::class, 'share'])
+                    ->middleware('permission:orders.view')
+                    ->whereNumber('order')
+                    ->name('share');
             });
     });

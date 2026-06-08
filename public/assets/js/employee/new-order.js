@@ -1374,6 +1374,7 @@
         $('.btn-pay .text-warning:first').text(formatMoney(totals.total));
         $('.btn-pay').prop('disabled', !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder);
         $('.btn-pay .small').text(isSavingOrder ? 'Saving...' : 'Pay');
+        $('.btn-save-estimate').prop('disabled', !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder);
         renderCustomerDiscountBanner(totals);
         renderDiscountDrawer();
         refreshOrderDropdown();
@@ -1870,6 +1871,48 @@
         if (isSavingOrder || !validateOrderForSave()) return;
 
         openPaymentScreen();
+    });
+
+    $(document).on('click', '.btn-save-estimate', function () {
+        const saveUrl = (window.catalogRoutes || {}).save;
+        const showUrlTemplate = (window.catalogRoutes || {}).show;
+
+        if (isSavingOrder || !validateOrderForSave()) return;
+
+        if (!saveUrl) {
+            notifyOrder('error', 'Order save route is missing.');
+            return;
+        }
+
+        const payload = currentOrderPayload();
+        if (!payload) return;
+
+        payload.is_estimate = true;
+
+        isSavingOrder = true;
+        updateSummary();
+
+        $.ajax({
+            url: saveUrl,
+            method: 'POST',
+            data: JSON.stringify(payload),
+            contentType: 'application/json',
+        }).done(function (response) {
+            notifyOrder('success', response.message || 'Estimate saved successfully.');
+            if (response.data && response.data.id && showUrlTemplate) {
+                const showUrl = showUrlTemplate.replace('__ORDER_ID__', response.data.id);
+                setTimeout(function () {
+                    window.location.href = showUrl;
+                }, 1000);
+            } else {
+                resetSavedOrder();
+            }
+        }).fail(function (xhr) {
+            notifyOrder('error', orderErrorMessage(xhr));
+        }).always(function () {
+            isSavingOrder = false;
+            updateSummary();
+        });
     });
 
     $(document).on('click', '.payment-back-btn', function () {

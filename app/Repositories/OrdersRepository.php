@@ -37,6 +37,7 @@ class OrdersRepository implements OrderRepositoryInterface
                 'today' => $this->makeListingQuery($filters, 'today', false)->count(),
                 'all' => $this->makeListingQuery($filters, 'all', false)->count(),
                 'pending' => $this->makeListingQuery($filters, 'pending', false)->count(),
+                'estimates' => $this->makeListingQuery($filters, 'estimates', false)->count(),
             ],
             'orders' => $orders->map(fn (Order $order) => $this->transformListingOrder($order))->values(),
         ];
@@ -68,11 +69,13 @@ class OrdersRepository implements OrderRepositoryInterface
                 ->groupBy(fn ($item) => (int) $item['product_id'])
                 ->map(fn (Collection $items) => $items->sum(fn ($item) => (int) $item['quantity']));
 
+            $isEstimate = ! empty($data['is_estimate']);
+
             $products = Product::query()
                 ->with('discount:id,name,code,discount_type,applies_to,value,max_discount_amount,is_active,starts_at,ends_at')
                 ->whereIn('id', $requestedProductIds->all())
                 ->where('is_active', true)
-                ->lockForUpdate()
+                ->when(! $isEstimate, fn ($q) => $q->lockForUpdate())
                 ->get()
                 ->keyBy('id');
 
@@ -88,7 +91,9 @@ class OrdersRepository implements OrderRepositoryInterface
                 ]);
             }
 
-            $this->validateStockAvailability($products, $requestedQuantityByProduct);
+            if (! $isEstimate) {
+                $this->validateStockAvailability($products, $requestedQuantityByProduct);
+            }
 
             $totalQuantity = 0;
             $subtotalAmount = 0.0;
@@ -158,14 +163,25 @@ class OrdersRepository implements OrderRepositoryInterface
             $taxAmount = $tax['amount'];
             $taxBaseAmount = $tax['base'];
             $totalAmount = round(max($subtotalAmount + $serviceFeeAmount - $discountAmount, 0) + $taxAmount, 2);
-            $paymentAmount = round((float) data_get($data, 'payment.amount', 0), 2);
-            $status = match (true) {
-                $paymentAmount >= $totalAmount => Order::STATUS_PAID,
-                $paymentAmount > 0 => Order::STATUS_PARTIALLY_PAID,
-                default => Order::STATUS_PENDING,
-            };
-            $isPaid = $status === Order::STATUS_PAID;
-            $changeAmount = round(max($paymentAmount - $totalAmount, 0), 2);
+
+            if ($isEstimate) {
+                $paymentAmount = 0.0;
+                $paymentMethod = null;
+                $status = Order::STATUS_ESTIMATE;
+                $changeAmount = 0.0;
+                $isPaid = false;
+            } else {
+                $paymentAmount = round((float) data_get($data, 'payment.amount', 0), 2);
+                $paymentMethod = data_get($data, 'payment.method');
+                $status = match (true) {
+                    $paymentAmount >= $totalAmount => Order::STATUS_PAID,
+                    $paymentAmount > 0 => Order::STATUS_PARTIALLY_PAID,
+                    default => Order::STATUS_PENDING,
+                };
+                $isPaid = $status === Order::STATUS_PAID;
+                $changeAmount = round(max($paymentAmount - $totalAmount, 0), 2);
+            }
+
             $discountDetails = [
                 'product_discount_amount' => $productDiscountAmount,
                 'customer_discount_amount' => $customerDiscount['amount'],
@@ -181,7 +197,7 @@ class OrdersRepository implements OrderRepositoryInterface
             ];
 
             $order = Order::query()->create([
-                'order_number' => $this->makeOrderNumber(),
+                'order_number' => $this->makeOrderNumber($isEstimate ? 'EST' : 'ORD'),
                 'customer_id' => $data['customer_id'] ?? null,
                 'vehicle_id' => $data['vehicle_id'] ?? null,
                 'discount_group_id' => $customerDiscount['group']['id'] ?? null,
@@ -194,7 +210,7 @@ class OrdersRepository implements OrderRepositoryInterface
                 'service_fee_details' => $serviceFees['details'],
                 'tax_amount' => $taxAmount,
                 'total_amount' => $totalAmount,
-                'payment_method' => data_get($data, 'payment.method'),
+                'payment_method' => $paymentMethod,
                 'payment_amount' => $paymentAmount,
                 'change_amount' => $changeAmount,
                 'paid_at' => $isPaid ? now() : null,
@@ -204,7 +220,10 @@ class OrdersRepository implements OrderRepositoryInterface
             ]);
 
             $order->items()->createMany($orderItems);
-            $this->deductTrackedStock($products, $requestedQuantityByProduct, $userId);
+
+            if (! $isEstimate) {
+                $this->deductTrackedStock($products, $requestedQuantityByProduct, $userId);
+            }
 
             return $order->load('items');
         });
@@ -467,10 +486,10 @@ class OrdersRepository implements OrderRepositoryInterface
         ];
     }
 
-    private function makeOrderNumber(): string
+    private function makeOrderNumber(string $prefix = 'ORD'): string
     {
         do {
-            $orderNumber = 'ORD-'.now()->format('Ymd-His').'-'.random_int(100, 999);
+            $orderNumber = $prefix.'-'.now()->format('Ymd-His').'-'.random_int(100, 999);
         } while (Order::query()->where('order_number', $orderNumber)->exists());
 
         return $orderNumber;
@@ -571,12 +590,18 @@ class OrdersRepository implements OrderRepositoryInterface
             $query->where('created_at', '<=', Carbon::parse($filters['date_to'])->endOfDay());
         }
 
-        if ($tab === 'today') {
-            $query->whereDate('created_at', now()->toDateString());
-        }
+        if ($tab === 'estimates') {
+            $query->where('status', Order::STATUS_ESTIMATE);
+        } else {
+            $query->where('status', '!=', Order::STATUS_ESTIMATE);
 
-        if ($tab === 'pending') {
-            $query->whereIn('status', [Order::STATUS_PENDING, Order::STATUS_PARTIALLY_PAID]);
+            if ($tab === 'today') {
+                $query->whereDate('created_at', now()->toDateString());
+            }
+
+            if ($tab === 'pending') {
+                $query->whereIn('status', [Order::STATUS_PENDING, Order::STATUS_PARTIALLY_PAID]);
+            }
         }
     }
 
@@ -870,7 +895,101 @@ class OrdersRepository implements OrderRepositoryInterface
             Order::STATUS_PAID => 'success',
             Order::STATUS_PARTIALLY_PAID => 'warning',
             Order::STATUS_PENDING => 'warning',
+            Order::STATUS_ESTIMATE => 'info',
             default => 'secondary',
         };
+    }
+
+    public function addPayment(Order $order, array $paymentData, ?Authenticatable $user = null): array
+    {
+        $userId = $user?->getAuthIdentifier();
+
+        $order = DB::transaction(function () use ($order, $paymentData, $userId): Order {
+            if ($order->status === Order::STATUS_PAID) {
+                throw ValidationException::withMessages([
+                    'payment' => 'This order is already fully paid.',
+                ]);
+            }
+
+            $paymentAmountAdded = round((float) ($paymentData['payment_amount'] ?? 0), 2);
+            $paymentMethod = $paymentData['payment_method'] ?? 'cash';
+
+            if ($paymentAmountAdded <= 0) {
+                throw ValidationException::withMessages([
+                    'payment_amount' => 'Payment amount must be greater than zero.',
+                ]);
+            }
+
+            if ($order->status === Order::STATUS_ESTIMATE) {
+                // Converting Estimate to Order
+                $order->load('items');
+                $productIds = $order->items->pluck('product_id')->filter()->unique()->values();
+                $requestedQuantityByProduct = $order->items
+                    ->groupBy('product_id')
+                    ->map(fn ($items) => $items->sum('quantity'));
+
+                $products = Product::query()
+                    ->whereIn('id', $productIds->all())
+                    ->where('is_active', true)
+                    ->lockForUpdate()
+                    ->get()
+                    ->keyBy('id');
+
+                if ($products->count() !== $productIds->count()) {
+                    throw ValidationException::withMessages([
+                        'payment' => 'One or more items in the estimate are no longer available in the catalog.',
+                    ]);
+                }
+
+                // Validate stock availability
+                $this->validateStockAvailability($products, $requestedQuantityByProduct);
+
+                // Deduct stock
+                $this->deductTrackedStock($products, $requestedQuantityByProduct, $userId);
+
+                // Convert status and numbering
+                $newOrderNumber = $this->makeOrderNumber('ORD');
+                $totalAmount = (float) $order->total_amount;
+                $status = match (true) {
+                    $paymentAmountAdded >= $totalAmount => Order::STATUS_PAID,
+                    default => Order::STATUS_PARTIALLY_PAID,
+                };
+
+                $order->forceFill([
+                    'order_number' => $newOrderNumber,
+                    'status' => $status,
+                    'payment_method' => $paymentMethod,
+                    'payment_amount' => $paymentAmountAdded,
+                    'change_amount' => round(max($paymentAmountAdded - $totalAmount, 0), 2),
+                    'paid_at' => $status === Order::STATUS_PAID ? now() : null,
+                    'updated_by' => $userId,
+                ])->save();
+            } else {
+                // Standard Payment Top-up
+                $newPaymentAmount = round((float) $order->payment_amount + $paymentAmountAdded, 2);
+                $totalAmount = (float) $order->total_amount;
+                $status = match (true) {
+                    $newPaymentAmount >= $totalAmount => Order::STATUS_PAID,
+                    default => Order::STATUS_PARTIALLY_PAID,
+                };
+
+                $order->forceFill([
+                    'status' => $status,
+                    'payment_method' => $paymentMethod,
+                    'payment_amount' => $newPaymentAmount,
+                    'change_amount' => round(max($newPaymentAmount - $totalAmount, 0), 2),
+                    'paid_at' => $status === Order::STATUS_PAID ? now() : null,
+                    'updated_by' => $userId,
+                ])->save();
+            }
+
+            return $order->load('items');
+        });
+
+        return [
+            'success' => true,
+            'message' => 'Payment added successfully. Order status is now '.$this->statusLabel($order->status).'.',
+            'data' => $this->transformOrder($order),
+        ];
     }
 }

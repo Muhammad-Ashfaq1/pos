@@ -245,7 +245,7 @@
   const updateCounts = function (counts) {
     counts = counts || {};
 
-    ['today', 'all', 'pending'].forEach(function (key) {
+    ['today', 'all', 'pending', 'estimates'].forEach(function (key) {
       $('[data-order-count="' + key + '"]').text(counts[key] || 0);
     });
   };

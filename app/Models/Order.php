@@ -17,6 +17,8 @@ class Order extends Model
 
     public const STATUS_PAID = 'paid';
 
+    public const STATUS_ESTIMATE = 'estimate';
+
     protected $fillable = [
         'order_number',
         'customer_id',

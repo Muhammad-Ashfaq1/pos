@@ -54,6 +54,9 @@
                     <button type="button" class="employee-orders-tab" data-order-tab="pending">
                         Pending (<span data-order-count="pending">0</span>)
                     </button>
+                    <button type="button" class="employee-orders-tab" data-order-tab="estimates">
+                        Estimates (<span data-order-count="estimates">0</span>)
+                    </button>
                 </div>
 
                 <div class="employee-orders-list-heading">

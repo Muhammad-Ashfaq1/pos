@@ -18,6 +18,10 @@ class SaveOrderRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        if ($this->boolean('is_estimate')) {
+            $this->offsetUnset('payment');
+        }
+
         $serviceFees = collect($this->input('service_fees', []))
             ->filter(fn ($fee) => is_array($fee))
             ->map(fn (array $fee) => [
@@ -80,9 +84,10 @@ class SaveOrderRequest extends FormRequest
             ],
             'service_fees.*.name' => ['nullable', 'string', 'max:150'],
             'service_fees.*.amount' => ['nullable', 'numeric', 'min:0', 'max:999999.99'],
-            'payment' => ['required', 'array'],
-            'payment.method' => ['required', Rule::in(['cash', 'card', 'check'])],
-            'payment.amount' => ['required', 'numeric', 'min:0'],
+            'is_estimate' => ['nullable', 'boolean'],
+            'payment' => [Rule::requiredIf(! $this->boolean('is_estimate')), 'array'],
+            'payment.method' => [Rule::requiredIf(! $this->boolean('is_estimate')), 'sometimes', 'string', Rule::in(['cash', 'card', 'check'])],
+            'payment.amount' => [Rule::requiredIf(! $this->boolean('is_estimate')), 'sometimes', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'tenant_id' => ['prohibited'],
             'created_by' => ['prohibited'],
