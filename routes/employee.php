@@ -2,8 +2,8 @@
 
 use App\Http\Controllers\Employee\OrderController;
 use App\Http\Controllers\Employee\PanelController;
-use App\Http\Controllers\Employee\ProductController as EmployeeProductController;
 use App\Http\Controllers\SharedDataController;
+use App\Http\Controllers\Tenant\ProductController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.init'])
@@ -74,7 +74,7 @@ Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.
         // ── Employee Product Management ────────────────────────────────────
         Route::prefix('products')
             ->name('products.')
-            ->controller(EmployeeProductController::class)
+            ->controller(ProductController::class)
             ->group(function () {
                 Route::get('/', 'index')
                     ->middleware('permission:product.view|products.view')
