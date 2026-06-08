@@ -109,7 +109,7 @@
     'ordersStatusChart',
     data.ordersByStatus.map(function (s) { return s.label; }),
     data.ordersByStatus.map(function (s) { return s.count; }),
-    [C.success, C.warning, C.secondary],
+    [C.success, C.warning, C.secondary, C.info],
     function (v) { return Math.round(v); },
     'Orders'
   );

@@ -67,6 +67,9 @@ class TenantDashboardService
             ->whereColumn('current_stock', '<=', 'reorder_level')
             ->count();
 
+        $estimatesTotal = Order::query()->where('status', Order::STATUS_ESTIMATE)->count();
+        $estimatesValue = (float) Order::query()->where('status', Order::STATUS_ESTIMATE)->sum('total_amount');
+
         return [
             'total_sales' => round($totalSales, 2),
             'collected' => round($collected, 2),
@@ -80,6 +83,8 @@ class TenantDashboardService
             'products_total' => Product::query()->count(),
             'low_stock_count' => $lowStockCount,
             'items_sold' => (int) OrderItem::query()->whereHas('order', fn ($q) => $q->where('status', '!=', Order::STATUS_ESTIMATE))->sum('quantity'),
+            'estimates_total' => $estimatesTotal,
+            'estimates_value' => round($estimatesValue, 2),
         ];
     }
 
@@ -105,7 +110,6 @@ class TenantDashboardService
     private function ordersByStatus(): array
     {
         $counts = Order::query()
-            ->where('status', '!=', Order::STATUS_ESTIMATE)
             ->selectRaw('status, COUNT(*) as aggregate')
             ->groupBy('status')
             ->pluck('aggregate', 'status');
@@ -114,6 +118,7 @@ class TenantDashboardService
             Order::STATUS_PAID => 'Paid',
             Order::STATUS_PARTIALLY_PAID => 'Partially Paid',
             Order::STATUS_PENDING => 'Pending',
+            Order::STATUS_ESTIMATE => 'Estimate',
         ];
 
         return collect($labels)
@@ -211,12 +216,12 @@ class TenantDashboardService
     private function recentOrders(string $symbol): Collection
     {
         return Order::query()
-            ->where('status', '!=', Order::STATUS_ESTIMATE)
             ->with('customer:id,name')
             ->latest()
             ->limit(8)
             ->get(['id', 'order_number', 'customer_id', 'status', 'total_amount', 'payment_amount', 'created_at'])
             ->map(fn (Order $order) => [
+                'id' => $order->id,
                 'order_number' => $order->order_number,
                 'customer' => $order->customer?->name ?? 'Walk-in',
                 'status' => $order->status,
@@ -285,6 +290,7 @@ class TenantDashboardService
         return match ($status) {
             Order::STATUS_PAID => 'Paid',
             Order::STATUS_PARTIALLY_PAID => 'Partially Paid',
+            Order::STATUS_ESTIMATE => 'Estimate',
             default => 'Pending',
         };
     }
@@ -294,6 +300,7 @@ class TenantDashboardService
         return match ($status) {
             Order::STATUS_PAID => 'bg-label-success',
             Order::STATUS_PARTIALLY_PAID => 'bg-label-warning',
+            Order::STATUS_ESTIMATE => 'bg-label-info',
             default => 'bg-label-secondary',
         };
     }

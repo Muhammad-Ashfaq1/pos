@@ -16,7 +16,8 @@
                         <p class="mb-3 text-muted">
                             Here's how your shop is performing. You've booked
                             <span class="fw-semibold text-heading">{{ $sym }}{{ number_format($cards['total_sales'], 2) }}</span>
-                            across <span class="fw-semibold text-heading">{{ number_format($cards['orders_total']) }}</span> orders.
+                            across <span class="fw-semibold text-heading">{{ number_format($cards['orders_total']) }}</span> orders,
+                            and have <span class="fw-semibold text-heading">{{ number_format($cards['estimates_total'] ?? 0) }}</span> estimates active.
                         </p>
                         <a href="{{ route('employee.order.new-order') }}" class="btn btn-sm btn-primary">
                             <i class="ti tabler-plus me-1"></i> New Order
@@ -55,15 +56,16 @@
     </div>
 
     {{-- Stat cards --}}
-    <div class="row g-4 mb-4">
+    <div class="row g-4 mb-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-5 justify-content-center">
         @php($statCards = [
             ['label' => 'Total Sales', 'value' => $sym.number_format($cards['total_sales'], 2), 'icon' => 'tabler-currency-dollar', 'color' => 'primary', 'sub' => 'Avg order '.$sym.number_format($cards['avg_order_value'], 2)],
             ['label' => 'Orders', 'value' => number_format($cards['orders_total']), 'icon' => 'tabler-shopping-cart', 'color' => 'info', 'sub' => $cards['orders_this_month'].' this month'],
+            ['label' => 'Estimates', 'value' => number_format($cards['estimates_total'] ?? 0), 'icon' => 'tabler-file-analytics', 'color' => 'warning', 'sub' => 'Value: '.$sym.number_format($cards['estimates_value'] ?? 0, 2)],
             ['label' => 'Customers', 'value' => number_format($cards['customers_total']), 'icon' => 'tabler-users', 'color' => 'success', 'sub' => $cards['items_sold'].' items sold'],
             ['label' => 'Products', 'value' => number_format($cards['products_total']), 'icon' => 'tabler-package', 'color' => $cards['low_stock_count'] > 0 ? 'warning' : 'secondary', 'sub' => $cards['low_stock_count'].' low / out of stock'],
         ])
         @foreach ($statCards as $c)
-            <div class="col-xl-3 col-sm-6">
+            <div class="col">
                 <div class="card h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between mb-2">
@@ -73,7 +75,7 @@
                         </div>
                         <span class="text-muted d-block">{{ $c['label'] }}</span>
                         <h4 class="mb-1">{{ $c['value'] }}</h4>
-                        <small class="text-muted">{{ $c['sub'] }}</small>
+                        <small class="text-muted text-nowrap">{{ $c['sub'] }}</small>
                     </div>
                 </div>
             </div>
@@ -229,7 +231,7 @@
                         <tbody>
                             @forelse ($recentOrders as $o)
                                 <tr>
-                                    <td><span class="fw-medium">{{ $o['order_number'] }}</span></td>
+                                    <td><a href="{{ route('employee.order.show', $o['id']) }}" class="fw-medium">{{ $o['order_number'] }}</a></td>
                                     <td>{{ $o['customer'] }}</td>
                                     <td><span class="badge {{ $o['status_class'] }}">{{ $o['status_label'] }}</span></td>
                                     <td class="text-end fw-medium">{{ $o['total'] }}</td>

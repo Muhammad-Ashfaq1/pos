@@ -774,6 +774,8 @@ class OrdersRepository implements OrderRepositoryInterface
             'status' => $status,
             'status_label' => $this->statusLabel($status),
             'status_class' => $this->listingStatusClass($status),
+            'customer_id' => $order->customer_id,
+            'customer_email' => $order->customer?->email,
             'customer_name' => trim((string) ($order->customer?->name ?? '')) ?: 'Walk-In Customer',
             'payment_method_label' => filled($order->payment_method)
                 ? str((string) $order->payment_method)->replace('_', ' ')->title()->toString()

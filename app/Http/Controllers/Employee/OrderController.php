@@ -120,13 +120,17 @@ class OrderController extends Controller
 
     public function share(Order $order, Request $request): JsonResponse
     {
+        $data = $request->validate([
+            'email' => ['required', 'email', 'max:255'],
+        ]);
+
+        $email = $data['email'];
         $customer = $order->customer;
 
-        if (! $customer || blank($customer->email)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'This customer does not have a registered email address.',
-            ], 422);
+        if ($customer) {
+            if ($customer->email !== $email) {
+                $customer->update(['email' => $email]);
+            }
         }
 
         $details = $this->orderRepository->details($order);
@@ -139,11 +143,11 @@ class OrderController extends Controller
             ? "estimate-{$order->order_number}.pdf"
             : "invoice-{$order->order_number}.pdf";
 
-        Mail::to($customer->email)->send(new ShareOrderMail($order, $pdf->output(), $filename));
+        Mail::to($email)->send(new ShareOrderMail($order, $pdf->output(), $filename));
 
         return response()->json([
             'success' => true,
-            'message' => "Document shared successfully with {$customer->email}.",
+            'message' => "Document shared successfully with {$email}.",
         ]);
     }
 }

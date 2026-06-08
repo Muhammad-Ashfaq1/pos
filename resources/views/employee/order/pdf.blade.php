@@ -124,6 +124,13 @@
         <table class="header">
             <tr>
                 <td>
+                    <!-- Logo / Brand Header -->
+                    <div style="margin-bottom: 12px;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#312e81" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px; display: inline-block;">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                        <span style="font-size: 22px; font-weight: 800; color: #312e81; vertical-align: middle; letter-spacing: 0.5px; display: inline-block;">OIL<span style="color: #6366f1;">POS</span></span>
+                    </div>
                     <div class="title">{{ $order->status === 'estimate' ? 'Estimate' : 'Invoice' }}</div>
                     <div class="meta-info">
                         <strong>Number:</strong> {{ $order->order_number }}<br>
@@ -140,19 +147,19 @@
                 </td>
                 <td class="text-right shop-info">
                     <div style="font-size: 16px; font-weight: bold; color: #312e81; margin-bottom: 5px;">
-                        {{ $order->tenant->shop_name ?? $order->tenant->name ?? 'Our POS Shop' }}
+                        {{ $order->tenant->shop_name ?? $order->tenant->business_name ?? $order->tenant->name ?? 'Our POS Shop' }}
                     </div>
                     @if(!empty($order->tenant->address))
                         {{ $order->tenant->address }}<br>
                         @if(!empty($order->tenant->city))
-                            {{ $order->tenant->city }}, {{ $order->tenant->state ?? '' }}<br>
+                            {{ $order->tenant->city }}, {{ $order->tenant->state ?? '' }} {{ $order->tenant->country ?? '' }}<br>
                         @endif
                     @endif
-                    @if(!empty($order->tenant->business_phone))
-                        <strong>Phone:</strong> {{ $order->tenant->business_phone }}<br>
+                    @if(!empty($order->tenant->business_phone ?? $order->tenant->phone))
+                        <strong>Phone:</strong> {{ $order->tenant->business_phone ?? $order->tenant->phone }}<br>
                     @endif
-                    @if(!empty($order->tenant->business_email))
-                        <strong>Email:</strong> {{ $order->tenant->business_email }}
+                    @if(!empty($order->tenant->business_email ?? $order->tenant->email))
+                        <strong>Email:</strong> {{ $order->tenant->business_email ?? $order->tenant->email }}
                     @endif
                 </td>
             </tr>

@@ -157,7 +157,7 @@
                         </a>
                     </div>
                     <div class="col-4">
-                        <button type="button" class="btn btn-outline-secondary w-100 py-2 btn-share-pdf" data-order-id="{{ $order['id'] }}">
+                        <button type="button" class="btn btn-outline-secondary w-100 py-2 btn-share-pdf" data-bs-toggle="modal" data-bs-target="#shareModal">
                             <i class="ti tabler-send"></i><br><small class="fw-bold">Share</small>
                         </button>
                     </div>
@@ -213,6 +213,62 @@
             </div>
         </div>
     </div>
+
+    <!-- Share PDF Modal -->
+    <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-start">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold" id="shareModalLabel">
+                        Share {{ $order['status'] === 'estimate' ? 'Estimate' : 'Invoice' }} via Email
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="share-form" method="POST" action="{{ route('employee.order.share', $order['id']) }}">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Customer</label>
+                            <div class="text-heading fw-medium">{{ $order['customer_name'] }}</div>
+                        </div>
+
+                        <div class="mb-3">
+                            @if(!empty($order['customer_id']))
+                                @if(!empty($order['customer_email']))
+                                    <div class="alert alert-info py-2 px-3 mb-2 d-flex align-items-center" role="alert">
+                                        <i class="ti tabler-info-circle me-2 fs-5"></i>
+                                        <span>Customer has a saved email address. You can send it directly or update their email.</span>
+                                    </div>
+                                @else
+                                    <div class="alert alert-warning py-2 px-3 mb-2 d-flex align-items-center" role="alert">
+                                        <i class="ti tabler-alert-triangle me-2 fs-5"></i>
+                                        <span>Customer has no registered email. Entering one will save it to their profile.</span>
+                                    </div>
+                                @endif
+                            @else
+                                <div class="alert alert-secondary py-2 px-3 mb-2 d-flex align-items-center" role="alert">
+                                    <i class="ti tabler-info-circle me-2 fs-5"></i>
+                                    <span>Walk-in customer. Enter email address below.</span>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="share_email" class="form-label fw-bold">Recipient Email <span class="text-danger">*</span></label>
+                            <input type="email" id="share_email" name="email" class="form-control" 
+                                value="{{ $order['customer_email'] ?? '' }}" required placeholder="name@example.com">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary fw-bold" id="btn-submit-share">
+                            Send Email
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('page-script')
@@ -258,19 +314,22 @@
                 });
             });
 
-            // Share button handling
-            $('.btn-share-pdf').on('click', function() {
-                const btn = $(this);
+            // Share Form submission
+            const shareModal = $('#shareModal');
+            const shareForm = $('#share-form');
+            const shareSubmitBtn = $('#btn-submit-share');
 
-                if (btn.prop('disabled')) return;
+            shareForm.on('submit', function(e) {
+                e.preventDefault();
 
-                const originalHtml = btn.html();
-                btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+                if (shareSubmitBtn.prop('disabled')) return;
+
+                shareSubmitBtn.prop('disabled', true).text('Sending...');
 
                 $.ajax({
-                    url: '{{ route('employee.order.share', $order['id']) }}',
+                    url: shareForm.attr('action'),
                     method: 'POST',
-                    data: { _token: '{{ csrf_token() }}' },
+                    data: shareForm.serialize(),
                     dataType: 'json'
                 }).done(function(response) {
                     if (typeof window.appNotify === 'function') {
@@ -278,18 +337,21 @@
                     } else if (window.Notiflix && window.Notiflix.Notify) {
                         window.Notiflix.Notify.success(response.message);
                     }
+                    shareModal.modal('hide');
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1200);
                 }).fail(function(xhr) {
                     const message = xhr.responseJSON && xhr.responseJSON.message
                         ? xhr.responseJSON.message
-                        : 'An error occurred while sharing the document.';
+                        : 'An error occurred while sending the email.';
                     
                     if (typeof window.appNotify === 'function') {
                         window.appNotify('error', message);
                     } else if (window.Notiflix && window.Notiflix.Notify) {
                         window.Notiflix.Notify.failure(message);
                     }
-                }).always(function() {
-                    btn.prop('disabled', false).html(originalHtml);
+                    shareSubmitBtn.prop('disabled', false).text('Send Email');
                 });
             });
         });

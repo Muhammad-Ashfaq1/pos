@@ -276,13 +276,20 @@ foreach ($PRODUCTS as $p) {
 
     $cx = 300;
     switch ($p['shape']) {
-        case 'oil_bottle': oilBottle($im, $cx, $p['accent'], $p['spec'], $FONT_BOLD); break;
-        case 'fluid_bottle': fluidBottle($im, $cx, $p['accent'], $p['spec'], $FONT_BOLD); break;
-        case 'filter_cylinder': filterCylinder($im, $cx, $p['accent'], $FONT_BOLD); break;
-        case 'filter_panel': filterPanel($im, $cx, $p['accent'], $p['spec'], $FONT_BOLD); break;
-        case 'brake_disc': brakeDisc($im, $cx, $p['accent'], $FONT_BOLD); break;
-        case 'battery': battery($im, $cx, $p['accent'], $FONT_BOLD); break;
-        case 'tyre': tyre($im, $cx, $FONT_BOLD, $p['spec']); break;
+        case 'oil_bottle': oilBottle($im, $cx, $p['accent'], $p['spec'], $FONT_BOLD);
+            break;
+        case 'fluid_bottle': fluidBottle($im, $cx, $p['accent'], $p['spec'], $FONT_BOLD);
+            break;
+        case 'filter_cylinder': filterCylinder($im, $cx, $p['accent'], $FONT_BOLD);
+            break;
+        case 'filter_panel': filterPanel($im, $cx, $p['accent'], $p['spec'], $FONT_BOLD);
+            break;
+        case 'brake_disc': brakeDisc($im, $cx, $p['accent'], $FONT_BOLD);
+            break;
+        case 'battery': battery($im, $cx, $p['accent'], $FONT_BOLD);
+            break;
+        case 'tyre': tyre($im, $cx, $FONT_BOLD, $p['spec']);
+            break;
     }
 
     // text band
@@ -299,4 +306,4 @@ foreach ($PRODUCTS as $p) {
     echo "generated {$p['file']}.jpg\n";
 }
 
-echo "Done: ".count($PRODUCTS)." images in {$OUT}\n";
+echo 'Done: '.count($PRODUCTS)." images in {$OUT}\n";
