@@ -49,15 +49,16 @@ class TenantDashboardService
 
     private function cards(): array
     {
-        $totalSales = (float) Order::query()->sum('total_amount');
-        $collected = (float) Order::query()->sum('payment_amount');
-        $ordersTotal = Order::query()->count();
+        $totalSales = (float) Order::query()->where('status', '!=', Order::STATUS_ESTIMATE)->sum('total_amount');
+        $collected = (float) Order::query()->where('status', '!=', Order::STATUS_ESTIMATE)->sum('payment_amount');
+        $ordersTotal = Order::query()->where('status', '!=', Order::STATUS_ESTIMATE)->count();
 
         $monthStart = Carbon::now()->startOfMonth();
         $prevMonthStart = Carbon::now()->subMonthNoOverflow()->startOfMonth();
 
-        $salesThisMonth = (float) Order::query()->where('created_at', '>=', $monthStart)->sum('total_amount');
+        $salesThisMonth = (float) Order::query()->where('status', '!=', Order::STATUS_ESTIMATE)->where('created_at', '>=', $monthStart)->sum('total_amount');
         $salesPrevMonth = (float) Order::query()
+            ->where('status', '!=', Order::STATUS_ESTIMATE)
             ->whereBetween('created_at', [$prevMonthStart, $monthStart])
             ->sum('total_amount');
 
@@ -71,14 +72,14 @@ class TenantDashboardService
             'collected' => round($collected, 2),
             'outstanding' => round(max(0, $totalSales - $collected), 2),
             'orders_total' => $ordersTotal,
-            'orders_this_month' => Order::query()->where('created_at', '>=', $monthStart)->count(),
+            'orders_this_month' => Order::query()->where('status', '!=', Order::STATUS_ESTIMATE)->where('created_at', '>=', $monthStart)->count(),
             'sales_this_month' => round($salesThisMonth, 2),
             'sales_month_change' => $this->percentChange($salesThisMonth, $salesPrevMonth),
             'avg_order_value' => round($ordersTotal > 0 ? $totalSales / $ordersTotal : 0, 2),
             'customers_total' => Customer::query()->count(),
             'products_total' => Product::query()->count(),
             'low_stock_count' => $lowStockCount,
-            'items_sold' => (int) OrderItem::query()->sum('quantity'),
+            'items_sold' => (int) OrderItem::query()->whereHas('order', fn ($q) => $q->where('status', '!=', Order::STATUS_ESTIMATE))->sum('quantity'),
         ];
     }
 
@@ -88,6 +89,7 @@ class TenantDashboardService
             ->map(fn (int $i) => Carbon::now()->startOfMonth()->subMonthsNoOverflow(11 - $i));
 
         $orders = Order::query()
+            ->where('status', '!=', Order::STATUS_ESTIMATE)
             ->where('created_at', '>=', $months->first())
             ->get(['total_amount', 'created_at']);
 
@@ -103,6 +105,7 @@ class TenantDashboardService
     private function ordersByStatus(): array
     {
         $counts = Order::query()
+            ->where('status', '!=', Order::STATUS_ESTIMATE)
             ->selectRaw('status, COUNT(*) as aggregate')
             ->groupBy('status')
             ->pluck('aggregate', 'status');
@@ -125,6 +128,7 @@ class TenantDashboardService
     private function paymentMethods(): array
     {
         return Order::query()
+            ->where('status', '!=', Order::STATUS_ESTIMATE)
             ->whereNotNull('payment_method')
             ->selectRaw('payment_method, COUNT(*) as orders, SUM(payment_amount) as amount')
             ->groupBy('payment_method')
@@ -141,6 +145,7 @@ class TenantDashboardService
     private function topProducts(): array
     {
         return OrderItem::query()
+            ->whereHas('order', fn ($q) => $q->where('status', '!=', Order::STATUS_ESTIMATE))
             ->selectRaw('product_name, SUM(quantity) as qty, SUM(line_total) as revenue')
             ->groupBy('product_name')
             ->orderByDesc('revenue')
@@ -157,6 +162,7 @@ class TenantDashboardService
     private function salesByCategory(): array
     {
         return OrderItem::query()
+            ->whereHas('order', fn ($q) => $q->where('status', '!=', Order::STATUS_ESTIMATE))
             ->join('products', 'order_items.product_id', '=', 'products.id')
             ->join('categories', 'products.category_id', '=', 'categories.id')
             ->selectRaw('categories.name as name, SUM(order_items.line_total) as revenue')
@@ -190,6 +196,7 @@ class TenantDashboardService
     private function revenueBreakdown(): array
     {
         $row = Order::query()
+            ->where('status', '!=', Order::STATUS_ESTIMATE)
             ->selectRaw('SUM(subtotal_amount) as subtotal, SUM(discount_amount) as discount, SUM(tax_amount) as tax, SUM(service_fee_amount) as fees')
             ->first();
 
@@ -204,6 +211,7 @@ class TenantDashboardService
     private function recentOrders(string $symbol): Collection
     {
         return Order::query()
+            ->where('status', '!=', Order::STATUS_ESTIMATE)
             ->with('customer:id,name')
             ->latest()
             ->limit(8)
@@ -257,7 +265,8 @@ class TenantDashboardService
                 'Discount Groups' => DiscountGroup::query()->count(),
                 'Customers' => Customer::query()->count(),
                 'Vehicles' => Vehicle::query()->count(),
-                'Orders' => Order::query()->count(),
+                'Orders' => Order::query()->where('status', '!=', Order::STATUS_ESTIMATE)->count(),
+                'Estimates' => Order::query()->where('status', Order::STATUS_ESTIMATE)->count(),
             ],
         ];
     }
