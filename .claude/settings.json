@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "statusMessage": "Checking for destructive DB commands...",
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); if printf '%s' \"$cmd\" | grep -Eq '(artisan|sail)[^&|;]*(migrate:(fresh|refresh|reset|rollback)|db:wipe)'; then printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Blocked: destructive database command (migrate:fresh/refresh/reset/rollback or db:wipe). These drop or roll back data and are prohibited in this repo to protect data. Use additive migrations only.\"}}'; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
