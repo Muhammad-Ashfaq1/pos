@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\Image;
 use App\Models\Product;
+use App\Models\ProductType;
 use App\Models\Service;
 use App\Models\ServiceProduct;
 use App\Models\SubCategory;
@@ -60,6 +61,18 @@ class TenantCatalogSeeder extends Seeder
      * stored paths are recorded as `images` rows (see seedProductImage()).
      */
     private const IMAGE_SOURCE_DIR = 'database/data/images/products';
+
+    /**
+     * Default product types, keyed by the slug referenced in PRODUCTS_BY_CATEGORY['type'].
+     */
+    private const PRODUCT_TYPES = [
+        Product::TYPE_INVENTORY => 'Inventory Item',
+        Product::TYPE_OIL => 'Oil',
+        Product::TYPE_FILTER => 'Filter',
+        Product::TYPE_PART => 'Part',
+        Product::TYPE_ADDITIVE => 'Additive',
+        Product::TYPE_OTHER => 'Other',
+    ];
 
     private const SERVICES_BY_CATEGORY = [
         'Engine Oils' => [
@@ -123,6 +136,7 @@ class TenantCatalogSeeder extends Seeder
                 ->value('id');
 
             $this->seedCategoriesAndSubs($tenant, $adminId);
+            $this->seedProductTypes($tenant, $adminId);
             $this->seedProducts($tenant, $adminId);
             $this->seedServices($tenant, $adminId);
             $this->seedCustomersAndVehicles($tenant, $adminId);
@@ -179,6 +193,42 @@ class TenantCatalogSeeder extends Seeder
         }
     }
 
+    private function seedProductTypes(Tenant $tenant, ?int $adminId): void
+    {
+        $sortOrder = 1;
+
+        foreach (self::PRODUCT_TYPES as $slug => $name) {
+            $exists = ProductType::withoutTenantScope()
+                ->where('tenant_id', $tenant->id)
+                ->where('slug', $slug)
+                ->exists();
+
+            if ($exists) {
+                continue;
+            }
+
+            $productType = new ProductType;
+            $productType->tenant_id = $tenant->id;
+            $productType->name = $name;
+            $productType->slug = $slug;
+            $productType->code = strtoupper(Str::slug($slug, '_'));
+            $productType->description = "{$name} product type";
+            $productType->sort_order = $sortOrder++;
+            $productType->is_active = true;
+            $productType->created_by = $adminId;
+            $productType->updated_by = $adminId;
+            $productType->save();
+        }
+    }
+
+    private function productTypeId(Tenant $tenant, string $slug): ?int
+    {
+        return ProductType::withoutTenantScope()
+            ->where('tenant_id', $tenant->id)
+            ->where('slug', $slug)
+            ->value('id');
+    }
+
     private function seedProducts(Tenant $tenant, ?int $adminId): void
     {
         foreach (self::PRODUCTS_BY_CATEGORY as $catName => $products) {
@@ -210,6 +260,7 @@ class TenantCatalogSeeder extends Seeder
                     $product->tenant_id = $tenant->id;
                     $product->category_id = $category->id;
                     $product->sub_category_id = $sub?->id;
+                    $product->product_type_id = $this->productTypeId($tenant, $p['type']);
                     $product->product_type = $p['type'];
                     $product->name = $p['name'];
                     $product->slug = Str::slug($p['name']);

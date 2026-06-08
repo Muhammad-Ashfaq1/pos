@@ -55,6 +55,19 @@ Nested taxonomy under a category. Used by products only — services live direct
 - **Model**: [`SubCategory`](../app/Models/SubCategory.php) — fields: `category_id`, `name`, `slug`, `code`, `description`, `sort_order`, `is_active`. `belongsTo Category`, `hasMany Product`.
 - **Views**: [resources/views/tenant/ecommerce/sub-categories/](../resources/views/tenant/ecommerce/sub-categories/)
 
+### Product types
+
+CRUD-managed product types (Oil, Filter, Part, …). Replaces the former hardcoded `Product::typeOptions()` constants; products now reference a type via `products.product_type_id`. Follows the same modal + DataTable AJAX pattern as Categories.
+
+- **Routes** — under `/tenant/ecommerce/product-types`: `index`, `listing`, `save`, `destroy`, gated on `permission:product-type.{view,create,update,delete}`.
+- **Controller**: [`Tenant\ProductTypeController`](../app/Http/Controllers/Tenant/ProductTypeController.php)
+- **Validation**: [`SaveProductTypeRequest`](../app/Http/Requests/Tenant/ProductTypes/SaveProductTypeRequest.php)
+- **Repository**: [`ProductTypesRepository`](../app/Repositories/ProductTypesRepository.php) implementing [`ProductTypeRepositoryInterface`](../app/Repositories/Interface/ProductTypeRepositoryInterface.php)
+- **Policy**: [`ProductTypePolicy`](../app/Policies/ProductTypePolicy.php)
+- **Model**: [`ProductType`](../app/Models/ProductType.php) — fields: `name`, `slug`, `code`, `description`, `sort_order`, `is_active`. `hasMany Product`.
+- **Views**: [resources/views/tenant/ecommerce/product-types/](../resources/views/tenant/ecommerce/product-types/) + [public/assets/js/tenant/e-com/product-types.js](../public/assets/js/tenant/e-com/product-types.js)
+- **Notes**: a type in use by ≥1 product cannot be deleted. The product form selects a type via `product_type_id`; the repository keeps the legacy `products.product_type` string in sync with the selected type's slug so the POS catalog feeds and dropdowns that still read it keep working.
+
 ### Products
 
 Sellable inventory items. Used as line items on orders and as components inside services.
@@ -69,7 +82,7 @@ Sellable inventory items. Used as line items on orders and as components inside 
 - **Validation**: [`SaveProductRequest`](../app/Http/Requests/Tenant/Catalog/SaveProductRequest.php)
 - **Repository**: [`ProductsRepository`](../app/Repositories/ProductsRepository.php)
 - **Model**: [`Product`](../app/Models/Product.php) — fields:
-  - **Identification**: `category_id`, `sub_category_id`, `product_type`, `name`, `slug`, `sku`, `barcode`, `brand`, `unit`.
+  - **Identification**: `category_id`, `sub_category_id`, `product_type_id` (FK to the managed [Product types](#product-types); legacy `product_type` slug string kept in sync), `name`, `slug`, `sku`, `barcode`, `brand`, `unit`.
   - **Pricing**: `cost_price`, `sale_price` (decimal:2), `tax_percentage` (decimal:2).
   - **Inventory**: `opening_stock`, `current_stock`, `minimum_stock_level`, `reorder_level` (decimal:3), `track_inventory` (bool).
   - **Lifecycle**: `is_active`, `created_by`, `updated_by`.
@@ -326,6 +339,7 @@ The status transitions and approval flow are described in detail in [auth-and-on
 |--------|--------------|------------|------------|-------------------|
 | Categories | `/tenant/ecommerce/categories` | `Tenant\CategoryController` | `CategoriesRepository` | `category.*` |
 | Sub-categories | `/tenant/ecommerce/sub-categories` | `Tenant\SubCategoryController` | `SubCategoriesRepository` | `subcategory.*` |
+| Product types | `/tenant/ecommerce/product-types` | `Tenant\ProductTypeController` | `ProductTypesRepository` | `product-type.*` |
 | Products | `/tenant/ecommerce/products` | `Tenant\ProductController` | `ProductsRepository` | `product.*` / `products.*` |
 | Services | `/tenant/ecommerce/services` | `Tenant\ServiceController` | `ServicesRepository` | `service.*` / `services.*` |
 | Discounts | `/tenant/ecommerce/discounts` | `Tenant\DiscountController` | `DiscountsRepository` | `discount.*` / `discounts.*` |

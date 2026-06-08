@@ -69,7 +69,7 @@ The boolean predicates (`isSuperAdmin()`, `isTenantAdmin()`, `isEmployee()`) che
 
 ## Permissions
 
-58 permissions are seeded by [`PermissionSeeder`](../database/seeders/PermissionSeeder.php). They follow two naming conventions:
+62 permissions are seeded by [`PermissionSeeder`](../database/seeders/PermissionSeeder.php). They follow two naming conventions:
 
 - **Granular**: `category.view`, `category.create`, `category.update`, `category.delete`.
 - **Aggregate**: `products.view`, `products.manage` (added later for screens that group create/update/delete).
@@ -86,6 +86,7 @@ Routes use either form — many use `permission:product.update|products.manage` 
 | **Roles** | `roles.view`, `roles.manage` |
 | **Categories** | `category.view`, `category.create`, `category.update`, `category.delete` |
 | **Sub-categories** | `subcategory.view`, `subcategory.create`, `subcategory.update`, `subcategory.delete` |
+| **Product types** | `product-type.view`, `product-type.create`, `product-type.update`, `product-type.delete` |
 | **Products** | `product.view`, `product.create`, `product.update`, `product.delete`, `product.adjust_stock`, `products.view`, `products.manage` |
 | **Services** | `service.view`, `service.create`, `service.update`, `service.delete`, `services.view`, `services.manage` |
 | **Inventory** | `inventory.view`, `inventory.manage` |
@@ -130,6 +131,8 @@ Seeded by [`RolePermissionSeeder`](../database/seeders/RolePermissionSeeder.php)
 | category.create / update / delete | ✅ | ✅ |   |   |   |   |   |   |
 | subcategory.view | ✅ | ✅ | ✅ |   |   |   |   |   |
 | subcategory.create / update / delete | ✅ | ✅ |   |   |   |   |   |   |
+| product-type.view | ✅ | ✅ | ✅ |   |   |   |   |   |
+| product-type.create / update / delete | ✅ | ✅ |   |   |   |   |   |   |
 | product.view / products.view | ✅ | ✅ | ✅ |   |   | ✅ | ✅ |   |
 | product.create / update / delete / products.manage | ✅ | ✅ |   |   |   |   |   |   |
 | product.adjust_stock | ✅ | ✅ |   |   |   | ✅ |   |   |

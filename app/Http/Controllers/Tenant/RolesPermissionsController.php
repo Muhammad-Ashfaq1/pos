@@ -27,6 +27,7 @@ class RolesPermissionsController extends Controller
         'Dashboard' => ['dashboard.view'],
         'Categories' => ['category.view', 'category.create', 'category.update', 'category.delete'],
         'Sub Categories' => ['subcategory.view', 'subcategory.create', 'subcategory.update', 'subcategory.delete'],
+        'Product Types' => ['product-type.view', 'product-type.create', 'product-type.update', 'product-type.delete'],
         'Products' => ['product.view', 'product.create', 'product.update', 'product.delete', 'product.adjust_stock', 'products.view', 'products.manage'],
         'Services' => ['service.view', 'service.create', 'service.update', 'service.delete', 'services.view', 'services.manage'],
         'Inventory' => ['inventory.view', 'inventory.manage'],

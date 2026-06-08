@@ -46,6 +46,8 @@ This is the canonical schema reference. Files cited live under [database/migrati
 2026_05_15_160000  add_discount_id_to_customers_table
 2026_05_15_170000  add_service_fee_details_to_orders_table
 2026_05_18_090000  add_service_id_to_orders_table
+2026_05_20_090000  create_product_types_table                  (CRUD-managed product types)
+2026_05_20_090100  add_product_type_id_to_products_table       (FK + backfill from legacy string)
 ```
 
 ## Entity relationship overview
@@ -172,6 +174,12 @@ Source: [2026_04_23_000000_create_sub_categories_table.php](../database/migratio
 
 Same shape as `categories` plus `category_id` FK (cascade). Unique on `(tenant_id, name)`, `(tenant_id, slug)`, `(tenant_id, code)`. Indexes on `(tenant_id, category_id)` etc.
 
+### `product_types`
+
+Source: [2026_05_20_090000_create_product_types_table.php](../database/migrations/2026_05_20_090000_create_product_types_table.php).
+
+CRUD-managed product types (Oil, Filter, Part, …) replacing the former hardcoded `Product::typeOptions()` constants. Same shape as `categories` (`name`, `slug`, `code`, `description`, `sort_order`, `is_active`, `created_by`/`updated_by`). Unique on `(tenant_id, name)`, `(tenant_id, slug)`, `(tenant_id, code)`; indexes on `(tenant_id, is_active)` and `(tenant_id, sort_order)`. Model: [`ProductType`](../app/Models/ProductType.php) (`BelongsToTenant`, `hasMany Product`). Migration [add_product_type_id_to_products_table](../database/migrations/2026_05_20_090100_add_product_type_id_to_products_table.php) seeds the six defaults per existing tenant and backfills `products.product_type_id` from the legacy `products.product_type` string.
+
 ### `products`
 
 Source: [2026_04_23_010000_create_products_table.php](../database/migrations/2026_04_23_010000_create_products_table.php).
@@ -182,8 +190,9 @@ Source: [2026_04_23_010000_create_products_table.php](../database/migrations/202
 | `tenant_id` | bigint, FK → tenants(id), cascade | |
 | `category_id` | bigint, nullable, FK → categories(id), nullOnDelete | |
 | `sub_category_id` | bigint, nullable, FK → sub_categories(id), nullOnDelete | |
+| `product_type_id` | bigint, nullable, FK → product_types(id), nullOnDelete | authoritative type reference (added 2026_05_20) |
 | `discount_id` | bigint, nullable, FK → discounts(id), nullOnDelete | per-product discount (added 2026_05_15) |
-| `product_type` | string(50) | one of `inventory`, `oil`, `filter`, `part`, `additive`, `other` |
+| `product_type` | string(50) | legacy slug string, kept as a denormalised mirror of `product_type_id`'s slug for POS feeds/dropdowns |
 | `name` | string(150) | unique per tenant |
 | `slug` | string(170), nullable | unique per tenant |
 | `sku` | string(80), nullable | unique per tenant |
@@ -439,7 +448,7 @@ The `Image` model registers a `deleting` boot hook that removes the underlying f
 | [`ApprovedShopSeeder`](../database/seeders/ApprovedShopSeeder.php) | Creates a demo tenant in `approved` status with a tenant admin. |
 | [`TenantEmployeeSeeder`](../database/seeders/TenantEmployeeSeeder.php) | Adds employees of various roles to the demo tenant. |
 | [`TenantRoleUserSeeder`](../database/seeders/TenantRoleUserSeeder.php) | Wires team-scoped Spatie roles to seeded users. |
-| [`TenantCatalogSeeder`](../database/seeders/TenantCatalogSeeder.php) | Populates demo categories, sub-categories, products, services, discounts, customers, and vehicles. Also pushes a primary image per product from [`database/data/images/products/`](../database/data/images/) onto the `public` disk and records the `images` row (idempotent — see [`seedProductImage()`](../database/seeders/TenantCatalogSeeder.php)). Run `php artisan storage:link` to serve them. |
+| [`TenantCatalogSeeder`](../database/seeders/TenantCatalogSeeder.php) | Populates demo categories, sub-categories, product types, products, services, discounts, customers, and vehicles. Also pushes a primary image per product from [`database/data/images/products/`](../database/data/images/) onto the `public` disk and records the `images` row (idempotent — see [`seedProductImage()`](../database/seeders/TenantCatalogSeeder.php)). Run `php artisan storage:link` to serve them. |
 
 Run all of them with:
 

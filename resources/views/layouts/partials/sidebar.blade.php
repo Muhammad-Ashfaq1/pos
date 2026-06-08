@@ -41,6 +41,14 @@
                         'icon' => 'tabler-category-plus',
                     ]
                     : null,
+                $user?->can('product-type.view')
+                    ? [
+                        'label' => 'Product Types',
+                        'route' => 'tenant.ecommerce.product-types.index',
+                        'pattern' => 'tenant.ecommerce.product-types.*',
+                        'icon' => 'tabler-tags',
+                    ]
+                    : null,
                 $user?->can('product.view') || $user?->can('products.view') || $user?->can('products.manage')
                     ? [
                         'label' => 'Products',

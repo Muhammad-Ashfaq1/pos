@@ -429,7 +429,7 @@
     ensureSelectOption($formCategory, product.category_id, product.category_name);
     ensureSelectOption($formSubCategory, product.sub_category_id, product.sub_category_name);
     ensureSelectOption($formDiscount, product.discount_id, product.discount_label || product.discount_name);
-    $('#product_type').val(String(product.product_type)).trigger('change');
+    $('#product_type').val(String(product.product_type_id || '')).trigger('change');
     $('#product_name').val(product.name);
     $('#product_sku').val(product.sku);
     $('#product_barcode').val(product.barcode);
@@ -477,7 +477,7 @@
         'data-category-name="' + escapeHtml(row.category_name || '') + '" ' +
         'data-sub-category-id="' + (row.sub_category_id || '') + '" ' +
         'data-sub-category-name="' + escapeHtml(row.sub_category_name || '') + '" ' +
-        'data-product-type="' + escapeHtml(row.product_type) + '" ' +
+        'data-product-type-id="' + (row.product_type_id || '') + '" ' +
         'data-name="' + escapeHtml(row.name) + '" ' +
         'data-sku="' + escapeHtml(row.sku || '') + '" ' +
         'data-barcode="' + escapeHtml(row.barcode || '') + '" ' +
@@ -520,7 +520,7 @@
     return $form.validate({
       ignore: [],
       rules: {
-        product_type: {
+        product_type_id: {
           required: true
         },
         name: {
@@ -633,7 +633,7 @@
           d.status = $('#product_status').val();
           d.category_id = $filterCategory.val();
           d.sub_category_id = $filterSubCategory.val();
-          d.product_type = $('#product_type_filter').val();
+          d.product_type_id = $('#product_type_filter').val();
           d.track_inventory = $('#product_track_inventory').val();
           d.sort = $('#product_sort').val();
         }

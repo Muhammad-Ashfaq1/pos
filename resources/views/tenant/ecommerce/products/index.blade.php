@@ -194,7 +194,7 @@
                             <div class="col-md-4">
                                 <label for="product_type" class="form-label">Product Type <span class="text-danger">*</span></label>
                                 <div class="position-relative">
-                                    <select id="product_type" name="product_type" class="form-select select2" data-placeholder="Select a product type" data-dropdown-parent="#productModal">
+                                    <select id="product_type" name="product_type_id" class="form-select select2" data-placeholder="Select a product type" data-dropdown-parent="#productModal">
                                         @foreach($productTypes as $type => $label)
                                             <option value="{{ $type }}">{{ $label }}</option>
                                         @endforeach

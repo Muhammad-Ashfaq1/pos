@@ -52,7 +52,13 @@ class ProductController extends Controller
                     fn ($query) => $query->where('tenant_id', app(TenantContext::class)->id())
                 ),
             ],
-            'product_type' => ['nullable', Rule::in(array_keys(Product::typeOptions()))],
+            'product_type_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('product_types', 'id')->where(
+                    fn ($query) => $query->where('tenant_id', app(TenantContext::class)->id())
+                ),
+            ],
             'track_inventory' => ['nullable', Rule::in(['1', '0'])],
             'sort' => ['nullable', Rule::in(['latest', 'name', 'price_low_high', 'stock_low_high'])],
             'columns' => ['nullable', 'array'],

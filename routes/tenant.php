@@ -8,6 +8,7 @@ use App\Http\Controllers\Tenant\DiscountController;
 use App\Http\Controllers\Tenant\DropdownController;
 use App\Http\Controllers\Tenant\ImageController;
 use App\Http\Controllers\Tenant\ProductController;
+use App\Http\Controllers\Tenant\ProductTypeController;
 use App\Http\Controllers\Tenant\RolesPermissionsController;
 use App\Http\Controllers\Tenant\ServiceController;
 use App\Http\Controllers\Tenant\ShopSettingsController;
@@ -87,6 +88,24 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                             ->name('save');
                         Route::delete('/{subCategory}', 'destroy')
                             ->middleware('permission:subcategory.delete')
+                            ->name('destroy');
+                    });
+
+                Route::prefix('product-types')
+                    ->name('product-types.')
+                    ->controller(ProductTypeController::class)
+                    ->group(function () {
+                        Route::get('/', 'index')
+                            ->middleware('permission:product-type.view')
+                            ->name('index');
+                        Route::get('/listing', 'listing')
+                            ->middleware('permission:product-type.view')
+                            ->name('listing');
+                        Route::post('/save', 'save')
+                            ->middleware('permission:product-type.create|product-type.update')
+                            ->name('save');
+                        Route::delete('/{productType}', 'destroy')
+                            ->middleware('permission:product-type.delete')
                             ->name('destroy');
                     });
 
