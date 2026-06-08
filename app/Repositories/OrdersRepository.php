@@ -49,6 +49,8 @@ class OrdersRepository implements OrderRepositoryInterface
             'customer:id,name,phone,email,customer_type',
             'vehicle:id,plate_number,registration_number,make,model,year',
             'items' => fn ($query) => $query->orderBy('id'),
+            'payments' => fn ($query) => $query->orderBy('id'),
+            'payments.creator:id,name',
         ]);
 
         return $this->transformDetailedOrder($order);
@@ -220,6 +222,15 @@ class OrdersRepository implements OrderRepositoryInterface
             ]);
 
             $order->items()->createMany($orderItems);
+
+            if (! $isEstimate && $paymentAmount > 0) {
+                $order->payments()->create([
+                    'tenant_id' => $order->tenant_id,
+                    'amount' => $paymentAmount,
+                    'payment_method' => $paymentMethod,
+                    'created_by' => $userId,
+                ]);
+            }
 
             if (! $isEstimate) {
                 $this->deductTrackedStock($products, $requestedQuantityByProduct, $userId);
@@ -813,6 +824,15 @@ class OrdersRepository implements OrderRepositoryInterface
                     'tax_detail_label' => $item->product_name.' (x'.number_format((float) $item->quantity, 3).')',
                 ])
                 ->values(),
+            'payment_history' => $order->payments->map(fn ($payment) => [
+                'id' => $payment->id,
+                'amount' => (float) $payment->amount,
+                'amount_label' => $this->moneyLabel((float) $payment->amount),
+                'payment_method' => $payment->payment_method,
+                'payment_method_label' => str((string) $payment->payment_method)->replace('_', ' ')->title()->toString(),
+                'created_at_label' => $payment->created_at?->format('M j, Y h:i A'),
+                'collector_name' => $payment->creator?->name ?? 'System',
+            ])->values()->all(),
         ];
     }
 
@@ -985,7 +1005,12 @@ class OrdersRepository implements OrderRepositoryInterface
                     'paid_at' => $status === Order::STATUS_PAID ? now() : null,
                     'updated_by' => $userId,
                 ])->save();
-            }
+            $order->payments()->create([
+                'tenant_id' => $order->tenant_id,
+                'amount' => $paymentAmountAdded,
+                'payment_method' => $paymentMethod,
+                'created_by' => $userId,
+            ]);
 
             return $order->load('items');
         });
