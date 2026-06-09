@@ -38,7 +38,8 @@ class CustomerPortalCreditTest extends TestCase
 
     private function makeCustomer(Tenant $tenant, array $overrides = []): Customer
     {
-        return Customer::withoutTenantScope()->create(array_merge([
+        $customer = new Customer;
+        $customer->forceFill(array_merge([
             'tenant_id' => $tenant->id,
             'customer_type' => Customer::TYPE_REGISTERED,
             'name' => 'Jane Doe',
@@ -49,6 +50,9 @@ class CustomerPortalCreditTest extends TestCase
             'email_verified_at' => now(),
             'credit_balance' => 0,
         ], $overrides));
+        $customer->save();
+
+        return $customer;
     }
 
     public function test_credit_service_earns_redeems_and_records_ledger(): void
@@ -111,7 +115,7 @@ class CustomerPortalCreditTest extends TestCase
     {
         $tenant = $this->makeTenant('shop-a');
         app(TenantContext::class)->initialize($tenant);
-        $customer = $this->makeCustomer($tenant, ['credit_balance' => 25]);
+        $customer = $this->makeCustomer($tenant);
         app(CreditService::class)->earn($customer, 25.0, null, 'Seed');
 
         $token = $customer->createToken('test')->plainTextToken;

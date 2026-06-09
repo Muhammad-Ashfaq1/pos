@@ -210,6 +210,10 @@ Route-model binding (`Route::get('/{product}', ...)`) is also tenant-scoped thro
 
 Even when `tenant_id` resolves correctly, [`EnsureTenantIsApproved`](../app/Http/Middleware/EnsureTenantIsApproved.php) blocks the request if `Tenant::status` is not `Approved`. The `TenantStatus` enum drives the message shown to the user — see [app/Enums/TenantStatus.php](../app/Enums/TenantStatus.php).
 
+## Customer API layer (Sanctum)
+
+Alongside the session-based staff/admin web app, a **stateless JSON API** under [routes/api.php](../routes/api.php) (`/api/v1/customer/*`) serves the customer portal and the future Flutter app from one codebase. It uses **Laravel Sanctum** Bearer tokens against a separate `customers` provider/guard ([config/auth.php](../config/auth.php)); `Customer` is now `Authenticatable` with `HasApiTokens`. Because a customer email can exist at multiple shops, login is tenant-scoped (the request carries the shop slug) and the [`InitializeTenancyForCustomer`](../app/Http/Middleware/InitializeTenancyForCustomer.php) middleware (`customer.tenant.init`) initializes tenancy from the authenticated customer so `BelongsToTenant` applies. Full detail: [customer-portal.md](customer-portal.md).
+
 ## Authorization model in two layers
 
 1. **Route middleware** — `permission:product.view|products.view` declares the permission required to even reach the controller. See examples in [routes/tenant.php](../routes/tenant.php).

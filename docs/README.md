@@ -17,6 +17,7 @@ A multi-tenant Point of Sale + auto-service shop platform built on Laravel 13. E
 | [auth-and-onboarding.md](auth-and-onboarding.md) | Public landing, shop registration, email verification, super-admin approval, login gating, password reset, impersonation, logout. End-to-end flow. |
 | [rbac.md](rbac.md) | Roles (8), permissions (58), per-tenant team scoping via Spatie, role/permission management UI, role seeding, gate behaviour for super admin. |
 | [modules.md](modules.md) | Every tenant module: categories, sub-categories, products, services (with product BOM), customers, vehicles, discounts, discount groups, product images, shop settings, and the employee POS panel — including order checkout. |
+| [customer-portal.md](customer-portal.md) | Customer-facing portal: Sanctum token API (reused by web + Flutter), tenant-scoped login/registration/invites, and the store-credit loyalty wallet (earn on paid visit, redeem at payment). |
 | [database.md](database.md) | Migration timeline, full schema per table, foreign keys, soft deletes, polymorphic relations, default tenant settings. |
 
 ## Key concepts at a glance

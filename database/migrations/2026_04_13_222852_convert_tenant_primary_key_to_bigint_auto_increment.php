@@ -95,6 +95,46 @@ return new class extends Migration
         });
     }
 
+    /**
+     * SQLite-safe equivalent of the MySQL primary-key conversion. Only valid on a
+     * fresh/empty tenants table (i.e. the test database) — there is no data to migrate.
+     */
+    private function upSqlite(): void
+    {
+        Schema::withoutForeignKeyConstraints(function (): void {
+            Schema::dropIfExists('tenants');
+
+            Schema::create('tenants', function (Blueprint $table): void {
+                $table->id();
+                $table->string('shop_name');
+                $table->string('business_type')->nullable();
+                $table->string('owner_name');
+                $table->string('email')->unique();
+                $table->string('phone')->nullable();
+                $table->string('website_url')->nullable();
+                $table->text('address')->nullable();
+                $table->string('city')->nullable();
+                $table->string('state')->nullable();
+                $table->string('country')->nullable();
+                $table->string('status')->default('pending');
+                $table->unsignedBigInteger('approved_by')->nullable();
+                $table->timestamp('approved_at')->nullable();
+                $table->text('rejected_reason')->nullable();
+                $table->string('onboarding_status')->default('not_started');
+                $table->timestamps();
+                $table->softDeletes();
+            });
+
+            Schema::table('users', function (Blueprint $table): void {
+                $table->unsignedBigInteger('tenant_id')->nullable()->change();
+            });
+
+            Schema::table('domains', function (Blueprint $table): void {
+                $table->unsignedBigInteger('tenant_id')->nullable()->change();
+            });
+        });
+    }
+
     public function down(): void
     {
         // Intentionally left irreversible because converting auto-increment numeric tenant IDs
