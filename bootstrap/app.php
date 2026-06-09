@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsureCentralUser;
 use App\Http\Middleware\EnsureEmployeePanelAccess;
 use App\Http\Middleware\EnsureImpersonatingSession;
 use App\Http\Middleware\EnsureTenantIsApproved;
+use App\Http\Middleware\InitializeTenancyForCustomer;
 use App\Http\Middleware\InitializeTenancyFromAuthenticatedUser;
 use App\Http\Middleware\IsSuperAdmin;
 use Illuminate\Foundation\Application;
@@ -19,6 +20,7 @@ use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function (): void {
@@ -26,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware('web')->group(base_path('routes/admin.php'));
             Route::middleware('web')->group(base_path('routes/employee.php'));
             Route::middleware('web')->group(base_path('routes/tenant.php'));
+            Route::middleware('web')->group(base_path('routes/customer.php'));
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
@@ -40,6 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'super_admin' => IsSuperAdmin::class,
             'tenant.init' => InitializeTenancyFromAuthenticatedUser::class,
             'tenant.approved' => EnsureTenantIsApproved::class,
+            'customer.tenant.init' => InitializeTenancyForCustomer::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

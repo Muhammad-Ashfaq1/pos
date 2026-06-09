@@ -5,7 +5,11 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\Customers\SaveCustomerRequest;
 use App\Models\Customer;
+use App\Models\CustomerCreditTransaction;
 use App\Repositories\Interface\CustomerRepositoryInterface;
+use App\Services\CreditService;
+use App\Services\CustomerPortalService;
+use App\Support\Currency;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -90,6 +94,72 @@ class CustomerController extends Controller
 
         return response()->json([
             'message' => $result['message'],
+        ]);
+    }
+
+    /**
+     * Enable portal access and email the customer an activation link.
+     */
+    public function invitePortal(Customer $customer, CustomerPortalService $portal): JsonResponse
+    {
+        $this->authorize('update', $customer);
+
+        $portal->invite($customer);
+
+        return response()->json([
+            'message' => "Portal invitation sent to {$customer->email}.",
+        ]);
+    }
+
+    /**
+     * Manually adjust a customer's store-credit balance (positive or negative).
+     */
+    public function adjustCredit(Customer $customer, Request $request, CreditService $credits): JsonResponse
+    {
+        $this->authorize('update', $customer);
+
+        $data = $request->validate([
+            'amount' => ['required', 'numeric', 'not_in:0'],
+            'reason' => ['required', 'string', 'max:255'],
+        ]);
+
+        $credits->adjust($customer, (float) $data['amount'], $data['reason'], $request->user()?->getAuthIdentifier());
+
+        return response()->json([
+            'message' => 'Store credit adjusted.',
+            'data' => [
+                'credit_balance' => (float) $customer->fresh()->credit_balance,
+                'credit_balance_label' => Currency::format((float) $customer->fresh()->credit_balance),
+            ],
+        ]);
+    }
+
+    /**
+     * Credit ledger for a customer (staff view).
+     */
+    public function creditHistory(Customer $customer): JsonResponse
+    {
+        $this->authorize('view', $customer);
+
+        $transactions = CustomerCreditTransaction::query()
+            ->where('customer_id', $customer->getKey())
+            ->with('order:id,order_number')
+            ->latest()
+            ->limit(100)
+            ->get()
+            ->map(fn (CustomerCreditTransaction $t) => [
+                'type' => $t->type,
+                'amount' => (float) $t->amount,
+                'amount_label' => ((float) $t->amount >= 0 ? '+' : '-').Currency::format(abs((float) $t->amount)),
+                'balance_after_label' => Currency::format((float) $t->balance_after),
+                'description' => $t->description,
+                'order_number' => $t->order?->order_number,
+                'created_at_label' => $t->created_at?->format('M j, Y h:i A'),
+            ]);
+
+        return response()->json([
+            'data' => $transactions,
+            'balance_label' => Currency::format((float) $customer->credit_balance),
         ]);
     }
 }

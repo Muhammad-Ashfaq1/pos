@@ -37,6 +37,8 @@ class Order extends Model
         'total_amount',
         'payment_method',
         'payment_amount',
+        'credit_applied',
+        'credit_earned',
         'change_amount',
         'paid_at',
         'notes',
@@ -61,6 +63,8 @@ class Order extends Model
             'tax_amount' => 'decimal:2',
             'total_amount' => 'decimal:2',
             'payment_amount' => 'decimal:2',
+            'credit_applied' => 'decimal:2',
+            'credit_earned' => 'decimal:2',
             'change_amount' => 'decimal:2',
             'paid_at' => 'datetime',
         ];

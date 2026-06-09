@@ -13,6 +13,15 @@ return new class extends Migration
             return;
         }
 
+        // SQLite (test runner) cannot execute the MySQL-specific PK surgery below.
+        // On a fresh test database the tenants table is empty at this point, so we
+        // simply rebuild it with a bigint auto-increment id and retype the FKs.
+        if (DB::getDriverName() === 'sqlite') {
+            $this->upSqlite();
+
+            return;
+        }
+
         Schema::table('users', function (Blueprint $table) {
             if (Schema::hasColumn('users', 'tenant_id_int')) {
                 return;

@@ -83,9 +83,10 @@ class OrderController extends Controller
     {
         $data = $request->validate([
             'payment_method' => ['required', 'string', 'in:cash,card,check'],
-            'payment_amount' => ['required', 'numeric', 'min:0.01'],
+            'payment_amount' => ['required', 'numeric', 'min:0'],
+            'credits_applied' => ['nullable', 'numeric', 'min:0'],
         ], [
-            'payment_amount.min' => 'Payment amount must be greater than zero.',
+            'payment_amount.min' => 'Payment amount cannot be negative.',
         ]);
 
         $result = $this->orderRepository->addPayment($order, $data, $request->user());

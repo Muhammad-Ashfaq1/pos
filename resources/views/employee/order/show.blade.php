@@ -124,9 +124,20 @@
                         <span>Total:</span>
                         <strong>{{ $order['total_amount_label'] }}</strong>
                     </div>
+                    @if (($order['credit_applied'] ?? 0) > 0)
+                        <div class="employee-order-details-payment-line employee-order-details-discount-row">
+                            <span>Store Credit Used:</span>
+                            <strong>-{{ $order['credit_applied_label'] }}</strong>
+                        </div>
+                    @endif
                 </div>
 
-
+                @if (($order['credit_earned'] ?? 0) > 0)
+                    <div class="alert alert-success d-flex align-items-center gap-2 py-2 px-3 mt-3 mb-0">
+                        <i class="ti tabler-coin fs-5"></i>
+                        <span class="small fw-semibold">Customer earned {{ $order['credit_earned_label'] }} store credit on this order.</span>
+                    </div>
+                @endif
 
                 <div class="employee-order-details-balance">
                     <span>Balance Due:</span>
@@ -192,6 +203,28 @@
                             <div class="fs-4 fw-bold text-primary">{{ $order['balance_due_label'] }}</div>
                         </div>
 
+                        @if (($order['customer_credit_balance'] ?? 0) > 0)
+                            <div class="mb-3 p-3 rounded-3" style="background:#eef2ff;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label for="credits_applied" class="form-label fw-bold mb-0">
+                                        <i class="ti tabler-wallet me-1 text-primary"></i>Use Store Credit
+                                    </label>
+                                    <span class="small text-muted">Available: <strong class="text-primary">{{ $order['customer_credit_balance_label'] }}</strong></span>
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text">{{ \App\Support\Currency::symbol() }}</span>
+                                    <input type="number" id="credits_applied" name="credits_applied" class="form-control"
+                                        step="0.01" min="0"
+                                        max="{{ $order['customer_credit_balance'] }}"
+                                        data-balance="{{ $order['customer_credit_balance'] }}"
+                                        data-due="{{ round(max($order['total_amount'] - $order['payment_amount'], 0), 2) }}"
+                                        value="0">
+                                    <button type="button" class="btn btn-outline-primary" id="apply-max-credit">Max</button>
+                                </div>
+                                <small class="text-muted">Credit is applied first; the remaining balance is collected below.</small>
+                            </div>
+                        @endif
+
                         <div class="mb-3">
                             <label for="payment_method" class="form-label fw-bold">Payment Method <span class="text-danger">*</span></label>
                             <select id="payment_method" name="payment_method" class="form-select" required>
@@ -205,8 +238,8 @@
                             <label for="payment_amount" class="form-label fw-bold">Payment Amount <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text">{{ \App\Support\Currency::symbol() }}</span>
-                                <input type="number" id="payment_amount" name="payment_amount" class="form-control" 
-                                    step="0.01" min="0.01" max="999999.99" 
+                                <input type="number" id="payment_amount" name="payment_amount" class="form-control"
+                                    step="0.01" min="0" max="999999.99"
                                     value="{{ round(max($order['total_amount'] - $order['payment_amount'], 0), 2) }}" required>
                             </div>
                         </div>
@@ -310,12 +343,14 @@
                                                     'cash' => 'bg-label-success',
                                                     'card' => 'bg-label-info',
                                                     'check' => 'bg-label-warning',
+                                                    'store_credit' => 'bg-label-primary',
                                                     default => 'bg-label-secondary'
                                                 };
                                                 $icon = match($methodLower) {
                                                     'cash' => 'tabler-coin',
                                                     'card' => 'tabler-credit-card',
                                                     'check' => 'tabler-notes',
+                                                    'store_credit' => 'tabler-wallet',
                                                     default => 'tabler-wallet'
                                                 };
                                             @endphp
@@ -352,6 +387,27 @@
             const paymentModal = $('#paymentModal');
             const paymentForm = $('#payment-form');
             const submitBtn = $('#btn-submit-payment');
+
+            // Store-credit redemption: credit applies first, cash covers the rest.
+            const creditInput = $('#credits_applied');
+            const paymentAmountInput = $('#payment_amount');
+            if (creditInput.length) {
+                const balance = parseFloat(creditInput.data('balance')) || 0;
+                const due = parseFloat(creditInput.data('due')) || 0;
+
+                const recalcCash = function() {
+                    let credit = parseFloat(creditInput.val()) || 0;
+                    credit = Math.max(0, Math.min(credit, balance, due));
+                    creditInput.val(credit ? credit.toFixed(2) : 0);
+                    paymentAmountInput.val(Math.max(due - credit, 0).toFixed(2));
+                };
+
+                creditInput.on('input change', recalcCash);
+                $('#apply-max-credit').on('click', function() {
+                    creditInput.val(Math.min(balance, due).toFixed(2));
+                    recalcCash();
+                });
+            }
 
             paymentForm.on('submit', function(e) {
                 e.preventDefault();
