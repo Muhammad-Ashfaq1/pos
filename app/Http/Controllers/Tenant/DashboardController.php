@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Services\TenantDashboardService;
+use App\Support\DashboardDateRange;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -19,8 +20,14 @@ class DashboardController
             return redirect()->route('employee.dashboard');
         }
 
+        $range = DashboardDateRange::fromRequest(
+            $request->query('period'),
+            $request->query('start'),
+            $request->query('end'),
+        );
+
         $tenant = tenant();
-        $data = $this->dashboard->metrics($tenant);
+        $data = $this->dashboard->metrics($tenant, $range);
 
         return view('tenant.dashboard', array_merge($data, ['tenant' => $tenant]));
     }

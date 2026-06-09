@@ -5,6 +5,50 @@
 @php($sym = $currencySymbol)
 
 @section('content')
+    {{-- Date-range filter --}}
+    @php($periods = [
+        'today' => ['Today', 'tabler-calendar'],
+        'yesterday' => ['Yesterday', 'tabler-calendar-minus'],
+        'week' => ['Last 7 Days', 'tabler-calendar-week'],
+        'month' => ['This Month', 'tabler-calendar-month'],
+        'year' => ['This Year', 'tabler-calendar-stats'],
+    ])
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <h5 class="mb-0">Dashboard</h5>
+            <small class="text-muted">Showing: <span class="fw-semibold text-heading">{{ $range['label'] }}</span></small>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-label-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                <i class="ti tabler-filter me-1"></i>{{ $range['label'] }}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end p-2" style="min-width: 16rem;">
+                @foreach ($periods as $key => [$label, $icon])
+                    <li>
+                        <a class="dropdown-item rounded @if($range['period'] === $key) active @endif"
+                           href="{{ route('tenant.dashboard', ['period' => $key]) }}">
+                            <i class="ti {{ $icon }} me-2"></i>{{ $label }}
+                        </a>
+                    </li>
+                @endforeach
+                <li><hr class="dropdown-divider"></li>
+                <li class="px-2">
+                    <form method="GET" action="{{ route('tenant.dashboard') }}">
+                        <input type="hidden" name="period" value="custom">
+                        <label class="form-label small mb-1 fw-semibold"><i class="ti tabler-calendar-event me-1"></i>Custom range</label>
+                        <div class="mb-2">
+                            <input type="date" name="start" class="form-control form-control-sm" value="{{ $range['period'] === 'custom' ? $range['start'] : '' }}" required>
+                        </div>
+                        <div class="mb-2">
+                            <input type="date" name="end" class="form-control form-control-sm" value="{{ $range['period'] === 'custom' ? $range['end'] : '' }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-primary w-100">Apply</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+
     <div class="row g-4 mb-4">
         {{-- Welcome / shop hero --}}
         <div class="col-xl-8">
@@ -37,13 +81,13 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <span class="text-muted d-block mb-1">Sales this month</span>
+                            <span class="text-muted d-block mb-1">Sales ({{ $range['label'] }})</span>
                             <h4 class="mb-1">{{ $sym }}{{ number_format($cards['sales_this_month'], 2) }}</h4>
                             @php($up = $cards['sales_month_change'] >= 0)
                             <span class="badge bg-label-{{ $up ? 'success' : 'danger' }}">
                                 <i class="ti tabler-trending-{{ $up ? 'up' : 'down' }} me-1"></i>{{ $up ? '+' : '' }}{{ $cards['sales_month_change'] }}%
                             </span>
-                            <small class="text-muted ms-1">vs last month</small>
+                            <small class="text-muted ms-1">vs previous period</small>
                         </div>
                         <div class="avatar">
                             <span class="avatar-initial rounded bg-label-primary"><i class="ti tabler-chart-pie"></i></span>
@@ -114,7 +158,7 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div>
                         <h5 class="mb-0">Sales Overview</h5>
-                        <small class="text-muted">Revenue &amp; orders, last 12 months</small>
+                        <small class="text-muted">Revenue &amp; orders · {{ $range['label'] }}</small>
                     </div>
                     <span class="badge bg-label-primary">{{ $sym }}{{ number_format(array_sum($revenueTrend['revenue']), 2) }}</span>
                 </div>

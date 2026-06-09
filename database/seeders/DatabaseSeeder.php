@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             TenantRoleUserSeeder::class,
             TenantCatalogSeeder::class,
             CustomerPortalDemoSeeder::class,
+            DashboardDemoSeeder::class,
         ]);
     }
 }
