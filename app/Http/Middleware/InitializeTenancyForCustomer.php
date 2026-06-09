@@ -21,10 +21,14 @@ class InitializeTenancyForCustomer
 
     public function handle(Request $request, Closure $next): Response
     {
-        $customer = $request->user();
+        // Resolves under both the Sanctum token guard (Flutter) and the
+        // customer session guard (web portal).
+        $customer = $request->user() ?? auth('customer')->user();
 
         if (! $customer instanceof Customer || empty($customer->tenant_id)) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            return $request->expectsJson()
+                ? response()->json(['message' => 'Unauthenticated.'], 401)
+                : redirect()->route('login');
         }
 
         $tenant = $customer->tenant()->first();

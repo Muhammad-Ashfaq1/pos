@@ -43,9 +43,13 @@ Defined in [routes/api.php](../routes/api.php); controllers in `app/Http/Control
 
 Guest routes are throttled (`throttle:10,1`).
 
-## Web portal (thin shell over the API)
+## Web portal (session, server-rendered)
 
-[routes/customer.php](../routes/customer.php) serves Blade pages under `/portal` ([layouts/customer-portal.blade.php](../resources/views/layouts/customer-portal.blade.php), views in `resources/views/customer/`). [public/assets/js/customer/portal.js](../public/assets/js/customer/portal.js) stores the token in `localStorage`, attaches the `Authorization` header, and renders the dashboard, service history, wallet ledger, and profile — the same calls the Flutter app will make.
+The web portal uses the **same `/login` form as staff** — there is no separate customer login page and no shop code on the web. [`AuthController::loginSubmit`](../app/Http/Controllers/Auth/AuthController.php) tries the staff `web` guard first, then falls back to the `customer` session guard (`portal_enabled` only); a successful customer login redirects to `/portal`. Logout and the `/` root route are customer-guard aware.
+
+[routes/customer.php](../routes/customer.php) serves server-rendered Blade pages under `/portal` (views in `resources/views/customer/`, layout [customer-portal.blade.php](../resources/views/layouts/customer-portal.blade.php)), protected by `auth:customer` + `customer.tenant.init`. Pages reuse the same repositories/services as everything else (`OrdersRepository::details()`, `CustomerCreditTransaction`), so there is no parallel data layer. The token API is **only** for Flutter; the web portal does not use it.
+
+> The `shop` slug is still required by the **token API** (`/login`, `/register`, `/reset-password`) because those are stateless and cross-origin. The web portal never needs it.
 
 ## Staff side (tenant portal)
 

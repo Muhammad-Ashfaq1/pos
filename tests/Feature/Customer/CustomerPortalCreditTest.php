@@ -131,6 +131,31 @@ class CustomerPortalCreditTest extends TestCase
             ->assertJsonCount(1, 'data');
     }
 
+    public function test_customer_signs_in_through_the_shared_login_and_reaches_the_portal(): void
+    {
+        $tenant = $this->makeTenant('shop-a');
+        app(TenantContext::class)->initialize($tenant);
+        $this->makeCustomer($tenant, ['name' => 'Jane Doe']);
+
+        // Same /login form as staff — no shop code, just email + password.
+        $this->post(route('login.submit'), [
+            'email' => 'jane@example.com',
+            'password' => 'secret123',
+        ])->assertRedirect(route('customer.dashboard'));
+
+        $this->assertTrue(auth('customer')->check());
+
+        // Server-rendered portal pages load and show the customer's data.
+        $this->get(route('customer.dashboard'))->assertOk()->assertSee('Jane Doe');
+        $this->get(route('customer.credits'))->assertOk();
+        $this->get(route('customer.orders'))->assertOk();
+    }
+
+    public function test_guest_is_redirected_from_portal_to_login(): void
+    {
+        $this->get(route('customer.dashboard'))->assertRedirect(route('login'));
+    }
+
     public function test_register_creates_portal_customer_and_blocks_duplicates(): void
     {
         $this->makeTenant('shop-a');

@@ -5,22 +5,28 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Customer Portal (web shell)
+| Customer Portal (web)
 |--------------------------------------------------------------------------
 |
-| Thin Blade pages that call the /api/v1/customer/* endpoints via axios with a
-| Sanctum Bearer token. The same API backs the future Flutter app. These pages
-| hold no server-side auth — the client redirects based on the stored token.
+| Customers sign in through the same /login form as staff (the customer guard
+| is tried as a fallback there) and land here. These pages are server-rendered
+| and session-authenticated, exactly like the rest of the app. The Flutter app
+| uses the token API in routes/api.php instead.
 |
 */
 
 Route::prefix('portal')->name('customer.')->controller(PortalController::class)->group(function (): void {
-    Route::get('/login', 'login')->name('login');
+    // Public set-password page (invite / forgot-password links land here).
     Route::get('/reset', 'reset')->name('reset');
+    Route::post('/reset', 'resetSubmit')->name('reset.submit');
 
-    // Deep-linkable app sections all render the same shell; JS shows the pane.
-    Route::get('/', 'app')->name('dashboard');
-    Route::get('/orders', 'app')->name('orders');
-    Route::get('/credits', 'app')->name('credits');
-    Route::get('/profile', 'app')->name('profile');
+    // Authenticated portal (session customer guard + tenancy scoping).
+    Route::middleware(['auth:customer', 'customer.tenant.init'])->group(function (): void {
+        Route::get('/', 'dashboard')->name('dashboard');
+        Route::get('/orders', 'orders')->name('orders');
+        Route::get('/orders/{order}', 'showOrder')->whereNumber('order')->name('orders.show');
+        Route::get('/credits', 'credits')->name('credits');
+        Route::get('/profile', 'profile')->name('profile');
+        Route::post('/profile', 'updateProfile')->name('profile.update');
+    });
 });
