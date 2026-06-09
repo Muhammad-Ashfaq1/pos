@@ -197,8 +197,7 @@
       .map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]); })
       .join('&');
 
-    content.style.opacity = '0.45';
-    content.style.pointerEvents = 'none';
+    if (window.AppLoader) AppLoader.show('Loading dashboard…');
 
     fetch(baseUrl() + (query ? '?' + query : ''), {
       headers: { 'X-Requested-With': 'XMLHttpRequest' },
@@ -218,8 +217,7 @@
         if (window.Notiflix && Notiflix.Notify) Notiflix.Notify.failure('Could not update the dashboard.');
       })
       .finally(function () {
-        content.style.opacity = '';
-        content.style.pointerEvents = '';
+        if (window.AppLoader) AppLoader.hide(true);
       });
   }
 
