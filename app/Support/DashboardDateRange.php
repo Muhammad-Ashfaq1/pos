@@ -29,9 +29,10 @@ class DashboardDateRange
             'today' => new self('today', $now->copy()->startOfDay(), $now->copy()->endOfDay(), 'Today'),
             'yesterday' => new self('yesterday', $now->copy()->subDay()->startOfDay(), $now->copy()->subDay()->endOfDay(), 'Yesterday'),
             'week' => new self('week', $now->copy()->subDays(6)->startOfDay(), $now->copy()->endOfDay(), 'Last 7 Days'),
-            'year' => new self('year', $now->copy()->startOfYear(), $now->copy()->endOfYear(), 'This Year'),
+            'year' => new self('year', $now->copy()->startOfYear(), $now->copy()->endOfDay(), 'This Year'),
             'custom' => self::custom($start, $end),
-            default => new self('month', $now->copy()->startOfMonth(), $now->copy()->endOfMonth(), 'This Month'),
+            // Day 1 of the current month through today (not the end of the month).
+            default => new self('month', $now->copy()->startOfMonth(), $now->copy()->endOfDay(), 'This Month'),
         };
     }
 

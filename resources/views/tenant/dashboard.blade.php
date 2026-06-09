@@ -5,6 +5,7 @@
 @php($sym = $currencySymbol)
 
 @section('content')
+<div id="dashboard-content" data-url="{{ route('tenant.dashboard') }}">
     {{-- Date-range filter --}}
     @php($periods = [
         'today' => ['Today', 'tabler-calendar'],
@@ -26,14 +27,14 @@
                 @foreach ($periods as $key => [$label, $icon])
                     <li>
                         <a class="dropdown-item rounded @if($range['period'] === $key) active @endif"
-                           href="{{ route('tenant.dashboard', ['period' => $key]) }}">
+                           href="javascript:void(0)" data-period="{{ $key }}">
                             <i class="ti {{ $icon }} me-2"></i>{{ $label }}
                         </a>
                     </li>
                 @endforeach
                 <li><hr class="dropdown-divider"></li>
                 <li class="px-2">
-                    <form method="GET" action="{{ route('tenant.dashboard') }}">
+                    <form data-dashboard-custom>
                         <input type="hidden" name="period" value="custom">
                         <label class="form-label small mb-1 fw-semibold"><i class="ti tabler-calendar-event me-1"></i>Custom range</label>
                         <div class="mb-2">
@@ -42,7 +43,7 @@
                         <div class="mb-2">
                             <input type="date" name="end" class="form-control form-control-sm" value="{{ $range['period'] === 'custom' ? $range['end'] : '' }}" required>
                         </div>
-                        <button type="submit" class="btn btn-sm btn-primary w-100">Apply</button>
+                        <button type="submit" class="btn btn-sm btn-primary w-100">Apply custom range</button>
                     </form>
                 </li>
             </ul>
@@ -429,20 +430,22 @@
             </div>
         </div>
     </div>
+
+    {{-- Chart dataset for this range; re-read by dashboard.js after each AJAX swap. --}}
+    @php($dashboardData = [
+        'currencySymbol' => $currencySymbol,
+        'revenueTrend' => $revenueTrend,
+        'ordersByStatus' => $ordersByStatus,
+        'paymentMethods' => $paymentMethods,
+        'topProducts' => $topProducts,
+        'salesByCategory' => $salesByCategory,
+        'customersByType' => $customersByType,
+        'revenueBreakdown' => $revenueBreakdown,
+    ])
+    <script type="application/json" id="dashboardData">{!! json_encode($dashboardData) !!}</script>
+</div>{{-- /#dashboard-content --}}
 @endsection
 
 @section('scripts')
-    <script>
-        window.dashboardData = {
-            currencySymbol: @json($currencySymbol),
-            revenueTrend: @json($revenueTrend),
-            ordersByStatus: @json($ordersByStatus),
-            paymentMethods: @json($paymentMethods),
-            topProducts: @json($topProducts),
-            salesByCategory: @json($salesByCategory),
-            customersByType: @json($customersByType),
-            revenueBreakdown: @json($revenueBreakdown),
-        };
-    </script>
-    <script src="{{ asset('assets/js/tenant/dashboard.js') }}"></script>
+    <script src="{{ asset('assets/js/tenant/dashboard.js') }}?v={{ filemtime(public_path('assets/js/tenant/dashboard.js')) }}"></script>
 @endsection
