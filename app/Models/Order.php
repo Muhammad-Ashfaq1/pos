@@ -19,6 +19,8 @@ class Order extends Model
 
     public const STATUS_ESTIMATE = 'estimate';
 
+    public const STATUS_RETURNED = 'returned';
+
     protected $fillable = [
         'order_number',
         'customer_id',

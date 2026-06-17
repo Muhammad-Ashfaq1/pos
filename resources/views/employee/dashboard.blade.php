@@ -15,7 +15,7 @@
         ['label' => 'Create New Order', 'icon' => 'tabler-shopping-bag', 'url' => route('employee.order.new-order'), 'permission' => 'orders.create'],
         ['label' => 'Reports', 'icon' => 'tabler-report-search'],
         ['label' => 'Orders', 'icon' => 'tabler-clipboard-data', 'url' => route('employee.order.index'), 'permission' => 'orders.view'],
-        ['label' => 'Returns', 'icon' => 'tabler-arrow-back-up'],
+        ['label' => 'Returns', 'icon' => 'tabler-arrow-back-up', 'url' => route('employee.order.returns'), 'permission' => 'orders.view'],
         ['label' => 'Product Setup', 'icon' => 'tabler-package-import', 'url' => route('employee.products.index'), 'permission' => 'product.create'],
         ['label' => 'Invoices', 'icon' => 'tabler-file-invoice'],
         ['label' => 'Discounts', 'icon' => 'tabler-badge'],

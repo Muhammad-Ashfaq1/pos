@@ -50,10 +50,10 @@
                                 </select>
                             </div>
 
-                            <div class="mb-3">
+                            @if($vehicleRequired)
+                            <div class="mb-3" id="vehicleFieldWrapper">
                                 <div class="d-flex justify-content-between">
-                                    <label for="add_vehicle_filter" class="form-label">Add Vehicle <span
-                                            class="text-danger">*</span></label>
+                                    <label for="add_vehicle_filter" class="form-label">Add Vehicle <span class="text-danger">*</span></label>
                                     <a class="text-primary add-vehicle-btn" href="javascript:void(0);"
                                         data-bs-toggle="modal" data-bs-target="#vehicleModal">+ Add Vehicle</a>
                                 </div>
@@ -63,6 +63,7 @@
                                     <option value=""></option>
                                 </select>
                             </div>
+                            @endif
 
                             <table class="table table-borderless align-middle mb-2">
                                 <thead>
@@ -466,6 +467,10 @@
             dropdownCustomers: @json(route('tenant.ecommerce.dropdowns.customers')),
             dropdownVehicles: @json(route('tenant.ecommerce.dropdowns.vehicles')),
             dropdownServices: @json(route('tenant.ecommerce.dropdowns.services')),
+        };
+        window.orderSettings = {
+            vehicleRequired: @json($vehicleRequired),
+            returnDaysAfterPurchase: @json($returnDaysAfterPurchase),
         };
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"></script>

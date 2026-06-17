@@ -69,6 +69,23 @@ Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.
                     ->middleware('permission:orders.view')
                     ->whereNumber('order')
                     ->name('share');
+
+                Route::get('/returns', [OrderController::class, 'returns'])
+                    ->middleware('permission:orders.view')
+                    ->name('returns');
+
+                Route::get('/returns/listing', [OrderController::class, 'returnsListing'])
+                    ->middleware('permission:orders.view')
+                    ->name('returns.listing');
+
+                Route::get('/returns/history', [OrderController::class, 'returnsHistory'])
+                    ->middleware('permission:orders.view')
+                    ->name('returns.history');
+
+                Route::post('/{order}/return', [OrderController::class, 'processReturn'])
+                    ->middleware('permission:orders.create|pos.bill')
+                    ->whereNumber('order')
+                    ->name('return');
             });
 
         // ── Employee Product Management ────────────────────────────────────

@@ -909,6 +909,7 @@ class OrdersRepository implements OrderRepositoryInterface
     {
         return match ($status) {
             Order::STATUS_PARTIALLY_PAID => 'Partially Paid',
+            Order::STATUS_RETURNED => 'Returned',
             default => str($status)->replace('_', ' ')->title()->toString(),
         };
     }
@@ -920,6 +921,7 @@ class OrdersRepository implements OrderRepositoryInterface
             Order::STATUS_PARTIALLY_PAID => 'warning',
             Order::STATUS_PENDING => 'warning',
             Order::STATUS_ESTIMATE => 'info',
+            Order::STATUS_RETURNED => 'danger',
             default => 'secondary',
         };
     }
@@ -1021,6 +1023,341 @@ class OrdersRepository implements OrderRepositoryInterface
             'success' => true,
             'message' => 'Payment added successfully. Order status is now '.$this->statusLabel($order->status).'.',
             'data' => $this->transformOrder($order),
+        ];
+    }
+
+    public function returnsListing(array $filters = [], int $returnDays = 30): array
+    {
+        $search = trim((string) ($filters['q'] ?? ''));
+
+        $query = Order::query()
+            ->whereIn('status', [Order::STATUS_PAID, Order::STATUS_PARTIALLY_PAID])
+            ->where('paid_at', '>=', now()->subDays($returnDays))
+            ->where('status', '!=', 'returned')
+            ->with([
+                'customer:id,name,phone,email',
+                'vehicle:id,plate_number,make,model',
+                'items',
+            ])
+            ->withCount('items');
+
+        if ($search !== '') {
+            $query->where(function (Builder $builder) use ($search): void {
+                $builder
+                    ->where('order_number', 'like', "%{$search}%")
+                    ->orWhereHas('customer', function (Builder $customerQuery) use ($search): void {
+                        $customerQuery
+                            ->where('name', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('vehicle', function (Builder $vehicleQuery) use ($search): void {
+                        $vehicleQuery
+                            ->where('plate_number', 'like', "%{$search}%")
+                            ->orWhere('make', 'like', "%{$search}%")
+                            ->orWhere('model', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $orders = $query
+            ->orderByDesc('paid_at')
+            ->limit(100)
+            ->get();
+
+        // Filter out orders where all items have been fully returned
+        $orders = $orders->filter(function (Order $order) {
+            $alreadyReturnedQuantities = $this->getAlreadyReturnedQuantities($order);
+            $totalReturned = array_sum($alreadyReturnedQuantities);
+            $totalOriginal = $order->items->sum('quantity');
+            return $totalReturned < $totalOriginal;
+        });
+
+        return [
+            'orders' => $orders->map(fn (Order $order) => $this->transformReturnableOrder($order, $returnDays))->values(),
+        ];
+    }
+
+    public function returnsHistory(array $filters = []): array
+    {
+        $search = trim((string) ($filters['q'] ?? ''));
+
+        $query = Order::query()
+            ->where(function ($query) {
+                $query->where('status', Order::STATUS_RETURNED)
+                    ->orWhereNotNull('notes');
+            })
+            ->where(function ($query) {
+                $query->whereJsonLength('notes', '>', 0)
+                    ->orWhere('status', Order::STATUS_RETURNED);
+            })
+            ->with([
+                'customer:id,name,phone,email',
+                'vehicle:id,plate_number,make,model',
+                'payments' => fn ($query) => $query->orderBy('id'),
+            ])
+            ->withCount('items');
+
+        if ($search !== '') {
+            $query->where(function (Builder $builder) use ($search): void {
+                $builder
+                    ->where('order_number', 'like', "%{$search}%")
+                    ->orWhereHas('customer', function (Builder $customerQuery) use ($search): void {
+                        $customerQuery
+                            ->where('name', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('vehicle', function (Builder $vehicleQuery) use ($search): void {
+                        $vehicleQuery
+                            ->where('plate_number', 'like', "%{$search}%")
+                            ->orWhere('make', 'like', "%{$search}%")
+                            ->orWhere('model', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $orders = $query
+            ->orderByDesc('updated_at')
+            ->limit(100)
+            ->get();
+
+        return [
+            'orders' => $orders->map(fn (Order $order) => $this->transformReturnedOrder($order))->values(),
+        ];
+    }
+
+    private function getAlreadyReturnedQuantities(Order $order): array
+    {
+        $notes = $order->notes ? json_decode($order->notes, true) : [];
+        if (!is_array($notes)) {
+            return [];
+        }
+
+        $returnedQuantities = [];
+        foreach ($notes as $note) {
+            if (isset($note['returned_items']) && is_array($note['returned_items'])) {
+                foreach ($note['returned_items'] as $itemId => $qty) {
+                    $itemId = (int) $itemId;
+                    $qty = (int) $qty;
+                    if (!isset($returnedQuantities[$itemId])) {
+                        $returnedQuantities[$itemId] = 0;
+                    }
+                    $returnedQuantities[$itemId] += $qty;
+                }
+            }
+        }
+
+        return $returnedQuantities;
+    }
+
+    public function processReturn(Order $order, array $data, ?Authenticatable $user = null): array
+    {
+        $userId = $user?->getAuthIdentifier();
+        $returnItems = $data['return_items'] ?? [];
+        $refundAmount = round((float) ($data['refund_amount'] ?? 0), 2);
+
+        $order = DB::transaction(function () use ($order, $data, $returnItems, $refundAmount, $userId): Order {
+            // Load order items
+            $order->load('items');
+
+            // Get already returned quantities from order notes
+            $alreadyReturnedQuantities = $this->getAlreadyReturnedQuantities($order);
+
+            // Validate return items and calculate refund based on actual item prices
+            $itemQuantitiesToReturn = [];
+            $calculatedRefundAmount = 0;
+            $totalReturnedItems = 0;
+
+            foreach ($returnItems as $returnItem) {
+                $orderItemId = (int) $returnItem['order_item_id'];
+                $returnQty = (int) $returnItem['quantity'];
+
+                $orderItem = $order->items->firstWhere('id', $orderItemId);
+                if (!$orderItem) {
+                    throw ValidationException::withMessages([
+                        'return_items' => "Order item with ID {$orderItemId} not found.",
+                    ]);
+                }
+
+                $alreadyReturned = $alreadyReturnedQuantities[$orderItemId] ?? 0;
+                $availableToReturn = $orderItem->quantity - $alreadyReturned;
+
+                if ($returnQty > $availableToReturn) {
+                    throw ValidationException::withMessages([
+                        'return_items' => "Cannot return more than {$availableToReturn} items for {$orderItem->product_name}. Already returned: {$alreadyReturned}, Original quantity: {$orderItem->quantity}.",
+                    ]);
+                }
+
+                $itemQuantitiesToReturn[$orderItemId] = $returnQty;
+                $totalReturnedItems += $returnQty;
+
+                // Calculate refund based on actual item unit price (excluding tax and service fee)
+                $calculatedRefundAmount += round($orderItem->unit_price * $returnQty, 2);
+            }
+
+            // Calculate proportional discount only (service fee is not refundable for partial returns)
+            $totalOrderItems = $order->items->sum('quantity');
+            $proportionalDiscount = $order->discount_amount > 0
+                ? round($order->discount_amount * ($totalReturnedItems / $totalOrderItems), 2)
+                : 0;
+
+            // Subtract proportional discount only
+            $calculatedRefundAmount = round($calculatedRefundAmount - $proportionalDiscount, 2);
+
+            // Validate refund amount matches calculated amount (allow small difference due to rounding)
+            if (abs($refundAmount - $calculatedRefundAmount) > 0.05) {
+                throw ValidationException::withMessages([
+                    'refund_amount' => "Refund amount mismatch. Expected: {$calculatedRefundAmount}, Provided: {$refundAmount}",
+                ]);
+            }
+
+            // Update order status to returned if all items are returned
+            if ($totalReturnedItems >= $totalOrderItems) {
+                $order->forceFill([
+                    'status' => 'returned',
+                    'updated_by' => $userId,
+                ])->save();
+            }
+
+            // Create a refund payment record (negative amount)
+            $order->payments()->create([
+                'tenant_id' => $order->tenant_id,
+                'amount' => -$refundAmount,
+                'payment_method' => $data['refund_method'],
+                'created_by' => $userId,
+            ]);
+
+            // Store return details in order notes
+            $returnDetails = [
+                'return_reason' => $data['return_reason'],
+                'refund_method' => $data['refund_method'],
+                'refund_amount' => $refundAmount,
+                'returned_items' => $itemQuantitiesToReturn,
+                'returned_at' => now()->toIso8601String(),
+            ];
+
+            $existingNotes = $order->notes ? json_decode($order->notes, true) : [];
+            if (!is_array($existingNotes)) {
+                $existingNotes = [];
+            }
+            $existingNotes[] = $returnDetails;
+
+            $order->forceFill([
+                'notes' => json_encode($existingNotes),
+                'updated_by' => $userId,
+            ])->save();
+
+            // Restore stock for tracked items (only for returned quantities)
+            foreach ($itemQuantitiesToReturn as $orderItemId => $returnQty) {
+                $orderItem = $order->items->firstWhere('id', $orderItemId);
+                if (!$orderItem) continue;
+
+                $product = Product::query()
+                    ->where('id', $orderItem->product_id)
+                    ->where('track_inventory', true)
+                    ->first();
+
+                if ($product) {
+                    $product->forceFill([
+                        'current_stock' => (int) $product->current_stock + $returnQty,
+                        'updated_by' => $userId,
+                    ])->save();
+                }
+            }
+
+            return $order->load('items', 'payments');
+        });
+
+        return [
+            'success' => true,
+            'message' => "Order {$order->order_number} returned successfully. Refund amount: {$this->moneyLabel($refundAmount)}.",
+            'data' => $this->transformOrder($order),
+        ];
+    }
+
+    private function transformReturnableOrder(Order $order, int $returnDays): array
+    {
+        $daysSincePayment = $order->paid_at ? $order->paid_at->diffInDays(now()) : 0;
+        $isEligible = $daysSincePayment <= $returnDays;
+        $refundableAmount = $order->subtotal_amount + $order->service_fee_amount - $order->discount_amount;
+        $totalOrderItems = $order->items->sum('quantity');
+
+        $alreadyReturnedQuantities = $this->getAlreadyReturnedQuantities($order);
+
+        $items = $order->items->map(function ($item) use ($alreadyReturnedQuantities) {
+            $returnedQuantity = $alreadyReturnedQuantities[$item->id] ?? 0;
+            return [
+                'id' => $item->id,
+                'product_id' => $item->product_id,
+                'product_name' => $item->product_name,
+                'sku' => $item->sku,
+                'quantity' => (int) $item->quantity,
+                'returned_quantity' => $returnedQuantity,
+                'available_quantity' => (int) $item->quantity - $returnedQuantity,
+                'unit_price' => (float) $item->unit_price,
+                'line_total' => (float) $item->line_total,
+                'unit_price_label' => $this->moneyLabel((float) $item->unit_price),
+                'line_total_label' => $this->moneyLabel((float) $item->line_total),
+            ];
+        })->values();
+
+        return [
+            'id' => $order->id,
+            'order_number' => $order->order_number,
+            'customer_name' => trim((string) ($order->customer?->name ?? '')) ?: 'Walk-In Customer',
+            'customer_phone' => $order->customer?->phone,
+            'vehicle_label' => trim(collect([
+                $order->vehicle?->year,
+                $order->vehicle?->make,
+                $order->vehicle?->model,
+            ])->filter()->implode(' ')),
+            'plate_number' => $order->vehicle?->plate_number,
+            'total_amount' => (float) $order->total_amount,
+            'total_amount_label' => $this->moneyLabel((float) $order->total_amount),
+            'refundable_amount' => max($refundableAmount, 0),
+            'refundable_amount_label' => $this->moneyLabel(max($refundableAmount, 0)),
+            'paid_at' => $order->paid_at?->toISOString(),
+            'paid_at_label' => $order->paid_at?->format('M j, Y h:i A'),
+            'days_since_payment' => $daysSincePayment,
+            'is_eligible' => $isEligible,
+            'return_policy_days' => $returnDays,
+            'items_count' => (int) ($order->items_count ?? 0),
+            'items' => $items,
+            'service_fee_amount' => (float) $order->service_fee_amount,
+            'discount_amount' => (float) $order->discount_amount,
+            'total_items' => $totalOrderItems,
+        ];
+    }
+
+    private function transformReturnedOrder(Order $order): array
+    {
+        $refundPayment = $order->payments->first(fn ($payment) => $payment->amount < 0);
+        $refundAmount = $refundPayment ? abs((float) $refundPayment->amount) : 0;
+        $refundMethod = $refundPayment ? $refundPayment->payment_method : null;
+        $refundMethodLabel = $refundMethod ? str($refundMethod)->replace('_', ' ')->title()->toString() : 'N/A';
+        $refundedAt = $refundPayment ? $refundPayment->created_at : $order->updated_at;
+
+        return [
+            'id' => $order->id,
+            'order_number' => $order->order_number,
+            'customer_name' => trim((string) ($order->customer?->name ?? '')) ?: 'Walk-In Customer',
+            'customer_phone' => $order->customer?->phone,
+            'vehicle_label' => trim(collect([
+                $order->vehicle?->year,
+                $order->vehicle?->make,
+                $order->vehicle?->model,
+            ])->filter()->implode(' ')),
+            'plate_number' => $order->vehicle?->plate_number,
+            'total_amount' => (float) $order->total_amount,
+            'total_amount_label' => $this->moneyLabel((float) $order->total_amount),
+            'refund_amount' => $refundAmount,
+            'refund_amount_label' => $this->moneyLabel($refundAmount),
+            'refund_method' => $refundMethod,
+            'refund_method_label' => $refundMethodLabel,
+            'refunded_at' => $refundedAt?->toISOString(),
+            'refunded_at_label' => $refundedAt?->format('M j, Y h:i A'),
+            'items_count' => (int) ($order->items_count ?? 0),
         ];
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Requests\Employee\Orders\SaveOrderRequest;
 use App\Mail\ShareOrderMail;
 use App\Models\Order;
 use App\Repositories\Interface\OrderRepositoryInterface;
+use App\Support\Tenancy\TenantContext;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,7 +19,8 @@ use Illuminate\View\View;
 class OrderController extends Controller
 {
     public function __construct(
-        private OrderRepositoryInterface $orderRepository
+        private OrderRepositoryInterface $orderRepository,
+        private TenantContext $tenantContext,
     ) {}
 
     public function index(): View
@@ -28,7 +30,12 @@ class OrderController extends Controller
 
     public function create(): View
     {
-        return view('employee.order.new-order');
+        $tenant = $this->tenantContext->current();
+
+        return view('employee.order.new-order', [
+            'vehicleRequired' => $tenant?->isVehicleRequired() ?? true,
+            'returnDaysAfterPurchase' => $tenant?->returnDaysAfterPurchase() ?? 30,
+        ]);
     }
 
     public function listing(Request $request): JsonResponse
@@ -149,5 +156,79 @@ class OrderController extends Controller
             'success' => true,
             'message' => "Document shared successfully with {$email}.",
         ]);
+    }
+
+    public function returns(): View
+    {
+        $tenant = $this->tenantContext->current();
+        $returnDays = $tenant?->returnDaysAfterPurchase() ?? 30;
+
+        return view('employee.order.returns', [
+            'returnDays' => $returnDays,
+        ]);
+    }
+
+    public function returnsListing(Request $request): JsonResponse
+    {
+        $tenant = $this->tenantContext->current();
+        $returnDays = $tenant?->returnDaysAfterPurchase() ?? 30;
+
+        $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        return response()->json($this->orderRepository->returnsListing($filters, $returnDays));
+    }
+
+    public function returnsHistory(Request $request): JsonResponse
+    {
+        $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        return response()->json($this->orderRepository->returnsHistory($filters));
+    }
+
+    public function processReturn(Order $order, Request $request): JsonResponse
+    {
+        $tenant = $this->tenantContext->current();
+        $returnDays = $tenant?->returnDaysAfterPurchase() ?? 30;
+
+        // Check if order is within return policy
+        if ($order->paid_at && $order->paid_at->diffInDays(now()) > $returnDays) {
+            return response()->json([
+                'success' => false,
+                'message' => "This order cannot be returned as it exceeds the {$returnDays}-day return policy.",
+            ], 422);
+        }
+
+        // Check if order is already returned
+        if ($order->status === 'returned') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This order has already been returned.',
+            ], 422);
+        }
+
+        // Check if order is paid
+        if ($order->status !== Order::STATUS_PAID && $order->status !== Order::STATUS_PARTIALLY_PAID) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only paid orders can be returned.',
+            ], 422);
+        }
+
+        $data = $request->validate([
+            'return_reason' => ['required', 'string', 'max:500'],
+            'refund_method' => ['required', 'string', 'in:cash,card,check'],
+            'return_items' => ['required', 'array'],
+            'return_items.*.order_item_id' => ['required', 'integer'],
+            'return_items.*.quantity' => ['required', 'integer', 'min:1'],
+            'refund_amount' => ['required', 'numeric', 'min:0.01'],
+        ]);
+
+        $result = $this->orderRepository->processReturn($order, $data, $request->user());
+
+        return response()->json($result);
     }
 }
