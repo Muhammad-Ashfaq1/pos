@@ -44,6 +44,7 @@ class SaveOrderRequest extends FormRequest
     public function rules(): array
     {
         $tenantId = app(TenantContext::class)->id();
+        $vehicleRequired = app(TenantContext::class)->current()?->isVehicleRequired() ?? true;
 
         return [
             'customer_id' => [
@@ -54,7 +55,7 @@ class SaveOrderRequest extends FormRequest
                 ),
             ],
             'vehicle_id' => [
-                'required',
+                ...($vehicleRequired ? ['required'] : ['nullable']),
                 'integer',
                 Rule::exists('vehicles', 'id')->where(
                     fn ($query) => $query->where('tenant_id', $tenantId)
@@ -101,7 +102,11 @@ class SaveOrderRequest extends FormRequest
         $validator->after(function (Validator $validator): void {
             $this->validateServiceFees($validator);
 
-            if (! $this->filled('customer_id') || ! $this->filled('vehicle_id')) {
+            if (! $this->filled('customer_id')) {
+                return;
+            }
+
+            if (! $this->filled('vehicle_id')) {
                 return;
             }
 

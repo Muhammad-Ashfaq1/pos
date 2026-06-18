@@ -11,15 +11,21 @@ A multi-tenant Point of Sale + auto-service shop platform built on Laravel 13. E
 
 ## Documentation map
 
-| File | Covers |
-|------|--------|
-| [architecture.md](architecture.md) | Tech stack, request lifecycle, layers (controller → repository → model), multi-tenancy mechanism, middleware aliases, file/folder layout. |
-| [landing-page.md](landing-page.md) | Public marketing homepage (`/`): sections, content model, layout/styling system, scripts, the Request-a-Demo modal, and how to customize the page. |
-| [auth-and-onboarding.md](auth-and-onboarding.md) | Public landing, shop registration, email verification, super-admin approval, login gating, password reset, impersonation, logout. End-to-end flow. |
-| [rbac.md](rbac.md) | Roles (8), permissions (58), per-tenant team scoping via Spatie, role/permission management UI, role seeding, gate behaviour for super admin. |
-| [modules.md](modules.md) | Every tenant module: categories, sub-categories, products, services (with product BOM), customers, vehicles, discounts, discount groups, product images, shop settings, and the employee POS panel — including order checkout. |
-| [customer-portal.md](customer-portal.md) | Customer-facing portal: Sanctum token API (reused by web + Flutter), tenant-scoped login/registration/invites, and the store-credit loyalty wallet (earn on paid visit, redeem at payment). |
-| [database.md](database.md) | Migration timeline, full schema per table, foreign keys, soft deletes, polymorphic relations, default tenant settings. |
+The docs are ordered as a **journey** — the path a shop travels from first signup to a running, analysed business. Read them top to bottom, or jump to the domain you're working on. Each domain file is self-contained: routes, controllers, repositories, requests, models, and views for that area.
+
+| # | File | The story it tells |
+|---|------|--------------------|
+| 1 | [architecture.md](architecture.md) | **Foundations** — tech stack, request lifecycle, controller → repository → model layers, multi-tenancy mechanism, middleware aliases, folder layout. |
+| 2 | [landing-page.md](landing-page.md) | **Public landing** — marketing homepage (`/`): sections, content model, layout/styling system, scripts, and the Request-a-Demo modal + lead capture. |
+| 3 | [auth-and-onboarding.md](auth-and-onboarding.md) | **Signup → onboarding** — shop registration, email verification, super-admin approval, login gating, password reset, impersonation, logout. |
+| 4 | [rbac.md](rbac.md) | **Access** — roles (8), permissions (58), per-tenant team scoping via Spatie, the role/staff management UI, role seeding, super-admin gate. |
+| 5 | [settings.md](settings.md) | **Configure the shop** — general/regional/operations/notification settings, currency formatting, order-related toggles, the default settings tree. |
+| 6 | [catalog.md](catalog.md) | **Stock the shop** — categories, sub-categories, product types, products, services (with BOM), discounts, discount groups, product images, dropdown APIs. |
+| 7 | [customers.md](customers.md) | **Know the customer** — customers (registered/walk-in/corporate) and their vehicles. |
+| 8 | [orders.md](orders.md) | **Sell** — the employee POS lifecycle end-to-end: cart → estimate → checkout → partial payments → invoices/receipts (print/PDF/email) → returns & refunds. |
+| 9 | [customer-portal.md](customer-portal.md) | **Customer portal** — Sanctum token API (reused by web + Flutter), tenant-scoped login/registration/invites, and the store-credit loyalty wallet (earn on paid visit, redeem at payment). |
+| 10 | [dashboards.md](dashboards.md) | **Analyse & oversee** — employee panel, tenant analytics dashboard, and the super-admin platform view. |
+| — | [database.md](database.md) | **Reference** — migration timeline, full schema per table, foreign keys, soft deletes, polymorphic relations, default tenant settings. |
 
 ## Key concepts at a glance
 
@@ -46,8 +52,15 @@ A multi-tenant Point of Sale + auto-service shop platform built on Laravel 13. E
 
 ## Reading order for a new contributor
 
-1. **[architecture.md](architecture.md)** — understand how a request flows from URL to repository and how tenant isolation is enforced.
-2. **[auth-and-onboarding.md](auth-and-onboarding.md)** — follow the signup → approval → first-login journey end-to-end.
-3. **[rbac.md](rbac.md)** — learn how roles attach to tenants and how permission middleware gates routes.
-4. **[modules.md](modules.md)** — pick the module you'll work on; each section has its routes, controller, repository, validation request, and view paths.
-5. **[database.md](database.md)** — reference when designing migrations or queries.
+Follow the journey in order — each step builds on the previous one:
+
+1. **[architecture.md](architecture.md)** — how a request flows from URL to repository, and how tenant isolation is enforced.
+2. **[auth-and-onboarding.md](auth-and-onboarding.md)** — the signup → approval → first-login journey end-to-end.
+3. **[rbac.md](rbac.md)** — how roles attach to tenants and how permission middleware gates routes.
+4. **[settings.md](settings.md)** — the first thing an approved shop admin does: configure currency, tax, hours, and order rules.
+5. **[catalog.md](catalog.md)** — stock the catalog the POS will sell from.
+6. **[customers.md](customers.md)** — the customers and vehicles a bill is made out to.
+7. **[orders.md](orders.md)** — the POS itself: creating orders, estimates, payments, invoices, and returns. The heart of the app.
+8. **[dashboards.md](dashboards.md)** — how it all rolls up for staff, owners, and the platform admin.
+
+Keep **[database.md](database.md)** open alongside any of the above when designing migrations or queries.

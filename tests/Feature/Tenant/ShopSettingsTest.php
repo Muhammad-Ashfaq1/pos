@@ -88,6 +88,41 @@ class ShopSettingsTest extends TestCase
         $this->assertSame('completed', $tenant->onboarding_status);
     }
 
+    public function test_tenant_admin_can_save_order_invoice_settings(): void
+    {
+        [$tenant, $user] = $this->createTenantUserWithSettingsPermission();
+
+        $response = $this->actingAs($user)->post(route('tenant.settings.shop-profile.order-invoice.save'), [
+            'vehicle_required' => '0',
+            'return_days_after_purchase' => 14,
+        ]);
+
+        $response->assertOk();
+        $response->assertJson([
+            'success' => true,
+            'message' => 'Order and invoice settings updated successfully.',
+        ]);
+
+        $tenant->refresh();
+
+        $this->assertFalse($tenant->isVehicleRequired());
+        $this->assertSame(14, $tenant->returnDaysAfterPurchase());
+        $this->assertFalse((bool) data_get($tenant->settings, 'orders.vehicle_required'));
+        $this->assertSame(14, data_get($tenant->settings, 'orders.return_days_after_purchase'));
+    }
+
+    public function test_tenant_admin_can_view_order_invoice_settings_page(): void
+    {
+        [$tenant, $user] = $this->createTenantUserWithSettingsPermission();
+
+        $response = $this->actingAs($user)->get(route('tenant.settings.shop-profile.order-invoice'));
+
+        $response->assertOk();
+        $response->assertSee('Order & Invoice Settings');
+        $response->assertSee('Vehicle required?');
+        $response->assertSee('Return Days After Purchase');
+    }
+
     private function createTenantUserWithSettingsPermission(): array
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();

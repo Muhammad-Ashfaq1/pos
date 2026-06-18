@@ -5,7 +5,7 @@ The public landing page is the unauthenticated marketing homepage served at `/`.
 This document covers the page itself — its structure, sections, content model, styling, and scripts. For the surrounding flows see:
 
 - The route/redirect logic and the onboarding journey it leads into → [auth-and-onboarding.md](auth-and-onboarding.md#public-landing).
-- The demo-request lead capture and super-admin triage → [modules.md](modules.md#demo-requests-public-lead-capture).
+- The demo-request lead capture is covered on this page (see [Request-a-Demo modal](#request-a-demo-modal)); the `demo_requests` schema is in [database.md](database.md#demo_requests-central--non-tenant).
 
 ## Route & entry logic
 
@@ -73,7 +73,7 @@ The page renders top-to-bottom in this order. Sections with an `id` are reachabl
 | 14 | Demo modal | `#demoModal` | The "Request a Demo" form (see below). |
 | 15 | Footer | — | Brand blurb, social icons, Product / Company / Access / Support link columns, copyright. |
 
-> **Showcase content.** Stats, testimonials, and pricing are deliberately static placeholders — the footer states "Static public landing page content for showcase and product positioning." Treat them as marketing copy, not as anything wired to the database. The module/service lists, however, do describe real product capabilities documented in [modules.md](modules.md).
+> **Showcase content.** Stats, testimonials, and pricing are deliberately static placeholders — the footer states "Static public landing page content for showcase and product positioning." Treat them as marketing copy, not as anything wired to the database. The module/service lists, however, do describe real product capabilities documented across the [domain docs](README.md#documentation-map).
 
 ## Content model
 
@@ -103,7 +103,7 @@ The hero, contact strip, final CTA, and footer all trigger the same `#demoModal`
 - **Rate limiting:** `throttle:5,1` (5 submissions/minute/IP).
 - **Error UX:** on validation failure the page re-opens the modal automatically (the `@if ($errors->any())` script at the bottom shows the modal on load) and renders inline `@error` feedback so the visitor doesn't lose their input.
 
-Leads are **central, not tenant-scoped** — super admins triage them at `/admin/demo-requests`. Full lifecycle in [modules.md](modules.md#demo-requests-public-lead-capture); the `demo_requests` schema is in [database.md](database.md#demo_requests-central--non-tenant).
+Leads are **central, not tenant-scoped** — super admins triage them at `/admin/demo-requests`. The `demo_requests` schema is in [database.md](database.md#demo_requests-central--non-tenant).
 
 ## Styling
 
@@ -129,4 +129,4 @@ Inline JS in the `@section('scripts')` block of [home.blade.php](../resources/vi
 - **Add a new section + nav link:** add a `<section id="…" class="landing-section">` block, then add a matching `<a class="nav-link" href="#…">` in the navbar (and optionally the footer).
 - **Re-skin colors:** override the `:root` tokens at the top of [public-landing.css](../public/assets/css/public-landing.css).
 - **Update SEO title/description:** edit the `@section('title')` / `@section('meta_description')` lines at the top of [home.blade.php](../resources/views/public/home.blade.php).
-- **Add a demo-form field:** add the input to the `#demoModal` form, then update [`StoreDemoRequestRequest`](../app/Http/Requests/Public/StoreDemoRequestRequest.php) validation and the `demo_requests` migration/model fillable — see [modules.md](modules.md#demo-requests-public-lead-capture).
+- **Add a demo-form field:** add the input to the `#demoModal` form, then update [`StoreDemoRequestRequest`](../app/Http/Requests/Public/StoreDemoRequestRequest.php) validation and the `demo_requests` migration/model fillable — see the [`demo_requests` schema](database.md#demo_requests-central--non-tenant).

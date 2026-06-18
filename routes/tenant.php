@@ -262,6 +262,9 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
 
                         Route::get('/notifications', 'notifications')->name('notifications');
                         Route::post('/notifications/save', 'saveNotifications')->name('notifications.save');
+
+                        Route::get('/order-invoice', 'orderInvoice')->name('order-invoice');
+                        Route::post('/order-invoice/save', 'saveOrderInvoice')->name('order-invoice.save');
                     });
 
                 Route::prefix('roles-permissions')

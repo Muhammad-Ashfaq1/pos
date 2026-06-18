@@ -250,5 +250,9 @@ This swap means every `$user->hasRole(...)` / `$user->can(...)` check transparen
 
 - Onboarding flow → [auth-and-onboarding.md](auth-and-onboarding.md)
 - Permission tables, role matrix → [rbac.md](rbac.md)
-- Per-module routes/controllers/views → [modules.md](modules.md)
+- Shop configuration → [settings.md](settings.md)
+- Catalog modules (products, services, discounts, images) → [catalog.md](catalog.md)
+- Customers & vehicles → [customers.md](customers.md)
+- POS orders, estimates, payments, returns → [orders.md](orders.md)
+- Dashboards & super-admin → [dashboards.md](dashboards.md)
 - Schema → [database.md](database.md)

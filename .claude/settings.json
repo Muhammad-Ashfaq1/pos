@@ -1,4 +1,15 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(\" public/assets/js/employee/orders.js | head -40)",
+      "Bash(grep -n \"employee-order-card\\\\|renderOrders\\\\|function render\\\\|innerHTML\\\\|appendChild\\\\|\\\\.append\\(\\\\|template\\\\|`\" public/assets/js/employee/orders.js | head -40)",
+      "Bash(node --check public/assets/js/employee/order-returns.js)",
+      "Bash(git fsck *)",
+      "Bash(git stash *)",
+      "Bash(sed -n '/## Reading order/,/database.md.*open/p' docs/README.md)",
+      "Bash(awk '/^ *)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
@@ -6,8 +17,8 @@
         "hooks": [
           {
             "type": "command",
-            "statusMessage": "Checking for destructive DB commands...",
-            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); if printf '%s' \"$cmd\" | grep -Eq '(artisan|sail)[^&|;]*(migrate:(fresh|refresh|reset|rollback)|db:wipe)'; then printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Blocked: destructive database command (migrate:fresh/refresh/reset/rollback or db:wipe). These drop or roll back data and are prohibited in this repo to protect data. Use additive migrations only.\"}}'; fi"
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); if printf '%s' \"$cmd\" | grep -Eq '(artisan|sail)[^&|;]*(migrate:(fresh|refresh|reset|rollback)|db:wipe)'; then printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Blocked: destructive database command (migrate:fresh/refresh/reset/rollback or db:wipe). These drop or roll back data and are prohibited in this repo to protect data. Use additive migrations only.\"}}'; fi",
+            "statusMessage": "Checking for destructive DB commands..."
           }
         ]
       }

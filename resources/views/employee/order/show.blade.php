@@ -48,16 +48,10 @@
                         <span>Sub Total:</span>
                         <strong>{{ $order['subtotal_amount_label'] }}</strong>
                     </div>
-                    @if (($order['service_price_amount'] ?? 0) > 0)
-                        <div class="employee-order-details-summary-row employee-order-details-service-fee-row">
-                            <span>Service Price:</span>
-                            <strong>+{{ $order['service_price_amount_label'] }}</strong>
-                        </div>
-                    @endif
-                    @if (($order['manual_service_fee_amount'] ?? $order['service_fee_amount']) > 0)
+                    @if (($order['service_fee_amount'] ?? 0) > 0)
                         <div class="employee-order-details-summary-row employee-order-details-service-fee-row">
                             <span>Service Fee:</span>
-                            <strong>+{{ $order['manual_service_fee_amount_label'] ?? $order['service_fee_amount_label'] }}</strong>
+                            <strong>+{{ $order['service_fee_amount_label'] }}</strong>
                         </div>
                     @endif
                     @if ($order['discount_amount'] > 0)
@@ -96,16 +90,10 @@
                         <span>Status:</span>
                         <strong class="employee-order-details-status {{ $order['status_class'] }}">{{ $order['status_label'] }}</strong>
                     </div>
-                    @if (($order['service_price_amount'] ?? 0) > 0)
-                        <div class="employee-order-details-payment-line employee-order-details-service-fee-row">
-                            <span>Service Price:</span>
-                            <strong>+{{ $order['service_price_amount_label'] }}</strong>
-                        </div>
-                    @endif
-                    @if (($order['manual_service_fee_amount'] ?? $order['service_fee_amount']) > 0)
+                    @if (($order['service_fee_amount'] ?? 0) > 0)
                         <div class="employee-order-details-payment-line employee-order-details-service-fee-row">
                             <span>Service Fee:</span>
-                            <strong>+{{ $order['manual_service_fee_amount_label'] ?? $order['service_fee_amount_label'] }}</strong>
+                            <strong>+{{ $order['service_fee_amount_label'] }}</strong>
                         </div>
                     @endif
                     @if ($order['discount_amount'] > 0)

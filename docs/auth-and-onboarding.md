@@ -42,7 +42,7 @@ The page also has a **"Request a Demo"** modal that captures sales leads without
 POST /demo-request    name: demo.request.store    middleware: throttle:5,1
 ```
 
-It is handled by [`Public\DemoRequestController@store`](../app/Http/Controllers/Public/DemoRequestController.php), validated by [`StoreDemoRequestRequest`](../app/Http/Requests/Public/StoreDemoRequestRequest.php), and persisted to the central `demo_requests` table for super admins to triage at `/admin/demo-requests`. Full flow in [modules.md](modules.md#demo-requests-public-lead-capture).
+It is handled by [`Public\DemoRequestController@store`](../app/Http/Controllers/Public/DemoRequestController.php), validated by [`StoreDemoRequestRequest`](../app/Http/Requests/Public/StoreDemoRequestRequest.php), and persisted to the central `demo_requests` table for super admins to triage at `/admin/demo-requests`. Full flow in [landing-page.md](landing-page.md#request-a-demo-modal).
 
 ## Shop registration (signup)
 
