@@ -158,7 +158,7 @@ $(function () {
                 vehicleLine +
                 metaRow('tabler-cash', 'Total', order.total_amount_label) +
                 metaRow('tabler-calendar', 'Paid', escape(order.paid_at_label)) +
-                metaRow('tabler-clock', 'Days Since', order.days_since_payment + ' / ' + returnDays) +
+                metaRow('tabler-clock', 'Time Since', escape(order.time_since_payment_label || order.days_since_payment + ' days')) +
                 '  </div>' +
                 '  <div class="employee-return-card-footer">' +
                 '    <div class="employee-return-refundable">' +
@@ -171,7 +171,7 @@ $(function () {
                 '      data-customer-name="' + escape(order.customer_name) + '"' +
                 '      data-total-amount="' + escape(order.total_amount_label) + '"' +
                 '      data-refundable-amount="' + escape(order.refundable_amount_label) + '"' +
-                '      data-days-since-payment="' + escape(order.days_since_payment) + '"' +
+                '      data-time-since-payment="' + escape(order.time_since_payment_label || order.days_since_payment + ' days') + '"' +
                 "      data-items='" + JSON.stringify(order.items || []).replace(/'/g, '&#39;') + "'" +
                 '      data-service-fee-amount="' + (order.service_fee_amount || 0) + '"' +
                 '      data-discount-amount="' + (order.discount_amount || 0) + '"' +
@@ -232,7 +232,7 @@ $(function () {
             customer_name: $btn.data('customer-name'),
             total_amount: $btn.data('total-amount'),
             refundable_amount: $btn.data('refundable-amount'),
-            days_since_payment: $btn.data('days-since-payment'),
+            time_since_payment: $btn.data('time-since-payment'),
             items: $btn.data('items') || [],
             service_fee_amount: parseFloat($btn.data('service-fee-amount') || 0),
             discount_amount: parseFloat($btn.data('discount-amount') || 0),
@@ -242,7 +242,7 @@ $(function () {
         $('#returnOrderNumber').text(selectedOrder.order_number);
         $('#returnCustomerName').text(selectedOrder.customer_name);
         $('#returnTotalAmount').text(selectedOrder.total_amount);
-        $('#returnDaysSincePayment').text(selectedOrder.days_since_payment + ' / ' + returnDays + ' days');
+        $('#returnDaysSincePayment').text(selectedOrder.time_since_payment);
 
         renderReturnItems(selectedOrder.items);
         $('#returnForm')[0].reset();

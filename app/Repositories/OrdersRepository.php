@@ -913,6 +913,8 @@ class OrdersRepository implements OrderRepositoryInterface
                 'payment_method_label' => str((string) $payment->payment_method)->replace('_', ' ')->title()->toString(),
                 'created_at_label' => $payment->created_at?->format('M j, Y h:i A'),
                 'collector_name' => $payment->creator?->name ?? 'System',
+                'is_refund' => (float) $payment->amount < 0,
+                'type_label' => (float) $payment->amount < 0 ? 'Refund' : 'Payment',
             ])->values()->all(),
         ];
     }
@@ -963,6 +965,33 @@ class OrdersRepository implements OrderRepositoryInterface
     private function moneyLabel(float $amount): string
     {
         return Currency::format($amount);
+    }
+
+    private function timeSinceLabel(\Carbon\Carbon $date): string
+    {
+        $diff = $date->diff(now());
+
+        if ($diff->y > 0) {
+            return $diff->y === 1 ? '1 year ago' : $diff->y . ' years ago';
+        }
+
+        if ($diff->m > 0) {
+            return $diff->m === 1 ? '1 month ago' : $diff->m . ' months ago';
+        }
+
+        if ($diff->d > 0) {
+            return $diff->d === 1 ? '1 day ago' : $diff->d . ' days ago';
+        }
+
+        if ($diff->h > 0) {
+            return $diff->h === 1 ? '1 hour ago' : $diff->h . ' hours ago';
+        }
+
+        if ($diff->i > 0) {
+            return $diff->i === 1 ? '1 minute ago' : $diff->i . ' minutes ago';
+        }
+
+        return 'Just now';
     }
 
     private function paymentAwareStatus(Order $order): string
@@ -1389,6 +1418,9 @@ class OrdersRepository implements OrderRepositoryInterface
         $refundableAmount = $order->subtotal_amount + $order->service_fee_amount - $order->discount_amount;
         $totalOrderItems = $order->items->sum('quantity');
 
+        // Human-readable time since payment
+        $timeSincePaymentLabel = $order->paid_at ? $this->timeSinceLabel($order->paid_at) : 'N/A';
+
         $alreadyReturnedQuantities = $this->getAlreadyReturnedQuantities($order);
 
         $items = $order->items->map(function ($item) use ($alreadyReturnedQuantities) {
@@ -1426,6 +1458,7 @@ class OrdersRepository implements OrderRepositoryInterface
             'paid_at' => $order->paid_at?->toISOString(),
             'paid_at_label' => $order->paid_at?->format('M j, Y h:i A'),
             'days_since_payment' => $daysSincePayment,
+            'time_since_payment_label' => $timeSincePaymentLabel,
             'is_eligible' => $isEligible,
             'return_policy_days' => $returnDays,
             'items_count' => (int) ($order->items_count ?? 0),

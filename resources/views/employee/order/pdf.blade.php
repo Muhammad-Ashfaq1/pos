@@ -180,6 +180,7 @@
                         <strong>Address:</strong> {{ $order->customer->address }}
                     @endif
                 </td>
+                @if($vehicleRequired ?? true)
                 <td style="width: 50%;">
                     <div class="section-title">Vehicle</div>
                     @if($order->vehicle)
@@ -195,6 +196,7 @@
                         No vehicle details.
                     @endif
                 </td>
+                @endif
             </tr>
         </table>
 
@@ -296,10 +298,90 @@
         </table>
 
         @if(!empty($order->notes))
-            <div class="section-title">Notes</div>
-            <div style="font-size: 12px; background-color: #f8fafc; border-left: 3px solid #cbd5e1; padding: 10px; color: #475569;">
-                {!! nl2br(e($order->notes)) !!}
-            </div>
+            @php
+                $notes = $order->notes;
+                $returnNotes = [];
+                if (is_string($notes)) {
+                    $decoded = json_decode($notes, true);
+                    if (is_array($decoded)) {
+                        // Check if this is return notes
+                        if (isset($decoded[0]['return_reason'])) {
+                            $returnNotes = $decoded;
+                        } else {
+                            // Regular notes
+                            $notes = $decoded;
+                        }
+                    }
+                }
+            @endphp
+
+            @if(!empty($returnNotes))
+                <div class="section-title">Return Records</div>
+                @foreach($returnNotes as $index => $return)
+                    <table class="details-table" style="margin-bottom: 15px; border: 1px solid #e2e8f0;">
+                        <thead>
+                            <tr>
+                                <th colspan="2" style="background-color: #fef2f2; color: #dc2626; font-size: 12px;">
+                                    Return #{{ $index + 1 }} - {{ \Carbon\Carbon::parse($return['returned_at'] ?? now())->format('M j, Y h:i A') }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="width: 40%; font-weight: bold; background-color: #f8fafc;">Return Reason</td>
+                                <td>{{ e($return['return_reason'] ?? 'N/A') }}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; background-color: #f8fafc;">Refund Method</td>
+                                <td>{{ ucfirst(str_replace('_', ' ', e($return['refund_method'] ?? 'N/A'))) }}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; background-color: #f8fafc;">Refund Amount</td>
+                                <td style="font-weight: bold; color: #dc2626;">{{ App\Support\Currency::format((float) ($return['refund_amount'] ?? 0)) }}</td>
+                            </tr>
+                            @if(!empty($return['returned_items']) && is_array($return['returned_items']))
+                                <tr>
+                                    <td colspan="2" style="font-weight: bold; background-color: #f1f5f9; padding: 8px;">Returned Items</td>
+                                </tr>
+                                @foreach($return['returned_items'] as $itemId => $qty)
+                                    @php
+                                        $orderItem = $order->items->firstWhere('id', $itemId);
+                                        $itemName = $orderItem ? $orderItem->product_name : 'Unknown Item';
+                                        $itemPrice = $orderItem ? (float) $orderItem->unit_price : 0;
+                                        $itemTotal = $itemPrice * $qty;
+                                    @endphp
+                                    <tr>
+                                        <td style="padding-left: 20px;">{{ e($itemName) }}</td>
+                                        <td>Qty: {{ $qty }} × {{ App\Support\Currency::format($itemPrice) }} = {{ App\Support\Currency::format($itemTotal) }}</td>
+                                    </tr>
+                                @endforeach
+                            @endif
+                        </tbody>
+                    </table>
+                @endforeach
+            @endif
+
+            @if(!empty($notes) && !is_array($returnNotes) || empty($returnNotes))
+                <div class="section-title">Notes</div>
+                <div style="font-size: 12px; background-color: #f8fafc; border-left: 3px solid #cbd5e1; padding: 10px; color: #475569;">
+                    @if(is_array($notes))
+                        @foreach($notes as $note)
+                            @if(is_string($note))
+                                {!! nl2br(e($note)) !!}
+                            @elseif(is_array($note))
+                                @if(isset($note['return_reason']))
+                                    {{-- Skip return notes as they're handled above --}}
+                                @else
+                                    {!! nl2br(e(json_encode($note, JSON_PRETTY_PRINT))) !!}
+                                @endif
+                            @endif
+                            <br>
+                        @endforeach
+                    @else
+                        {!! nl2br(e($notes)) !!}
+                    @endif
+                </div>
+            @endif
         @endif
 
         <div class="footer">

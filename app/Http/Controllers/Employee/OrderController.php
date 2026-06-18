@@ -104,19 +104,26 @@ class OrderController extends Controller
     public function print(Order $order): View
     {
         $details = $this->orderRepository->details($order);
+        $tenant = $order->tenant;
+        $vehicleRequired = $tenant?->isVehicleRequired() ?? true;
 
         return view('employee.order.print', [
             'order' => $order,
             'details' => $details,
+            'vehicleRequired' => $vehicleRequired,
         ]);
     }
 
     public function pdf(Order $order): Response
     {
         $details = $this->orderRepository->details($order);
+        $tenant = $order->tenant;
+        $vehicleRequired = $tenant?->isVehicleRequired() ?? true;
+
         $pdf = Pdf::loadView('employee.order.pdf', [
             'order' => $order,
             'details' => $details,
+            'vehicleRequired' => $vehicleRequired,
         ]);
 
         $filename = $order->status === Order::STATUS_ESTIMATE
@@ -142,9 +149,13 @@ class OrderController extends Controller
         }
 
         $details = $this->orderRepository->details($order);
+        $tenant = $order->tenant;
+        $vehicleRequired = $tenant?->isVehicleRequired() ?? true;
+
         $pdf = Pdf::loadView('employee.order.pdf', [
             'order' => $order,
             'details' => $details,
+            'vehicleRequired' => $vehicleRequired,
         ]);
 
         $filename = $order->status === Order::STATUS_ESTIMATE

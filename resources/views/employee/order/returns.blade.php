@@ -4,6 +4,32 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}">
+    <style>
+        .employee-return-summary-value {
+            overflow-x: auto;
+            white-space: nowrap;
+            max-width: 200px;
+        }
+
+        /* Custom scrollbar styling */
+        .employee-return-summary-value::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .employee-return-summary-value::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .employee-return-summary-value::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .employee-return-summary-value::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
 @endpush
 
 @section('content')
