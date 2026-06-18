@@ -49,6 +49,7 @@ This is the canonical schema reference. Files cited live under [database/migrati
 2026_05_20_090000  create_product_types_table                  (CRUD-managed product types)
 2026_05_20_090100  add_product_type_id_to_products_table       (FK + backfill from legacy string)
 2026_05_20_093000  fix_discount_groups_slug_unique_per_tenant   (global slug unique → per-tenant)
+2026_06_09_000000  create_order_payments_table                 (per-order payment/refund ledger)
 ```
 
 ## Entity relationship overview
@@ -355,7 +356,7 @@ Model: [`DiscountGroup`](../app/Models/DiscountGroup.php) (`BelongsToTenant` + `
 
 ### `orders`
 
-Source: [2026_05_09_090000_create_orders_table.php](../database/migrations/2026_05_09_090000_create_orders_table.php) + [add_payment_fields](../database/migrations/2026_05_11_080000_add_payment_fields_to_orders_table.php) + [add_discount_fields](../database/migrations/2026_05_13_162448_add_discount_fields_to_orders_table.php) + [add_service_fee_details](../database/migrations/2026_05_15_170000_add_service_fee_details_to_orders_table.php) + [add_service_id](../database/migrations/2026_05_18_090000_add_service_id_to_orders_table.php).
+Source: [2026_05_09_090000_create_orders_table.php](../database/migrations/2026_05_09_090000_create_orders_table.php) + [add_payment_fields](../database/migrations/2026_05_11_080000_add_payment_fields_to_orders_table.php) + [add_discount_fields](../database/migrations/2026_05_13_162448_add_discount_fields_to_orders_table.php) + [add_service_fee_details](../database/migrations/2026_05_15_170000_add_service_fee_details_to_orders_table.php) + [add_service_id](../database/migrations/2026_05_18_090000_add_service_id_to_orders_table.php). For the end-to-end flow that writes these columns, see [orders.md](orders.md).
 
 Persisted POS bills. Final column list (all migrations applied):
 
@@ -370,7 +371,7 @@ Persisted POS bills. Final column list (all migrations applied):
 | `discount_id` | bigint, nullable, FK → discounts(id) | applied discount (added 2026_05_13) |
 | `discount_group_id` | bigint, nullable, FK → discount_groups(id) | applied customer-tier group |
 | `discount_details` | json, nullable | per-line discount + tax breakdown |
-| `status` | string(30) | `pending` (default), `partially_paid`, `paid` |
+| `status` | string(30) | `pending` (default), `partially_paid`, `paid`, `estimate`, `returned` |
 | `total_quantity` | unsignedInteger | default 0 |
 | `subtotal_amount` | decimal(12,2) | default 0 |
 | `discount_amount` | decimal(12,2) | default 0 |
@@ -382,13 +383,13 @@ Persisted POS bills. Final column list (all migrations applied):
 | `payment_amount` | decimal(12,2) | default 0 |
 | `change_amount` | decimal(12,2) | default 0 |
 | `paid_at` | timestamp, nullable | set when fully paid |
-| `notes` | text, nullable | |
+| `notes` | text, nullable | JSON array — **return records** are appended here (`return_reason`, `refund_method`, `refund_amount`, `returned_items` map, `returned_at`). There is no dedicated returns table. |
 | `created_by` / `updated_by` | bigint, nullable, FK → users(id) | |
 | `created_at` / `updated_at` | timestamps | |
 
 Indexes: unique `(tenant_id, order_number)`, plus `(tenant_id, customer_id)`, `(tenant_id, vehicle_id)`, `(tenant_id, status)`, `(tenant_id, service_id)`.
 
-Model: [`Order`](../app/Models/Order.php) — status constants `STATUS_PENDING`, `STATUS_PARTIALLY_PAID`, `STATUS_PAID`. Relations: `customer`, `vehicle`, `service`, `discountGroup`, `items`, `creator`, `updater`. All order calculation logic (discounts, service fees, progressive tax allocation, stock deduction) lives in [`OrdersRepository`](../app/Repositories/OrdersRepository.php).
+Model: [`Order`](../app/Models/Order.php) — status constants `STATUS_PENDING`, `STATUS_PARTIALLY_PAID`, `STATUS_PAID`, `STATUS_ESTIMATE`, `STATUS_RETURNED`. Relations: `customer`, `vehicle`, `service`, `discountGroup`, `items`, `payments`, `creator`, `updater`. All order calculation logic (discounts, service fees, progressive tax allocation, stock deduction, returns/refunds) lives in [`OrdersRepository`](../app/Repositories/OrdersRepository.php).
 
 ### `order_items`
 
@@ -409,6 +410,24 @@ Source: [2026_05_09_090000_create_orders_table.php](../database/migrations/2026_
 | `created_at` / `updated_at` | timestamps | |
 
 Indexes: `(tenant_id, order_id)`, `(tenant_id, product_id)`. Model: [`OrderItem`](../app/Models/OrderItem.php) (`BelongsToTenant`). Line items snapshot the product's name/sku/unit so historical orders survive later catalog edits.
+
+### `order_payments`
+
+Source: [2026_06_09_000000_create_order_payments_table.php](../database/migrations/2026_06_09_000000_create_order_payments_table.php).
+
+Append-only payment ledger. One row per money movement against an order: initial payment, later top-ups, estimate conversions, and **refunds** (recorded as a **negative `amount`**). The order's `payment_amount` is the running collected total; net cash for an order = `SUM(order_payments.amount)`.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | bigint PK | |
+| `tenant_id` | bigint, FK → tenants(id), cascadeOnDelete | |
+| `order_id` | bigint, FK → orders(id), cascadeOnDelete | |
+| `amount` | decimal(12,2) | positive = collection, **negative = refund** |
+| `payment_method` | string(30) | `cash`, `card`, `check` |
+| `created_by` | bigint, nullable, FK → users(id), nullOnDelete | the cashier who took/issued it |
+| `created_at` / `updated_at` | timestamps | |
+
+Indexes: `(tenant_id, order_id)`. Model: [`OrderPayment`](../app/Models/OrderPayment.php) (`BelongsToTenant`). Relations: `order`, `creator`.
 
 ### `images` (polymorphic)
 
