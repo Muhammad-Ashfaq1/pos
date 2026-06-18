@@ -3,24 +3,16 @@
 @section('title', 'Product Setup')
 
 @section('extra-css')
+    <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/dropzone/dropzone.css') }}" />
 @endsection
 
 @section('content')
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
-        <div>
-            <h4 class="mb-1">Product Setup</h4>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('employee.dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Products</li>
-                </ol>
-            </nav>
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
+    <div class="employee-orders-page">
+        <x-employee.page-header title="Product Setup" :back-url="route('employee.dashboard')" back-title="Back to dashboard">
+            <x-slot:actions>
             {{-- Filters dropdown --}}
             <div class="dropdown">
                 <button
@@ -109,10 +101,10 @@
                     Add Product
                 </button>
             @endcan
-        </div>
-    </div>
+            </x-slot:actions>
+        </x-employee.page-header>
 
-    <div class="card">
+        <div class="card">
         <div class="card-datatable table-responsive pt-0">
             <table class="products-datatables table">
                 <thead class="bg-label-primary">
@@ -358,6 +350,7 @@
                 </form>
             </div>
         </div>
+    </div>
     </div>
 @endsection
 

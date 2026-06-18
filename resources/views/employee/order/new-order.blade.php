@@ -3,19 +3,15 @@
 @section('title', 'Create New Order')
 
 @push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/pos.css') }}?v={{ filemtime(public_path('assets/css/pos.css')) }}" />
 @endpush
 
 @section('content')
-    <div class="container-fluid p-4">
+    <div class="employee-orders-page">
+        <x-employee.page-header title="New Order" :back-url="route('employee.dashboard')" back-title="Back to dashboard" />
+
         <div class="order-entry-screen">
-            <div class="d-flex align-items-center mb-4">
-                <a href="{{ route('employee.dashboard') }}"
-                    class="btn btn-sm bg-label-primary bg-opacity-10 text-primary border-0 rounded-pill btn-circle-38 me-3">
-                    <i class="ti tabler-arrow-left fs-4"></i>
-                </a>
-                <h4 class="fw-bold mb-0">New Order</h4>
-            </div>
 
             <div class="row g-4">
 

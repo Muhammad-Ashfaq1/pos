@@ -12,6 +12,25 @@
     margin-bottom: 1rem;
 }
 
+.employee-orders-heading--with-actions {
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.employee-orders-heading-main {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.employee-orders-heading-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
 .employee-orders-back-btn,
 .employee-orders-icon-btn {
     width: 2.35rem;
