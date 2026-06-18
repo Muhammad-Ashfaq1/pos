@@ -43,6 +43,8 @@ class OrderController extends Controller
         $filters = $request->validate([
             'tab' => ['nullable', 'string', 'in:today,all,pending,estimates'],
             'q' => ['nullable', 'string', 'max:100'],
+            'page' => ['nullable', 'integer', 'min:1'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'sort' => [
                 'nullable',
                 'string',

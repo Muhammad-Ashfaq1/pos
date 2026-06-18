@@ -27,14 +27,20 @@ class OrdersRepository implements OrderRepositoryInterface
     public function listing(array $filters = []): array
     {
         $tab = $filters['tab'] ?? 'all';
+        $page = (int) ($filters['page'] ?? 1);
+        $perPage = (int) ($filters['per_page'] ?? 12);
 
-        $orders = $this->makeListingQuery($filters, $tab)
+        $query = $this->makeListingQuery($filters, $tab)
             ->with([
                 'customer:id,name,phone,email,customer_type',
                 'vehicle:id,plate_number,registration_number,make,model,year',
             ])
-            ->withCount('items')
-            ->limit(100)
+            ->withCount('items');
+
+        $total = $query->count();
+        $orders = $query
+            ->offset(($page - 1) * $perPage)
+            ->limit($perPage)
             ->get();
 
         return [
@@ -45,6 +51,13 @@ class OrdersRepository implements OrderRepositoryInterface
                 'estimates' => $this->makeListingQuery($filters, 'estimates', false)->count(),
             ],
             'orders' => $orders->map(fn (Order $order) => $this->transformListingOrder($order))->values(),
+            'pagination' => [
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total' => $total,
+                'last_page' => (int) ceil($total / $perPage),
+                'has_more' => $page * $perPage < $total,
+            ],
         ];
     }
 
