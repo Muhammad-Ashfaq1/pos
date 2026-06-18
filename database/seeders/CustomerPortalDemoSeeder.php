@@ -127,7 +127,7 @@ class CustomerPortalDemoSeeder extends Seeder
         $customer->forceFill([
             'tenant_id' => $tenant->id,
             'customer_type' => Customer::TYPE_REGISTERED,
-            'discount_group_id' => $this->loyaltyGroup()->id,
+            'discount_group_id' => $this->loyaltyGroup($tenant)->id,
             'name' => $definition['name'],
             'email' => $definition['email'],
             'phone' => $definition['phone'],
@@ -149,8 +149,13 @@ class CustomerPortalDemoSeeder extends Seeder
     private function vehicleFor(Customer $customer, array $vehicle, ?int $userId): Vehicle
     {
         return Vehicle::query()->firstOrCreate(
-            ['customer_id' => $customer->id, 'plate_number' => $vehicle['plate']],
             [
+                'tenant_id' => $customer->tenant_id,
+                'customer_id' => $customer->id,
+                'plate_number' => $vehicle['plate'],
+            ],
+            [
+                'tenant_id' => $customer->tenant_id,
                 'make' => $vehicle['make'],
                 'model' => $vehicle['model'],
                 'year' => $vehicle['year'],
