@@ -7,7 +7,10 @@
       "Bash(git fsck *)",
       "Bash(git stash *)",
       "Bash(sed -n '/## Reading order/,/database.md.*open/p' docs/README.md)",
-      "Bash(awk '/^ *)"
+      "Bash(awk '/^ *)",
+      "Bash(gh auth *)",
+      "Bash(gh repo *)",
+      "Bash(git ls-remote *)"
     ]
   },
   "hooks": {
