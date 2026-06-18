@@ -626,3 +626,446 @@
         flex: 0 0 auto;
     }
 }
+
+/* ── Returns ─────────────────────────────────────────────────────────── */
+
+.employee-order-status.danger {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.employee-order-status.info {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.employee-returns-policy {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    border: 1px solid #e0e7ff;
+    border-radius: 0.65rem;
+    background: #eef2ff;
+    padding: 0.9rem;
+}
+
+.employee-returns-policy-icon {
+    width: 2.4rem;
+    height: 2.4rem;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.55rem;
+    background: #312e81;
+    color: #fff;
+}
+
+.employee-returns-policy-icon i {
+    font-size: 1.25rem;
+}
+
+.employee-returns-policy h6 {
+    margin: 0 0 0.2rem;
+    color: #312e81;
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.employee-returns-policy p {
+    margin: 0;
+    color: #475569;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+/* Return cards */
+.employee-return-card {
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+    align-content: start;
+}
+
+.employee-return-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: #cbd5e1;
+}
+
+.employee-return-card.is-eligible::before {
+    background: #22c55e;
+}
+
+.employee-return-card.is-ineligible::before {
+    background: #ef4444;
+}
+
+.employee-return-card.is-returned::before {
+    background: #94a3b8;
+}
+
+.employee-return-card:hover {
+    transform: none;
+}
+
+.employee-return-meta {
+    display: grid;
+    gap: 0.3rem;
+    margin-top: 0.15rem;
+}
+
+.employee-return-meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.employee-return-meta-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #94a3b8;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.employee-return-meta-label i {
+    font-size: 0.95rem;
+    color: #a5b4fc;
+}
+
+.employee-return-meta-value {
+    color: #334155;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.employee-return-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 0.55rem;
+    padding-top: 0.7rem;
+    border-top: 1px dashed #e5e7eb;
+}
+
+.employee-return-refundable {
+    display: grid;
+    gap: 0.1rem;
+}
+
+.employee-return-refundable-label {
+    color: #94a3b8;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.employee-return-refundable-value {
+    color: #15803d;
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.employee-return-refundable.refunded .employee-return-refundable-value {
+    color: #b91c1c;
+}
+
+.employee-return-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.employee-return-action i {
+    font-size: 1rem;
+}
+
+/* Return modal */
+.employee-return-modal .modal-content {
+    border: 0;
+    border-radius: 0.85rem;
+    overflow: hidden;
+}
+
+.employee-return-modal .modal-header {
+    align-items: flex-start;
+    border-bottom: 1px solid #eef0f7;
+    padding: 1.1rem 1.25rem;
+}
+
+.employee-return-modal-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.employee-return-modal-icon {
+    width: 2.6rem;
+    height: 2.6rem;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.6rem;
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.employee-return-modal-icon i {
+    font-size: 1.4rem;
+}
+
+.employee-return-modal .modal-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #111827;
+}
+
+.employee-return-modal-subtitle {
+    margin: 0.1rem 0 0;
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.employee-return-modal .modal-body {
+    padding: 1.25rem;
+}
+
+.employee-return-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+    border-radius: 0.65rem;
+    background: #f8fafc;
+    padding: 0.9rem 1rem;
+    margin-bottom: 1.1rem;
+}
+
+.employee-return-summary-item {
+    display: grid;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.employee-return-summary-label {
+    color: #94a3b8;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.employee-return-summary-value {
+    color: #111827;
+    font-size: 0.88rem;
+    font-weight: 800;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.employee-return-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.65rem;
+    color: #111827;
+    font-size: 0.95rem;
+    font-weight: 800;
+}
+
+.employee-return-section-title i {
+    color: #312e81;
+    font-size: 1.1rem;
+}
+
+.employee-return-items {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.employee-return-empty-items {
+    margin: 0;
+    color: #94a3b8;
+    font-weight: 600;
+    text-align: center;
+    padding: 1rem;
+}
+
+.employee-return-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.6rem;
+    background: #fff;
+    padding: 0.7rem 0.85rem;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.employee-return-item.is-selected {
+    border-color: #a5b4fc;
+    background: #f5f3ff;
+}
+
+.employee-return-item.is-exhausted {
+    opacity: 0.55;
+}
+
+.employee-return-item-info {
+    min-width: 0;
+}
+
+.employee-return-item-name {
+    color: #111827;
+    font-size: 0.88rem;
+    font-weight: 800;
+}
+
+.employee-return-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.75rem;
+    margin-top: 0.2rem;
+    color: #94a3b8;
+    font-size: 0.74rem;
+    font-weight: 600;
+}
+
+.employee-return-item-avail {
+    color: #15803d;
+    font-weight: 700;
+}
+
+.employee-return-stepper {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.employee-return-step {
+    width: 2rem;
+    height: 2.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: #f1f5f9;
+    color: #312e81;
+    transition: background-color 0.15s ease;
+}
+
+.employee-return-step:hover:not(:disabled) {
+    background: #e2e8f0;
+}
+
+.employee-return-step:disabled {
+    color: #cbd5e1;
+    cursor: not-allowed;
+}
+
+.employee-return-qty {
+    width: 3rem;
+    height: 2.1rem;
+    border: 0;
+    border-left: 1px solid #cbd5e1;
+    border-right: 1px solid #cbd5e1;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #111827;
+    -moz-appearance: textfield;
+}
+
+.employee-return-qty::-webkit-outer-spin-button,
+.employee-return-qty::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.employee-return-qty:focus {
+    outline: 0;
+    box-shadow: none;
+}
+
+.employee-return-refund {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 1.1rem 0;
+    border: 1px solid #bbf7d0;
+    border-radius: 0.65rem;
+    background: #f0fdf4;
+    padding: 0.85rem 1.1rem;
+}
+
+.employee-return-refund-label {
+    display: block;
+    color: #166534;
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.employee-return-refund-note {
+    display: block;
+    color: #65a30d;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.employee-return-refund-value {
+    color: #15803d;
+    font-size: 1.5rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.employee-return-form {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.employee-return-form .employee-orders-field label {
+    color: #334155;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.employee-return-modal .modal-footer {
+    border-top: 1px solid #eef0f7;
+    padding: 1rem 1.25rem;
+}
+
+@media (max-width: 575px) {
+    .employee-return-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .employee-return-refund-value {
+        font-size: 1.25rem;
+    }
+}

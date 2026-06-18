@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\" public/assets/js/employee/orders.js | head -40)",
+      "Bash(grep -n \"employee-order-card\\\\|renderOrders\\\\|function render\\\\|innerHTML\\\\|appendChild\\\\|\\\\.append\\(\\\\|template\\\\|`\" public/assets/js/employee/orders.js | head -40)",
+      "Bash(node --check public/assets/js/employee/order-returns.js)"
+    ]
+  }
+}
