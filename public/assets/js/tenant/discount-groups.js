@@ -81,6 +81,9 @@ $(function () {
                     <td>${response.data.type === 'percentage' ? response.data.value + '%' : '$' + response.data.value}</td>
                     <td>${response.data.type}</td>
                     <td>${response.data.type === 'fixed' ? '$' + response.data.min_limit : '-'}</td>
+                    <td>${response.data.earns_credit
+                        ? `<span class="badge bg-label-info">${response.data.credit_earn_type === 'percentage' ? response.data.credit_earn_rate + '%' : '$' + response.data.credit_earn_rate}</span>`
+                        : '<span class="text-muted">-</span>'}</td>
                     <td class="text-center">
                         <span class="badge bg-label-${response.data.is_active ? 'success' : 'danger'}">${response.data.is_active
                         ? 'Yes'
@@ -95,6 +98,10 @@ $(function () {
                                 data-value="${response.data.value}"
                                 data-min-value="${response.data.min_limit}"
                                 data-is-active="${response.data.is_active}"
+                                data-earns-credit="${response.data.earns_credit ? 1 : 0}"
+                                data-credit-earn-type="${response.data.credit_earn_type || 'percentage'}"
+                                data-credit-earn-rate="${response.data.credit_earn_rate || 0}"
+                                data-credit-min-spend="${response.data.credit_min_spend || 0}"
                             ><i class="ti tabler-edit"></i></a>
                             <a href="javascript:void(0);" class="text-danger delete-discount-group"
                                 data-id="${response.data.id}"
@@ -148,6 +155,9 @@ $(function () {
         $('#addDiscountGroupModalLabel').text('Customer Discount Group');
         $('.add-discount-group').text('Save');
         $('#discount_type').val('').trigger('change');
+        $('#earns_credit').prop('checked', false);
+        $('#credit_earn_type').val('percentage').trigger('change');
+        toggleCreditFields();
     });
 
     // Toggle min_value_div based on discount type
@@ -157,6 +167,24 @@ $(function () {
         } else {
             $('#min_limit_div').addClass('d-none');
         }
+    });
+
+    // Toggle credit-earn fields
+    const toggleCreditFields = function () {
+        if ($('#earns_credit').is(':checked')) {
+            $('.credit-earn-field').removeClass('d-none');
+        } else {
+            $('.credit-earn-field').addClass('d-none');
+        }
+    };
+    $('#earns_credit').on('change', toggleCreditFields);
+
+    // Switch earn-rate label between % and currency symbol
+    const currencySymbol = (window.appCurrency && window.appCurrency.symbol) ? window.appCurrency.symbol : '$';
+    $('#credit_earn_type').on('change', function () {
+        $('#credit_earn_rate_label').text(
+            $(this).val() === 'fixed' ? `Earn Amount (${currencySymbol})` : 'Earn Rate (%)'
+        );
     });
 
     // Handle discount group edit
@@ -175,6 +203,13 @@ $(function () {
         $('#discount_value').val(value);
         $('#min_limit').val($this.data('min-value'));
         $('#is_active').prop('checked', $this.data('is-active') == 1);
+
+        // Credit-earn fields
+        $('#earns_credit').prop('checked', $this.data('earns-credit') == 1);
+        $('#credit_earn_type').val($this.data('credit-earn-type') || 'percentage').trigger('change');
+        $('#credit_earn_rate').val($this.data('credit-earn-rate'));
+        $('#credit_min_spend').val($this.data('credit-min-spend'));
+        toggleCreditFields();
 
         // Update modal UI
         $('#addDiscountGroupModalLabel').text('Edit Discount Group');

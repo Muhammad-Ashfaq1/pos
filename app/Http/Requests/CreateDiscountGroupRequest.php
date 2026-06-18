@@ -24,8 +24,14 @@ class CreateDiscountGroupRequest extends FormRequest
      */
     protected function prepareForValidation()
     {
+        $earnsCredit = $this->has('earns_credit');
+
         $this->merge([
             'is_active' => $this->has('is_active'),
+            'earns_credit' => $earnsCredit,
+            'credit_earn_type' => $this->input('credit_earn_type') ?: 'percentage',
+            'credit_earn_rate' => $earnsCredit ? $this->input('credit_earn_rate', 0) : 0,
+            'credit_min_spend' => $this->input('credit_min_spend') ?: 0,
         ]);
     }
 
@@ -53,6 +59,15 @@ class CreateDiscountGroupRequest extends FormRequest
             ],
             'min_limit' => 'nullable|numeric|min:0',
             'is_active' => 'boolean',
+            'earns_credit' => 'boolean',
+            'credit_earn_type' => 'nullable|in:percentage,fixed',
+            'credit_earn_rate' => [
+                $this->boolean('earns_credit') ? 'required' : 'nullable',
+                'numeric',
+                'min:0',
+                $this->input('credit_earn_type', 'percentage') === 'percentage' ? 'max:100' : 'max:9999999.99',
+            ],
+            'credit_min_spend' => 'nullable|numeric|min:0',
         ];
     }
 
@@ -62,6 +77,8 @@ class CreateDiscountGroupRequest extends FormRequest
             'title.unique' => 'Customer Discount Group already exists in records',
             'value.max' => 'The discount percentage cannot exceed 100%.',
             'value.lte' => 'The discount amount cannot exceed the minimum purchase limit.',
+            'credit_earn_rate.required' => 'Please enter how much credit this group earns.',
+            'credit_earn_rate.max' => 'The credit earn percentage cannot exceed 100%.',
         ];
     }
 }

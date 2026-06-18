@@ -16,5 +16,7 @@ interface ShopSettingsRepositoryInterface
 
     public function saveNotificationsSettings(Tenant $tenant, array $data): array;
 
+    public function saveOrderInvoiceSettings(Tenant $tenant, array $data): array;
+
     public function getSettingsSections(): array;
 }

@@ -41,6 +41,10 @@ class Tenant extends Model implements TenantContract
             'enabled' => false,
             'points_per_currency' => '1.00',
         ],
+        'orders' => [
+            'vehicle_required' => true,
+            'return_days_after_purchase' => 7,
+        ],
         'business_hours' => [
             'monday' => ['is_closed' => false, 'open' => '09:00', 'close' => '18:00'],
             'tuesday' => ['is_closed' => false, 'open' => '09:00', 'close' => '18:00'],
@@ -214,5 +218,15 @@ class Tenant extends Model implements TenantContract
     public function setting(string $key, mixed $default = null): mixed
     {
         return data_get($this->mergedSettings(), $key, $default);
+    }
+
+    public function isVehicleRequired(): bool
+    {
+        return (bool) $this->setting('orders.vehicle_required', true);
+    }
+
+    public function returnDaysAfterPurchase(): int
+    {
+        return (int) $this->setting('orders.return_days_after_purchase', 30);
     }
 }

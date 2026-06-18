@@ -8,12 +8,7 @@
 
 @section('content')
     <div class="employee-orders-page">
-        <div class="employee-orders-heading">
-            <a href="{{ route('employee.dashboard') }}" class="employee-orders-back-btn" data-bs-toggle="tooltip" title="Back to dashboard">
-                <i class="ti tabler-arrow-left"></i>
-            </a>
-            <h4 class="employee-orders-title">Orders</h4>
-        </div>
+        <x-employee.page-header title="Orders" :back-url="route('employee.dashboard')" back-title="Back to dashboard" />
 
         <div class="employee-orders-layout">
             <aside class="employee-orders-panel employee-orders-filters">

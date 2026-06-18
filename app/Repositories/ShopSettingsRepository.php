@@ -179,6 +179,27 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
         ];
     }
 
+    public function saveOrderInvoiceSettings(Tenant $tenant, array $data): array
+    {
+        $settings = $tenant->mergedSettings();
+
+        $settings['orders'] = [
+            'vehicle_required' => (bool) ($data['vehicle_required'] ?? false),
+            'return_days_after_purchase' => (int) $data['return_days_after_purchase'],
+        ];
+
+        $tenant->forceFill([
+            'settings' => $settings,
+        ]);
+
+        $this->persistTenant($tenant);
+
+        return [
+            'success' => true,
+            'message' => 'Order and invoice settings updated successfully.',
+        ];
+    }
+
     public function getSettingsSections(): array
     {
         return $this->settingsSections();
@@ -214,6 +235,13 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
                 'pattern' => 'tenant.settings.shop-profile.notifications',
                 'icon' => 'tabler-bell',
                 'description' => 'Communication defaults and loyalty behavior.',
+            ],
+            [
+                'label' => 'Order & Invoice',
+                'route' => 'tenant.settings.shop-profile.order-invoice',
+                'pattern' => 'tenant.settings.shop-profile.order-invoice',
+                'icon' => 'tabler-receipt',
+                'description' => 'Vehicle requirements and return policy for orders.',
             ],
         ];
 
@@ -270,6 +298,8 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
             'receipt_email_enabled' => data_get($settings, 'notifications.receipt_email_enabled', true),
             'loyalty_enabled' => data_get($settings, 'loyalty.enabled', false),
             'loyalty_points_per_currency' => data_get($settings, 'loyalty.points_per_currency', '1.00'),
+            'vehicle_required' => data_get($settings, 'orders.vehicle_required', true),
+            'return_days_after_purchase' => data_get($settings, 'orders.return_days_after_purchase', 30),
             'business_hours' => data_get($settings, 'business_hours', Tenant::defaultSettings()['business_hours']),
         ];
     }

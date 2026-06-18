@@ -3,19 +3,15 @@
 @section('title', 'Create New Order')
 
 @push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/pos.css') }}?v={{ filemtime(public_path('assets/css/pos.css')) }}" />
 @endpush
 
 @section('content')
-    <div class="container-fluid p-4">
+    <div class="employee-orders-page">
+        <x-employee.page-header title="New Order" :back-url="route('employee.dashboard')" back-title="Back to dashboard" />
+
         <div class="order-entry-screen">
-            <div class="d-flex align-items-center mb-4">
-                <a href="{{ route('employee.dashboard') }}"
-                    class="btn btn-sm bg-label-primary bg-opacity-10 text-primary border-0 rounded-pill btn-circle-38 me-3">
-                    <i class="ti tabler-arrow-left fs-4"></i>
-                </a>
-                <h4 class="fw-bold mb-0">New Order</h4>
-            </div>
 
             <div class="row g-4">
 
@@ -50,10 +46,10 @@
                                 </select>
                             </div>
 
-                            <div class="mb-3">
+                            @if($vehicleRequired)
+                            <div class="mb-3" id="vehicleFieldWrapper">
                                 <div class="d-flex justify-content-between">
-                                    <label for="add_vehicle_filter" class="form-label">Add Vehicle <span
-                                            class="text-danger">*</span></label>
+                                    <label for="add_vehicle_filter" class="form-label">Add Vehicle <span class="text-danger">*</span></label>
                                     <a class="text-primary add-vehicle-btn" href="javascript:void(0);"
                                         data-bs-toggle="modal" data-bs-target="#vehicleModal">+ Add Vehicle</a>
                                 </div>
@@ -63,6 +59,7 @@
                                     <option value=""></option>
                                 </select>
                             </div>
+                            @endif
 
                             <table class="table table-borderless align-middle mb-2">
                                 <thead>
@@ -466,6 +463,10 @@
             dropdownCustomers: @json(route('tenant.ecommerce.dropdowns.customers')),
             dropdownVehicles: @json(route('tenant.ecommerce.dropdowns.vehicles')),
             dropdownServices: @json(route('tenant.ecommerce.dropdowns.services')),
+        };
+        window.orderSettings = {
+            vehicleRequired: @json($vehicleRequired),
+            returnDaysAfterPurchase: @json($returnDaysAfterPurchase),
         };
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"></script>

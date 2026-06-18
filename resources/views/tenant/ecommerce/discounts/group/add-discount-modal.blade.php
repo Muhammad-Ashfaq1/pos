@@ -44,6 +44,36 @@
                                 <label class="form-check-label" for="is_active">Is Active</label>
                             </div>
                         </div>
+                        <div class="col-md-12">
+                            <hr class="my-1">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input border shadow-none" type="checkbox" id="earns_credit"
+                                    name="earns_credit">
+                                <label class="form-check-label fw-semibold" for="earns_credit">
+                                    Earn store credit on each paid visit
+                                </label>
+                            </div>
+                            <small class="text-muted">Customers in this group accrue redeemable store credit when their order is paid. This is separate from the direct discount above.</small>
+                        </div>
+
+                        <div class="col-md-4 credit-earn-field d-none">
+                            <label for="credit_earn_type">Credit Earn Type</label>
+                            <select id="credit_earn_type" name="credit_earn_type"
+                                class="form-select border shadow-none">
+                                <option value="percentage">Percentage of spend</option>
+                                <option value="fixed">Fixed amount</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 credit-earn-field d-none">
+                            <label for="credit_earn_rate" id="credit_earn_rate_label">Earn Rate (%)</label>
+                            <input type="number" min="0" step="0.01" class="form-control border shadow-none"
+                                id="credit_earn_rate" name="credit_earn_rate" placeholder="e.g. 5">
+                        </div>
+                        <div class="col-md-4 credit-earn-field d-none">
+                            <label for="credit_min_spend">Min Spend to Earn</label>
+                            <input type="number" min="0" step="0.01" class="form-control border shadow-none"
+                                id="credit_min_spend" name="credit_min_spend" placeholder="0">
+                        </div>
                     </div>
                     <div class="d-flex justify-content-end mt-5">
                         <button type="submit"

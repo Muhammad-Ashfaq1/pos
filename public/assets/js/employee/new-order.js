@@ -17,6 +17,7 @@
     window.__employeeNewOrderInitialized = true;
 
     const csrfToken = $('meta[name="csrf-token"]').attr('content');
+    const orderSettings = window.orderSettings || { vehicleRequired: true, returnDaysAfterPurchase: 30 };
     $.ajaxSetup({
         headers: { 'X-CSRF-TOKEN': csrfToken, 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' },
     });
@@ -1082,18 +1083,7 @@
 
         const normalizedFees = normalizedServiceFees(serviceFees);
         normalizedFees.forEach(function (fee) {
-            const servicePrice = serviceStandardPrice(fee.service);
             const feeAmount = serviceFeeAmountForTotals(fee, totals.productNet);
-
-            if (servicePrice > 0) {
-                taxLines.push({
-                    type: 'Service',
-                    name: serviceName(fee.service) || serviceFeeLabel(fee),
-                    quantity: 1,
-                    base: servicePrice,
-                    tax_percentage: taxPercentage(fee)
-                });
-            }
 
             if (feeAmount > 0) {
                 taxLines.push({
@@ -1105,13 +1095,12 @@
                 });
             }
 
-            totals.servicePrice = roundMoney(totals.servicePrice + servicePrice);
             totals.serviceFee = roundMoney(totals.serviceFee + feeAmount);
         });
 
-        totals.orderSubtotal = roundMoney(totals.productSubtotal + totals.servicePrice + totals.serviceFee);
+        totals.orderSubtotal = roundMoney(totals.productSubtotal + totals.serviceFee);
 
-        const amountAfterItemDiscounts = roundMoney(Math.max(totals.productNet + totals.servicePrice + totals.serviceFee, 0));
+        const amountAfterItemDiscounts = roundMoney(Math.max(totals.productNet + totals.serviceFee, 0));
         const customerDiscount = customer ? customer.discount : null;
 
         if (discountIsUsable(customerDiscount, 'customer_profile')) {
@@ -1234,37 +1223,7 @@
         $('.summary-discount-lines').toggleClass('d-none', totals.discount <= 0);
         $('.summary-discount').text('-' + formatMoney(totals.discount));
 
-        // 1. Service Price & Breakdowns
-        $('.summary-service-price-row').toggleClass('d-none', totals.servicePrice <= 0);
-        const $servicePriceBreakdowns = $('.summary-service-price-breakdowns');
-        $servicePriceBreakdowns.empty();
-        if (totals.servicePrice > 0) {
-            $('.summary-service-price-title').text(servicePriceSummaryTitle(serviceFees));
-            $('.summary-service-price').text('+' + formatMoney(totals.servicePrice));
-
-            const servicePriceItems = [];
-            normalizedFees.forEach(function (fee) {
-                const standardPrice = serviceStandardPrice(fee.service);
-                if (standardPrice > 0) {
-                    servicePriceItems.push({
-                        label: serviceName(fee.service) || 'Service Price',
-                        amount: standardPrice
-                    });
-                }
-            });
-
-            if (servicePriceItems.length > 0) {
-                $servicePriceBreakdowns.html(servicePriceItems.map(function (item) {
-                    return renderBreakdownHtml(item.label, item.amount);
-                }).join('')).removeClass('d-none');
-            } else {
-                $servicePriceBreakdowns.addClass('d-none');
-            }
-        } else {
-            $servicePriceBreakdowns.addClass('d-none');
-        }
-
-        // 2. Service Fee & Breakdowns
+        // Service Fee & Breakdowns
         $('.summary-service-fee-row').toggleClass('d-none', totals.serviceFee <= 0);
         const $serviceFeeBreakdowns = $('.summary-service-fee-breakdowns');
         $serviceFeeBreakdowns.empty();
@@ -1461,38 +1420,7 @@
         $('.payment-total').text(formatMoney(totals.total));
         $('.payment-subtotal').text(formatMoney(totals.productSubtotal));
 
-        // 1. Service Price & Breakdowns
-        const $servicePriceSection = $('.payment-service-price-section');
-        const $servicePriceBreakdowns = $('.payment-service-price-breakdowns');
-        $servicePriceSection.toggleClass('d-none', totals.servicePrice <= 0);
-        $servicePriceBreakdowns.empty();
-        if (totals.servicePrice > 0) {
-            $('.payment-service-price-title').text(servicePriceSummaryTitle(serviceFees) + ':');
-            $('.payment-service-price').text('+' + formatMoney(totals.servicePrice));
-
-            const servicePriceItems = [];
-            normalizedFees.forEach(function (fee) {
-                const standardPrice = serviceStandardPrice(fee.service);
-                if (standardPrice > 0) {
-                    servicePriceItems.push({
-                        label: serviceName(fee.service) || 'Service Price',
-                        amount: standardPrice
-                    });
-                }
-            });
-
-            if (servicePriceItems.length > 0) {
-                $servicePriceBreakdowns.html(servicePriceItems.map(function (item) {
-                    return renderBreakdownHtml(item.label, item.amount);
-                }).join('')).removeClass('d-none');
-            } else {
-                $servicePriceBreakdowns.addClass('d-none');
-            }
-        } else {
-            $servicePriceBreakdowns.addClass('d-none');
-        }
-
-        // 2. Service Fee & Breakdowns
+        // Service Fee & Breakdowns
         const $serviceFeeSection = $('.payment-service-fee-section');
         const $serviceFeeBreakdowns = $('.payment-service-fee-breakdowns');
         $serviceFeeSection.toggleClass('d-none', totals.serviceFee <= 0);
@@ -1740,7 +1668,7 @@
             return false;
         }
 
-        if (!$vehicleSelect.val()) {
+        if (orderSettings.vehicleRequired && !$vehicleSelect.val()) {
             markSelectInvalid($vehicleSelect, true);
             notifyOrder('error', 'Please select a vehicle before saving the order.');
             return false;
@@ -2218,9 +2146,10 @@
             const title = staged.title !== undefined
                 ? staged.title
                 : (existingFee ? serviceFeeLabel(existingFee) : serviceName(service));
+            const standardPrice = serviceStandardPrice(service);
             const amount = staged.amount !== undefined
                 ? staged.amount
-                : (existingFee ? roundMoney(existingFee.amount).toFixed(2) : '');
+                : (existingFee ? roundMoney(existingFee.amount).toFixed(2) : (standardPrice > 0 ? standardPrice.toFixed(2) : ''));
             const meta = serviceFeeRowMeta(service);
 
             return ''
@@ -2240,9 +2169,9 @@
                 + '<input type="text" class="form-control py-2 selected-service-fee-title" value="' + escape(title) + '" placeholder="' + escape(serviceName(service) || 'Service fee') + '">'
                 + '</div>'
                 + '<div>'
-                + '<label class="form-label fw-bold small">Manual Amount</label>'
+                + '<label class="form-label fw-bold small">Service Fee Amount</label>'
                 + '<div class="input-group input-group-merge">'
-                + '<span class="input-group-text">$</span>'
+                + '<span class="input-group-text">' + currencySymbol() + '</span>'
                 + '<input type="number" step="0.01" min="0" class="form-control py-2 selected-service-fee-amount" value="' + escape(amount) + '" placeholder="0.00">'
                 + '</div>'
                 + '</div>'

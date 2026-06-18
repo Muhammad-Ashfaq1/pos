@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\Settings\SaveShopGeneralSettingsRequest;
 use App\Http\Requests\Tenant\Settings\SaveShopNotificationsSettingsRequest;
+use App\Http\Requests\Tenant\Settings\SaveShopOrderInvoiceSettingsRequest;
 use App\Http\Requests\Tenant\Settings\SaveShopOperationsSettingsRequest;
 use App\Http\Requests\Tenant\Settings\SaveShopRegionalSettingsRequest;
 use App\Models\Tenant;
@@ -106,6 +107,26 @@ class ShopSettingsController extends Controller
         $this->authorize('manageSettings', $tenant);
 
         $result = $this->repo->saveNotificationsSettings($tenant, $request->validated());
+
+        return response()->json($result);
+    }
+
+    public function orderInvoice(): View
+    {
+        $tenant = $this->currentTenant();
+
+        $this->authorize('manageSettings', $tenant);
+
+        return view('tenant.settings.shop-profile.order-invoice', $this->repo->sharedViewData($tenant));
+    }
+
+    public function saveOrderInvoice(SaveShopOrderInvoiceSettingsRequest $request): JsonResponse
+    {
+        $tenant = $this->currentTenant();
+
+        $this->authorize('manageSettings', $tenant);
+
+        $result = $this->repo->saveOrderInvoiceSettings($tenant, $request->validated());
 
         return response()->json($result);
     }
