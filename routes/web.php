@@ -5,6 +5,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
+    if (Auth::guard('customer')->check()) {
+        return redirect()->route('customer.dashboard');
+    }
+
     if (! Auth::check()) {
         return view('public.home');
     }

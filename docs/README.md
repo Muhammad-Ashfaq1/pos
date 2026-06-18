@@ -1,6 +1,6 @@
 # POS Application — Documentation
 
-A multi-tenant Point of Sale + auto-service shop platform built on Laravel 13. Each tenant (shop) gets isolated catalog, customers, staff, roles, settings, and a POS panel. A single super-admin tier oversees tenant onboarding and lifecycle.
+A multi-tenant Point of Sale + auto-service shop platform built on Laravel 13. Each tenant (shop) gets isolated catalog, customers, staff, roles, settings, and a POS panel. A single super-admin tier oversees tenant onboarding and lifecycle, and triages demo-request leads captured from the public landing page.
 
 ## What this app is
 
@@ -16,13 +16,15 @@ The docs are ordered as a **journey** — the path a shop travels from first sig
 | # | File | The story it tells |
 |---|------|--------------------|
 | 1 | [architecture.md](architecture.md) | **Foundations** — tech stack, request lifecycle, controller → repository → model layers, multi-tenancy mechanism, middleware aliases, folder layout. |
-| 2 | [auth-and-onboarding.md](auth-and-onboarding.md) | **Signup → onboarding** — public landing, shop registration, email verification, super-admin approval, login gating, password reset, impersonation, logout. |
-| 3 | [rbac.md](rbac.md) | **Access** — roles (8), permissions (58), per-tenant team scoping via Spatie, the role/staff management UI, role seeding, super-admin gate. |
-| 4 | [settings.md](settings.md) | **Configure the shop** — general/regional/operations/notification settings, currency formatting, order-related toggles, the default settings tree. |
-| 5 | [catalog.md](catalog.md) | **Stock the shop** — categories, sub-categories, product types, products, services (with BOM), discounts, discount groups, product images, dropdown APIs. |
-| 6 | [customers.md](customers.md) | **Know the customer** — customers (registered/walk-in/corporate) and their vehicles. |
-| 7 | [orders.md](orders.md) | **Sell** — the employee POS lifecycle end-to-end: cart → estimate → checkout → partial payments → invoices/receipts (print/PDF/email) → returns & refunds. |
-| 8 | [dashboards.md](dashboards.md) | **Analyse & oversee** — employee panel, tenant analytics dashboard, and the super-admin platform view. |
+| 2 | [landing-page.md](landing-page.md) | **Public landing** — marketing homepage (`/`): sections, content model, layout/styling system, scripts, and the Request-a-Demo modal + lead capture. |
+| 3 | [auth-and-onboarding.md](auth-and-onboarding.md) | **Signup → onboarding** — shop registration, email verification, super-admin approval, login gating, password reset, impersonation, logout. |
+| 4 | [rbac.md](rbac.md) | **Access** — roles (8), permissions (58), per-tenant team scoping via Spatie, the role/staff management UI, role seeding, super-admin gate. |
+| 5 | [settings.md](settings.md) | **Configure the shop** — general/regional/operations/notification settings, currency formatting, order-related toggles, the default settings tree. |
+| 6 | [catalog.md](catalog.md) | **Stock the shop** — categories, sub-categories, product types, products, services (with BOM), discounts, discount groups, product images, dropdown APIs. |
+| 7 | [customers.md](customers.md) | **Know the customer** — customers (registered/walk-in/corporate) and their vehicles. |
+| 8 | [orders.md](orders.md) | **Sell** — the employee POS lifecycle end-to-end: cart → estimate → checkout → partial payments → invoices/receipts (print/PDF/email) → returns & refunds. |
+| 9 | [customer-portal.md](customer-portal.md) | **Customer portal** — Sanctum token API (reused by web + Flutter), tenant-scoped login/registration/invites, and the store-credit loyalty wallet (earn on paid visit, redeem at payment). |
+| 10 | [dashboards.md](dashboards.md) | **Analyse & oversee** — employee panel, tenant analytics dashboard, and the super-admin platform view. |
 | — | [database.md](database.md) | **Reference** — migration timeline, full schema per table, foreign keys, soft deletes, polymorphic relations, default tenant settings. |
 
 ## Key concepts at a glance

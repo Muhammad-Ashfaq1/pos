@@ -185,6 +185,15 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                         Route::get('/{customer}/edit', 'edit')
                             ->middleware('permission:customer.update|customers.manage')
                             ->name('edit');
+                        Route::get('/{customer}/credit-history', 'creditHistory')
+                            ->middleware('permission:customer.view|customers.view')
+                            ->name('credit-history');
+                        Route::post('/{customer}/invite-portal', 'invitePortal')
+                            ->middleware('permission:customer.update|customers.manage')
+                            ->name('invite-portal');
+                        Route::post('/{customer}/adjust-credit', 'adjustCredit')
+                            ->middleware('permission:customer.update|customers.manage')
+                            ->name('adjust-credit');
                         Route::post('/save', 'save')
                             ->middleware('permission:customer.create|customer.update|customers.manage')
                             ->name('save');

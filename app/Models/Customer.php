@@ -3,15 +3,22 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use Illuminate\Auth\Authenticatable as AuthenticatableTrait;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-class Customer extends Model
+class Customer extends Model implements AuthenticatableContract
 {
+    use AuthenticatableTrait;
     use BelongsToTenant;
+    use HasApiTokens;
+    use Notifiable;
 
     public const DEFAULT_WALK_IN_NAME = 'Walk-in Customer';
 
@@ -27,6 +34,12 @@ class Customer extends Model
         'name',
         'phone',
         'email',
+        'password',
+        'portal_enabled',
+        'email_verified_at',
+        'password_set_at',
+        'reset_token',
+        'reset_token_expires_at',
         'address',
         'notes',
         'date_of_birth',
@@ -39,6 +52,12 @@ class Customer extends Model
         'updated_by',
     ];
 
+    protected $hidden = [
+        'password',
+        'remember_token',
+        'reset_token',
+    ];
+
     protected function casts(): array
     {
         return [
@@ -49,6 +68,11 @@ class Customer extends Model
             'loyalty_points_balance' => 'integer',
             'credit_balance' => 'decimal:2',
             'last_visit_at' => 'datetime',
+            'portal_enabled' => 'boolean',
+            'password' => 'hashed',
+            'email_verified_at' => 'datetime',
+            'password_set_at' => 'datetime',
+            'reset_token_expires_at' => 'datetime',
         ];
     }
 
@@ -89,6 +113,26 @@ class Customer extends Model
     public function discountGroup(): BelongsTo
     {
         return $this->belongsTo(DiscountGroup::class);
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function creditTransactions(): HasMany
+    {
+        return $this->hasMany(CustomerCreditTransaction::class);
+    }
+
+    public function hasPortalAccess(): bool
+    {
+        return $this->portal_enabled && filled($this->password);
     }
 
     public function scopeSearch(Builder $query, ?string $term): Builder

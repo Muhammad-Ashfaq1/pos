@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Service;
 use App\Repositories\Interface\OrderRepositoryInterface;
+use App\Services\CreditService;
 use App\Support\Currency;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,6 +20,10 @@ use Illuminate\Validation\ValidationException;
 
 class OrdersRepository implements OrderRepositoryInterface
 {
+    public function __construct(
+        private readonly CreditService $creditService,
+    ) {}
+
     public function listing(array $filters = []): array
     {
         $tab = $filters['tab'] ?? 'all';
@@ -46,7 +51,7 @@ class OrdersRepository implements OrderRepositoryInterface
     public function details(Order $order): array
     {
         $order->load([
-            'customer:id,name,phone,email,customer_type',
+            'customer:id,name,phone,email,customer_type,credit_balance',
             'vehicle:id,plate_number,registration_number,make,model,year',
             'items' => fn ($query) => $query->orderBy('id'),
             'payments' => fn ($query) => $query->orderBy('id'),
@@ -167,14 +172,22 @@ class OrdersRepository implements OrderRepositoryInterface
             $totalAmount = round(max($subtotalAmount + $serviceFeeAmount - $discountAmount, 0) + $taxAmount, 2);
 
             if ($isEstimate) {
-                $paymentAmount = 0.0;
+                $cashPayment = 0.0;
                 $paymentMethod = null;
+                $creditsApplied = 0.0;
+                $paymentAmount = 0.0;
                 $status = Order::STATUS_ESTIMATE;
                 $changeAmount = 0.0;
                 $isPaid = false;
             } else {
-                $paymentAmount = round((float) data_get($data, 'payment.amount', 0), 2);
+                $cashPayment = round((float) data_get($data, 'payment.amount', 0), 2);
                 $paymentMethod = data_get($data, 'payment.method');
+                $creditsRequested = round((float) data_get($data, 'payment.credits_applied', 0), 2);
+                $availableCredit = $customer ? round((float) $customer->credit_balance, 2) : 0.0;
+                // Store credit can never exceed the customer's balance or the order total.
+                $creditsApplied = round(min(max($creditsRequested, 0), $availableCredit, $totalAmount), 2);
+                // payment_amount tracks ALL value paid toward the order (cash + credit).
+                $paymentAmount = round($cashPayment + $creditsApplied, 2);
                 $status = match (true) {
                     $paymentAmount >= $totalAmount => Order::STATUS_PAID,
                     $paymentAmount > 0 => Order::STATUS_PARTIALLY_PAID,
@@ -214,6 +227,7 @@ class OrdersRepository implements OrderRepositoryInterface
                 'total_amount' => $totalAmount,
                 'payment_method' => $paymentMethod,
                 'payment_amount' => $paymentAmount,
+                'credit_applied' => $creditsApplied,
                 'change_amount' => $changeAmount,
                 'paid_at' => $isPaid ? now() : null,
                 'notes' => $data['notes'] ?? null,
@@ -223,17 +237,31 @@ class OrdersRepository implements OrderRepositoryInterface
 
             $order->items()->createMany($orderItems);
 
-            if (! $isEstimate && $paymentAmount > 0) {
+            if (! $isEstimate && $cashPayment > 0) {
                 $order->payments()->create([
                     'tenant_id' => $order->tenant_id,
-                    'amount' => $paymentAmount,
+                    'amount' => $cashPayment,
                     'payment_method' => $paymentMethod,
+                    'created_by' => $userId,
+                ]);
+            }
+
+            if (! $isEstimate && $creditsApplied > 0 && $customer) {
+                $this->creditService->redeem($customer, $creditsApplied, $order, $userId);
+                $order->payments()->create([
+                    'tenant_id' => $order->tenant_id,
+                    'amount' => $creditsApplied,
+                    'payment_method' => 'store_credit',
                     'created_by' => $userId,
                 ]);
             }
 
             if (! $isEstimate) {
                 $this->deductTrackedStock($products, $requestedQuantityByProduct, $userId);
+            }
+
+            if (! $isEstimate && $isPaid) {
+                $this->applyVisitAndEarn($order, $customer, $userId);
             }
 
             return $order->load('items');
@@ -339,6 +367,53 @@ class OrdersRepository implements OrderRepositoryInterface
             'reason' => null,
             'group' => $payload,
         ];
+    }
+
+    /**
+     * Runs once when an order first becomes paid: grants store credit per the
+     * customer's group earn rule and updates visit statistics.
+     */
+    private function applyVisitAndEarn(Order $order, ?Customer $customer, ?int $userId): void
+    {
+        if (! $customer) {
+            return;
+        }
+
+        // Pre-tax net spend is the qualifying base for earning credit.
+        $netSpend = round(
+            (float) $order->subtotal_amount + (float) $order->service_fee_amount - (float) $order->discount_amount,
+            2
+        );
+
+        // Re-fetch the group with all columns — store()/addPayment() eager-load
+        // it with a restricted column list that omits the credit-earn fields.
+        $group = $customer->discount_group_id
+            ? DiscountGroup::query()->find($customer->discount_group_id)
+            : null;
+
+        $earned = $group ? $group->creditEarnedFor($netSpend) : 0.0;
+
+        if ($earned > 0) {
+            $this->creditService->earn(
+                $customer,
+                $earned,
+                $order,
+                'Credit earned on order '.$order->order_number,
+                $userId
+            );
+            $order->forceFill(['credit_earned' => $earned])->save();
+        }
+
+        // Visit stats (lock the row to avoid lost updates under concurrency).
+        $locked = Customer::query()->lockForUpdate()->find($customer->getKey());
+
+        if ($locked) {
+            $locked->forceFill([
+                'total_visits' => (int) $locked->total_visits + 1,
+                'lifetime_value' => round((float) $locked->lifetime_value + (float) $order->total_amount, 2),
+                'last_visit_at' => now(),
+            ])->save();
+        }
     }
 
     private function serviceFees(array $requestedFees): array
@@ -788,6 +863,8 @@ class OrdersRepository implements OrderRepositoryInterface
             'customer_id' => $order->customer_id,
             'customer_email' => $order->customer?->email,
             'customer_name' => trim((string) ($order->customer?->name ?? '')) ?: 'Walk-In Customer',
+            'customer_credit_balance' => (float) ($order->customer?->credit_balance ?? 0),
+            'customer_credit_balance_label' => $this->moneyLabel((float) ($order->customer?->credit_balance ?? 0)),
             'payment_method_label' => filled($order->payment_method)
                 ? str((string) $order->payment_method)->replace('_', ' ')->title()->toString()
                 : 'N/A',
@@ -809,6 +886,10 @@ class OrdersRepository implements OrderRepositoryInterface
             'total_amount_label' => $this->moneyLabel($totalAmount),
             'payment_amount' => $paymentAmount,
             'payment_amount_label' => $this->moneyLabel($paymentAmount),
+            'credit_applied' => (float) $order->credit_applied,
+            'credit_applied_label' => $this->moneyLabel((float) $order->credit_applied),
+            'credit_earned' => (float) $order->credit_earned,
+            'credit_earned_label' => $this->moneyLabel((float) $order->credit_earned),
             'balance_due' => $balanceDue,
             'balance_due_label' => $this->moneyLabel($balanceDue),
             'items_count' => (int) $order->items->sum('quantity'),
@@ -937,8 +1018,17 @@ class OrdersRepository implements OrderRepositoryInterface
                 ]);
             }
 
-            $paymentAmountAdded = round((float) ($paymentData['payment_amount'] ?? 0), 2);
+            $cashPayment = round((float) ($paymentData['payment_amount'] ?? 0), 2);
             $paymentMethod = $paymentData['payment_method'] ?? 'cash';
+            $creditsRequested = round((float) ($paymentData['credits_applied'] ?? 0), 2);
+
+            $customer = $order->customer_id ? $order->customer()->first() : null;
+            $totalAmount = (float) $order->total_amount;
+            $balanceDue = round(max($totalAmount - (float) $order->payment_amount, 0), 2);
+            $availableCredit = $customer ? round((float) $customer->credit_balance, 2) : 0.0;
+            // Credit applied is capped at the balance still owed and the wallet balance.
+            $creditsApplied = round(min(max($creditsRequested, 0), $availableCredit, $balanceDue), 2);
+            $paymentAmountAdded = round($cashPayment + $creditsApplied, 2);
 
             if ($paymentAmountAdded <= 0) {
                 throw ValidationException::withMessages([
@@ -975,7 +1065,6 @@ class OrdersRepository implements OrderRepositoryInterface
 
                 // Convert status and numbering
                 $newOrderNumber = $this->makeOrderNumber('ORD');
-                $totalAmount = (float) $order->total_amount;
                 $status = match (true) {
                     $paymentAmountAdded >= $totalAmount => Order::STATUS_PAID,
                     default => Order::STATUS_PARTIALLY_PAID,
@@ -986,6 +1075,7 @@ class OrdersRepository implements OrderRepositoryInterface
                     'status' => $status,
                     'payment_method' => $paymentMethod,
                     'payment_amount' => $paymentAmountAdded,
+                    'credit_applied' => round((float) $order->credit_applied + $creditsApplied, 2),
                     'change_amount' => round(max($paymentAmountAdded - $totalAmount, 0), 2),
                     'paid_at' => $status === Order::STATUS_PAID ? now() : null,
                     'updated_by' => $userId,
@@ -993,7 +1083,6 @@ class OrdersRepository implements OrderRepositoryInterface
             } else {
                 // Standard Payment Top-up
                 $newPaymentAmount = round((float) $order->payment_amount + $paymentAmountAdded, 2);
-                $totalAmount = (float) $order->total_amount;
                 $status = match (true) {
                     $newPaymentAmount >= $totalAmount => Order::STATUS_PAID,
                     default => Order::STATUS_PARTIALLY_PAID,
@@ -1003,18 +1092,35 @@ class OrdersRepository implements OrderRepositoryInterface
                     'status' => $status,
                     'payment_method' => $paymentMethod,
                     'payment_amount' => $newPaymentAmount,
+                    'credit_applied' => round((float) $order->credit_applied + $creditsApplied, 2),
                     'change_amount' => round(max($newPaymentAmount - $totalAmount, 0), 2),
                     'paid_at' => $status === Order::STATUS_PAID ? now() : null,
                     'updated_by' => $userId,
                 ])->save();
             }
 
-            $order->payments()->create([
-                'tenant_id' => $order->tenant_id,
-                'amount' => $paymentAmountAdded,
-                'payment_method' => $paymentMethod,
-                'created_by' => $userId,
-            ]);
+            if ($cashPayment > 0) {
+                $order->payments()->create([
+                    'tenant_id' => $order->tenant_id,
+                    'amount' => $cashPayment,
+                    'payment_method' => $paymentMethod,
+                    'created_by' => $userId,
+                ]);
+            }
+
+            if ($creditsApplied > 0 && $customer) {
+                $this->creditService->redeem($customer, $creditsApplied, $order, $userId);
+                $order->payments()->create([
+                    'tenant_id' => $order->tenant_id,
+                    'amount' => $creditsApplied,
+                    'payment_method' => 'store_credit',
+                    'created_by' => $userId,
+                ]);
+            }
+
+            if ($order->status === Order::STATUS_PAID) {
+                $this->applyVisitAndEarn($order, $customer, $userId);
+            }
 
             return $order->load('items');
         });

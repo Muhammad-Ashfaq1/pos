@@ -197,6 +197,14 @@ class CustomersRepository implements CustomerRepositoryInterface
             'lifetime_value' => (string) $customer->lifetime_value,
             'loyalty_points_balance' => $customer->loyalty_points_balance,
             'credit_balance' => (string) $customer->credit_balance,
+            'credit_balance_label' => Currency::format((float) $customer->credit_balance),
+            'portal_enabled' => (bool) $customer->portal_enabled,
+            'has_portal_access' => $customer->hasPortalAccess(),
+            'invite_portal_url' => filled($customer->email)
+                ? route('tenant.ecommerce.customers.invite-portal', $customer)
+                : null,
+            'adjust_credit_url' => route('tenant.ecommerce.customers.adjust-credit', $customer),
+            'credit_history_url' => route('tenant.ecommerce.customers.credit-history', $customer),
             'last_visit_at' => $customer->last_visit_at?->format('Y-m-d H:i:s'),
             'last_visit_at_form' => $customer->last_visit_at?->format('Y-m-d\TH:i'),
             'last_visit_at_label' => $customer->last_visit_at?->format('d M Y h:i A'),

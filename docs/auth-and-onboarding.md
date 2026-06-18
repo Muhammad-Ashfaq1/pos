@@ -34,7 +34,15 @@ Route::get('/', function () {
 });
 ```
 
-Unauthenticated visitors see [resources/views/public/home.blade.php](../resources/views/public/home.blade.php) which links to `/login` and `/register`. Anyone already logged in is redirected to their dashboard.
+Unauthenticated visitors see [resources/views/public/home.blade.php](../resources/views/public/home.blade.php) — a marketing landing page (styled by [public-landing.css](../public/assets/css/public-landing.css), layout [layouts/public.blade.php](../resources/views/layouts/public.blade.php)) which links to `/login` and `/register`. Anyone already logged in is redirected to their dashboard. The page itself — its sections, content model, and styling — is documented in [landing-page.md](landing-page.md).
+
+The page also has a **"Request a Demo"** modal that captures sales leads without authentication:
+
+```
+POST /demo-request    name: demo.request.store    middleware: throttle:5,1
+```
+
+It is handled by [`Public\DemoRequestController@store`](../app/Http/Controllers/Public/DemoRequestController.php), validated by [`StoreDemoRequestRequest`](../app/Http/Requests/Public/StoreDemoRequestRequest.php), and persisted to the central `demo_requests` table for super admins to triage at `/admin/demo-requests`. Full flow in [landing-page.md](landing-page.md#request-a-demo-modal).
 
 ## Shop registration (signup)
 

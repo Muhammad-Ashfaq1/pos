@@ -13,13 +13,19 @@ return new class extends Migration
         // Doing this *before* changing the column type guarantees no stock is silently
         // truncated (e.g. 0.4 -> 1 instead of 0). max(0, ...) defends against any
         // legacy negatives that may have leaked in via prior bugs.
+        // GREATEST/CEIL are MySQL functions; skip the data clean-up on SQLite
+        // (the test database is empty, so there is nothing to normalize).
+        $supportsRawMath = DB::getDriverName() !== 'sqlite';
+
         if (Schema::hasTable('products')) {
-            DB::table('products')->update([
-                'opening_stock' => DB::raw('GREATEST(0, CEIL(opening_stock))'),
-                'current_stock' => DB::raw('GREATEST(0, CEIL(current_stock))'),
-                'minimum_stock_level' => DB::raw('GREATEST(0, CEIL(minimum_stock_level))'),
-                'reorder_level' => DB::raw('GREATEST(0, CEIL(reorder_level))'),
-            ]);
+            if ($supportsRawMath) {
+                DB::table('products')->update([
+                    'opening_stock' => DB::raw('GREATEST(0, CEIL(opening_stock))'),
+                    'current_stock' => DB::raw('GREATEST(0, CEIL(current_stock))'),
+                    'minimum_stock_level' => DB::raw('GREATEST(0, CEIL(minimum_stock_level))'),
+                    'reorder_level' => DB::raw('GREATEST(0, CEIL(reorder_level))'),
+                ]);
+            }
 
             Schema::table('products', function (Blueprint $table): void {
                 $table->unsignedInteger('opening_stock')->default(0)->change();
@@ -30,13 +36,15 @@ return new class extends Migration
         }
 
         if (Schema::hasTable('service_products')) {
-            DB::table('service_products')->update([
-                'quantity' => DB::raw('GREATEST(0, CEIL(quantity))'),
-            ]);
+            if ($supportsRawMath) {
+                DB::table('service_products')->update([
+                    'quantity' => DB::raw('GREATEST(0, CEIL(quantity))'),
+                ]);
 
-            // Service product mappings must have a positive quantity to make sense;
-            // any zero rows that survived the ceil were already meaningless.
-            DB::table('service_products')->where('quantity', '<=', 0)->delete();
+                // Service product mappings must have a positive quantity to make sense;
+                // any zero rows that survived the ceil were already meaningless.
+                DB::table('service_products')->where('quantity', '<=', 0)->delete();
+            }
 
             Schema::table('service_products', function (Blueprint $table): void {
                 $table->unsignedInteger('quantity')->change();

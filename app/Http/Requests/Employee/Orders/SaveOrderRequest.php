@@ -89,6 +89,7 @@ class SaveOrderRequest extends FormRequest
             'payment' => [Rule::requiredIf(! $this->boolean('is_estimate')), 'array'],
             'payment.method' => [Rule::requiredIf(! $this->boolean('is_estimate')), 'sometimes', 'string', Rule::in(['cash', 'card', 'check'])],
             'payment.amount' => [Rule::requiredIf(! $this->boolean('is_estimate')), 'sometimes', 'numeric', 'min:0'],
+            'payment.credits_applied' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'tenant_id' => ['prohibited'],
             'created_by' => ['prohibited'],
@@ -126,6 +127,12 @@ class SaveOrderRequest extends FormRequest
 
             if (! $this->hasVehicleDetails($vehicle)) {
                 $validator->errors()->add('vehicle_id', 'Please add vehicle details before saving the order.');
+            }
+
+            $creditsApplied = (float) $this->input('payment.credits_applied', 0);
+
+            if ($creditsApplied > 0 && $creditsApplied > (float) $customer->credit_balance + 0.001) {
+                $validator->errors()->add('payment.credits_applied', 'The customer does not have enough store credit.');
             }
         });
     }

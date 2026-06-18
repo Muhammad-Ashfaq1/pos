@@ -52,6 +52,11 @@ class AuthController extends Controller
         $remember = $request->remember ? true : false;
 
         if (! Auth::attempt($credentials, $remember)) {
+            // Fall back to the customer portal guard so customers use the same login.
+            if ($redirect = $this->attemptCustomerLogin($request, $credentials, $remember)) {
+                return $redirect;
+            }
+
             return back()
                 ->withInput($request->only('email'))
                 ->with('error', 'The provided credentials do not match our records.');
@@ -145,11 +150,33 @@ class AuthController extends Controller
     public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
+        Auth::guard('customer')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    /**
+     * Authenticate a portal customer through the same /login form (no shop code).
+     * Returns a redirect on success, or null so the caller can fall through to the
+     * standard "invalid credentials" response.
+     */
+    private function attemptCustomerLogin(Request $request, array $credentials, bool $remember): ?RedirectResponse
+    {
+        $authenticated = Auth::guard('customer')->attempt(
+            $credentials + ['portal_enabled' => true],
+            $remember
+        );
+
+        if (! $authenticated) {
+            return null;
+        }
+
+        $request->session()->regenerate();
+
+        return redirect()->intended(route('customer.dashboard'));
     }
 
     private function resolveLoginBlockMessage(User $user): ?string

@@ -73,62 +73,6 @@
                 </div>
             </section>
 
-            <section class="employee-order-details-panel mt-3 p-3">
-                <div class="employee-order-details-panel-header mb-3">
-                    <h5 class="d-flex align-items-center mb-0">
-                        <i class="ti tabler-receipt-2 me-2 text-primary fs-4"></i>Transaction History
-                    </h5>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-sm table-borderless align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="px-2 py-1 text-muted fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">DATE & TIME</th>
-                                <th class="px-2 py-1 text-muted fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">METHOD</th>
-                                <th class="px-2 py-1 text-muted fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">COLLECTED BY</th>
-                                <th class="px-2 py-1 text-muted fw-bold text-end" style="font-size: 0.72rem; letter-spacing: 0.5px;">AMOUNT</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($order['payment_history'] ?? [] as $payment)
-                                <tr class="border-bottom border-light">
-                                    <td class="px-2 py-2 text-muted" style="font-size: 0.78rem;">{{ $payment['created_at_label'] }}</td>
-                                    <td class="px-2 py-2" style="font-size: 0.78rem;">
-                                        @php
-                                            $methodLower = strtolower($payment['payment_method']);
-                                            $badgeClass = match($methodLower) {
-                                                'cash' => 'bg-label-success',
-                                                'card' => 'bg-label-info',
-                                                'check' => 'bg-label-warning',
-                                                default => 'bg-label-secondary'
-                                            };
-                                            $icon = match($methodLower) {
-                                                'cash' => 'tabler-coin',
-                                                'card' => 'tabler-credit-card',
-                                                'check' => 'tabler-notes',
-                                                default => 'tabler-wallet'
-                                            };
-                                        @endphp
-                                        <span class="badge {{ $badgeClass }} d-inline-flex align-items-center gap-1 py-1 px-2" style="font-size: 0.7rem; font-weight: 700;">
-                                            <i class="ti {{ $icon }} fs-6"></i>
-                                            {{ $payment['payment_method_label'] }}
-                                        </span>
-                                    </td>
-                                    <td class="px-2 py-2 text-heading fw-medium" style="font-size: 0.78rem;">{{ $payment['collector_name'] }}</td>
-                                    <td class="px-2 py-2 text-end fw-bold text-indigo" style="font-size: 0.78rem; color: #312e81;">{{ $payment['amount_label'] }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="text-center text-muted py-4" style="font-size: 0.8rem;">
-                                        <i class="ti tabler-info-circle me-1"></i>No transaction history found.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
             <section class="employee-order-details-panel employee-order-details-payment-panel">
                 <div class="employee-order-details-order-title">
                     <h5>
@@ -168,9 +112,20 @@
                         <span>Total:</span>
                         <strong>{{ $order['total_amount_label'] }}</strong>
                     </div>
+                    @if (($order['credit_applied'] ?? 0) > 0)
+                        <div class="employee-order-details-payment-line employee-order-details-discount-row">
+                            <span>Store Credit Used:</span>
+                            <strong>-{{ $order['credit_applied_label'] }}</strong>
+                        </div>
+                    @endif
                 </div>
 
-
+                @if (($order['credit_earned'] ?? 0) > 0)
+                    <div class="alert alert-success d-flex align-items-center gap-2 py-2 px-3 mt-3 mb-0">
+                        <i class="ti tabler-coin fs-5"></i>
+                        <span class="small fw-semibold">Customer earned {{ $order['credit_earned_label'] }} store credit on this order.</span>
+                    </div>
+                @endif
 
                 <div class="employee-order-details-balance">
                     <span>Balance Due:</span>
@@ -206,6 +161,14 @@
                         </button>
                     </div>
                 </div>
+
+                <div class="d-grid mt-2">
+                    <button type="button" class="btn btn-outline-primary w-100 py-2 d-flex align-items-center justify-content-center gap-2" data-bs-toggle="modal" data-bs-target="#transactionHistoryModal">
+                        <i class="ti tabler-receipt-2 fs-5"></i>
+                        <span class="fw-bold">Transaction History</span>
+                        <span class="badge bg-label-primary rounded-pill">{{ count($order['payment_history'] ?? []) }}</span>
+                    </button>
+                </div>
             </section>
         </div>
     </div>
@@ -228,6 +191,28 @@
                             <div class="fs-4 fw-bold text-primary">{{ $order['balance_due_label'] }}</div>
                         </div>
 
+                        @if (($order['customer_credit_balance'] ?? 0) > 0)
+                            <div class="mb-3 p-3 rounded-3" style="background:#eef2ff;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label for="credits_applied" class="form-label fw-bold mb-0">
+                                        <i class="ti tabler-wallet me-1 text-primary"></i>Use Store Credit
+                                    </label>
+                                    <span class="small text-muted">Available: <strong class="text-primary">{{ $order['customer_credit_balance_label'] }}</strong></span>
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text">{{ \App\Support\Currency::symbol() }}</span>
+                                    <input type="number" id="credits_applied" name="credits_applied" class="form-control"
+                                        step="0.01" min="0"
+                                        max="{{ $order['customer_credit_balance'] }}"
+                                        data-balance="{{ $order['customer_credit_balance'] }}"
+                                        data-due="{{ round(max($order['total_amount'] - $order['payment_amount'], 0), 2) }}"
+                                        value="0">
+                                    <button type="button" class="btn btn-outline-primary" id="apply-max-credit">Max</button>
+                                </div>
+                                <small class="text-muted">Credit is applied first; the remaining balance is collected below.</small>
+                            </div>
+                        @endif
+
                         <div class="mb-3">
                             <label for="payment_method" class="form-label fw-bold">Payment Method <span class="text-danger">*</span></label>
                             <select id="payment_method" name="payment_method" class="form-select" required>
@@ -241,8 +226,8 @@
                             <label for="payment_amount" class="form-label fw-bold">Payment Amount <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text">{{ \App\Support\Currency::symbol() }}</span>
-                                <input type="number" id="payment_amount" name="payment_amount" class="form-control" 
-                                    step="0.01" min="0.01" max="999999.99" 
+                                <input type="number" id="payment_amount" name="payment_amount" class="form-control"
+                                    step="0.01" min="0" max="999999.99"
                                     value="{{ round(max($order['total_amount'] - $order['payment_amount'], 0), 2) }}" required>
                             </div>
                         </div>
@@ -313,6 +298,75 @@
             </div>
         </div>
     </div>
+
+    <!-- Transaction History Modal -->
+    <div class="modal fade" id="transactionHistoryModal" tabindex="-1" aria-labelledby="transactionHistoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content text-start">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold d-flex align-items-center" id="transactionHistoryModalLabel">
+                        <i class="ti tabler-receipt-2 me-2 text-primary fs-4"></i>Transaction History
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="px-2 py-1 text-muted fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">DATE & TIME</th>
+                                    <th class="px-2 py-1 text-muted fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">METHOD</th>
+                                    <th class="px-2 py-1 text-muted fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">COLLECTED BY</th>
+                                    <th class="px-2 py-1 text-muted fw-bold text-end" style="font-size: 0.72rem; letter-spacing: 0.5px;">AMOUNT</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($order['payment_history'] ?? [] as $payment)
+                                    <tr class="border-bottom border-light">
+                                        <td class="px-2 py-2 text-muted" style="font-size: 0.78rem;">{{ $payment['created_at_label'] }}</td>
+                                        <td class="px-2 py-2" style="font-size: 0.78rem;">
+                                            @php
+                                                $methodLower = strtolower($payment['payment_method']);
+                                                $badgeClass = match($methodLower) {
+                                                    'cash' => 'bg-label-success',
+                                                    'card' => 'bg-label-info',
+                                                    'check' => 'bg-label-warning',
+                                                    'store_credit' => 'bg-label-primary',
+                                                    default => 'bg-label-secondary'
+                                                };
+                                                $icon = match($methodLower) {
+                                                    'cash' => 'tabler-coin',
+                                                    'card' => 'tabler-credit-card',
+                                                    'check' => 'tabler-notes',
+                                                    'store_credit' => 'tabler-wallet',
+                                                    default => 'tabler-wallet'
+                                                };
+                                            @endphp
+                                            <span class="badge {{ $badgeClass }} d-inline-flex align-items-center gap-1 py-1 px-2" style="font-size: 0.7rem; font-weight: 700;">
+                                                <i class="ti {{ $icon }} fs-6"></i>
+                                                {{ $payment['payment_method_label'] }}
+                                            </span>
+                                        </td>
+                                        <td class="px-2 py-2 text-heading fw-medium" style="font-size: 0.78rem;">{{ $payment['collector_name'] }}</td>
+                                        <td class="px-2 py-2 text-end fw-bold text-indigo" style="font-size: 0.78rem; color: #312e81;">{{ $payment['amount_label'] }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4" style="font-size: 0.8rem;">
+                                            <i class="ti tabler-info-circle me-1"></i>No transaction history found.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('page-script')
@@ -321,6 +375,27 @@
             const paymentModal = $('#paymentModal');
             const paymentForm = $('#payment-form');
             const submitBtn = $('#btn-submit-payment');
+
+            // Store-credit redemption: credit applies first, cash covers the rest.
+            const creditInput = $('#credits_applied');
+            const paymentAmountInput = $('#payment_amount');
+            if (creditInput.length) {
+                const balance = parseFloat(creditInput.data('balance')) || 0;
+                const due = parseFloat(creditInput.data('due')) || 0;
+
+                const recalcCash = function() {
+                    let credit = parseFloat(creditInput.val()) || 0;
+                    credit = Math.max(0, Math.min(credit, balance, due));
+                    creditInput.val(credit ? credit.toFixed(2) : 0);
+                    paymentAmountInput.val(Math.max(due - credit, 0).toFixed(2));
+                };
+
+                creditInput.on('input change', recalcCash);
+                $('#apply-max-credit').on('click', function() {
+                    creditInput.val(Math.min(balance, due).toFixed(2));
+                    recalcCash();
+                });
+            }
 
             paymentForm.on('submit', function(e) {
                 e.preventDefault();

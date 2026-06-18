@@ -31,6 +31,7 @@
                         <th>Discount Value</th>
                         <th>Type</th>
                         <th>Min Limit</th>
+                        <th>Earns Credit</th>
                         <th>Is Active</th>
                         <th class="text-center">Actions</th>
                     </tr>
@@ -43,6 +44,13 @@
                             <td>{{ $group->type === 'percentage' ? $group->value . '%' : \App\Support\Currency::format($group->value) }}</td>
                             <td>{{ $group->type }}</td>
                             <td>{{ $group->type === 'fixed' ? \App\Support\Currency::format($group->min_limit) : '-' }}</td>
+                            <td>
+                                @if ($group->earns_credit)
+                                    <span class="badge bg-label-info">{{ $group->credit_earn_type === 'percentage' ? rtrim(rtrim(number_format((float) $group->credit_earn_rate, 2), '0'), '.') . '%' : \App\Support\Currency::format($group->credit_earn_rate) }}</span>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
                             <td class="text-center">
                                 @if ($group->is_active)
                                     <span class="badge bg-label-success">Yes</span>
@@ -59,6 +67,10 @@
                                         data-value="{{ $group->value }}"
                                         data-min-value="{{ $group->min_limit }}"
                                         data-is-active="{{ $group->is_active }}"
+                                        data-earns-credit="{{ $group->earns_credit ? 1 : 0 }}"
+                                        data-credit-earn-type="{{ $group->credit_earn_type }}"
+                                        data-credit-earn-rate="{{ $group->credit_earn_rate }}"
+                                        data-credit-min-spend="{{ $group->credit_min_spend }}"
                                     ><i class="ti tabler-edit"></i></a>
                                     <a href="javascript:void(0);" class="text-danger delete-discount-group" 
                                         data-id="{{ $group->id }}"

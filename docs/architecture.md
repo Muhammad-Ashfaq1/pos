@@ -24,14 +24,15 @@ app/
 │   ├── Admin/ChangeTenantStatusAction.php
 │   ├── Auth/RegisterTenantShopAction.php
 │   └── Tenant/Services/SyncServiceProductsAction.php
-├── Enums/TenantStatus.php
+├── Enums/TenantStatus.php, DemoRequestStatus.php
 ├── Exceptions/InvalidTenantStatusTransitionException.php
 ├── Helpers/FileUploadManager.php
 ├── Http/
 │   ├── Controllers/
-│   │   ├── Admin/             super-admin screens
+│   │   ├── Admin/             super-admin screens (tenants, demo requests)
 │   │   ├── Auth/              register, login, password reset, verify
 │   │   ├── Employee/          employee panel + POS new-order
+│   │   ├── Public/            unauthenticated endpoints (demo request capture)
 │   │   ├── Tenant/            per-shop catalog, customers, settings, roles
 │   │   └── SharedDataController.php
 │   ├── Middleware/            7 custom middlewares — see table below
@@ -157,7 +158,7 @@ Used when an operation spans models or wraps a transaction:
 
 ### 5. Models (`app/Models/`)
 
-Eloquent models for `User`, `Tenant`, `Category`, `SubCategory`, `ProductType`, `Product`, `Service`, `ServiceProduct`, `Customer`, `Vehicle`, `Discount`, `DiscountGroup`, `Order`, `OrderItem`, `Image`. All tenant-owned models use the `BelongsToTenant` trait; `Product` additionally uses `HasImages` for polymorphic image attachments; `Tenant` and `DiscountGroup` use `SoftDeletes`.
+Eloquent models for `User`, `Tenant`, `Category`, `SubCategory`, `ProductType`, `Product`, `Service`, `ServiceProduct`, `Customer`, `Vehicle`, `Discount`, `DiscountGroup`, `Order`, `OrderItem`, `OrderPayment`, `Image`, `DemoRequest`. Most tenant-owned models use the `BelongsToTenant` trait; `Product` additionally uses `HasImages` for polymorphic image attachments; `Tenant` and `DiscountGroup` use `SoftDeletes`. **`DemoRequest` is a central model** (public landing leads) — it carries no `tenant_id` and is not tenant-scoped.
 
 ## Multi-tenancy mechanism
 
@@ -208,6 +209,10 @@ Route-model binding (`Route::get('/{product}', ...)`) is also tenant-scoped thro
 ### Tenant status gate
 
 Even when `tenant_id` resolves correctly, [`EnsureTenantIsApproved`](../app/Http/Middleware/EnsureTenantIsApproved.php) blocks the request if `Tenant::status` is not `Approved`. The `TenantStatus` enum drives the message shown to the user — see [app/Enums/TenantStatus.php](../app/Enums/TenantStatus.php).
+
+## Customer API layer (Sanctum)
+
+Alongside the session-based staff/admin web app, a **stateless JSON API** under [routes/api.php](../routes/api.php) (`/api/v1/customer/*`) serves the customer portal and the future Flutter app from one codebase. It uses **Laravel Sanctum** Bearer tokens against a separate `customers` provider/guard ([config/auth.php](../config/auth.php)); `Customer` is now `Authenticatable` with `HasApiTokens`. Because a customer email can exist at multiple shops, login is tenant-scoped (the request carries the shop slug) and the [`InitializeTenancyForCustomer`](../app/Http/Middleware/InitializeTenancyForCustomer.php) middleware (`customer.tenant.init`) initializes tenancy from the authenticated customer so `BelongsToTenant` applies. Full detail: [customer-portal.md](customer-portal.md).
 
 ## Authorization model in two layers
 

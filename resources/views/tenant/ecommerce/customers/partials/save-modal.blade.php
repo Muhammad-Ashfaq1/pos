@@ -114,6 +114,53 @@
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
+
+                    {{-- Portal access + store-credit ledger (edit mode only) --}}
+                    <div class="card border mb-2 d-none" id="customer_portal_panel"
+                        data-invite-url="" data-adjust-url="" data-history-url="">
+                        <div class="card-body">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                                <h6 class="mb-0 fw-bold"><i class="ti tabler-wallet me-1 text-primary"></i>Customer Portal & Store Credit</h6>
+                                <span id="customer_portal_status" class="badge bg-label-secondary">Portal: Off</span>
+                            </div>
+
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-3">
+                                    <span class="d-block text-muted small">Current Balance</span>
+                                    <span class="h5 fw-bold text-primary" id="customer_portal_balance">—</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small mb-1">Adjust Amount</label>
+                                    <input type="number" step="0.01" class="form-control form-control-sm" id="adjust_credit_amount" placeholder="e.g. 10 or -5">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small mb-1">Reason</label>
+                                    <input type="text" class="form-control form-control-sm" id="adjust_credit_reason" maxlength="255" placeholder="Reason for adjustment">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-sm btn-outline-primary w-100" id="adjust_credit_btn">Apply</button>
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2 mt-3">
+                                <button type="button" class="btn btn-sm btn-label-primary" id="invite_portal_btn">
+                                    <i class="ti tabler-mail me-1"></i><span id="invite_portal_label">Send Portal Invite</span>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-label-secondary" id="credit_history_btn">
+                                    <i class="ti tabler-history me-1"></i>View Credit History
+                                </button>
+                            </div>
+
+                            <div class="table-responsive mt-3 d-none" id="credit_history_wrap">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <thead class="table-light"><tr>
+                                        <th class="small">Date</th><th class="small">Type</th><th class="small">Note</th><th class="small text-end">Amount</th><th class="small text-end">Balance</th>
+                                    </tr></thead>
+                                    <tbody id="credit_history_body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="modal-footer">

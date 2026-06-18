@@ -24,6 +24,69 @@
     this.bindModalActions();
     this.bindSaveForm();
     this.bindCustomerTypeToggle();
+    this.bindPortalPanel();
+  };
+
+  CustomerManager.prototype.bindPortalPanel = function () {
+    const _this = this;
+    const $panel = $('#customer_portal_panel');
+    if (!$panel.length) return;
+
+    const csrf = $('meta[name="csrf-token"]').attr('content');
+    const post = (url, data) => $.ajax({ url: url, type: 'POST', data: data, headers: { 'X-CSRF-TOKEN': csrf } });
+
+    $('#invite_portal_btn').on('click', function () {
+      const url = $panel.data('invite-url');
+      if (!url) { window.appNotify && window.appNotify('error', 'This customer has no email address.'); return; }
+      const $btn = $(this);
+      $btn.prop('disabled', true);
+      post(url, {})
+        .done((res) => { window.appNotify && window.appNotify('success', res.message); _this.setPortalStatus(true); })
+        .fail((xhr) => window.appNotify && window.appNotify('error', (xhr.responseJSON && xhr.responseJSON.message) || 'Could not send invite.'))
+        .always(() => $btn.prop('disabled', false));
+    });
+
+    $('#adjust_credit_btn').on('click', function () {
+      const url = $panel.data('adjust-url');
+      const amount = $('#adjust_credit_amount').val();
+      const reason = $('#adjust_credit_reason').val();
+      if (!amount || !reason) { window.appNotify && window.appNotify('error', 'Enter an amount and a reason.'); return; }
+      const $btn = $(this);
+      $btn.prop('disabled', true);
+      post(url, { amount: amount, reason: reason })
+        .done((res) => {
+          window.appNotify && window.appNotify('success', res.message);
+          $('#customer_portal_balance').text(res.data.credit_balance_label);
+          _this.$form.find('#customer_credit_balance').val(res.data.credit_balance);
+          $('#adjust_credit_amount').val(''); $('#adjust_credit_reason').val('');
+          if (!$('#credit_history_wrap').hasClass('d-none')) $('#credit_history_btn').trigger('click');
+        })
+        .fail((xhr) => window.appNotify && window.appNotify('error', (xhr.responseJSON && xhr.responseJSON.message) || 'Adjustment failed.'))
+        .always(() => $btn.prop('disabled', false));
+    });
+
+    $('#credit_history_btn').on('click', function () {
+      const url = $panel.data('history-url');
+      const $wrap = $('#credit_history_wrap');
+      $.get(url).done((res) => {
+        const rows = (res.data || []).map((t) =>
+          '<tr><td class="small text-muted">' + (t.created_at_label || '') + '</td>' +
+          '<td class="small text-capitalize">' + t.type + (t.order_number ? ' (' + t.order_number + ')' : '') + '</td>' +
+          '<td class="small">' + (t.description || '') + '</td>' +
+          '<td class="small text-end ' + (t.amount >= 0 ? 'text-success' : 'text-danger') + '">' + t.amount_label + '</td>' +
+          '<td class="small text-end">' + t.balance_after_label + '</td></tr>'
+        ).join('');
+        $('#credit_history_body').html(rows || '<tr><td colspan="5" class="text-center text-muted py-3">No credit activity yet.</td></tr>');
+        $wrap.removeClass('d-none');
+      });
+    });
+  };
+
+  CustomerManager.prototype.setPortalStatus = function (enabled) {
+    $('#customer_portal_status')
+      .toggleClass('bg-label-success', enabled)
+      .toggleClass('bg-label-secondary', !enabled)
+      .text('Portal: ' + (enabled ? 'On' : 'Off'));
   };
 
   CustomerManager.prototype.initStaticSelect2 = function () {
@@ -100,6 +163,9 @@
     this.resetValidationState();
     if (this.validator) this.validator.resetForm();
     this.toggleDiscountGroupVisibility();
+    // Portal panel is edit-only.
+    $('#customer_portal_panel').addClass('d-none');
+    $('#credit_history_wrap').addClass('d-none');
   };
 
   CustomerManager.prototype.fillForm = function (customer) {
@@ -133,6 +199,21 @@
     this.setSubmitButtonState(false);
     this.resetValidationState();
     this.toggleDiscountGroupVisibility();
+
+    // Portal & store-credit panel (edit mode only).
+    const $panel = $('#customer_portal_panel');
+    if ($panel.length) {
+      $panel.removeClass('d-none')
+        .data('invite-url', customer.invite_portal_url || '')
+        .data('adjust-url', customer.adjust_credit_url || '')
+        .data('history-url', customer.credit_history_url || '');
+      $('#customer_portal_balance').text(customer.credit_balance_label || customer.credit_balance);
+      $('#credit_history_wrap').addClass('d-none');
+      $('#credit_history_body').empty();
+      this.setPortalStatus(Boolean(customer.has_portal_access));
+      $('#invite_portal_label').text(customer.has_portal_access ? 'Resend Portal Invite' : 'Send Portal Invite');
+      $('#invite_portal_btn').toggleClass('disabled', !customer.invite_portal_url);
+    }
   };
 
   CustomerManager.prototype.setSubmitButtonState = function (loading) {
