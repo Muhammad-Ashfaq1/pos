@@ -59,7 +59,7 @@ class CustomerPortalDemoSeeder extends Seeder
             return;
         }
 
-        $this->loyaltyGroup();
+        $this->loyaltyGroup($tenant);
         $orders = app(OrderRepositoryInterface::class);
         $credits = app(CreditService::class);
 
@@ -99,10 +99,13 @@ class CustomerPortalDemoSeeder extends Seeder
         $this->command?->info('Flutter/token API login also needs shop code: '.$tenant->slug.'.');
     }
 
-    private function loyaltyGroup(): DiscountGroup
+    private function loyaltyGroup(Tenant $tenant): DiscountGroup
     {
         return DiscountGroup::query()->firstOrCreate(
-            ['slug' => 'portal-loyalty-gold'],
+            [
+                'tenant_id' => $tenant->id,
+                'slug' => 'portal-loyalty-gold',
+            ],
             [
                 'name' => 'Portal Loyalty Gold',
                 'type' => 'percentage',
