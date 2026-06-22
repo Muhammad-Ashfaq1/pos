@@ -8,6 +8,22 @@ $(function () {
     let selectedOrder = null;
     const returnModal = new bootstrap.Modal(document.getElementById('returnConfirmationModal'));
 
+    // Pagination state
+    const state = {
+        eligible: {
+            page: 1,
+            per_page: 12,
+            loading: false,
+            has_more: true
+        },
+        history: {
+            page: 1,
+            per_page: 12,
+            loading: false,
+            has_more: true
+        }
+    };
+
     // ── Notifications (mirror orders.js conventions) ──────────────────────
     function notify(type, message) {
         if (typeof window.appNotify === 'function') {
@@ -46,77 +62,127 @@ $(function () {
         $('[data-returns-view]').addClass('d-none');
         $('[data-returns-view="' + tab + '"]').removeClass('d-none');
         $('[data-returns-search]').val('');
+        
+        // Reset pagination when switching tabs
         if (tab === 'eligible') {
+            state.eligible.page = 1;
+            state.eligible.has_more = true;
             loadReturns();
         } else {
+            state.history.page = 1;
+            state.history.has_more = true;
             loadHistory();
         }
     });
 
     // ── Eligible orders ───────────────────────────────────────────────────
-    function loadReturns(search = '') {
+    function loadReturns(search = '', append = false) {
         const $list = $('[data-return-list]');
         const $loading = $('[data-return-loading]');
         const $empty = $('[data-return-empty]');
 
-        $list.addClass('d-none');
-        $empty.addClass('d-none');
+        if (state.eligible.loading) {
+            return;
+        }
+
+        state.eligible.loading = true;
         $loading.removeClass('d-none');
+
+        if (!append) {
+            $list.addClass('d-none');
+            $empty.addClass('d-none');
+        }
 
         $.ajax({
             url: listingUrl,
             method: 'GET',
-            data: { q: search },
+            data: {
+                q: search,
+                page: state.eligible.page,
+                per_page: state.eligible.per_page
+            },
             success: function (response) {
                 $loading.addClass('d-none');
                 const orders = response.orders || [];
                 $('[data-returns-count="eligible"]').text(orders.length);
 
+                if (response.pagination) {
+                    state.eligible.has_more = response.pagination.has_more;
+                    state.eligible.page = response.pagination.current_page;
+                }
+
                 if (orders.length > 0) {
                     $list.removeClass('d-none');
-                    renderReturns(orders);
-                } else {
+                    renderReturns(orders, append);
+                } else if (!append) {
                     $empty.removeClass('d-none');
                 }
             },
             error: function () {
                 $loading.addClass('d-none');
-                $empty.removeClass('d-none');
+                if (!append) {
+                    $empty.removeClass('d-none');
+                }
                 notify('error', 'Failed to load eligible orders.');
+            },
+            complete: function () {
+                state.eligible.loading = false;
             }
         });
     }
 
     // ── Return history ────────────────────────────────────────────────────
-    function loadHistory(search = '') {
+    function loadHistory(search = '', append = false) {
         const $list = $('[data-history-list]');
         const $loading = $('[data-history-loading]');
         const $empty = $('[data-history-empty]');
 
-        $list.addClass('d-none');
-        $empty.addClass('d-none');
+        if (state.history.loading) {
+            return;
+        }
+
+        state.history.loading = true;
         $loading.removeClass('d-none');
+
+        if (!append) {
+            $list.addClass('d-none');
+            $empty.addClass('d-none');
+        }
 
         $.ajax({
             url: historyUrl,
             method: 'GET',
-            data: { q: search },
+            data: {
+                q: search,
+                page: state.history.page,
+                per_page: state.history.per_page
+            },
             success: function (response) {
                 $loading.addClass('d-none');
                 const orders = response.orders || [];
                 $('[data-returns-count="history"]').text(orders.length);
 
+                if (response.pagination) {
+                    state.history.has_more = response.pagination.has_more;
+                    state.history.page = response.pagination.current_page;
+                }
+
                 if (orders.length > 0) {
                     $list.removeClass('d-none');
-                    renderHistory(orders);
-                } else {
+                    renderHistory(orders, append);
+                } else if (!append) {
                     $empty.removeClass('d-none');
                 }
             },
             error: function () {
                 $loading.addClass('d-none');
-                $empty.removeClass('d-none');
+                if (!append) {
+                    $empty.removeClass('d-none');
+                }
                 notify('error', 'Failed to load returned orders.');
+            },
+            complete: function () {
+                state.history.loading = false;
             }
         });
     }
@@ -131,9 +197,11 @@ $(function () {
     }
 
     // ── Render eligible cards ─────────────────────────────────────────────
-    function renderReturns(orders) {
+    function renderReturns(orders, append = false) {
         const $list = $('[data-return-list]');
-        $list.empty();
+        if (!append) {
+            $list.empty();
+        }
 
         orders.forEach(function (order) {
             const eligible = !!order.is_eligible;
@@ -186,9 +254,11 @@ $(function () {
     }
 
     // ── Render history cards ──────────────────────────────────────────────
-    function renderHistory(orders) {
+    function renderHistory(orders, append = false) {
         const $list = $('[data-history-list]');
-        $list.empty();
+        if (!append) {
+            $list.empty();
+        }
 
         orders.forEach(function (order) {
             const vehicleLine = order.vehicle_label
@@ -221,6 +291,24 @@ $(function () {
 
             $list.append(card);
         });
+    }
+
+    // ── Load more eligible orders ───────────────────────────────────────────
+    function loadMoreReturns() {
+        if (!state.eligible.has_more || state.eligible.loading) {
+            return;
+        }
+        state.eligible.page++;
+        loadReturns($('[data-returns-search]').val().trim(), true);
+    }
+
+    // ── Load more history ─────────────────────────────────────────────────
+    function loadMoreHistory() {
+        if (!state.history.has_more || state.history.loading) {
+            return;
+        }
+        state.history.page++;
+        loadHistory($('[data-returns-search]').val().trim(), true);
     }
 
     // ── Open modal ────────────────────────────────────────────────────────
@@ -414,22 +502,61 @@ $(function () {
         clearTimeout(searchTimeout);
         const search = $(this).val().trim();
         searchTimeout = setTimeout(function () {
+            // Reset pagination when searching
             if (activeTab() === 'eligible') {
+                state.eligible.page = 1;
+                state.eligible.has_more = true;
                 loadReturns(search);
             } else {
+                state.history.page = 1;
+                state.history.has_more = true;
                 loadHistory(search);
             }
         }, 300);
     });
 
     $(document).on('click', '[data-return-refresh]', function () {
+        state.eligible.page = 1;
+        state.eligible.has_more = true;
         loadReturns($('[data-returns-search]').val().trim());
     });
     $(document).on('click', '[data-history-refresh]', function () {
+        state.history.page = 1;
+        state.history.has_more = true;
         loadHistory($('[data-returns-search]').val().trim());
     });
 
     // ── Initial load ──────────────────────────────────────────────────────
     loadReturns();
     loadHistory(); // pre-fill history count
+
+    // ── Infinite scroll ────────────────────────────────────────────────────
+    $(window).on('scroll', function () {
+        const windowHeight = $(window).height();
+        const scrollTop = $(window).scrollTop();
+        
+        if (activeTab() === 'eligible') {
+            const $list = $('[data-return-list]');
+            if (!$list.length || $list.hasClass('d-none')) return;
+            
+            const listHeight = $list.height();
+            const listOffset = $list.offset().top;
+            
+            // Load more when user scrolls near the bottom of the list
+            if (scrollTop + windowHeight >= listOffset + listHeight - 200) {
+                loadMoreReturns();
+            }
+        } else {
+            const $list = $('[data-history-list]');
+            if (!$list.length || $list.hasClass('d-none')) return;
+            
+            const listHeight = $list.height();
+            const listOffset = $list.offset().top;
+            
+            // Load more when user scrolls near the bottom of the list
+            if (scrollTop + windowHeight >= listOffset + listHeight - 200) {
+                loadMoreHistory();
+            }
+        }
+    });
 });

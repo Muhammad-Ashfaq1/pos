@@ -123,7 +123,7 @@
                     <div class="employee-return-modal-heading">
                         <span class="employee-return-modal-icon"><i class="ti tabler-rotate-2"></i></span>
                         <div>
-                            <h5 class="modal-title" id="returnConfirmationModalLabel">Process Return</h5>
+                            <h5 class="modal-title" id="returnConfirmationModalLabel">Process Return - <span id="returnOrderNumber"></span></h5>
                             <p class="employee-return-modal-subtitle">Select the items the customer is returning.</p>
                         </div>
                     </div>
@@ -131,10 +131,6 @@
                 </div>
                 <div class="modal-body">
                     <div class="employee-return-summary">
-                        <div class="employee-return-summary-item">
-                            <span class="employee-return-summary-label">Order</span>
-                            <span class="employee-return-summary-value" id="returnOrderNumber"></span>
-                        </div>
                         <div class="employee-return-summary-item">
                             <span class="employee-return-summary-label">Customer</span>
                             <span class="employee-return-summary-value" id="returnCustomerName"></span>
