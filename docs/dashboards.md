@@ -47,5 +47,7 @@ The status transitions, approval flow, and impersonation mechanics are described
 | Admin dashboard | `/admin/dashboard` | `Admin\DashboardController` | super admin |
 | Admin shops | `/admin/shops` | `Admin\TenantController` | super admin |
 
+For the **filterable, row-level, exportable** view of this same data (sales, payments, products, customers), see **[reports.md](reports.md)**.
+
 This is the end of the journey. For the underlying schema behind every figure here, see **[database.md](database.md)**.
 </content>
