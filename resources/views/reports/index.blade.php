@@ -22,22 +22,15 @@
 
 @section('content')
 <div class="container-fluid flex-grow-1 container-p-y">
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
-        <div>
-            <h4 class="mb-1">{{ $reportLabel }} Report</h4>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route($dashboardRoute) }}">Dashboard</a></li>
-                    <li class="breadcrumb-item">Reports</li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ $reportLabel }}</li>
-                </ol>
-            </nav>
-        </div>
-
+    <div class="d-flex align-items-center gap-2 mb-4">
+        <a href="{{ route($dashboardRoute) }}" class="btn btn-icon btn-label-secondary rounded-circle" aria-label="Back to dashboard">
+            <i class="ti tabler-arrow-left"></i>
+        </a>
+        <h4 class="mb-0">Reports</h4>
     </div>
 
-    {{-- Report picker --}}
-    <ul class="nav nav-pills flex-column flex-md-row gap-1 gap-md-0 mb-4">
+    {{-- Report picker (tabs) --}}
+    <ul class="nav nav-tabs mb-3">
         @foreach($tabs as $tab)
             <li class="nav-item">
                 <a class="nav-link {{ $tab['active'] ? 'active' : '' }}" href="{{ $tab['url'] }}">
@@ -47,79 +40,75 @@
         @endforeach
     </ul>
 
-    {{-- Summary cards (populated via AJAX) --}}
-    <div class="row g-3 mb-4" id="report-summary"></div>
+    {{-- Filter toolbar: search · date range · filters · reset --}}
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+        <div class="input-group" style="width: 200px;">
+            <span class="input-group-text"><i class="ti tabler-search"></i></span>
+            <input type="search" id="report-search" class="form-control" placeholder="Search…" aria-label="Search records">
+        </div>
 
-    {{-- Filter bar --}}
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="row g-3 align-items-end">
-                <div class="col-sm-6 col-md-3">
-                    <label class="form-label" for="report-period">Date Range</label>
-                    <select id="report-period" class="form-select report-filter">
-                        @foreach($periodLabels as $value => $label)
-                            <option value="{{ $value }}" @selected($value === 'month')>{{ $label }}</option>
+        <div style="width: 160px;">
+            <select id="report-period" class="form-select report-filter" data-placeholder="Date Range" aria-label="Date Range">
+                @foreach($periodLabels as $value => $label)
+                    <option value="{{ $value }}" @selected($value === 'month')>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="report-custom-range d-none" style="width: 150px;">
+            <input type="date" id="report-start" class="form-control report-filter" aria-label="From date">
+        </div>
+        <div class="report-custom-range d-none" style="width: 150px;">
+            <input type="date" id="report-end" class="form-control report-filter" aria-label="To date">
+        </div>
+
+        @if(count($dateColumns) > 1)
+            <div style="width: 150px;">
+                <select id="report-date-column" class="form-select report-filter" data-placeholder="Filter Date By" aria-label="Filter Date By">
+                    @foreach($dateColumns as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+        @endif
+
+        @foreach($filters as $filter)
+            <div style="width: 150px;">
+                @if($filter['type'] === 'select')
+                    <select id="report-filter-{{ $filter['key'] }}" class="form-select report-filter" data-filter-key="{{ $filter['key'] }}" data-placeholder="{{ $filter['label'] }}" aria-label="{{ $filter['label'] }}">
+                        <option value="">{{ $filter['label'] }}: All</option>
+                        @foreach(($filter['options'] ?? []) as $optValue => $optLabel)
+                            <option value="{{ $optValue }}">{{ $optLabel }}</option>
                         @endforeach
                     </select>
-                </div>
-
-                <div class="col-sm-6 col-md-3 report-custom-range d-none">
-                    <label class="form-label" for="report-start">From</label>
-                    <input type="date" id="report-start" class="form-control report-filter">
-                </div>
-                <div class="col-sm-6 col-md-3 report-custom-range d-none">
-                    <label class="form-label" for="report-end">To</label>
-                    <input type="date" id="report-end" class="form-control report-filter">
-                </div>
-
-                @if(count($dateColumns) > 1)
-                    <div class="col-sm-6 col-md-3">
-                        <label class="form-label" for="report-date-column">Filter Date By</label>
-                        <select id="report-date-column" class="form-select report-filter">
-                            @foreach($dateColumns as $value => $label)
-                                <option value="{{ $value }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                @elseif($filter['type'] === 'boolean')
+                    <select id="report-filter-{{ $filter['key'] }}" class="form-select report-filter" data-filter-key="{{ $filter['key'] }}" data-placeholder="{{ $filter['label'] }}" aria-label="{{ $filter['label'] }}">
+                        <option value="">{{ $filter['label'] }}: All</option>
+                        <option value="1">Yes</option>
+                    </select>
+                @else
+                    <input type="number" step="any" id="report-filter-{{ $filter['key'] }}" class="form-control report-filter" data-filter-key="{{ $filter['key'] }}" placeholder="{{ $filter['label'] }}" aria-label="{{ $filter['label'] }}">
                 @endif
-
-                @foreach($filters as $filter)
-                    <div class="col-sm-6 col-md-3">
-                        <label class="form-label" for="report-filter-{{ $filter['key'] }}">{{ $filter['label'] }}</label>
-                        @if($filter['type'] === 'select')
-                            <select id="report-filter-{{ $filter['key'] }}" class="form-select report-filter" data-filter-key="{{ $filter['key'] }}">
-                                <option value="">All</option>
-                                @foreach(($filter['options'] ?? []) as $optValue => $optLabel)
-                                    <option value="{{ $optValue }}">{{ $optLabel }}</option>
-                                @endforeach
-                            </select>
-                        @elseif($filter['type'] === 'boolean')
-                            <select id="report-filter-{{ $filter['key'] }}" class="form-select report-filter" data-filter-key="{{ $filter['key'] }}">
-                                <option value="">All</option>
-                                <option value="1">Yes</option>
-                            </select>
-                        @else
-                            <input type="number" step="any" id="report-filter-{{ $filter['key'] }}" class="form-control report-filter" data-filter-key="{{ $filter['key'] }}" placeholder="{{ $filter['label'] }}">
-                        @endif
-                    </div>
-                @endforeach
             </div>
+        @endforeach
+
+        <div class="d-flex flex-wrap gap-2 ms-lg-auto">
+            <button type="button" id="report-reset" class="btn btn-label-secondary">
+                <i class="ti tabler-refresh me-1"></i> Reset Filters
+            </button>
+            <a href="#" id="report-export" class="btn btn-primary disabled" aria-disabled="true" tabindex="-1">
+                <i class="ti tabler-download me-1"></i> Download Report
+            </a>
         </div>
     </div>
 
+    {{-- Summary strip (populated via AJAX) --}}
+    <div class="mb-3" id="report-summary"></div>
+
     <div class="card">
-        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <h5 class="card-title mb-0">{{ $reportLabel }} Records</h5>
-            <div class="d-flex align-items-center gap-2">
-                <input type="search" id="report-search" class="form-control flex-shrink-0" placeholder="Search…" style="width: 240px; max-width: 100%;" aria-label="Search records">
-                <a href="#" id="report-export" class="btn btn-success flex-shrink-0 disabled" aria-disabled="true" tabindex="-1">
-                    <i class="ti tabler-file-spreadsheet me-1"></i> Export Excel
-                </a>
-            </div>
-        </div>
         <div class="card-datatable table-responsive pt-0">
-            <table class="reports-datatable table">
-                <thead class="bg-label-primary">
+            <table class="reports-datatable table table-hover align-middle">
+                <thead>
                     <tr>
                         <th>#</th>
                         @foreach($columns as $column)

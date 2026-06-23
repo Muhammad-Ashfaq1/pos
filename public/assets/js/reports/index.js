@@ -58,22 +58,35 @@
       .attr('tabindex', enabled ? null : '-1');
   };
 
+  // Numbers (currency especially) are isolated as LTR so symbols like AED's
+  // don't bidi-reorder next to the digits.
+  const ltr = function (value) {
+    return '<span dir="ltr" style="unicode-bidi:isolate;white-space:nowrap;">' + escapeHtml(value) + '</span>';
+  };
+
   const renderSummary = function (summary) {
     const $container = $('#report-summary');
-    $container.empty();
 
-    (summary || []).forEach(function (card) {
-      $container.append(
-        '<div class="col-6 col-md-3">' +
-          '<div class="card h-100">' +
-            '<div class="card-body py-3">' +
-              '<div class="text-muted small text-uppercase">' + escapeHtml(card.label) + '</div>' +
-              '<div class="h4 mb-0 mt-1">' + escapeHtml(card.value) + '</div>' +
+    if (!summary || !summary.length) {
+      $container.empty();
+      return;
+    }
+
+    const perRow = Math.min(summary.length, 4);
+    let cols = '';
+    summary.forEach(function (card) {
+      cols +=
+        '<div class="col">' +
+          '<div class="card h-100 shadow-none border">' +
+            '<div class="card-body py-3 px-3">' +
+              '<div class="text-muted small text-uppercase text-truncate">' + escapeHtml(card.label) + '</div>' +
+              '<div class="h5 fw-semibold mb-0 mt-1">' + ltr(card.value) + '</div>' +
             '</div>' +
           '</div>' +
-        '</div>'
-      );
+        '</div>';
     });
+
+    $container.html('<div class="row g-3 row-cols-2 row-cols-md-' + perRow + '">' + cols + '</div>');
   };
 
   const buildColumns = function () {
@@ -94,7 +107,8 @@
         orderable: !!col.orderable,
         className: 'text-' + (col.align || 'start'),
         render: function (data) {
-          return escapeHtml(data);
+          // End-aligned columns are monetary/numeric — isolate as LTR.
+          return col.align === 'end' ? ltr(data) : escapeHtml(data);
         }
       });
     });
@@ -145,6 +159,31 @@
         setExportEnabled(!!json && Number(json.recordsTotal) > 0);
       }
     });
+  };
+
+  // Restore every control to its default and reload once.
+  const resetFilters = function () {
+    $('#report-period').val('month');
+    $('#report-date-column').each(function () {
+      this.selectedIndex = 0;
+    });
+    $('select.report-filter').not('#report-period').not('#report-date-column').val('');
+    $('input.report-filter').val('');
+    $('#report-search').val('');
+
+    if (typeof $.fn.select2 === 'function') {
+      $('select.report-filter').each(function () {
+        if ($(this).data('select2')) {
+          $(this).trigger('change.select2');
+        }
+      });
+    }
+
+    $('.report-custom-range').addClass('d-none');
+
+    if (reportTable) {
+      reportTable.search('').draw();
+    }
   };
 
   // Give every filter <select> the same Select2 dropdown UI used across the app.
@@ -204,6 +243,8 @@
       }
       updateExportLink();
     });
+
+    $('#report-reset').on('click', resetFilters);
   };
 
   $(function () {
