@@ -17,7 +17,8 @@
       "Bash(rm -f /tmp/dbg.php)",
       "Bash(./vendor/bin/pint --dirty)",
       "Bash(./vendor/bin/pint app/Reports)",
-      "Bash(node -c public/assets/js/reports/index.js)"
+      "Bash(node -c public/assets/js/reports/index.js)",
+      "Bash(node --check public/assets/js/reports/index.js)"
     ]
   },
   "hooks": {
