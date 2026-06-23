@@ -29,6 +29,7 @@
     const orders = []; // [{ id, label, items, customer, vehicle }]
     let activeOrderId = null;
     let nextOrderNumber = 1;
+    let currentProducts = []; // Store current products for detail view
     let isRestoringOrderMeta = false;
     let isSavingOrder = false;
     let paymentAmountInput = '';
@@ -489,6 +490,8 @@
         showLoading($grid);
         Catalog.getProducts({ subCategoryId: subCategoryId, q: q }).done(function (res) {
             const products = res.data || [];
+            currentProducts = products; // Store for detail view
+            
             // Directly open product detail view for the first product
             // Skip the intermediate product cards step
             if (products.length > 0) {
@@ -636,39 +639,24 @@
     function openProductDetail(product) {
         activeProduct = product;
         $('.product-detail-title').text('Product Details');
-        $('.product-name').text(product.name);
-        $('.product-sku').text(product.sku || '—');
-        $('.product-barcode').text(product.barcode || '—');
-        $('.product-price').text(formatMoney(product.price));
-        $('.product-discount-banner').addClass('d-none');
-        $('.product-discount-label').text('');
-        $('.product-qty-input').val(1);
-
-        // Handle Image
-        const $img = $('.product-image');
-        const $icon = $('.product-default-icon');
-        if (product.image_url) {
-            $img.attr('src', product.image_url).removeClass('d-none');
-            $icon.addClass('d-none');
-        } else {
-            $img.addClass('d-none').attr('src', '');
-            $icon.removeClass('d-none');
+        
+        // Render product detail cards in grid
+        const $grid = $('.product-detail-grid');
+        $grid.empty();
+        
+        // Add the main product card
+        const cardHtml = buildProductDetailCard(product);
+        $grid.append(cardHtml);
+        
+        // If we have products from the current level, add them as well
+        // This will show 3 cards in a row when available
+        if (currentProducts && currentProducts.length > 1) {
+            const relatedProducts = currentProducts.filter(p => p.id !== product.id).slice(0, 2);
+            relatedProducts.forEach(p => {
+                $grid.append(buildProductDetailCard(p));
+            });
         }
-
-        // Update Stock & Cart status
-        const cart = currentCart();
-        const inCartItem = cart.find(function (i) { return i.id === product.id; });
-        $('.product-in-cart-qty').text(inCartItem ? inCartItem.qty : 0);
-        $('.product-available-stock').text(product.current_stock || 0);
-
-        // Disable add to cart if out of stock
-        const $btnAdd = $('.btn-add-to-cart');
-        if ((product.current_stock || 0) <= 0) {
-            $btnAdd.prop('disabled', true).addClass('btn-secondary').removeClass('btn-primary').html('<i class="ti tabler-circle-x me-2"></i> Out of Stock');
-        } else {
-            $btnAdd.prop('disabled', false).addClass('btn-primary').removeClass('btn-secondary').html('<i class="ti tabler-shopping-cart me-2"></i> Add to Cart');
-        }
-
+        
         showProductDetail();
     }
 
@@ -679,23 +667,26 @@
     });
 
     $(document).on('click', '.btn-clear-qty', function () {
-        $('.product-qty-input').val(1);
+        const $card = $(this).closest('.product-detail-card');
+        $card.find('.product-qty-input').val(1);
     });
 
     $(document).on('click', '.product-qty-plus-btn', function () {
-        const $input = $('.product-qty-input');
+        const $card = $(this).closest('.product-detail-card');
+        const $input = $card.find('.product-qty-input');
+        const stock = parseInt($card.data('stock')) || 0;
         const val = parseInt($input.val(), 10) || 1;
-        const max = activeProduct ? activeProduct.current_stock : 999999;
 
-        if (val < max) {
+        if (val < stock) {
             $input.val(val + 1);
         } else {
-            notifyOrder('warning', 'Cannot exceed available stock (' + max + ').');
+            notifyOrder('warning', 'Cannot exceed available stock (' + stock + ').');
         }
     });
 
     $(document).on('click', '.product-qty-minus-btn', function () {
-        const $input = $('.product-qty-input');
+        const $card = $(this).closest('.product-detail-card');
+        const $input = $card.find('.product-qty-input');
         const val = parseInt($input.val(), 10) || 1;
         if (val > 1) {
             $input.val(val - 1);
@@ -703,31 +694,53 @@
     });
 
     $(document).on('change', '.product-qty-input', function () {
+        const $card = $(this).closest('.product-detail-card');
         const $input = $(this);
+        const stock = parseInt($card.data('stock')) || 0;
         let val = parseInt($input.val(), 10);
-        const max = activeProduct ? activeProduct.current_stock : 999999;
 
         if (isNaN(val) || val < 1) {
             $input.val(1);
-        } else if (val > max) {
-            $input.val(max);
-            notifyOrder('warning', 'Quantity capped at available stock (' + max + ').');
+        } else if (val > stock) {
+            $input.val(stock);
+            notifyOrder('warning', 'Quantity capped at available stock (' + stock + ').');
         }
     });
 
     $(document).on('click', '.btn-add-to-cart', function () {
-        if (!activeProduct) return;
-        const qty = Math.max(1, parseInt($('.product-qty-input').val(), 10) || 1);
-        const max = activeProduct.current_stock;
+        const $card = $(this).closest('.product-detail-card');
+        const id = $card.data('id');
+        const name = $card.data('name');
+        const price = parseFloat($card.data('price')) || 0;
+        const sku = $card.data('sku') || '';
+        const barcode = $card.data('barcode') || '';
+        const stock = parseInt($card.data('stock')) || 0;
+        const image_url = $card.attr('data-image') || '';
+        const discount = decodePayload($card.attr('data-discount') || '');
+        const tax_percentage = parseFloat($card.attr('data-tax-percentage')) || 0;
+        const qty = parseInt($card.find('.product-qty-input').val(), 10) || 1;
 
-        if (qty > max) {
-            notifyOrder('error', 'Insufficient stock. Available: ' + max);
+        if (stock <= 0) {
+            notifyOrder('error', 'Product is out of stock.');
             return;
         }
 
-        addToCart(activeProduct, qty);
-        activeProduct = null;
-        showCatalog();
+        if (qty > stock) {
+            notifyOrder('error', 'Insufficient stock. Available: ' + stock);
+            return;
+        }
+
+        addToCart({
+            id: id,
+            name: name,
+            price: price,
+            sku: sku,
+            barcode: barcode,
+            current_stock: stock,
+            image_url: image_url,
+            discount: discount,
+            tax_percentage: tax_percentage
+        }, qty);
     });
 
     // ─── Cart (front-end only) ─────────────────────────────────────────
