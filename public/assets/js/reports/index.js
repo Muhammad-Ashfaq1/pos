@@ -77,10 +77,10 @@
     summary.forEach(function (card) {
       cols +=
         '<div class="col">' +
-          '<div class="card h-100 shadow-none border">' +
+          '<div class="card h-100">' +
             '<div class="card-body py-3 px-3">' +
               '<div class="text-muted small text-uppercase text-truncate">' + escapeHtml(card.label) + '</div>' +
-              '<div class="h5 fw-semibold mb-0 mt-1">' + ltr(card.value) + '</div>' +
+              '<div class="h5 fw-semibold mb-0 mt-1 text-primary">' + ltr(card.value) + '</div>' +
             '</div>' +
           '</div>' +
         '</div>';

@@ -18,7 +18,9 @@
       "Bash(./vendor/bin/pint --dirty)",
       "Bash(./vendor/bin/pint app/Reports)",
       "Bash(node -c public/assets/js/reports/index.js)",
-      "Bash(node --check public/assets/js/reports/index.js)"
+      "Bash(node --check public/assets/js/reports/index.js)",
+      "Bash(grep -nE \"#[0-9a-fA-F]{3,6}|rgb\\\\\\(|bg-\\(primary|info|success|warning\\)|btn-success|text-primary\" resources/views/reports/index.blade.php public/assets/js/reports/index.js)",
+      "Bash(./vendor/bin/pint tests/Feature/Tenant/ReportsTest.php)"
     ]
   },
   "hooks": {
