@@ -107,6 +107,39 @@ class ReportsTest extends TestCase
         );
     }
 
+    public function test_admin_side_renders_the_new_report_ui(): void
+    {
+        [, $user] = $this->createTenantUserWithReports();
+
+        $response = $this->actingAs($user)->get(route('tenant.reports.index', 'sales'));
+
+        $response->assertOk();
+        $response->assertSee('Download Report');
+        $response->assertSee('Reset Filters');
+        $response->assertSee('nav-tabs', false);
+    }
+
+    public function test_employee_side_renders_the_report_with_the_panel_layout(): void
+    {
+        [$tenant] = $this->createTenantUserWithReports(User::EMPLOYEE);
+
+        $employee = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'role' => User::EMPLOYEE,
+            'is_active' => true,
+        ]);
+
+        PermissionTeamScope::for($tenant->id, function () use ($employee): void {
+            $employee->givePermissionTo('reports.view');
+        });
+
+        $response = $this->actingAs($employee)->get(route('employee.reports.index', 'sales'));
+
+        $response->assertOk();
+        $response->assertSee('Download Report');
+        $response->assertSee('Reset Filters');
+    }
+
     public function test_unknown_report_key_returns_not_found(): void
     {
         [, $user] = $this->createTenantUserWithReports();
@@ -135,7 +168,7 @@ class ReportsTest extends TestCase
         return $order;
     }
 
-    private function createTenantUserWithReports(): array
+    private function createTenantUserWithReports(string $role = User::TENANT_ADMIN): array
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
         Permission::findOrCreate('reports.view', 'web');
@@ -159,7 +192,7 @@ class ReportsTest extends TestCase
 
         $user = User::factory()->create([
             'tenant_id' => $tenant->id,
-            'role' => User::TENANT_ADMIN,
+            'role' => $role,
             'is_active' => true,
         ]);
 

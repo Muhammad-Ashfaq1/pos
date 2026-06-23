@@ -22,11 +22,15 @@
 
 @section('content')
 <div class="container-fluid flex-grow-1 container-p-y">
-    <div class="d-flex align-items-center gap-2 mb-4">
-        <a href="{{ route($dashboardRoute) }}" class="btn btn-icon btn-label-secondary rounded-circle" aria-label="Back to dashboard">
-            <i class="ti tabler-arrow-left"></i>
-        </a>
-        <h4 class="mb-0">Reports</h4>
+    <div class="mb-4">
+        <h4 class="mb-1">Reports</h4>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{{ route($dashboardRoute) }}">Dashboard</a></li>
+                <li class="breadcrumb-item">Reports</li>
+                <li class="breadcrumb-item active" aria-current="page">{{ $reportLabel }}</li>
+            </ol>
+        </nav>
     </div>
 
     {{-- Report picker (tabs) --}}
@@ -108,7 +112,7 @@
     <div class="card">
         <div class="card-datatable table-responsive pt-0">
             <table class="reports-datatable table table-hover align-middle">
-                <thead>
+                <thead class="bg-label-primary">
                     <tr>
                         <th>#</th>
                         @foreach($columns as $column)
