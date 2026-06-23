@@ -1164,6 +1164,8 @@ class OrdersRepository implements OrderRepositoryInterface
     public function returnsListing(array $filters = [], int $returnDays = 30): array
     {
         $search = trim((string) ($filters['q'] ?? ''));
+        $page = (int) ($filters['page'] ?? 1);
+        $perPage = (int) ($filters['per_page'] ?? 20);
 
         $query = Order::query()
             ->whereIn('status', [Order::STATUS_PAID, Order::STATUS_PARTIALLY_PAID])
@@ -1195,9 +1197,14 @@ class OrdersRepository implements OrderRepositoryInterface
             });
         }
 
+        // Get total count before pagination
+        $totalQuery = clone $query;
+        $totalCount = $totalQuery->count();
+
         $orders = $query
             ->orderByDesc('paid_at')
-            ->limit(100)
+            ->offset(($page - 1) * $perPage)
+            ->limit($perPage)
             ->get();
 
         // Filter out orders where all items have been fully returned
@@ -1210,12 +1217,20 @@ class OrdersRepository implements OrderRepositoryInterface
 
         return [
             'orders' => $orders->map(fn (Order $order) => $this->transformReturnableOrder($order, $returnDays))->values(),
+            'pagination' => [
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total' => $totalCount,
+                'has_more' => ($page * $perPage) < $totalCount,
+            ],
         ];
     }
 
     public function returnsHistory(array $filters = []): array
     {
         $search = trim((string) ($filters['q'] ?? ''));
+        $page = (int) ($filters['page'] ?? 1);
+        $perPage = (int) ($filters['per_page'] ?? 20);
 
         $query = Order::query()
             ->where(function ($query) {
@@ -1252,13 +1267,24 @@ class OrdersRepository implements OrderRepositoryInterface
             });
         }
 
+        // Get total count before pagination
+        $totalQuery = clone $query;
+        $totalCount = $totalQuery->count();
+
         $orders = $query
             ->orderByDesc('updated_at')
-            ->limit(100)
+            ->offset(($page - 1) * $perPage)
+            ->limit($perPage)
             ->get();
 
         return [
             'orders' => $orders->map(fn (Order $order) => $this->transformReturnedOrder($order))->values(),
+            'pagination' => [
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total' => $totalCount,
+                'has_more' => ($page * $perPage) < $totalCount,
+            ],
         ];
     }
 

@@ -8,6 +8,22 @@ $(function () {
     let selectedOrder = null;
     const returnModal = new bootstrap.Modal(document.getElementById('returnConfirmationModal'));
 
+    // Pagination state
+    const paginationState = {
+        eligible: {
+            currentPage: 1,
+            isLoading: false,
+            hasMore: true,
+            currentSearch: ''
+        },
+        history: {
+            currentPage: 1,
+            isLoading: false,
+            hasMore: true,
+            currentSearch: ''
+        }
+    };
+
     // ── Notifications (mirror orders.js conventions) ──────────────────────
     function notify(type, message) {
         if (typeof window.appNotify === 'function') {
@@ -46,6 +62,13 @@ $(function () {
         $('[data-returns-view]').addClass('d-none');
         $('[data-returns-view="' + tab + '"]').removeClass('d-none');
         $('[data-returns-search]').val('');
+        // Reset pagination state when switching tabs
+        paginationState.eligible.currentPage = 1;
+        paginationState.eligible.hasMore = true;
+        paginationState.eligible.currentSearch = '';
+        paginationState.history.currentPage = 1;
+        paginationState.history.hasMore = true;
+        paginationState.history.currentSearch = '';
         if (tab === 'eligible') {
             loadReturns();
         } else {
@@ -54,68 +77,134 @@ $(function () {
     });
 
     // ── Eligible orders ───────────────────────────────────────────────────
-    function loadReturns(search = '') {
+    function loadReturns(search = '', append = false) {
         const $list = $('[data-return-list]');
         const $loading = $('[data-return-loading]');
         const $empty = $('[data-return-empty]');
 
-        $list.addClass('d-none');
-        $empty.addClass('d-none');
-        $loading.removeClass('d-none');
+        if (!append) {
+            $list.empty();
+            paginationState.eligible.currentPage = 1;
+            paginationState.eligible.hasMore = true;
+            paginationState.eligible.currentSearch = search;
+        }
+
+        if (paginationState.eligible.isLoading || !paginationState.eligible.hasMore) {
+            return;
+        }
+
+        paginationState.eligible.isLoading = true;
+
+        if (!append) {
+            $list.addClass('d-none');
+            $empty.addClass('d-none');
+            $loading.removeClass('d-none');
+        } else {
+            $loading.removeClass('d-none');
+        }
 
         $.ajax({
             url: listingUrl,
             method: 'GET',
-            data: { q: search },
+            data: {
+                q: search,
+                page: paginationState.eligible.currentPage,
+                per_page: 20
+            },
             success: function (response) {
                 $loading.addClass('d-none');
                 const orders = response.orders || [];
-                $('[data-returns-count="eligible"]').text(orders.length);
+                const pagination = response.pagination || {};
+
+                paginationState.eligible.hasMore = pagination.has_more || false;
+                paginationState.eligible.isLoading = false;
+
+                if (append) {
+                    $('[data-returns-count="eligible"]').text(pagination.total || 0);
+                } else {
+                    $('[data-returns-count="eligible"]').text(orders.length);
+                }
 
                 if (orders.length > 0) {
                     $list.removeClass('d-none');
-                    renderReturns(orders);
-                } else {
+                    renderReturns(orders, append);
+                } else if (!append) {
                     $empty.removeClass('d-none');
                 }
             },
             error: function () {
                 $loading.addClass('d-none');
-                $empty.removeClass('d-none');
+                paginationState.eligible.isLoading = false;
+                if (!append) {
+                    $empty.removeClass('d-none');
+                }
                 notify('error', 'Failed to load eligible orders.');
             }
         });
     }
 
     // ── Return history ────────────────────────────────────────────────────
-    function loadHistory(search = '') {
+    function loadHistory(search = '', append = false) {
         const $list = $('[data-history-list]');
         const $loading = $('[data-history-loading]');
         const $empty = $('[data-history-empty]');
 
-        $list.addClass('d-none');
-        $empty.addClass('d-none');
-        $loading.removeClass('d-none');
+        if (!append) {
+            $list.empty();
+            paginationState.history.currentPage = 1;
+            paginationState.history.hasMore = true;
+            paginationState.history.currentSearch = search;
+        }
+
+        if (paginationState.history.isLoading || !paginationState.history.hasMore) {
+            return;
+        }
+
+        paginationState.history.isLoading = true;
+
+        if (!append) {
+            $list.addClass('d-none');
+            $empty.addClass('d-none');
+            $loading.removeClass('d-none');
+        } else {
+            $loading.removeClass('d-none');
+        }
 
         $.ajax({
             url: historyUrl,
             method: 'GET',
-            data: { q: search },
+            data: {
+                q: search,
+                page: paginationState.history.currentPage,
+                per_page: 20
+            },
             success: function (response) {
                 $loading.addClass('d-none');
                 const orders = response.orders || [];
-                $('[data-returns-count="history"]').text(orders.length);
+                const pagination = response.pagination || {};
+
+                paginationState.history.hasMore = pagination.has_more || false;
+                paginationState.history.isLoading = false;
+
+                if (append) {
+                    $('[data-returns-count="history"]').text(pagination.total || 0);
+                } else {
+                    $('[data-returns-count="history"]').text(orders.length);
+                }
 
                 if (orders.length > 0) {
                     $list.removeClass('d-none');
-                    renderHistory(orders);
-                } else {
+                    renderHistory(orders, append);
+                } else if (!append) {
                     $empty.removeClass('d-none');
                 }
             },
             error: function () {
                 $loading.addClass('d-none');
-                $empty.removeClass('d-none');
+                paginationState.history.isLoading = false;
+                if (!append) {
+                    $empty.removeClass('d-none');
+                }
                 notify('error', 'Failed to load returned orders.');
             }
         });
@@ -131,9 +220,12 @@ $(function () {
     }
 
     // ── Render eligible cards ─────────────────────────────────────────────
-    function renderReturns(orders) {
+    function renderReturns(orders, append = false) {
         const $list = $('[data-return-list]');
-        $list.empty();
+
+        if (!append) {
+            $list.empty();
+        }
 
         orders.forEach(function (order) {
             const eligible = !!order.is_eligible;
@@ -186,9 +278,12 @@ $(function () {
     }
 
     // ── Render history cards ──────────────────────────────────────────────
-    function renderHistory(orders) {
+    function renderHistory(orders, append = false) {
         const $list = $('[data-history-list]');
-        $list.empty();
+
+        if (!append) {
+            $list.empty();
+        }
 
         orders.forEach(function (order) {
             const vehicleLine = order.vehicle_label
@@ -428,6 +523,33 @@ $(function () {
     $(document).on('click', '[data-history-refresh]', function () {
         loadHistory($('[data-returns-search]').val().trim());
     });
+
+    // ── Scroll-based pagination ──────────────────────────────────────────
+    function setupScrollPagination() {
+        // Handle scroll on window for both tabs
+        $(window).on('scroll', function () {
+            const tab = activeTab();
+            const state = paginationState[tab];
+
+            if (!state) return;
+
+            const scrollTop = $(window).scrollTop();
+            const scrollHeight = $(document).height();
+            const clientHeight = $(window).height();
+
+            // Load more when scrolled to 100px from bottom
+            if (scrollHeight - scrollTop - clientHeight < 100 && state.hasMore && !state.isLoading) {
+                state.currentPage++;
+                if (tab === 'eligible') {
+                    loadReturns(state.currentSearch, true);
+                } else {
+                    loadHistory(state.currentSearch, true);
+                }
+            }
+        });
+    }
+
+    setupScrollPagination();
 
     // ── Initial load ──────────────────────────────────────────────────────
     loadReturns();

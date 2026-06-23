@@ -187,6 +187,8 @@ class OrderController extends Controller
 
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:100'],
+            'page' => ['nullable', 'integer', 'min:1'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
 
         return response()->json($this->orderRepository->returnsListing($filters, $returnDays));
@@ -196,6 +198,8 @@ class OrderController extends Controller
     {
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:100'],
+            'page' => ['nullable', 'integer', 'min:1'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
 
         return response()->json($this->orderRepository->returnsHistory($filters));
