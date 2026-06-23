@@ -106,9 +106,6 @@ $(function () {
                 const orders = response.orders || [];
                 const pagination = response.pagination || {};
 
-                paginationState.eligible.hasMore = pagination.has_more || false;
-                paginationState.eligible.isLoading = false;
-
                 if (append) {
                     $('[data-returns-count="eligible"]').text(pagination.total || 0);
                 } else {
@@ -170,9 +167,6 @@ $(function () {
                 $loading.addClass('d-none');
                 const orders = response.orders || [];
                 const pagination = response.pagination || {};
-
-                paginationState.history.hasMore = pagination.has_more || false;
-                paginationState.history.isLoading = false;
 
                 if (append) {
                     $('[data-returns-count="history"]').text(pagination.total || 0);
@@ -544,32 +538,7 @@ $(function () {
         loadHistory($('[data-returns-search]').val().trim());
     });
 
-    // ── Scroll-based pagination ──────────────────────────────────────────
-    function setupScrollPagination() {
-        // Handle scroll on window for both tabs
-        $(window).on('scroll', function () {
-            const tab = activeTab();
-            const state = paginationState[tab];
 
-            if (!state) return;
-
-            const scrollTop = $(window).scrollTop();
-            const scrollHeight = $(document).height();
-            const clientHeight = $(window).height();
-
-            // Load more when scrolled to 100px from bottom
-            if (scrollHeight - scrollTop - clientHeight < 100 && state.hasMore && !state.isLoading) {
-                state.currentPage++;
-                if (tab === 'eligible') {
-                    loadReturns(state.currentSearch, true);
-                } else {
-                    loadHistory(state.currentSearch, true);
-                }
-            }
-        });
-    }
-
-    setupScrollPagination();
 
     // ── Initial load ──────────────────────────────────────────────────────
     loadReturns();
