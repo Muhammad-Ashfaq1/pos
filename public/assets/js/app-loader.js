@@ -25,8 +25,12 @@
     overlay.id = 'app-loader-overlay';
     overlay.setAttribute('role', 'status');
     overlay.setAttribute('aria-live', 'polite');
+    var spokes = '';
+    for (var i = 0; i < 12; i++) {
+      spokes += '<span class="spoke" style="--angle:' + (i * 30) + 'deg;--delay:' + (i / 12).toFixed(3) + 's"></span>';
+    }
     overlay.innerHTML =
-      '<div class="app-loader-spinner"><span class="ring"></span><span class="ring"></span><span class="ring"></span></div>' +
+      '<div class="app-loader-spinner">' + spokes + '</div>' +
       '<div class="app-loader-message"></div>';
     document.body.appendChild(overlay);
     messageEl = overlay.querySelector('.app-loader-message');
