@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Employee\OrderController;
 use App\Http\Controllers\Employee\PanelController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SharedDataController;
 use App\Http\Controllers\Tenant\ProductController;
 use Illuminate\Support\Facades\Route;
@@ -110,5 +111,16 @@ Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.
                     ->middleware('permission:product.delete|products.manage')
                     ->whereNumber('product')
                     ->name('destroy');
+            });
+
+        // ── Reports (shared with the tenant portal via ReportController) ───
+        Route::prefix('reports')
+            ->name('reports.')
+            ->middleware('permission:reports.view')
+            ->controller(ReportController::class)
+            ->group(function () {
+                Route::get('/{report}/data', 'data')->name('data');
+                Route::get('/{report}/export', 'export')->name('export');
+                Route::get('/{report}', 'index')->name('index');
             });
     });

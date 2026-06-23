@@ -122,6 +122,7 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('vehicle.create', 'web'),
             Permission::findByName('vehicle.update', 'web'),
             Permission::findByName('vehicles.view', 'web'),
+            Permission::findByName('reports.view', 'web'),
         ]);
 
         Role::findByName(User::TECHNICIAN)->syncPermissions([
@@ -133,6 +134,7 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('customers.view', 'web'),
             Permission::findByName('vehicle.view', 'web'),
             Permission::findByName('vehicles.view', 'web'),
+            Permission::findByName('reports.view', 'web'),
         ]);
 
         Role::findByName(User::INVENTORY_CLERK)->syncPermissions([
@@ -142,6 +144,7 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('product.view', 'web'),
             Permission::findByName('product.adjust_stock', 'web'),
             Permission::findByName('products.view', 'web'),
+            Permission::findByName('reports.view', 'web'),
         ]);
 
         Role::findByName(User::EMPLOYEE)->syncPermissions([
@@ -161,6 +164,7 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('vehicle.view', 'web'),
             Permission::findByName('vehicle.create', 'web'),
             Permission::findByName('vehicles.view', 'web'),
+            Permission::findByName('reports.view', 'web'),
         ]);
 
         Role::findByName(User::CUSTOMER)->syncPermissions([
