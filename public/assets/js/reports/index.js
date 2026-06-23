@@ -147,6 +147,29 @@
     });
   };
 
+  // Give every filter <select> the same Select2 dropdown UI used across the app.
+  const initSelect2 = function () {
+    if (typeof $.fn.select2 !== 'function') {
+      return;
+    }
+
+    $('select.report-filter').each(function () {
+      const $el = $(this);
+      if ($el.data('select2')) {
+        return;
+      }
+
+      const hasAllOption = $el.find('option[value=""]').length > 0;
+
+      $el.select2({
+        dropdownParent: $el.parent(),
+        placeholder: $el.data('placeholder') || ($el.find('option[value=""]').text() || 'Select'),
+        allowClear: hasAllOption,
+        width: '100%'
+      });
+    });
+  };
+
   const bindControls = function () {
     $('#report-period').on('change', function () {
       $('.report-custom-range').toggleClass('d-none', $(this).val() !== 'custom');
@@ -184,6 +207,7 @@
   };
 
   $(function () {
+    initSelect2();
     initDataTable();
     bindControls();
     updateExportLink();

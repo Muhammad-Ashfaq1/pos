@@ -25,6 +25,7 @@ The docs are ordered as a **journey** — the path a shop travels from first sig
 | 8 | [orders.md](orders.md) | **Sell** — the employee POS lifecycle end-to-end: cart → estimate → checkout → partial payments → invoices/receipts (print/PDF/email) → returns & refunds. |
 | 9 | [customer-portal.md](customer-portal.md) | **Customer portal** — Sanctum token API (reused by web + Flutter), tenant-scoped login/registration/invites, and the store-credit loyalty wallet (earn on paid visit, redeem at payment). |
 | 10 | [dashboards.md](dashboards.md) | **Analyse & oversee** — employee panel, tenant analytics dashboard, and the super-admin platform view. |
+| 11 | [reports.md](reports.md) | **Report & export** — the dynamic, filterable, Excel-exportable reports (sales/payments/products/customers) shared by the tenant portal and employee panel via one repository + report-definition layer. |
 | — | [database.md](database.md) | **Reference** — migration timeline, full schema per table, foreign keys, soft deletes, polymorphic relations, default tenant settings. |
 
 ## Key concepts at a glance
