@@ -123,13 +123,7 @@
       lengthMenu: [10, 25, 50, 100],
       columns: buildColumns(),
       layout: {
-        topStart: {
-          search: {
-            placeholder: 'Search…',
-            text: '_INPUT_',
-            className: 'form-control'
-          }
-        },
+        topStart: null,
         topEnd: null,
         bottomStart: {
           rowClass: 'row mx-3 my-md-0 me-3 ms-0 justify-content-between',
@@ -156,6 +150,18 @@
   const bindControls = function () {
     $('#report-period').on('change', function () {
       $('.report-custom-range').toggleClass('d-none', $(this).val() !== 'custom');
+    });
+
+    // Custom search box in the card header drives the server-side DataTable search.
+    let searchTimer = null;
+    $('#report-search').on('keyup search', function () {
+      const value = this.value;
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(function () {
+        if (reportTable) {
+          reportTable.search(value).draw();
+        }
+      }, 300);
     });
 
     $(document).on('change keyup', '.report-filter', function (e) {

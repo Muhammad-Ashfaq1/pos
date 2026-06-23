@@ -110,9 +110,12 @@
     <div class="card">
         <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
             <h5 class="card-title mb-0">{{ $reportLabel }} Records</h5>
-            <a href="#" id="report-export" class="btn btn-success disabled" aria-disabled="true" tabindex="-1">
-                <i class="ti tabler-file-spreadsheet me-1"></i> Export Excel
-            </a>
+            <div class="d-flex align-items-center gap-2">
+                <input type="search" id="report-search" class="form-control flex-shrink-0" placeholder="Search…" style="width: 240px; max-width: 100%;" aria-label="Search records">
+                <a href="#" id="report-export" class="btn btn-success flex-shrink-0 disabled" aria-disabled="true" tabindex="-1">
+                    <i class="ti tabler-file-spreadsheet me-1"></i> Export Excel
+                </a>
+            </div>
         </div>
         <div class="card-datatable table-responsive pt-0">
             <table class="reports-datatable table">
