@@ -331,6 +331,71 @@
         return $col[0].outerHTML;
     }
 
+    function buildProductDetailCard(item) {
+        const price = formatMoney(Number(item.sale_price || 0));
+        const stock = item.current_stock || 0;
+        const sku = item.sku || '—';
+        const barcode = item.barcode || '—';
+        const hasImage = item.image_url && item.image_url !== '';
+        const discountLabel = item.discount ? formatDiscountLabel(item.discount) : '';
+
+        return ''
+            + '<div class="col-md-4">'
+            + '  <div class="card border-0 shadow-sm rounded-4 product-detail-card" '
+            + '       data-type="product" data-id="' + item.id + '" data-name="' + item.name + '" '
+            + '       data-price="' + Number(item.sale_price || 0).toFixed(2) + '" '
+            + '       data-sku="' + (item.sku || '') + '" '
+            + '       data-barcode="' + (item.barcode || '') + '" '
+            + '       data-stock="' + stock + '" '
+            + '       data-image="' + (item.image_url || '') + '" '
+            + '       data-discount="' + encodePayload(item.discount || null) + '" '
+            + '       data-tax-percentage="' + (item.tax_percentage || 0) + '">'
+            + '    <div class="card-body p-3">'
+            + '      <div class="d-flex align-items-center gap-3 mb-3">'
+            + '        <div class="avatar avatar-lg flex-shrink-0">'
+            + '          <div class="avatar-initial rounded-3 bg-label-primary product-image-container">'
+            + '            <i class="ti tabler-package fs-3 product-default-icon"></i>'
+            + '            ' + (hasImage
+                ? '<img src="' + item.image_url + '" alt="' + item.name + '" class="rounded-3 w-100 h-100 object-fit-cover product-image" />'
+                : '')
+            + '          </div>'
+            + '        </div>'
+            + '        <div class="flex-grow-1 min-w-0">'
+            + '          <h6 class="fw-bold text-dark mb-1 text-truncate">' + item.name + '</h6>'
+            + '          <div class="d-flex gap-1 flex-wrap">'
+            + '            <small class="badge bg-label-secondary px-2 rounded-pill fs-tiny">SKU: ' + sku + '</small>'
+            + '            <small class="badge bg-label-info px-2 rounded-pill fs-tiny">BC: ' + barcode + '</small>'
+            + '          </div>'
+            + '        </div>'
+            + '      </div>'
+            + '      <div class="bg-light p-2 rounded-3 mb-3 border-start border-primary border-3">'
+            + '        <div class="d-flex justify-content-between align-items-center">'
+            + '          <span class="text-muted fw-semibold small">Unit Price</span>'
+            + '          <h5 class="fw-bold text-primary mb-0">' + price + '</h5>'
+            + '        </div>'
+            + '      </div>'
+            + '      ' + (discountLabel ? '<div class="product-discount-banner mb-2"><small class="text-success"><i class="ti tabler-discount-2"></i> ' + discountLabel + '</small></div>' : '')
+            + '      <div class="d-flex gap-2 mb-3">'
+            + '        <div class="flex-grow-1 bg-label-primary bg-opacity-10 p-2 rounded-3 border border-primary border-opacity-10 text-center">'
+            + '          <small class="text-muted d-block small fw-semibold text-uppercase" style="font-size: 0.55rem;">Available</small>'
+            + '          <span class="fw-bold text-primary product-available-stock">' + stock + '</span>'
+            + '        </div>'
+            + '        <div class="flex-grow-1">'
+            + '          <div class="input-group input-group-sm border border-primary rounded-pill overflow-hidden">'
+            + '            <button class="btn btn-outline-primary border-0 px-2 product-qty-minus-btn" type="button"><i class="ti tabler-minus fs-5"></i></button>'
+            + '            <input type="number" min="1" step="1" class="form-control border-0 text-center fw-bold product-qty-input bg-white" value="1" />'
+            + '            <button class="btn btn-outline-primary border-0 px-2 product-qty-plus-btn" type="button"><i class="ti tabler-plus fs-5"></i></button>'
+            + '          </div>'
+            + '        </div>'
+            + '      </div>'
+            + '      <button type="button" class="btn btn-primary btn-sm rounded-pill fw-bold w-100 btn-add-to-cart shadow-primary">'
+            + '        <i class="ti tabler-shopping-cart me-1"></i> Add to Cart'
+            + '      </button>'
+            + '    </div>'
+            + '  </div>'
+            + '</div>';
+    }
+
     function renderCards($container, items, emptyMessage) {
         if (!items || items.length === 0) {
             $container.html(
@@ -342,6 +407,19 @@
             return;
         }
         $container.html(items.map(buildCard).join(''));
+    }
+
+    function renderProductDetailCards($container, items, emptyMessage) {
+        if (!items || items.length === 0) {
+            $container.html(
+                '<div class="col-12 text-center py-5">'
+                + '<i class="icon-base ti tabler-package-off" style="font-size:3rem;color:#ccc;"></i>'
+                + '<p class="text-muted mt-2 mb-0">' + emptyMessage + '</p>'
+                + '</div>'
+            );
+            return;
+        }
+        $container.html(items.map(buildProductDetailCard).join(''));
     }
 
     function showLoading($container) {
@@ -429,7 +507,12 @@
 
     // ─── Card click → drill down ───────────────────────────────────────
 
-    $(document).on('click', '.catalog-card', function () {
+    $(document).on('click', '.catalog-card', function (e) {
+        // If clicking on product detail card controls, don't open detail view
+        if ($(e.target).closest('.product-detail-card').length && !$(e.target).hasClass('product-detail-card')) {
+            return;
+        }
+
         const $card = $(this);
         const type = $card.data('type');
         const id = $card.data('id');
@@ -458,6 +541,64 @@
                 tax_percentage: parseFloat($card.attr('data-tax-percentage')) || 0,
             });
         }
+    });
+
+    // Product detail card controls
+    $(document).on('click', '.product-detail-card .product-qty-minus-btn', function (e) {
+        e.stopPropagation();
+        const $input = $(this).closest('.product-detail-card').find('.product-qty-input');
+        let val = parseInt($input.val()) || 1;
+        if (val > 1) {
+            $input.val(val - 1);
+        }
+    });
+
+    $(document).on('click', '.product-detail-card .product-qty-plus-btn', function (e) {
+        e.stopPropagation();
+        const $input = $(this).closest('.product-detail-card').find('.product-qty-input');
+        const $card = $(this).closest('.product-detail-card');
+        const stock = parseInt($card.data('stock')) || 0;
+        let val = parseInt($input.val()) || 1;
+        if (val < stock) {
+            $input.val(val + 1);
+        }
+    });
+
+    $(document).on('click', '.product-detail-card .btn-add-to-cart', function (e) {
+        e.stopPropagation();
+        const $card = $(this).closest('.product-detail-card');
+        const id = $card.data('id');
+        const name = $card.data('name');
+        const price = parseFloat($card.data('price')) || 0;
+        const sku = $card.data('sku') || '';
+        const barcode = $card.data('barcode') || '';
+        const stock = parseInt($card.data('stock')) || 0;
+        const image_url = $card.attr('data-image') || '';
+        const discount = decodePayload($card.attr('data-discount') || '');
+        const tax_percentage = parseFloat($card.attr('data-tax-percentage')) || 0;
+        const qty = parseInt($card.find('.product-qty-input').val()) || 1;
+
+        if (stock <= 0) {
+            notifyOrder('error', 'Product is out of stock.');
+            return;
+        }
+
+        if (qty > stock) {
+            notifyOrder('error', 'Requested quantity exceeds available stock.');
+            return;
+        }
+
+        addToCart({
+            id: id,
+            name: name,
+            price: price,
+            sku: sku,
+            barcode: barcode,
+            current_stock: stock,
+            image_url: image_url,
+            discount: discount,
+            tax_percentage: tax_percentage
+        }, qty);
     });
 
     // ─── Back button (pops nav stack) ──────────────────────────────────
@@ -1923,7 +2064,7 @@
 
             renderCards($('.search-categories-grid'), cats, 'No categories match.');
             renderCards($('.search-sub-categories-grid'), subs, 'No sub categories match.');
-            renderCards($('.search-products-grid'), prods, 'No products match.');
+            renderProductDetailCards($('.search-products-grid'), prods, 'No products match.');
 
             showSearchResults();
         }).fail(function () {
