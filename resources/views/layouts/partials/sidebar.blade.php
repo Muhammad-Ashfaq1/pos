@@ -131,6 +131,24 @@
                 ->all(),
         ],
         [
+            'label' => 'Reports',
+            'icon' => 'tabler-chart-bar',
+            'items' => collect([
+                $user?->can('reports.view')
+                    ? [
+                        'label' => 'Reports',
+                        'route' => 'tenant.reports.index',
+                        'pattern' => 'tenant.reports.*',
+                        'icon' => 'tabler-chart-histogram',
+                        'routeParams' => ['report' => 'sales'],
+                    ]
+                    : null,
+            ])
+                ->filter()
+                ->values()
+                ->all(),
+        ],
+        [
             'label' => 'Staff & Access',
             'icon' => 'tabler-shield-lock',
             'items' => collect([
@@ -282,7 +300,7 @@
                     <ul class="menu-sub">
                         @foreach ($group['items'] as $item)
                             <li class="menu-item {{ request()->routeIs($item['pattern']) ? 'active' : '' }}">
-                                <a href="{{ route($item['route']) }}" class="menu-link">
+                                <a href="{{ route($item['route'], $item['routeParams'] ?? []) }}" class="menu-link">
                                     <i class="menu-icon icon-base ti {{ $item['icon'] }}"></i>
                                     <div>{{ $item['label'] }}</div>
                                 </a>

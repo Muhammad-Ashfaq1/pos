@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\FiltersByDateRange;
 use Illuminate\Auth\Authenticatable as AuthenticatableTrait;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,6 +18,7 @@ class Customer extends Model implements AuthenticatableContract
 {
     use AuthenticatableTrait;
     use BelongsToTenant;
+    use FiltersByDateRange;
     use HasApiTokens;
     use Notifiable;
 

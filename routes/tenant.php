@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DiscountGroupController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Tenant\CategoryController;
 use App\Http\Controllers\Tenant\CustomerController;
 use App\Http\Controllers\Tenant\DashboardController;
@@ -21,6 +22,17 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
     ->name('tenant.')
     ->group(function () {
         Route::get('/dashboard', DashboardController::class)->name('dashboard');
+
+        // ── Reports (shared with the employee panel via ReportController) ──
+        Route::prefix('reports')
+            ->name('reports.')
+            ->middleware('permission:reports.view')
+            ->controller(ReportController::class)
+            ->group(function () {
+                Route::get('/{report}/data', 'data')->name('data');
+                Route::get('/{report}/export', 'export')->name('export');
+                Route::get('/{report}', 'index')->name('index');
+            });
 
         Route::prefix('ecommerce')
             ->name('ecommerce.')

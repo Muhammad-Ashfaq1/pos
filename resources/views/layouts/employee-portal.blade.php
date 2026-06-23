@@ -558,6 +558,11 @@
                                 </a>
                             </div>
                         @endif
+                        @can('reports.view')
+                            <a href="{{ route('employee.reports.index', 'sales') }}" class="preview-circle-btn preview-circle-btn--indigo" title="Reports">
+                                <i class="ti tabler-chart-histogram"></i>
+                            </a>
+                        @endcan
                         <button type="button" class="preview-circle-btn preview-circle-btn--indigo">
                             <i class="ti tabler-bell"></i>
                         </button>
@@ -591,6 +596,8 @@
     <script src="{{ asset('assets/vendor/libs/hammer/hammer.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+    <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
+    <script src="{{ asset('assets/js/config.js') }}"></script>
     <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
     <script src="{{ asset('assets/js/main.js') }}"></script>
     <script>

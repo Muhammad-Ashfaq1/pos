@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\FiltersByDateRange;
 use App\Models\Concerns\HasImages;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Product extends Model
 {
     use BelongsToTenant;
+    use FiltersByDateRange;
     use HasImages;
 
     public const TYPE_INVENTORY = 'inventory';

@@ -10,7 +10,17 @@
       "Bash(awk '/^ *)",
       "Bash(gh auth *)",
       "Bash(gh repo *)",
-      "Bash(git ls-remote *)"
+      "Bash(git ls-remote *)",
+      "Bash(grep -n 'tenant_id\\\\|protected $fillable\\\\|'\\\\''name'\\\\''\\\\|isEmployee\\\\|isSuperAdmin\\\\|BelongsToTenant' app/Models/User.php)",
+      "Bash(./vendor/bin/pint app/Reports app/Repositories/ReportsRepository.php app/Repositories/Interface/ReportRepositoryInterface.php app/Exports app/Http/Controllers/ReportController.php app/Http/Requests/Reports app/Models/Concerns/FiltersByDateRange.php)",
+      "Bash(./vendor/bin/pint app/Reports app/Http/Requests/Reports tests/Feature/Tenant/ReportsTest.php)",
+      "Bash(rm -f /tmp/dbg.php)",
+      "Bash(./vendor/bin/pint --dirty)",
+      "Bash(./vendor/bin/pint app/Reports)",
+      "Bash(node -c public/assets/js/reports/index.js)",
+      "Bash(node --check public/assets/js/reports/index.js)",
+      "Bash(grep -nE \"#[0-9a-fA-F]{3,6}|rgb\\\\\\(|bg-\\(primary|info|success|warning\\)|btn-success|text-primary\" resources/views/reports/index.blade.php public/assets/js/reports/index.js)",
+      "Bash(./vendor/bin/pint tests/Feature/Tenant/ReportsTest.php)"
     ]
   },
   "hooks": {

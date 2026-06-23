@@ -59,7 +59,7 @@ class CustomerPortalDemoSeeder extends Seeder
             return;
         }
 
-        $this->loyaltyGroup();
+        $this->loyaltyGroup($tenant);
         $orders = app(OrderRepositoryInterface::class);
         $credits = app(CreditService::class);
 
@@ -99,10 +99,13 @@ class CustomerPortalDemoSeeder extends Seeder
         $this->command?->info('Flutter/token API login also needs shop code: '.$tenant->slug.'.');
     }
 
-    private function loyaltyGroup(): DiscountGroup
+    private function loyaltyGroup(Tenant $tenant): DiscountGroup
     {
         return DiscountGroup::query()->firstOrCreate(
-            ['slug' => 'portal-loyalty-gold'],
+            [
+                'tenant_id' => $tenant->id,
+                'slug' => 'portal-loyalty-gold',
+            ],
             [
                 'name' => 'Portal Loyalty Gold',
                 'type' => 'percentage',
@@ -124,7 +127,7 @@ class CustomerPortalDemoSeeder extends Seeder
         $customer->forceFill([
             'tenant_id' => $tenant->id,
             'customer_type' => Customer::TYPE_REGISTERED,
-            'discount_group_id' => $this->loyaltyGroup()->id,
+            'discount_group_id' => $this->loyaltyGroup($tenant)->id,
             'name' => $definition['name'],
             'email' => $definition['email'],
             'phone' => $definition['phone'],
@@ -146,8 +149,13 @@ class CustomerPortalDemoSeeder extends Seeder
     private function vehicleFor(Customer $customer, array $vehicle, ?int $userId): Vehicle
     {
         return Vehicle::query()->firstOrCreate(
-            ['customer_id' => $customer->id, 'plate_number' => $vehicle['plate']],
             [
+                'tenant_id' => $customer->tenant_id,
+                'customer_id' => $customer->id,
+                'plate_number' => $vehicle['plate'],
+            ],
+            [
+                'tenant_id' => $customer->tenant_id,
                 'make' => $vehicle['make'],
                 'model' => $vehicle['model'],
                 'year' => $vehicle['year'],
