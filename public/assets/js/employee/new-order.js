@@ -488,7 +488,25 @@
     function loadProducts(subCategoryId, q) {
         showLoading($grid);
         Catalog.getProducts({ subCategoryId: subCategoryId, q: q }).done(function (res) {
-            renderCards($grid, res.data || [], 'No products found.');
+            const products = res.data || [];
+            // Directly open product detail view for the first product
+            // Skip the intermediate product cards step
+            if (products.length > 0) {
+                const product = products[0];
+                openProductDetail({
+                    id: product.id,
+                    name: product.name,
+                    price: product.sale_price || 0,
+                    sku: product.sku || '',
+                    barcode: product.barcode || '',
+                    current_stock: product.current_stock || 0,
+                    image_url: product.image_url || '',
+                    discount: product.discount || null,
+                    tax_percentage: product.tax_percentage || 0,
+                });
+            } else {
+                renderCards($grid, [], 'No products found.');
+            }
         }).fail(function () {
             renderCards($grid, [], 'Failed to load products.');
         });
@@ -524,7 +542,7 @@
             showCatalog();
             loadSubCategories(id, '');
         } else if (type === 'sub_category') {
-            navStack.push({ level: 'products', meta: { id: id, name: name } });
+            // Don't push to navigation stack since we're directly opening product detail
             updateHeader();
             showCatalog();
             loadProducts(id, '');
@@ -657,6 +675,7 @@
     $(document).on('click', '.btn-back-from-product', function () {
         activeProduct = null;
         showCatalog();
+        loadCurrentLevel($searchInput.val() || '');
     });
 
     $(document).on('click', '.btn-clear-qty', function () {

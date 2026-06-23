@@ -27,14 +27,20 @@ class OrdersRepository implements OrderRepositoryInterface
     public function listing(array $filters = []): array
     {
         $tab = $filters['tab'] ?? 'all';
+        $page = (int) ($filters['page'] ?? 1);
+        $perPage = (int) ($filters['per_page'] ?? 12);
 
-        $orders = $this->makeListingQuery($filters, $tab)
+        $query = $this->makeListingQuery($filters, $tab)
             ->with([
                 'customer:id,name,phone,email,customer_type',
                 'vehicle:id,plate_number,registration_number,make,model,year',
             ])
-            ->withCount('items')
-            ->limit(100)
+            ->withCount('items');
+
+        $total = $query->count();
+        $orders = $query
+            ->offset(($page - 1) * $perPage)
+            ->limit($perPage)
             ->get();
 
         return [
@@ -45,6 +51,13 @@ class OrdersRepository implements OrderRepositoryInterface
                 'estimates' => $this->makeListingQuery($filters, 'estimates', false)->count(),
             ],
             'orders' => $orders->map(fn (Order $order) => $this->transformListingOrder($order))->values(),
+            'pagination' => [
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total' => $total,
+                'last_page' => (int) ceil($total / $perPage),
+                'has_more' => $page * $perPage < $total,
+            ],
         ];
     }
 
@@ -1165,7 +1178,7 @@ class OrdersRepository implements OrderRepositoryInterface
     {
         $search = trim((string) ($filters['q'] ?? ''));
         $page = (int) ($filters['page'] ?? 1);
-        $perPage = (int) ($filters['per_page'] ?? 20);
+        $perPage = (int) ($filters['per_page'] ?? 12);
 
         $query = Order::query()
             ->whereIn('status', [Order::STATUS_PAID, Order::STATUS_PARTIALLY_PAID])
@@ -1197,10 +1210,8 @@ class OrdersRepository implements OrderRepositoryInterface
             });
         }
 
-        // Get total count before pagination
-        $totalQuery = clone $query;
-        $totalCount = $totalQuery->count();
-
+        $total = $query->count();
+        
         $orders = $query
             ->orderByDesc('paid_at')
             ->offset(($page - 1) * $perPage)
@@ -1220,8 +1231,8 @@ class OrdersRepository implements OrderRepositoryInterface
             'pagination' => [
                 'current_page' => $page,
                 'per_page' => $perPage,
-                'total' => $totalCount,
-                'has_more' => ($page * $perPage) < $totalCount,
+                'total' => $total,
+                'has_more' => ($page * $perPage) < $total,
             ],
         ];
     }
@@ -1230,7 +1241,7 @@ class OrdersRepository implements OrderRepositoryInterface
     {
         $search = trim((string) ($filters['q'] ?? ''));
         $page = (int) ($filters['page'] ?? 1);
-        $perPage = (int) ($filters['per_page'] ?? 20);
+        $perPage = (int) ($filters['per_page'] ?? 12);
 
         $query = Order::query()
             ->where(function ($query) {
@@ -1267,10 +1278,8 @@ class OrdersRepository implements OrderRepositoryInterface
             });
         }
 
-        // Get total count before pagination
-        $totalQuery = clone $query;
-        $totalCount = $totalQuery->count();
-
+        $total = $query->count();
+        
         $orders = $query
             ->orderByDesc('updated_at')
             ->offset(($page - 1) * $perPage)
@@ -1282,8 +1291,8 @@ class OrdersRepository implements OrderRepositoryInterface
             'pagination' => [
                 'current_page' => $page,
                 'per_page' => $perPage,
-                'total' => $totalCount,
-                'has_more' => ($page * $perPage) < $totalCount,
+                'total' => $total,
+                'has_more' => ($page * $perPage) < $total,
             ],
         ];
     }

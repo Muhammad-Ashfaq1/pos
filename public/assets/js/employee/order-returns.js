@@ -9,18 +9,18 @@ $(function () {
     const returnModal = new bootstrap.Modal(document.getElementById('returnConfirmationModal'));
 
     // Pagination state
-    const paginationState = {
+    const state = {
         eligible: {
-            currentPage: 1,
-            isLoading: false,
-            hasMore: true,
-            currentSearch: ''
+            page: 1,
+            per_page: 12,
+            loading: false,
+            has_more: true
         },
         history: {
-            currentPage: 1,
-            isLoading: false,
-            hasMore: true,
-            currentSearch: ''
+            page: 1,
+            per_page: 12,
+            loading: false,
+            has_more: true
         }
     };
 
@@ -62,16 +62,15 @@ $(function () {
         $('[data-returns-view]').addClass('d-none');
         $('[data-returns-view="' + tab + '"]').removeClass('d-none');
         $('[data-returns-search]').val('');
-        // Reset pagination state when switching tabs
-        paginationState.eligible.currentPage = 1;
-        paginationState.eligible.hasMore = true;
-        paginationState.eligible.currentSearch = '';
-        paginationState.history.currentPage = 1;
-        paginationState.history.hasMore = true;
-        paginationState.history.currentSearch = '';
+        
+        // Reset pagination when switching tabs
         if (tab === 'eligible') {
+            state.eligible.page = 1;
+            state.eligible.has_more = true;
             loadReturns();
         } else {
+            state.history.page = 1;
+            state.history.has_more = true;
             loadHistory();
         }
     });
@@ -82,25 +81,16 @@ $(function () {
         const $loading = $('[data-return-loading]');
         const $empty = $('[data-return-empty]');
 
-        if (!append) {
-            $list.empty();
-            paginationState.eligible.currentPage = 1;
-            paginationState.eligible.hasMore = true;
-            paginationState.eligible.currentSearch = search;
-        }
-
-        if (paginationState.eligible.isLoading || !paginationState.eligible.hasMore) {
+        if (state.eligible.loading) {
             return;
         }
 
-        paginationState.eligible.isLoading = true;
+        state.eligible.loading = true;
+        $loading.removeClass('d-none');
 
         if (!append) {
             $list.addClass('d-none');
             $empty.addClass('d-none');
-            $loading.removeClass('d-none');
-        } else {
-            $loading.removeClass('d-none');
         }
 
         $.ajax({
@@ -108,8 +98,8 @@ $(function () {
             method: 'GET',
             data: {
                 q: search,
-                page: paginationState.eligible.currentPage,
-                per_page: 20
+                page: state.eligible.page,
+                per_page: state.eligible.per_page
             },
             success: function (response) {
                 $loading.addClass('d-none');
@@ -125,6 +115,11 @@ $(function () {
                     $('[data-returns-count="eligible"]').text(orders.length);
                 }
 
+                if (response.pagination) {
+                    state.eligible.has_more = response.pagination.has_more;
+                    state.eligible.page = response.pagination.current_page;
+                }
+
                 if (orders.length > 0) {
                     $list.removeClass('d-none');
                     renderReturns(orders, append);
@@ -134,11 +129,13 @@ $(function () {
             },
             error: function () {
                 $loading.addClass('d-none');
-                paginationState.eligible.isLoading = false;
                 if (!append) {
                     $empty.removeClass('d-none');
                 }
                 notify('error', 'Failed to load eligible orders.');
+            },
+            complete: function () {
+                state.eligible.loading = false;
             }
         });
     }
@@ -149,25 +146,16 @@ $(function () {
         const $loading = $('[data-history-loading]');
         const $empty = $('[data-history-empty]');
 
-        if (!append) {
-            $list.empty();
-            paginationState.history.currentPage = 1;
-            paginationState.history.hasMore = true;
-            paginationState.history.currentSearch = search;
-        }
-
-        if (paginationState.history.isLoading || !paginationState.history.hasMore) {
+        if (state.history.loading) {
             return;
         }
 
-        paginationState.history.isLoading = true;
+        state.history.loading = true;
+        $loading.removeClass('d-none');
 
         if (!append) {
             $list.addClass('d-none');
             $empty.addClass('d-none');
-            $loading.removeClass('d-none');
-        } else {
-            $loading.removeClass('d-none');
         }
 
         $.ajax({
@@ -175,8 +163,8 @@ $(function () {
             method: 'GET',
             data: {
                 q: search,
-                page: paginationState.history.currentPage,
-                per_page: 20
+                page: state.history.page,
+                per_page: state.history.per_page
             },
             success: function (response) {
                 $loading.addClass('d-none');
@@ -192,6 +180,11 @@ $(function () {
                     $('[data-returns-count="history"]').text(orders.length);
                 }
 
+                if (response.pagination) {
+                    state.history.has_more = response.pagination.has_more;
+                    state.history.page = response.pagination.current_page;
+                }
+
                 if (orders.length > 0) {
                     $list.removeClass('d-none');
                     renderHistory(orders, append);
@@ -201,11 +194,13 @@ $(function () {
             },
             error: function () {
                 $loading.addClass('d-none');
-                paginationState.history.isLoading = false;
                 if (!append) {
                     $empty.removeClass('d-none');
                 }
                 notify('error', 'Failed to load returned orders.');
+            },
+            complete: function () {
+                state.history.loading = false;
             }
         });
     }
@@ -222,7 +217,6 @@ $(function () {
     // ── Render eligible cards ─────────────────────────────────────────────
     function renderReturns(orders, append = false) {
         const $list = $('[data-return-list]');
-
         if (!append) {
             $list.empty();
         }
@@ -280,7 +274,6 @@ $(function () {
     // ── Render history cards ──────────────────────────────────────────────
     function renderHistory(orders, append = false) {
         const $list = $('[data-history-list]');
-
         if (!append) {
             $list.empty();
         }
@@ -316,6 +309,24 @@ $(function () {
 
             $list.append(card);
         });
+    }
+
+    // ── Load more eligible orders ───────────────────────────────────────────
+    function loadMoreReturns() {
+        if (!state.eligible.has_more || state.eligible.loading) {
+            return;
+        }
+        state.eligible.page++;
+        loadReturns($('[data-returns-search]').val().trim(), true);
+    }
+
+    // ── Load more history ─────────────────────────────────────────────────
+    function loadMoreHistory() {
+        if (!state.history.has_more || state.history.loading) {
+            return;
+        }
+        state.history.page++;
+        loadHistory($('[data-returns-search]').val().trim(), true);
     }
 
     // ── Open modal ────────────────────────────────────────────────────────
@@ -509,18 +520,27 @@ $(function () {
         clearTimeout(searchTimeout);
         const search = $(this).val().trim();
         searchTimeout = setTimeout(function () {
+            // Reset pagination when searching
             if (activeTab() === 'eligible') {
+                state.eligible.page = 1;
+                state.eligible.has_more = true;
                 loadReturns(search);
             } else {
+                state.history.page = 1;
+                state.history.has_more = true;
                 loadHistory(search);
             }
         }, 300);
     });
 
     $(document).on('click', '[data-return-refresh]', function () {
+        state.eligible.page = 1;
+        state.eligible.has_more = true;
         loadReturns($('[data-returns-search]').val().trim());
     });
     $(document).on('click', '[data-history-refresh]', function () {
+        state.history.page = 1;
+        state.history.has_more = true;
         loadHistory($('[data-returns-search]').val().trim());
     });
 
@@ -554,4 +574,34 @@ $(function () {
     // ── Initial load ──────────────────────────────────────────────────────
     loadReturns();
     loadHistory(); // pre-fill history count
+
+    // ── Infinite scroll ────────────────────────────────────────────────────
+    $(window).on('scroll', function () {
+        const windowHeight = $(window).height();
+        const scrollTop = $(window).scrollTop();
+        
+        if (activeTab() === 'eligible') {
+            const $list = $('[data-return-list]');
+            if (!$list.length || $list.hasClass('d-none')) return;
+            
+            const listHeight = $list.height();
+            const listOffset = $list.offset().top;
+            
+            // Load more when user scrolls near the bottom of the list
+            if (scrollTop + windowHeight >= listOffset + listHeight - 200) {
+                loadMoreReturns();
+            }
+        } else {
+            const $list = $('[data-history-list]');
+            if (!$list.length || $list.hasClass('d-none')) return;
+            
+            const listHeight = $list.height();
+            const listOffset = $list.offset().top;
+            
+            // Load more when user scrolls near the bottom of the list
+            if (scrollTop + windowHeight >= listOffset + listHeight - 200) {
+                loadMoreHistory();
+            }
+        }
+    });
 });

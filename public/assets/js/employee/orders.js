@@ -54,7 +54,11 @@
     date_from: '',
     date_to: '',
     date_preset: 'all',
-    search_fields: []
+    search_fields: [],
+    page: 1,
+    per_page: 12,
+    loading: false,
+    has_more: true
   };
 
   const escapeHtml = function (value) {
@@ -296,25 +300,34 @@
     ].join('');
   };
 
-  const renderOrders = function (orders) {
+  const renderOrders = function (orders, append = false) {
     const $list = $('[data-order-list]');
     const $empty = $('[data-order-empty]');
 
     orders = orders || [];
-    $list.empty();
 
-    if (!orders.length) {
+    if (!append) {
+      $list.empty();
+    }
+
+    if (!orders.length && !append) {
       $empty.removeClass('d-none');
       return;
     }
 
     $empty.addClass('d-none');
-    $list.html(orders.map(function (order) {
+    const html = orders.map(function (order) {
       return makeOrderCard(order);
-    }).join(''));
+    }).join('');
+
+    if (append) {
+      $list.append(html);
+    } else {
+      $list.html(html);
+    }
   };
 
-  const renderAdvancedOrders = function (orders) {
+  const renderAdvancedOrders = function (orders, append = false) {
     const $list = $('[data-advanced-order-list]');
     const $empty = $('[data-advanced-order-empty]');
 
@@ -323,17 +336,26 @@
     }
 
     orders = orders || [];
-    $list.empty();
 
-    if (!orders.length) {
+    if (!append) {
+      $list.empty();
+    }
+
+    if (!orders.length && !append) {
       $empty.removeClass('d-none');
       return;
     }
 
     $empty.addClass('d-none');
-    $list.html(orders.map(function (order) {
+    const html = orders.map(function (order) {
       return makeOrderCard(order, { compact: true });
-    }).join(''));
+    }).join('');
+
+    if (append) {
+      $list.append(html);
+    } else {
+      $list.html(html);
+    }
   };
 
   const requestParams = function () {
@@ -343,16 +365,23 @@
       sort: state.sort,
       date_from: state.date_from,
       date_to: state.date_to,
-      search_fields: state.search_fields
+      search_fields: state.search_fields,
+      page: state.page,
+      per_page: state.per_page
     };
   };
 
-  const loadOrders = function () {
+  const loadOrders = function (append = false) {
     if (!config.listingUrl) {
       notifyError('Orders listing route is missing.');
       return;
     }
 
+    if (state.loading) {
+      return;
+    }
+
+    state.loading = true;
     setLoading(true);
 
     $.ajax({
@@ -363,21 +392,43 @@
     })
       .done(function (response) {
         updateCounts(response.counts);
-        renderOrders(response.orders);
-        renderAdvancedOrders(response.orders);
+        renderOrders(response.orders, append);
+        renderAdvancedOrders(response.orders, append);
+
+        if (response.pagination) {
+          state.has_more = response.pagination.has_more;
+          state.page = response.pagination.current_page;
+        }
       })
       .fail(function (xhr) {
         const message = xhr.responseJSON && xhr.responseJSON.message
           ? xhr.responseJSON.message
           : 'Unable to load orders right now.';
 
-        renderOrders([]);
-        renderAdvancedOrders([]);
+        if (!append) {
+          renderOrders([]);
+          renderAdvancedOrders([]);
+        }
         notifyError(message);
       })
       .always(function () {
+        state.loading = false;
         setLoading(false);
       });
+  };
+
+  const resetPagination = function () {
+    state.page = 1;
+    state.has_more = true;
+  };
+
+  const loadMoreOrders = function () {
+    if (!state.has_more || state.loading) {
+      return;
+    }
+
+    state.page++;
+    loadOrders(true);
   };
 
   const bindEvents = function () {
@@ -387,6 +438,7 @@
       state.tab = $tab.data('order-tab') || 'all';
       $('[data-order-tab]').removeClass('active');
       $tab.addClass('active');
+      resetPagination();
       loadOrders();
     });
 
@@ -395,6 +447,7 @@
 
       state.q = value.trim();
       syncSearchInputs(value, this);
+      resetPagination();
       loadOrders();
     }, 300));
 
@@ -402,27 +455,48 @@
       state.sort = $(this).data('order-sort-option') || 'order_id';
       syncSortPreference();
       storeSortPreference();
+      resetPagination();
       loadOrders();
     });
 
     $('[data-order-date-preset]').on('change', function () {
       updateDateRange($(this).val() || 'all');
+      resetPagination();
       loadOrders();
     });
 
     $('[data-order-date-from], [data-order-date-to]').on('change', function () {
       updateDateRange('custom');
+      resetPagination();
       loadOrders();
     });
 
     $('[data-order-search-field]').on('change', function () {
       state.search_fields = collectSearchFields();
+      resetPagination();
       loadOrders();
     });
 
     $('[data-order-refresh]').on('click', function () {
+      resetPagination();
       loadOrders();
     });
+
+    // Infinite scroll
+    $(window).on('scroll', debounce(function () {
+      const $list = $('[data-order-list]');
+      if (!$list.length) return;
+
+      const windowHeight = $(window).height();
+      const scrollTop = $(window).scrollTop();
+      const listHeight = $list.height();
+      const listOffset = $list.offset().top;
+
+      // Load more when user scrolls near the bottom of the list
+      if (scrollTop + windowHeight >= listOffset + listHeight - 200) {
+        loadMoreOrders();
+      }
+    }, 100));
 
     $(document).on('click', '[data-order-detail-url]', function () {
       const detailUrl = $(this).data('order-detail-url');
