@@ -118,7 +118,7 @@ class ShopSettingsTest extends TestCase
         $response = $this->actingAs($user)->get(route('tenant.settings.shop-profile.order-invoice'));
 
         $response->assertOk();
-        $response->assertSee('Order & Invoice Settings');
+        $response->assertSee('Order & Invoice Settings', false);
         $response->assertSee('Vehicle required?');
         $response->assertSee('Return Days After Purchase');
     }

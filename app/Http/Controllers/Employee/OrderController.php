@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class OrderController extends Controller
@@ -80,12 +81,25 @@ class OrderController extends Controller
 
     public function store(SaveOrderRequest $request): JsonResponse
     {
-        $result = $this->orderRepository->store($request->validated(), $request->user());
+        try {
+            $result = $this->orderRepository->store($request->validated(), $request->user());
 
-        return response()->json([
-            'message' => $result['message'],
-            'data' => $result['data'],
-        ]);
+            return response()->json([
+                'message' => $result['message'],
+                'data' => $result['data'],
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+            logger()->error('Order save error: ' . $e->getMessage(), ['exception' => $e]);
+
+            return response()->json([
+                'message' => 'An error occurred while saving the order: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function pay(Order $order, Request $request): JsonResponse

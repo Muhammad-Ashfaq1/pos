@@ -324,6 +324,7 @@
             $card.attr('data-sku', item.sku || '');
             $card.attr('data-barcode', item.barcode || '');
             $card.attr('data-stock', item.current_stock || 0);
+            $card.attr('data-track-inventory', item.track_inventory ? '1' : '0');
             $card.attr('data-image', item.image_url || '');
             $card.attr('data-discount', encodePayload(item.discount || null));
             $card.attr('data-tax-percentage', item.tax_percentage || 0);
@@ -348,6 +349,7 @@
             + '       data-sku="' + (item.sku || '') + '" '
             + '       data-barcode="' + (item.barcode || '') + '" '
             + '       data-stock="' + stock + '" '
+            + '       data-track-inventory="' + (item.track_inventory ? '1' : '0') + '" '
             + '       data-image="' + (item.image_url || '') + '" '
             + '       data-discount="' + encodePayload(item.discount || null) + '" '
             + '       data-tax-percentage="' + (item.tax_percentage || 0) + '">'
@@ -500,9 +502,11 @@
                     id: product.id,
                     name: product.name,
                     price: product.sale_price || 0,
+                    sale_price: product.sale_price || 0,
                     sku: product.sku || '',
                     barcode: product.barcode || '',
                     current_stock: product.current_stock || 0,
+                    track_inventory: Boolean(product.track_inventory),
                     image_url: product.image_url || '',
                     discount: product.discount || null,
                     tax_percentage: product.tax_percentage || 0,
@@ -557,6 +561,7 @@
                 sku: $card.data('sku') || '',
                 barcode: $card.data('barcode') || '',
                 current_stock: parseInt($card.data('stock')) || 0,
+                track_inventory: $card.attr('data-track-inventory') === '1',
                 image_url: $card.attr('data-image') || '',
                 discount: decodePayload($card.attr('data-discount') || ''),
                 tax_percentage: parseFloat($card.attr('data-tax-percentage')) || 0,
@@ -564,63 +569,6 @@
         }
     });
 
-    // Product detail card controls
-    $(document).on('click', '.product-detail-card .product-qty-minus-btn', function (e) {
-        e.stopPropagation();
-        const $input = $(this).closest('.product-detail-card').find('.product-qty-input');
-        let val = parseInt($input.val()) || 1;
-        if (val > 1) {
-            $input.val(val - 1);
-        }
-    });
-
-    $(document).on('click', '.product-detail-card .product-qty-plus-btn', function (e) {
-        e.stopPropagation();
-        const $input = $(this).closest('.product-detail-card').find('.product-qty-input');
-        const $card = $(this).closest('.product-detail-card');
-        const stock = parseInt($card.data('stock')) || 0;
-        let val = parseInt($input.val()) || 1;
-        if (val < stock) {
-            $input.val(val + 1);
-        }
-    });
-
-    $(document).on('click', '.product-detail-card .btn-add-to-cart', function (e) {
-        e.stopPropagation();
-        const $card = $(this).closest('.product-detail-card');
-        const id = $card.data('id');
-        const name = $card.data('name');
-        const price = parseFloat($card.data('price')) || 0;
-        const sku = $card.data('sku') || '';
-        const barcode = $card.data('barcode') || '';
-        const stock = parseInt($card.data('stock')) || 0;
-        const image_url = $card.attr('data-image') || '';
-        const discount = decodePayload($card.attr('data-discount') || '');
-        const tax_percentage = parseFloat($card.attr('data-tax-percentage')) || 0;
-        const qty = parseInt($card.find('.product-qty-input').val()) || 1;
-
-        if (stock <= 0) {
-            notifyOrder('error', 'Product is out of stock.');
-            return;
-        }
-
-        if (qty > stock) {
-            notifyOrder('error', 'Requested quantity exceeds available stock.');
-            return;
-        }
-
-        addToCart({
-            id: id,
-            name: name,
-            price: price,
-            sku: sku,
-            barcode: barcode,
-            current_stock: stock,
-            image_url: image_url,
-            discount: discount,
-            tax_percentage: tax_percentage
-        }, qty);
-    });
 
     // ─── Back button (pops nav stack) ──────────────────────────────────
 
@@ -675,9 +623,10 @@
         const $card = $(this).closest('.product-detail-card');
         const $input = $card.find('.product-qty-input');
         const stock = parseInt($card.data('stock')) || 0;
+        const track_inventory = $card.attr('data-track-inventory') === '1';
         const val = parseInt($input.val(), 10) || 1;
 
-        if (val < stock) {
+        if (!track_inventory || val < stock) {
             $input.val(val + 1);
         } else {
             notifyOrder('warning', 'Cannot exceed available stock (' + stock + ').');
@@ -697,11 +646,12 @@
         const $card = $(this).closest('.product-detail-card');
         const $input = $(this);
         const stock = parseInt($card.data('stock')) || 0;
+        const track_inventory = $card.attr('data-track-inventory') === '1';
         let val = parseInt($input.val(), 10);
 
         if (isNaN(val) || val < 1) {
             $input.val(1);
-        } else if (val > stock) {
+        } else if (track_inventory && val > stock) {
             $input.val(stock);
             notifyOrder('warning', 'Quantity capped at available stock (' + stock + ').');
         }
@@ -715,17 +665,18 @@
         const sku = $card.data('sku') || '';
         const barcode = $card.data('barcode') || '';
         const stock = parseInt($card.data('stock')) || 0;
+        const track_inventory = $card.attr('data-track-inventory') === '1';
         const image_url = $card.attr('data-image') || '';
         const discount = decodePayload($card.attr('data-discount') || '');
         const tax_percentage = parseFloat($card.attr('data-tax-percentage')) || 0;
         const qty = parseInt($card.find('.product-qty-input').val(), 10) || 1;
 
-        if (stock <= 0) {
+        if (track_inventory && stock <= 0) {
             notifyOrder('error', 'Product is out of stock.');
             return;
         }
 
-        if (qty > stock) {
+        if (track_inventory && qty > stock) {
             notifyOrder('error', 'Insufficient stock. Available: ' + stock);
             return;
         }
@@ -734,9 +685,11 @@
             id: id,
             name: name,
             price: price,
+            sale_price: price,
             sku: sku,
             barcode: barcode,
             current_stock: stock,
+            track_inventory: track_inventory,
             image_url: image_url,
             discount: discount,
             tax_percentage: tax_percentage
@@ -748,18 +701,34 @@
     function addToCart(product, qty) {
         const cart = ensureActiveOrder().items;
         const existing = cart.find(function (i) { return i.id === product.id; });
+        const stock = parseInt(product.current_stock) || 0;
+        const track_inventory = product.track_inventory;
+
         if (existing) {
-            existing.qty += qty;
+            const nextQty = existing.qty + qty;
+            if (track_inventory && nextQty > stock) {
+                notifyOrder('error', 'Cannot exceed available stock (' + stock + ').');
+                return;
+            }
+            existing.qty = nextQty;
             existing.discount = product.discount || existing.discount || null;
             existing.tax_percentage = product.tax_percentage || existing.tax_percentage || 0;
+            existing.current_stock = stock;
+            existing.track_inventory = track_inventory;
         } else {
+            if (track_inventory && qty > stock) {
+                notifyOrder('error', 'Cannot exceed available stock (' + stock + ').');
+                return;
+            }
             cart.push({
                 id: product.id,
                 name: product.name,
                 price: product.price,
                 qty: qty,
                 discount: product.discount || null,
-                tax_percentage: product.tax_percentage || 0
+                tax_percentage: product.tax_percentage || 0,
+                current_stock: stock,
+                track_inventory: track_inventory
             });
         }
         renderCart();
@@ -776,7 +745,17 @@
         const cart = currentCart();
         const item = cart.find(function (i) { return i.id === productId; });
         if (!item) return;
-        item.qty = Math.max(1, item.qty + delta);
+
+        const stock = parseInt(item.current_stock) || 0;
+        const track_inventory = item.track_inventory;
+        const nextQty = item.qty + delta;
+
+        if (delta > 0 && track_inventory && nextQty > stock) {
+            notifyOrder('warning', 'Cannot exceed available stock (' + stock + ').');
+            return;
+        }
+
+        item.qty = Math.max(1, nextQty);
         renderCart();
     }
 
