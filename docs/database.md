@@ -56,6 +56,7 @@ This is the canonical schema reference. Files cited live under [database/migrati
 2026_06_09_072120  create_customer_credit_transactions_table   (store-credit wallet ledger)
 2026_06_09_072121  add_credit_applied_to_orders_table          (credit redeemed at checkout)
 2026_06_09_072121  add_credit_earn_fields_to_discount_groups_table  (earn-on-paid-visit config)
+2026_06_25_000000  create_order_carts_table                    (database-backed employee POS draft carts)
 ```
 
 ## Entity relationship overview
@@ -434,6 +435,22 @@ Append-only payment ledger. One row per money movement against an order: initial
 | `created_at` / `updated_at` | timestamps | |
 
 Indexes: `(tenant_id, order_id)`. Model: [`OrderPayment`](../app/Models/OrderPayment.php) (`BelongsToTenant`). Relations: `order`, `creator`.
+
+### `order_carts`
+
+Source: [2026_06_25_000000_create_order_carts_table.php](../database/migrations/2026_06_25_000000_create_order_carts_table.php).
+
+Database-backed draft cart storage for the employee new-order page. This table stores the editable cart workspace only; it does not represent a submitted order and does not affect stock, payments, invoices, reports, or order numbering.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | bigint PK | |
+| `tenant_id` | bigint, FK -> tenants(id), cascadeOnDelete | tenant scope for the draft |
+| `user_id` | bigint, FK -> users(id), cascadeOnDelete | employee whose browser draft is being restored |
+| `payload` | json | sanitized draft workspace: draft tabs, selected customer/vehicle, item ids/quantities, preview metadata, service-fee draft lines |
+| `created_at` / `updated_at` | timestamps | |
+
+Unique: `(tenant_id, user_id)`, so each employee has one saved cart per shop. Model: [`OrderCart`](../app/Models/OrderCart.php) (`BelongsToTenant`). The employee routes `GET|POST|DELETE /employee/order/cart` load, autosave, and clear this payload; final order creation continues through [`OrdersRepository::store()`](../app/Repositories/OrdersRepository.php).
 
 ### `images` (polymorphic)
 

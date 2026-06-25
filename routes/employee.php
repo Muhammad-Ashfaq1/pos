@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Employee\OrderCartController;
 use App\Http\Controllers\Employee\OrderController;
 use App\Http\Controllers\Employee\PanelController;
 use App\Http\Controllers\ReportController;
@@ -30,6 +31,15 @@ Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.
                 Route::post('/save', [OrderController::class, 'store'])
                     ->middleware('permission:orders.create|pos.bill')
                     ->name('save');
+                Route::get('/cart', [OrderCartController::class, 'show'])
+                    ->middleware('permission:orders.create|pos.bill')
+                    ->name('cart.show');
+                Route::post('/cart', [OrderCartController::class, 'store'])
+                    ->middleware('permission:orders.create|pos.bill')
+                    ->name('cart.save');
+                Route::delete('/cart', [OrderCartController::class, 'destroy'])
+                    ->middleware('permission:orders.create|pos.bill')
+                    ->name('cart.destroy');
 
                 Route::controller(SharedDataController::class)->group(function () {
                     Route::get('/categories', 'categories')

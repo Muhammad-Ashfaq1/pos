@@ -5,8 +5,9 @@
  * using the shared <template id="catalog-card-template"> so every level looks identical.
  * Talks to the backend exclusively through window.Catalog (catalog-api.js).
  *
- * Draft carts live client-side until checkout; checkout posts the active draft
- * order to the backend and then resets the saved draft.
+ * Draft carts are autosaved to the backend until checkout; checkout posts the
+ * active draft order to the existing save endpoint and then removes the saved
+ * draft.
  */
 
 (function ($) {
@@ -32,6 +33,9 @@
     let currentProducts = []; // Store current products for detail view
     let isRestoringOrderMeta = false;
     let isSavingOrder = false;
+    let isHydratingSavedCart = false;
+    let cartPersistenceReady = false;
+    let cartSaveTimer = null;
     let paymentAmountInput = '';
     let paymentMethod = '';
 
@@ -54,6 +58,162 @@
     function currentCart() {
         const order = getActiveOrder();
         return order ? order.items : [];
+    }
+
+    function resolvedDeferred(value) {
+        const deferred = $.Deferred();
+        deferred.resolve(value);
+
+        return deferred.promise();
+    }
+
+    function draftCartRoutes() {
+        const routes = window.catalogRoutes || {};
+
+        return {
+            show: routes.cartShow || '',
+            save: routes.cartSave || '',
+            destroy: routes.cartDestroy || ''
+        };
+    }
+
+    function normalizeDraftItem(item) {
+        if (!item || !item.id) return null;
+
+        return {
+            id: parseInt(item.id, 10),
+            name: item.name || 'Product',
+            price: roundMoney(item.price),
+            qty: Math.max(parseInt(item.qty, 10) || 1, 1),
+            discount: item.discount || null,
+            tax_percentage: Number(item.tax_percentage) || 0,
+            current_stock: parseInt(item.current_stock, 10) || 0,
+            track_inventory: isTruthyFlag(item.track_inventory)
+        };
+    }
+
+    function normalizeDraftOrder(order, index) {
+        if (!order || !order.id) return null;
+
+        return {
+            id: String(order.id),
+            label: order.label || ('Order ' + (index + 1)),
+            items: (Array.isArray(order.items) ? order.items : [])
+                .map(normalizeDraftItem)
+                .filter(Boolean),
+            customer: order.customer || null,
+            vehicle: order.vehicle || null,
+            serviceFees: Array.isArray(order.serviceFees) ? order.serviceFees : []
+        };
+    }
+
+    function draftCartPayload() {
+        saveActiveOrderMeta();
+
+        return {
+            orders: orders.map(function (order) {
+                return {
+                    id: order.id,
+                    label: order.label,
+                    items: order.items || [],
+                    customer: order.customer || null,
+                    vehicle: order.vehicle || null,
+                    serviceFees: orderServiceFees(order)
+                };
+            }),
+            active_order_id: activeOrderId,
+            next_order_number: nextOrderNumber
+        };
+    }
+
+    function hydrateDraftCart(payload) {
+        payload = payload || {};
+        isHydratingSavedCart = true;
+
+        orders.length = 0;
+        (Array.isArray(payload.orders) ? payload.orders : []).forEach(function (order, index) {
+            const normalized = normalizeDraftOrder(order, index);
+            if (normalized) {
+                orders.push(normalized);
+            }
+        });
+
+        const savedActiveId = payload.active_order_id ? String(payload.active_order_id) : null;
+        activeOrderId = orders.some(function (order) { return order.id === savedActiveId; })
+            ? savedActiveId
+            : (orders[0] ? orders[0].id : null);
+
+        nextOrderNumber = Math.max(parseInt(payload.next_order_number, 10) || 1, orders.length + 1, 1);
+        isHydratingSavedCart = false;
+    }
+
+    function loadDraftCart() {
+        const showUrl = draftCartRoutes().show;
+
+        if (!showUrl) {
+            cartPersistenceReady = true;
+            return resolvedDeferred();
+        }
+
+        return $.get(showUrl)
+            .done(function (response) {
+                hydrateDraftCart(response.data || {});
+            })
+            .fail(function () {
+                notifyOrder('warning', 'Saved cart could not be loaded.');
+            })
+            .always(function () {
+                cartPersistenceReady = true;
+            });
+    }
+
+    function persistDraftCartNow() {
+        const routes = draftCartRoutes();
+
+        if (cartSaveTimer) {
+            clearTimeout(cartSaveTimer);
+            cartSaveTimer = null;
+        }
+
+        if (!cartPersistenceReady || isHydratingSavedCart) {
+            return resolvedDeferred();
+        }
+
+        const payload = draftCartPayload();
+
+        if (payload.orders.length === 0 && routes.destroy) {
+            return $.ajax({
+                url: routes.destroy,
+                method: 'DELETE',
+            }).fail(function () {
+                notifyOrder('warning', 'Cart could not be cleared after save.');
+            });
+        }
+
+        if (!routes.save) {
+            return resolvedDeferred();
+        }
+
+        return $.ajax({
+            url: routes.save,
+            method: 'POST',
+            data: JSON.stringify(payload),
+            contentType: 'application/json',
+        }).fail(function () {
+            notifyOrder('warning', 'Cart could not be saved for reload.');
+        });
+    }
+
+    function scheduleDraftCartSave(delay) {
+        if (!cartPersistenceReady || isHydratingSavedCart) return;
+
+        if (cartSaveTimer) {
+            clearTimeout(cartSaveTimer);
+        }
+
+        cartSaveTimer = setTimeout(function () {
+            persistDraftCartNow();
+        }, delay === undefined ? 500 : delay);
     }
 
     function ensureActiveOrder() {
@@ -263,6 +423,7 @@
         restoreActiveOrderMeta();
         fillServiceFeeForm();
         renderCart();
+        scheduleDraftCartSave();
     }
 
     function createOrder(carryCurrentSelection) {
@@ -696,7 +857,7 @@
         }, qty);
     });
 
-    // ─── Cart (front-end only) ─────────────────────────────────────────
+    // ─── Cart (database-backed draft) ──────────────────────────────────
 
     function addToCart(product, qty) {
         const cart = ensureActiveOrder().items;
@@ -732,6 +893,7 @@
             });
         }
         renderCart();
+        scheduleDraftCartSave();
     }
 
     function removeFromCart(productId) {
@@ -739,6 +901,7 @@
         const idx = cart.findIndex(function (i) { return i.id === productId; });
         if (idx >= 0) cart.splice(idx, 1);
         renderCart();
+        scheduleDraftCartSave();
     }
 
     function changeQty(productId, delta) {
@@ -757,6 +920,7 @@
 
         item.qty = Math.max(1, nextQty);
         renderCart();
+        scheduleDraftCartSave();
     }
 
     function roundMoney(amount) {
@@ -1899,6 +2063,8 @@
             restoreActiveOrderMeta();
             renderCart();
         }
+
+        return persistDraftCartNow();
     }
 
     $(document).on('click', '.btn-remove-cart-item', function () {
@@ -1926,6 +2092,7 @@
         clearServiceFeeForm();
         renderServiceFeeLines();
         renderCart();
+        scheduleDraftCartSave();
     });
 
     $(document).on('click', '.add-order-btn', function (event) {
@@ -1938,12 +2105,14 @@
         }
 
         createOrder();
+        scheduleDraftCartSave();
     });
 
     $(document).on('change', '#order_type_filter', function () {
         const orderId = $(this).val();
         if (orderId && orderId !== activeOrderId) {
             selectOrder(orderId);
+            scheduleDraftCartSave();
         }
     });
 
@@ -1979,13 +2148,14 @@
             contentType: 'application/json',
         }).done(function (response) {
             notifyOrder('success', response.message || 'Estimate saved successfully.');
+            const resetRequest = resetSavedOrder();
             if (response.data && response.data.id && showUrlTemplate) {
                 const showUrl = showUrlTemplate.replace('__ORDER_ID__', response.data.id);
-                setTimeout(function () {
-                    window.location.href = showUrl;
-                }, 1000);
-            } else {
-                resetSavedOrder();
+                resetRequest.always(function () {
+                    setTimeout(function () {
+                        window.location.href = showUrl;
+                    }, 1000);
+                });
             }
         }).fail(function (xhr) {
             notifyOrder('error', orderErrorMessage(xhr));
@@ -2204,6 +2374,7 @@
             const $vehicleSelect = $('#add_vehicle_filter');
             $vehicleSelect.val(null).trigger('change');
             updateSummary();
+            scheduleDraftCartSave();
         });
 
         $('#add_vehicle_filter').on('change', function () {
@@ -2215,6 +2386,8 @@
             if (order) {
                 order.vehicle = readSelectSelection($(this));
             }
+
+            scheduleDraftCartSave();
         });
 
         $('#order_service_filter').on('change', function () {
@@ -2486,6 +2659,7 @@
         if (!syncServiceFeeFromForm({ notify: true, requireAmount: true })) return;
 
         renderCart();
+        scheduleDraftCartSave();
     });
 
     $(document).on('click', '#remove_custom_service_fee', function () {
@@ -2523,6 +2697,7 @@
 
         renderServiceFeeLines();
         renderCart();
+        scheduleDraftCartSave();
     });
 
     // ─── Boot ──────────────────────────────────────────────────────────
@@ -2540,8 +2715,12 @@
         $('#offcanvasDiscount').on('show.bs.offcanvas', function () {
             renderDiscountDrawer();
         });
-        refreshOrderDropdown();
-        renderCart();
+        loadDraftCart().always(function () {
+            refreshOrderDropdown();
+            restoreActiveOrderMeta();
+            fillServiceFeeForm();
+            renderCart();
+        });
 
         // Initialize centralized CustomerManager for "Add Customer" modal
         if (typeof window.CustomerManager === 'function') {
