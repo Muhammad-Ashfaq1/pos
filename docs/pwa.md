@@ -46,6 +46,21 @@ For the browser install prompt to appear, all of these must hold (they do, in pr
 - Manifest linked, with `name`/`short_name`, a `192px` and a `512px` icon, `start_url`, and `display: standalone`.
 - A registered service worker controlling the scope.
 
+## Browser support & where to find "Install"
+
+The app installs on every desktop and mobile OS, but each browser hides the install entry point in a different place — and Safari uses its own mechanism (no manifest required). The one real gap is **Firefox on desktop**, which has no install feature on stable; it still runs the app fine as a normal tab (manifest + service worker are simply ignored).
+
+| Browser | Where the user clicks to install | Notes |
+|---------|----------------------------------|-------|
+| **Chrome / Edge / Opera / Brave** (desktop) | **Install icon in the address bar**, or ⋮ menu → *Install…* | Requires **HTTPS or `localhost`** — does **not** appear on plain `http://` or `.test` domains. |
+| **Chrome / Samsung Internet / Opera** (Android) | **⋮ menu → Install app / Add to Home Screen** | Full PWA. |
+| **Firefox** (Android) | **⋮ menu → Add to Home Screen** | Supported on mobile. |
+| **Firefox** (desktop) | — *not supported* | Runs as a normal website; no standalone install on stable. |
+| **Safari** (macOS 14+/Safari 17+) | **Share button → Add to Dock**, or **File → Add to Dock** | No address-bar icon. Works on any origin, including `.test` over HTTP — no manifest/SW required. |
+| **Safari** (iOS / iPadOS) | **Share → Add to Home Screen** | Runs standalone; service workers since iOS 11.3. |
+
+> **`.test` / local domains:** a `.test` host over plain HTTP is neither `https://` nor `localhost`, so **Chromium browsers will not show the install icon there**. Test Chromium installs via `http://localhost:8000` (`php artisan serve`) or a real HTTPS domain. Safari's *Add to Dock* has no such restriction.
+
 ## Regenerating / rebranding the icons
 
 The icons are placeholder "POS" tiles on an indigo→purple gradient (`#4f46e5`→`#7367f0`, matching the manifest `theme_color`). To rebrand, replace the PNGs in [public/assets/img/pwa/](../public/assets/img/pwa/) keeping the **same filenames and sizes**, and update `theme_color` in the manifest plus `theme-color` in [pwa-head.blade.php](../resources/views/layouts/partials/pwa-head.blade.php) if the brand color changes. The maskable icon must keep its important content within the central ~80% safe zone.

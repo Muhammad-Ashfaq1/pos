@@ -23,7 +23,12 @@
       "Bash(./vendor/bin/pint tests/Feature/Tenant/ReportsTest.php)",
       "Bash(sips -g pixelWidth -g pixelHeight public/assets/img/branding/logo.png)",
       "Read(//System/Library/Fonts/Supplemental/**)",
-      "Read(//System/Library/Fonts/**)"
+      "Read(//System/Library/Fonts/**)",
+      "Bash(curl -sk https://pos.test/)",
+      "Bash(curl -sk -o /dev/null -w \"manifest http=%{http_code} type=%{content_type}\\\\n\" https://pos.test/manifest.webmanifest)",
+      "Bash(curl -sk -o /dev/null -w \"sw.js http=%{http_code} type=%{content_type}\\\\n\" https://pos.test/sw.js)",
+      "Bash(curl -sk -o /dev/null -w \"icon192 http=%{http_code}\\\\n\" https://pos.test/assets/img/pwa/icon-192.png)",
+      "Bash(curl -sk https://pos.test/manifest.webmanifest)"
     ]
   },
   "hooks": {
