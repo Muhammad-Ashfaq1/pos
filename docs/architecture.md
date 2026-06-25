@@ -241,6 +241,10 @@ This swap means every `$user->hasRole(...)` / `$user->can(...)` check transparen
 - Three layouts: `layouts/app.blade.php` (admin/tenant portal), `layouts/employee-portal.blade.php` (POS panel), `auth/layout.blade.php` (auth pages), `layouts/public.blade.php` (landing).
 - Server-rendered pages with axios calls for: dropdown population (`tenant.ecommerce.dropdowns.*`), JSON listings (every `*.listing` route), and the new-order screen.
 
+## Installable PWA
+
+Every layout `<head>` includes [layouts/partials/pwa-head.blade.php](../resources/views/layouts/partials/pwa-head.blade.php), which links a web app manifest ([public/manifest.webmanifest](../public/manifest.webmanifest)) and registers a service worker ([public/sw.js](../public/sw.js)). This makes the app **installable** (address-bar install icon / Add to Home Screen) and gives it a standalone window and offline fallback. The service worker only caches static `/assets` and `/build` files — server-rendered, tenant-scoped HTML is always fetched network-first and never cached. Full detail: [pwa.md](pwa.md).
+
 ## Console & queue
 
 - Custom command: `permissions:sync` (registered in [routes/console.php](../routes/console.php)) — re-runs `PermissionSeeder` so newly added permission strings are persisted.

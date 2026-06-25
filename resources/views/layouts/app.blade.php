@@ -65,6 +65,7 @@
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
+    @include('layouts.partials.pwa-head')
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
