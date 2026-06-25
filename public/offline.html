@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline — Oil Change POS</title>
+  <link rel="icon" type="image/png" href="/assets/img/pwa/icon-192.png" />
+  <style>
+    :root { color-scheme: light dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      font-family: 'Public Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: linear-gradient(180deg, #faf9fe 0%, #f3f2fb 100%); color: #44475b; padding: 24px;
+    }
+    .card {
+      max-width: 420px; width: 100%; text-align: center; background: #fff; border-radius: 16px;
+      padding: 40px 32px; box-shadow: 0 12px 40px rgba(79, 70, 229, 0.12);
+    }
+    .logo {
+      width: 72px; height: 72px; border-radius: 18px; margin: 0 auto 20px;
+      background: linear-gradient(160deg, #4f46e5, #7367f0);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 24px; letter-spacing: 1px;
+    }
+    h1 { font-size: 20px; margin: 0 0 8px; color: #32334a; }
+    p { font-size: 14px; line-height: 1.6; margin: 0 0 24px; color: #6f7287; }
+    button {
+      appearance: none; border: 0; cursor: pointer; font-size: 14px; font-weight: 600;
+      color: #fff; background: #4f46e5; border-radius: 10px; padding: 11px 22px;
+    }
+    button:hover { background: #4338ca; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">POS</div>
+    <h1>You're offline</h1>
+    <p>We couldn't reach the server. Check your connection and try again — the page will load as soon as you're back online.</p>
+    <button onclick="location.reload()">Retry</button>
+  </div>
+</body>
+</html>
