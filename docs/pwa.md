@@ -8,7 +8,8 @@ This is a thin progressive enhancement — nothing about the server-rendered, mu
 
 | File | Role |
 |------|------|
-| [public/manifest.webmanifest](../public/manifest.webmanifest) | Web app manifest — app identity (name, `short_name`, `start_url`, `scope`, `display: standalone`, `theme_color`, `background_color`) and the icon set. Served at `/manifest.webmanifest` with MIME `application/manifest+json`. |
+| [public/assets/pwa/manifest.json](../public/assets/pwa/manifest.json) | Web app manifest source — app identity (name, `short_name`, `start_url`, `scope`, `display: standalone`, `theme_color`, `background_color`) and the icon set. |
+| [routes/web.php](../routes/web.php) (`pwa.manifest` route) | Serves the manifest at `/manifest.webmanifest` **through PHP** so the `Content-Type` is always `application/manifest+json` — see the MIME note below. |
 | [public/sw.js](../public/sw.js) | Service worker — caching strategy + offline fallback. Registered at scope `/`. |
 | [public/offline.html](../public/offline.html) | Branded fallback page shown when a navigation fails with no network. |
 | [public/assets/img/pwa/](../public/assets/img/pwa/) | Install icons: `icon-192.png`, `icon-512.png` (purpose `any`), `icon-maskable-512.png` (purpose `maskable`, full-bleed safe zone), `apple-touch-icon.png` (180×180, iOS). |
@@ -61,9 +62,31 @@ The app installs on every desktop and mobile OS, but each browser hides the inst
 
 > **`.test` / local domains:** a `.test` host over plain HTTP is neither `https://` nor `localhost`, so **Chromium browsers will not show the install icon there**. Test Chromium installs via `http://localhost:8000` (`php artisan serve`) or a real HTTPS domain. Safari's *Add to Dock* has no such restriction.
 
+## Manifest MIME type (why it's a route, not a static file)
+
+The manifest **must** be served with `Content-Type: application/manifest+json`. Many web servers (including **Valet/nginx**) don't map the `.webmanifest` extension and fall back to `application/octet-stream`, which **Safari rejects** — the page then isn't treated as installable. To make this correct on every server, the manifest is served through the `pwa.manifest` route in [routes/web.php](../routes/web.php) (reading [public/assets/pwa/manifest.json](../public/assets/pwa/manifest.json)) with an explicit `Content-Type` header, rather than as a static `public/manifest.webmanifest` file.
+
+Verify any environment with:
+
+```bash
+curl -skI https://your-host/manifest.webmanifest | grep -i content-type
+# expect: content-type: application/manifest+json
+```
+
+## Local HTTPS (Valet)
+
+PWA install needs a secure origin. With Valet, secure the site once:
+
+```bash
+valet secure <site>      # serves it as https://<site>.test with a trusted cert
+# undo later: valet unsecure <site>
+```
+
+Then load `https://<site>.test` (Safari requires HTTPS to register the service worker; Chrome requires HTTPS or `localhost` to show the install icon). After changing the manifest, **hard-reload** (Safari caches it aggressively): ⌘ + Option + R.
+
 ## Regenerating / rebranding the icons
 
-The icons are placeholder "POS" tiles on an indigo→purple gradient (`#4f46e5`→`#7367f0`, matching the manifest `theme_color`). To rebrand, replace the PNGs in [public/assets/img/pwa/](../public/assets/img/pwa/) keeping the **same filenames and sizes**, and update `theme_color` in the manifest plus `theme-color` in [pwa-head.blade.php](../resources/views/layouts/partials/pwa-head.blade.php) if the brand color changes. The maskable icon must keep its important content within the central ~80% safe zone.
+The icons are placeholder "POS" tiles on an indigo→purple gradient (`#4f46e5`→`#7367f0`, matching the manifest `theme_color`). To rebrand, replace the PNGs in [public/assets/img/pwa/](../public/assets/img/pwa/) keeping the **same filenames and sizes**, and update `theme_color` in [manifest.json](../public/assets/pwa/manifest.json) plus `theme-color` in [pwa-head.blade.php](../resources/views/layouts/partials/pwa-head.blade.php) if the brand color changes. The maskable icon must keep its important content within the central ~80% safe zone.
 
 ## Testing locally
 
