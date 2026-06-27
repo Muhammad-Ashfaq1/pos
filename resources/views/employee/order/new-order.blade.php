@@ -149,6 +149,24 @@
                                     </button>
                                 </div>
 
+                                <div class="row g-2 mb-3">
+                                    <div class="col-4">
+                                        <button type="button" class="btn btn-outline-secondary w-100 py-2 btn-draft-print" disabled>
+                                            <i class="ti tabler-printer"></i><br><small class="fw-bold">Print</small>
+                                        </button>
+                                    </div>
+                                    <div class="col-4">
+                                        <button type="button" class="btn btn-outline-secondary w-100 py-2 btn-draft-pdf" disabled>
+                                            <i class="ti tabler-download"></i><br><small class="fw-bold">PDF</small>
+                                        </button>
+                                    </div>
+                                    <div class="col-4">
+                                        <button type="button" class="btn btn-outline-secondary w-100 py-2 btn-draft-share" disabled data-bs-toggle="modal" data-bs-target="#draftShareModal">
+                                            <i class="ti tabler-send"></i><br><small class="fw-bold">Share</small>
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <div class="d-flex justify-content-between mt-3">
                                     <div class="text-primary cursor-pointer d-flex flex-column align-items-center"
                                         data-bs-toggle="offcanvas" data-bs-target="#offcanvasDiscount">
@@ -298,13 +316,13 @@
         </div>
 
         <div class="order-payment-screen d-none">
-            <div class="d-flex align-items-center mb-4">
+            {{-- <div class="d-flex align-items-center mb-4">
                 <button type="button"
                     class="btn btn-sm bg-label-primary bg-opacity-10 text-primary border-0 rounded-pill btn-circle-38 me-3 payment-back-btn">
                     <i class="ti tabler-arrow-left fs-4"></i>
                 </button>
                 <h4 class="fw-bold mb-0">New Order</h4>
-            </div>
+            </div> --}}
 
             <div class="row g-4 payment-layout">
                 <div class="col-lg-6">
@@ -432,6 +450,31 @@
     @include('employee.order.sidebar-modal')
     @include('tenant.ecommerce.customers.partials.save-modal')
     @include('tenant.ecommerce.vehicles.partials.save-modal')
+
+    <div class="modal fade" id="draftShareModal" tabindex="-1" aria-labelledby="draftShareModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-start">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold" id="draftShareModalLabel">Share Estimate PDF</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="draft-share-form">
+                    <div class="modal-body">
+                        <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" role="alert">
+                            <i class="ti tabler-info-circle me-2 fs-5"></i>
+                            <span>This saves the current cart as an estimate, then emails the PDF.</span>
+                        </div>
+                        <label for="draft_share_email" class="form-label fw-bold">Recipient Email <span class="text-danger">*</span></label>
+                        <input type="email" id="draft_share_email" name="email" class="form-control" required placeholder="name@example.com">
+                    </div>
+                    <div class="modal-footer border-top">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary fw-bold btn-submit-draft-share">Send PDF</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('page-script')
@@ -446,6 +489,9 @@
             cartSave: @json(route('employee.order.cart.save')),
             cartDestroy: @json(route('employee.order.cart.destroy')),
             show: @json(route('employee.order.show', ['order' => '__ORDER_ID__'])),
+            print: @json(route('employee.order.print', ['order' => '__ORDER_ID__'])),
+            pdf: @json(route('employee.order.pdf', ['order' => '__ORDER_ID__'])),
+            share: @json(route('employee.order.share', ['order' => '__ORDER_ID__'])),
             dropdownCustomers: @json(route('tenant.ecommerce.dropdowns.customers')),
             dropdownVehicles: @json(route('tenant.ecommerce.dropdowns.vehicles')),
             dropdownServices: @json(route('tenant.ecommerce.dropdowns.services')),

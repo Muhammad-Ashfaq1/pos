@@ -60,6 +60,22 @@
         return order ? order.items : [];
     }
 
+    function inCartQuantity(productId) {
+        const item = currentCart().find(function (cartItem) {
+            return String(cartItem.id) === String(productId);
+        });
+
+        return item ? Number(item.qty) || 0 : 0;
+    }
+
+    function syncVisibleProductCardCartCounts() {
+        $('.product-detail-card').each(function () {
+            const $card = $(this);
+            const productId = $card.data('id');
+            $card.find('.product-in-cart-count').text(inCartQuantity(productId));
+        });
+    }
+
     function resolvedDeferred(value) {
         const deferred = $.Deferred();
         deferred.resolve(value);
@@ -560,6 +576,74 @@
             + '</div>';
     }
 
+    function buildPosProductCard(item) {
+        const productId = parseInt(item.id, 10);
+        const unitPrice = Number(item.sale_price ?? item.price ?? 0);
+        const price = formatMoney(unitPrice);
+        const stock = parseInt(item.current_stock, 10) || 0;
+        const sku = item.sku || '---';
+        const barcode = item.barcode || '---';
+        const hasImage = item.image_url && item.image_url !== '';
+        const discountLabel = item.discount ? formatDiscountLabel(item.discount) : '';
+        const trackInventory = isTruthyFlag(item.track_inventory);
+        const inCartQty = inCartQuantity(productId);
+
+        return ''
+            + '<div class="col-md-6">'
+            + '  <div class="card border-0 pos-product-card product-detail-card"'
+            + '       data-type="product" data-id="' + productId + '" data-name="' + escape(item.name || 'Product') + '"'
+            + '       data-price="' + unitPrice.toFixed(2) + '"'
+            + '       data-sku="' + escape(item.sku || '') + '"'
+            + '       data-barcode="' + escape(item.barcode || '') + '"'
+            + '       data-stock="' + stock + '"'
+            + '       data-track-inventory="' + (trackInventory ? '1' : '0') + '"'
+            + '       data-image="' + escape(item.image_url || '') + '"'
+            + '       data-discount="' + encodePayload(item.discount || null) + '"'
+            + '       data-tax-percentage="' + (item.tax_percentage || 0) + '">'
+            + '    <div class="pos-product-head">'
+            + '      <div class="pos-product-image product-image-container">'
+            + '        <i class="ti tabler-photo product-default-icon' + (hasImage ? ' d-none' : '') + '"></i>'
+            + '        ' + (hasImage ? '<img src="' + escape(item.image_url) + '" alt="' + escape(item.name || 'Product') + '" class="product-image" />' : '')
+            + '      </div>'
+            + '      <div class="pos-product-title-wrap">'
+            + '        <h5 class="pos-product-title">' + escape(item.name || 'Product') + '</h5>'
+            + '        <div class="pos-product-badges">'
+            + '          <span class="pos-product-badge pos-product-sku">SKU: ' + escape(sku) + '</span>'
+            + '          <span class="pos-product-badge pos-product-barcode">BC: ' + escape(barcode) + '</span>'
+            + '        </div>'
+            + '      </div>'
+            + '    </div>'
+            + '    <div class="pos-product-price-row">'
+            + '      <span>Unit Price</span>'
+            + '      <strong>' + price + '</strong>'
+            + '    </div>'
+            + '    <div class="pos-product-stats">'
+            + '      <div class="pos-product-stat pos-product-stat-cart">'
+            + '        <span>In Cart</span>'
+            + '        <strong class="product-in-cart-count">' + inCartQty + '</strong>'
+            + '      </div>'
+            + '      <div class="pos-product-stat pos-product-stat-stock">'
+            + '        <span>Available</span>'
+            + '        <strong class="product-available-stock">' + stock + '</strong>'
+            + '      </div>'
+            + '    </div>'
+            + '    ' + (discountLabel ? '<div class="product-discount-banner pos-product-discount"><small><i class="ti tabler-discount-2"></i> ' + escape(discountLabel) + '</small></div>' : '')
+            + '    <label class="pos-product-qty-label">Quantity</label>'
+            + '    <div class="pos-product-qty-control">'
+            + '      <button class="product-qty-minus-btn" type="button" aria-label="Decrease quantity"><i class="ti tabler-minus"></i></button>'
+            + '      <input type="number" min="1" step="1" class="product-qty-input input-group-text" value="1" aria-label="Quantity" />'
+            + '      <button class="product-qty-plus-btn" type="button" aria-label="Increase quantity"><i class="ti tabler-plus"></i></button>'
+            + '    </div>'
+            + '    <button type="button" class="btn btn-primary pos-product-add-btn btn-add-to-cart">'
+            + '      <i class="ti tabler-shopping-cart"></i><span>Add to Cart</span>'
+            + '    </button>'
+            + '    <button type="button" class="btn btn-link pos-product-clear-btn btn-clear-qty">'
+            + '      <i class="ti tabler-refresh"></i><span>Clear Selection</span>'
+            + '    </button>'
+            + '  </div>'
+            + '</div>';
+    }
+
     function renderCards($container, items, emptyMessage) {
         if (!items || items.length === 0) {
             $container.html(
@@ -583,7 +667,7 @@
             );
             return;
         }
-        $container.html(items.map(buildProductDetailCard).join(''));
+        $container.html(items.map(buildPosProductCard).join(''));
     }
 
     function showLoading($container) {
@@ -654,7 +738,7 @@
         Catalog.getProducts({ subCategoryId: subCategoryId, q: q }).done(function (res) {
             const products = res.data || [];
             currentProducts = products; // Store for detail view
-            
+
             // Directly open product detail view for the first product
             // Skip the intermediate product cards step
             if (products.length > 0) {
@@ -748,24 +832,21 @@
     function openProductDetail(product) {
         activeProduct = product;
         $('.product-detail-title').text('Product Details');
-        
-        // Render product detail cards in grid
+
         const $grid = $('.product-detail-grid');
         $grid.empty();
-        
-        // Add the main product card
-        const cardHtml = buildProductDetailCard(product);
-        $grid.append(cardHtml);
-        
-        // If we have products from the current level, add them as well
-        // This will show 3 cards in a row when available
-        if (currentProducts && currentProducts.length > 1) {
-            const relatedProducts = currentProducts.filter(p => p.id !== product.id).slice(0, 2);
-            relatedProducts.forEach(p => {
-                $grid.append(buildProductDetailCard(p));
-            });
-        }
-        
+
+        const products = currentProducts && currentProducts.length > 0
+            ? [
+                product,
+                ...currentProducts.filter(function (item) {
+                    return String(item.id) !== String(product.id);
+                })
+            ]
+            : [product];
+
+        $grid.html(products.map(buildPosProductCard).join(''));
+        syncVisibleProductCardCartCounts();
         showProductDetail();
     }
 
@@ -1512,6 +1593,7 @@
         }
 
         updateSummary();
+        syncVisibleProductCardCartCounts();
     }
 
     function renderBreakdownHtml(label, amount, prefix, isDiscount) {
@@ -1650,6 +1732,7 @@
         $('.btn-pay').prop('disabled', !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder);
         $('.btn-pay .small').text(isSavingOrder ? 'Saving...' : 'Pay');
         $('.btn-save-estimate').prop('disabled', !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder);
+        $('.btn-draft-print, .btn-draft-pdf, .btn-draft-share').prop('disabled', !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder);
         renderCustomerDiscountBanner(totals);
         renderDiscountDrawer();
         refreshOrderDropdown();
@@ -2122,46 +2205,161 @@
         openPaymentScreen();
     });
 
-    $(document).on('click', '.btn-save-estimate', function () {
-        const saveUrl = (window.catalogRoutes || {}).save;
-        const showUrlTemplate = (window.catalogRoutes || {}).show;
+    function routeForSavedEstimate(routeKey, orderId) {
+        const template = (window.catalogRoutes || {})[routeKey];
 
-        if (isSavingOrder || !validateOrderForSave()) return;
+        return template ? template.replace('__ORDER_ID__', orderId) : '';
+    }
+
+    function saveCurrentEstimate(options) {
+        options = options || {};
+        const saveUrl = (window.catalogRoutes || {}).save;
+
+        if (isSavingOrder || !validateOrderForSave()) {
+            if (options.popup && !options.popup.closed) {
+                options.popup.close();
+            }
+
+            return $.Deferred().reject().promise();
+        }
 
         if (!saveUrl) {
             notifyOrder('error', 'Order save route is missing.');
-            return;
+            if (options.popup && !options.popup.closed) {
+                options.popup.close();
+            }
+
+            return $.Deferred().reject().promise();
         }
 
         const payload = currentOrderPayload();
-        if (!payload) return;
+        if (!payload) {
+            if (options.popup && !options.popup.closed) {
+                options.popup.close();
+            }
+
+            return $.Deferred().reject().promise();
+        }
 
         payload.is_estimate = true;
 
         isSavingOrder = true;
         updateSummary();
 
-        $.ajax({
+        return $.ajax({
             url: saveUrl,
             method: 'POST',
             data: JSON.stringify(payload),
             contentType: 'application/json',
         }).done(function (response) {
             notifyOrder('success', response.message || 'Estimate saved successfully.');
-            const resetRequest = resetSavedOrder();
-            if (response.data && response.data.id && showUrlTemplate) {
-                const showUrl = showUrlTemplate.replace('__ORDER_ID__', response.data.id);
+            if (options.clearDraftAfterSave) {
+                const resetRequest = resetSavedOrder();
                 resetRequest.always(function () {
-                    setTimeout(function () {
-                        window.location.href = showUrl;
-                    }, 1000);
+                    if (typeof options.onSaved === 'function') {
+                        options.onSaved(response);
+                    }
                 });
+                return;
+            }
+
+            if (typeof options.onSaved === 'function') {
+                options.onSaved(response);
             }
         }).fail(function (xhr) {
             notifyOrder('error', orderErrorMessage(xhr));
+            if (options.popup && !options.popup.closed) {
+                options.popup.close();
+            }
         }).always(function () {
             isSavingOrder = false;
             updateSummary();
+        });
+    }
+
+    $(document).on('click', '.btn-save-estimate', function () {
+        saveCurrentEstimate({
+            onSaved: function (response) {
+                if (response.data && response.data.id) {
+                    const showUrl = routeForSavedEstimate('show', response.data.id);
+                    if (showUrl) {
+                        setTimeout(function () {
+                            window.location.href = showUrl;
+                        }, 1000);
+                    }
+                }
+            }
+        });
+    });
+
+    $(document).on('click', '.btn-draft-print', function () {
+        const popup = window.open('about:blank', '_blank');
+
+        saveCurrentEstimate({
+            popup: popup,
+            onSaved: function (response) {
+                const printUrl = response.data && response.data.id ? routeForSavedEstimate('print', response.data.id) : '';
+                if (popup && printUrl) {
+                    popup.location.href = printUrl;
+                }
+            }
+        });
+    });
+
+    $(document).on('click', '.btn-draft-pdf', function () {
+        const popup = window.open('about:blank', '_blank');
+
+        saveCurrentEstimate({
+            popup: popup,
+            onSaved: function (response) {
+                const pdfUrl = response.data && response.data.id ? routeForSavedEstimate('pdf', response.data.id) : '';
+                if (popup && pdfUrl) {
+                    popup.location.href = pdfUrl;
+                }
+            }
+        });
+    });
+
+    $('#draft-share-form').on('submit', function (event) {
+        event.preventDefault();
+
+        const $form = $(this);
+        const $submit = $form.find('.btn-submit-draft-share');
+        const email = String($form.find('[name="email"]').val() || '').trim();
+
+        if (!email || $submit.prop('disabled')) return;
+
+        $submit.prop('disabled', true).text('Sending...');
+
+        saveCurrentEstimate({
+            onSaved: function (response) {
+                const shareUrl = response.data && response.data.id ? routeForSavedEstimate('share', response.data.id) : '';
+                if (!shareUrl) {
+                    notifyOrder('error', 'Estimate share route is missing.');
+                    $submit.prop('disabled', false).text('Send PDF');
+                    return;
+                }
+
+                $.ajax({
+                    url: shareUrl,
+                    method: 'POST',
+                    data: { email: email },
+                    dataType: 'json',
+                }).done(function (shareResponse) {
+                    notifyOrder('success', shareResponse.message || 'Estimate PDF sent successfully.');
+                    const modalEl = document.getElementById('draftShareModal');
+                    if (modalEl && window.bootstrap && window.bootstrap.Modal) {
+                        window.bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                    }
+                    $form[0].reset();
+                }).fail(function (xhr) {
+                    notifyOrder('error', orderErrorMessage(xhr));
+                }).always(function () {
+                    $submit.prop('disabled', false).text('Send PDF');
+                });
+            }
+        }).fail(function () {
+            $submit.prop('disabled', false).text('Send PDF');
         });
     });
 
