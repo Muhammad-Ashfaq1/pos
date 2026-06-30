@@ -16,11 +16,13 @@ use Illuminate\View\View;
 class VehicleController extends Controller
 {
     public function __construct(
-        private readonly VehicleRepositoryInterface $repo
+        private readonly VehicleRepositoryInterface $repo,
+        private readonly TenantContext $tenantContext,
     ) {}
 
     public function index(Request $request): View
     {
+        $this->ensureVehicleFeatureEnabled();
         $this->authorize('viewAny', Vehicle::class);
 
         return $this->repo->index();
@@ -28,6 +30,7 @@ class VehicleController extends Controller
 
     public function listing(Request $request): JsonResponse
     {
+        $this->ensureVehicleFeatureEnabled();
         $this->authorize('viewAny', Vehicle::class);
 
         $validated = $request->validate([
@@ -58,6 +61,7 @@ class VehicleController extends Controller
 
     public function edit(Vehicle $vehicle, Request $request): JsonResponse
     {
+        $this->ensureVehicleFeatureEnabled();
         $this->authorize('update', $vehicle);
 
         return response()->json([
@@ -67,6 +71,7 @@ class VehicleController extends Controller
 
     public function save(SaveVehicleRequest $request): JsonResponse
     {
+        $this->ensureVehicleFeatureEnabled();
         $validated = $request->validated();
         $vehicle = isset($validated['id'])
             ? Vehicle::query()->findOrFail($validated['id'])
@@ -92,6 +97,7 @@ class VehicleController extends Controller
 
     public function destroy(Vehicle $vehicle): JsonResponse
     {
+        $this->ensureVehicleFeatureEnabled();
         $this->authorize('delete', $vehicle);
 
         $result = $this->repo->destroy($vehicle);
@@ -99,5 +105,12 @@ class VehicleController extends Controller
         return response()->json([
             'message' => $result['message'],
         ]);
+    }
+
+    private function ensureVehicleFeatureEnabled(): void
+    {
+        $vehicleRequired = $this->tenantContext->current()?->isVehicleRequired() ?? true;
+
+        abort_if(! $vehicleRequired, 404);
     }
 }

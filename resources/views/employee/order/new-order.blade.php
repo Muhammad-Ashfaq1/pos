@@ -449,7 +449,9 @@
     </div>
     @include('employee.order.sidebar-modal')
     @include('tenant.ecommerce.customers.partials.save-modal')
-    @include('tenant.ecommerce.vehicles.partials.save-modal')
+    @if($vehicleRequired)
+        @include('tenant.ecommerce.vehicles.partials.save-modal')
+    @endif
 
     <div class="modal fade" id="draftShareModal" tabindex="-1" aria-labelledby="draftShareModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -503,9 +505,11 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"></script>
     <script src="{{ asset('assets/js/tenant/e-com/customer-manager.js') }}"></script>
-    <script
-        src="{{ asset('assets/js/tenant/e-com/vehicle-manager.js') }}?v={{ filemtime(public_path('assets/js/tenant/e-com/vehicle-manager.js')) }}">
-    </script>
+    @if($vehicleRequired)
+        <script
+            src="{{ asset('assets/js/tenant/e-com/vehicle-manager.js') }}?v={{ filemtime(public_path('assets/js/tenant/e-com/vehicle-manager.js')) }}">
+        </script>
+    @endif
 
     <script src="{{ asset('assets/js/employee/catalog-api.js') }}"></script>
     <script

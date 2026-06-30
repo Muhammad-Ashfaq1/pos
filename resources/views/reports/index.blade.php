@@ -22,7 +22,7 @@
 
 @section('content')
 <div class="container-fluid flex-grow-1 container-p-y">
-    <div class="mb-4">
+    {{-- <div class="mb-4">
         <h4 class="mb-1">Reports</h4>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
@@ -31,7 +31,7 @@
                 <li class="breadcrumb-item active" aria-current="page">{{ $reportLabel }}</li>
             </ol>
         </nav>
-    </div>
+    </div> --}}
 
     {{-- Report picker (tabs) --}}
     <ul class="nav nav-tabs mb-3">

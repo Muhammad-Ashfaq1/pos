@@ -3,7 +3,7 @@
 @section('title', 'Discount Groups')
 
 @section('content')
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+    {{-- <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
         <div>
             <h4 class="mb-1">Discount Groups</h4>
             <nav aria-label="breadcrumb">
@@ -13,7 +13,7 @@
                 </ol>
             </nav>
         </div>
-    </div>
+    </div> --}}
 
     <div class="card mb-4">
         <div class="card-body d-flex justify-content-between align-items-center py-3">
@@ -60,7 +60,7 @@
                             </td>
                             <td class="text-center">
                                 <div class="d-flex align-items-center justify-content-center gap-2">
-                                    <a href="javascript:void(0);" class="text-primary edit-discount-group" 
+                                    <a href="javascript:void(0);" class="text-primary edit-discount-group"
                                          data-id="{{ $group->id }}"
                                         data-title="{{ $group->name }}"
                                         data-type="{{ $group->type }}"
@@ -72,7 +72,7 @@
                                         data-credit-earn-rate="{{ $group->credit_earn_rate }}"
                                         data-credit-min-spend="{{ $group->credit_min_spend }}"
                                     ><i class="ti tabler-edit"></i></a>
-                                    <a href="javascript:void(0);" class="text-danger delete-discount-group" 
+                                    <a href="javascript:void(0);" class="text-danger delete-discount-group"
                                         data-id="{{ $group->id }}"
                                         data-url="{{ route('tenant.discounts.group.delete', $group->id) }}"
                                     ><i class="ti tabler-trash"></i></a>

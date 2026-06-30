@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
-        <div>
+        {{-- <div>
             <h4 class="mb-1">Categories</h4>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
@@ -13,9 +13,9 @@
                     <li class="breadcrumb-item active" aria-current="page">Categories</li>
                 </ol>
             </nav>
-        </div>
+        </div> --}}
 
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2" id="categoryTableActions">
             <div class="dropdown">
                 <button
                     type="button"
@@ -157,5 +157,5 @@
     <script>
         window.categoryListingUrl = @json($listingUrl);
     </script>
-    <script src="{{ asset('assets/js/tenant/e-com/categories.js') }}"></script>
+    <script src="{{ asset('assets/js/tenant/e-com/categories.js') }}?v={{ filemtime(public_path('assets/js/tenant/e-com/categories.js')) }}"></script>
 @endsection

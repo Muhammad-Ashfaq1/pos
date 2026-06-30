@@ -2,8 +2,17 @@
     $user = auth()->user();
     $isSuperAdmin = $user?->isSuperAdmin();
     $isEmployee = $user?->isEmployee();
+    $vehicleFeatureEnabled = app(\App\Support\Tenancy\TenantContext::class)->current()?->isVehicleRequired() ?? true;
     $homeRoute = $isSuperAdmin ? 'admin.dashboard' : ($isEmployee ? 'employee.dashboard' : 'tenant.dashboard');
     $currentRouteName = request()->route()?->getName();
+    $settingsMenuItem = $user?->can('settings.manage')
+        ? [
+            'label' => 'Settings',
+            'route' => 'tenant.settings.shop-profile.general',
+            'pattern' => 'tenant.settings.shop-profile.*',
+            'icon' => 'tabler-settings-cog',
+        ]
+        : null;
 
     $adminMenuItems = [
         [
@@ -117,7 +126,7 @@
                         'icon' => 'tabler-users',
                     ]
                     : null,
-                $user?->can('vehicle.view') || $user?->can('vehicles.view')
+                $vehicleFeatureEnabled && ($user?->can('vehicle.view') || $user?->can('vehicles.view'))
                     ? [
                         'label' => 'Vehicles',
                         'route' => 'tenant.ecommerce.vehicles.index',
@@ -141,40 +150,6 @@
                         'pattern' => 'tenant.reports.*',
                         'icon' => 'tabler-chart-histogram',
                         'routeParams' => ['report' => 'sales'],
-                    ]
-                    : null,
-            ])
-                ->filter()
-                ->values()
-                ->all(),
-        ],
-        [
-            'label' => 'Staff & Access',
-            'icon' => 'tabler-shield-lock',
-            'items' => collect([
-                $user?->isTenantAdmin() || $user?->can('roles.manage')
-                    ? [
-                        'label' => 'Roles & Permissions',
-                        'route' => 'tenant.settings.roles-permissions.index',
-                        'pattern' => 'tenant.settings.roles-permissions.*',
-                        'icon' => 'tabler-shield-lock',
-                    ]
-                    : null,
-            ])
-                ->filter()
-                ->values()
-                ->all(),
-        ],
-        [
-            'label' => 'Settings',
-            'icon' => 'tabler-settings-cog',
-            'items' => collect([
-                $user?->can('settings.manage')
-                    ? [
-                        'label' => 'Shop Settings',
-                        'route' => 'tenant.settings.shop-profile.general',
-                        'pattern' => 'tenant.settings.shop-profile.*',
-                        'icon' => 'tabler-building-store',
                     ]
                     : null,
             ])
@@ -233,6 +208,16 @@
         #layout-menu .menu-sub .menu-icon {
             opacity: 0.9;
         }
+
+        #layout-menu .menu-inner.menu-layout-column {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        #layout-menu .menu-item-settings-bottom {
+            margin-top: auto;
+        }
     </style>
 @endonce
 
@@ -263,7 +248,7 @@
 
     <div class="menu-inner-shadow"></div>
 
-    <ul class="menu-inner py-1">
+    <ul class="menu-inner py-1 menu-layout-column">
         @if ($isSuperAdmin)
             @foreach ($adminMenuItems as $item)
                 <li class="menu-item {{ request()->routeIs($item['pattern']) ? 'active' : '' }}">
@@ -309,6 +294,15 @@
                     </ul>
                 </li>
             @endforeach
+
+            @if ($settingsMenuItem)
+                <li class="menu-item menu-item-settings-bottom {{ request()->routeIs($settingsMenuItem['pattern']) ? 'active' : '' }}">
+                    <a href="{{ route($settingsMenuItem['route']) }}" class="menu-link">
+                        <i class="menu-icon icon-base ti {{ $settingsMenuItem['icon'] }}"></i>
+                        <div>{{ $settingsMenuItem['label'] }}</div>
+                    </a>
+                </li>
+            @endif
         @endif
 
         @if (session()->has('impersonator_id'))

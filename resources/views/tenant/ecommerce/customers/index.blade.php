@@ -5,10 +5,11 @@
 
     @php
         $customerTypes = \App\Models\Customer::typeOptions();
+        $vehicleRequired = app(\App\Support\Tenancy\TenantContext::class)->current()?->isVehicleRequired() ?? true;
     @endphp
     @section('content')
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
-        <div>
+        {{-- <div>
             <h4 class="mb-1">Customers</h4>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
@@ -17,9 +18,9 @@
                     <li class="breadcrumb-item active" aria-current="page">Customers</li>
                 </ol>
             </nav>
-        </div>
+        </div> --}}
 
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2" id="customerTableActions">
             <div class="dropdown">
                 <button
                     type="button"
@@ -87,7 +88,9 @@
                         <th>Customer</th>
                         <th>Type</th>
                         <th>Contact</th>
-                        <th>Vehicles</th>
+                        @if($vehicleRequired)
+                            <th>Vehicles</th>
+                        @endif
                         <th>Visits</th>
                         <th>Lifetime Value</th>
                         <th>Last Visit</th>
@@ -108,7 +111,10 @@
         window.customerListingUrl = @json($listingUrl);
         window.customerEditUrlTemplate = @json($editUrlTemplate);
         window.customerVehicleIndexUrlTemplate = @json($vehicleIndexUrlTemplate);
+        window.customerSettings = {
+            vehicleRequired: @json($vehicleRequired),
+        };
     </script>
-    <script src="{{ asset('assets/js/tenant/e-com/customers.js') }}"></script>
+    <script src="{{ asset('assets/js/tenant/e-com/customers.js') }}?v={{ filemtime(public_path('assets/js/tenant/e-com/customers.js')) }}"></script>
     <script src="{{ asset('assets/js/tenant/e-com/customer-manager.js') }}"></script>
 @endsection

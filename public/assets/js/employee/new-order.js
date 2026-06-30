@@ -516,7 +516,7 @@
         const sku = item.sku || '—';
         const barcode = item.barcode || '—';
         const hasImage = item.image_url && item.image_url !== '';
-        const discountLabel = item.discount ? formatDiscountLabel(item.discount) : '';
+        const discountText = item.discount ? discountLabel(item.discount) : '';
 
         return ''
             + '<div class="col-md-4">'
@@ -554,7 +554,7 @@
             + '          <h5 class="fw-bold text-primary mb-0">' + price + '</h5>'
             + '        </div>'
             + '      </div>'
-            + '      ' + (discountLabel ? '<div class="product-discount-banner mb-2"><small class="text-success"><i class="ti tabler-discount-2"></i> ' + discountLabel + '</small></div>' : '')
+            + '      ' + (discountText ? '<div class="product-discount-banner mb-2"><small class="text-success"><i class="ti tabler-discount-2"></i> ' + discountText + '</small></div>' : '')
             + '      <div class="d-flex gap-2 mb-3">'
             + '        <div class="flex-grow-1 bg-label-primary bg-opacity-10 p-2 rounded-3 border border-primary border-opacity-10 text-center">'
             + '          <small class="text-muted d-block small fw-semibold text-uppercase" style="font-size: 0.55rem;">Available</small>'
@@ -584,7 +584,7 @@
         const sku = item.sku || '---';
         const barcode = item.barcode || '---';
         const hasImage = item.image_url && item.image_url !== '';
-        const discountLabel = item.discount ? formatDiscountLabel(item.discount) : '';
+        const discountText = item.discount ? discountLabel(item.discount) : '';
         const trackInventory = isTruthyFlag(item.track_inventory);
         const inCartQty = inCartQuantity(productId);
 
@@ -627,7 +627,7 @@
             + '        <strong class="product-available-stock">' + stock + '</strong>'
             + '      </div>'
             + '    </div>'
-            + '    ' + (discountLabel ? '<div class="product-discount-banner pos-product-discount"><small><i class="ti tabler-discount-2"></i> ' + escape(discountLabel) + '</small></div>' : '')
+            + '    ' + (discountText ? '<div class="product-discount-banner pos-product-discount"><small><i class="ti tabler-discount-2"></i> ' + escape(discountText) + '</small></div>' : '')
             + '    <label class="pos-product-qty-label">Quantity</label>'
             + '    <div class="pos-product-qty-control">'
             + '      <button class="product-qty-minus-btn" type="button" aria-label="Decrease quantity"><i class="ti tabler-minus"></i></button>'
