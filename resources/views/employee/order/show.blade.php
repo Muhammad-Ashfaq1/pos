@@ -322,7 +322,7 @@
                             </thead>
                             <tbody>
                                 @forelse ($order['payment_history'] ?? [] as $payment)
-                                    <tr class="border-bottom border-light">
+                                    <tr class="border-bottom border-light {{ $payment['is_refund'] ?? false ? 'bg-light-danger' : '' }}">
                                         <td class="px-2 py-2 text-muted" style="font-size: 0.78rem;">{{ $payment['created_at_label'] }}</td>
                                         <td class="px-2 py-2" style="font-size: 0.78rem;">
                                             @php
@@ -346,9 +346,15 @@
                                                 <i class="ti {{ $icon }} fs-6"></i>
                                                 {{ $payment['payment_method_label'] }}
                                             </span>
+                                            @if($payment['is_refund'] ?? false)
+                                                <span class="badge bg-label-danger d-inline-flex align-items-center gap-1 py-1 px-2 ms-1" style="font-size: 0.7rem; font-weight: 700;">
+                                                    <i class="ti tabler-rotate-2 fs-6"></i>
+                                                    {{ $payment['type_label'] ?? 'Refund' }}
+                                                </span>
+                                            @endif
                                         </td>
                                         <td class="px-2 py-2 text-heading fw-medium" style="font-size: 0.78rem;">{{ $payment['collector_name'] }}</td>
-                                        <td class="px-2 py-2 text-end fw-bold text-indigo" style="font-size: 0.78rem; color: #312e81;">{{ $payment['amount_label'] }}</td>
+                                        <td class="px-2 py-2 text-end fw-bold {{ $payment['is_refund'] ?? false ? 'text-danger' : 'text-indigo' }}" style="font-size: 0.78rem; {{ $payment['is_refund'] ?? false ? 'color: #dc3545;' : 'color: #312e81;' }}">{{ $payment['amount_label'] }}</td>
                                     </tr>
                                 @empty
                                     <tr>

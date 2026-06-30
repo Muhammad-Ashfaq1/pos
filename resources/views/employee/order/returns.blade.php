@@ -4,6 +4,32 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}">
+    <style>
+        .employee-return-summary-value {
+            overflow-x: auto;
+            white-space: nowrap;
+            max-width: 200px;
+        }
+
+        /* Custom scrollbar styling */
+        .employee-return-summary-value::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .employee-return-summary-value::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .employee-return-summary-value::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .employee-return-summary-value::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -97,7 +123,7 @@
                     <div class="employee-return-modal-heading">
                         <span class="employee-return-modal-icon"><i class="ti tabler-rotate-2"></i></span>
                         <div>
-                            <h5 class="modal-title" id="returnConfirmationModalLabel">Process Return</h5>
+                            <h5 class="modal-title" id="returnConfirmationModalLabel">Process Return - <span id="returnOrderNumber"></span></h5>
                             <p class="employee-return-modal-subtitle">Select the items the customer is returning.</p>
                         </div>
                     </div>
@@ -105,10 +131,6 @@
                 </div>
                 <div class="modal-body">
                     <div class="employee-return-summary">
-                        <div class="employee-return-summary-item">
-                            <span class="employee-return-summary-label">Order</span>
-                            <span class="employee-return-summary-value" id="returnOrderNumber"></span>
-                        </div>
                         <div class="employee-return-summary-item">
                             <span class="employee-return-summary-label">Customer</span>
                             <span class="employee-return-summary-value" id="returnCustomerName"></span>

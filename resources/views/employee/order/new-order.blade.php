@@ -149,6 +149,24 @@
                                     </button>
                                 </div>
 
+                                <div class="row g-2 mb-3">
+                                    <div class="col-4">
+                                        <button type="button" class="btn btn-outline-secondary w-100 py-2 btn-draft-print" disabled>
+                                            <i class="ti tabler-printer"></i><br><small class="fw-bold">Print</small>
+                                        </button>
+                                    </div>
+                                    <div class="col-4">
+                                        <button type="button" class="btn btn-outline-secondary w-100 py-2 btn-draft-pdf" disabled>
+                                            <i class="ti tabler-download"></i><br><small class="fw-bold">PDF</small>
+                                        </button>
+                                    </div>
+                                    <div class="col-4">
+                                        <button type="button" class="btn btn-outline-secondary w-100 py-2 btn-draft-share" disabled data-bs-toggle="modal" data-bs-target="#draftShareModal">
+                                            <i class="ti tabler-send"></i><br><small class="fw-bold">Share</small>
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <div class="d-flex justify-content-between mt-3">
                                     <div class="text-primary cursor-pointer d-flex flex-column align-items-center"
                                         data-bs-toggle="offcanvas" data-bs-target="#offcanvasDiscount">
@@ -233,74 +251,57 @@
                                 <h4 class="fw-bold mb-0 product-detail-title">Back to Catalog</h4>
                             </div>
 
-                            <div class="card border-0 shadow-sm rounded-4 ms-0" style="max-width: 480px;">
-                                <div class="card-body p-4">
-                                    <div class="d-flex align-items-center gap-3 mb-4">
-                                        <div class="avatar avatar-xl">
-                                            <div class="avatar-initial rounded-3 bg-label-primary product-image-container">
-                                                <i class="ti tabler-package fs-1 product-default-icon"></i>
-                                                <img src="" alt="" class="rounded-3 w-100 h-100 object-fit-cover d-none product-image" />
+                            <div class="row g-3 product-detail-grid">
+                                <div class="col-md-4">
+                                    <div class="card border-0 shadow-sm rounded-4 product-detail-card">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex align-items-center gap-3 mb-3">
+                                                <div class="avatar avatar-lg flex-shrink-0">
+                                                    <div class="avatar-initial rounded-3 bg-label-primary product-image-container">
+                                                        <i class="ti tabler-package fs-3 product-default-icon"></i>
+                                                        <img src="" alt="" class="rounded-3 w-100 h-100 object-fit-cover d-none product-image" />
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1 min-w-0">
+                                                    <h6 class="text-wrap fw-bold text-dark mb-1 text-truncate product-name">Product Name</h6>
+                                                    <div class="d-flex gap-1 flex-wrap">
+                                                        <small class="badge bg-label-secondary px-2 rounded-pill fs-tiny">SKU:
+                                                            <span class="product-sku">—</span></small>
+                                                        <small class="badge bg-label-info px-2 rounded-pill fs-tiny">BC: <span
+                                                                class="product-barcode">—</span></small>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div>
-                                            <h4 class="fw-bold text-dark mb-0 product-name">Product Name</h4>
-                                            <div class="d-flex gap-2 mt-1">
-                                                <small class="badge bg-label-secondary px-2 rounded-pill fs-tiny">SKU:
-                                                    <span class="product-sku">—</span></small>
-                                                <small class="badge bg-label-info px-2 rounded-pill fs-tiny">BC: <span
-                                                        class="product-barcode">—</span></small>
+
+                                            <div class="bg-light p-2 rounded-3 mb-3 border-start border-primary border-3">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="text-muted fw-semibold small">Unit Price</span>
+                                                    <h5 class="fw-bold text-primary mb-0 product-price">@money(0)</h5>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    <div class="bg-light p-3 rounded-4 mb-3 border-start border-primary border-5">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="text-muted fw-semibold">Unit Price</span>
-                                            <h3 class="fw-bold text-primary mb-0 product-price">@money(0)</h3>
-                                        </div>
-                                    </div>
-
-                                    <div class="product-discount-banner d-none mb-3">
-                                        <i class="ti tabler-discount-2"></i>
-                                        <span class="product-discount-label"></span>
-                                    </div>
-
-                                    <div class="row g-2 mb-4">
-                                        <div class="col-6">
-                                            <div class="bg-label-primary bg-opacity-10 p-2 rounded-3 border border-primary border-opacity-10 text-center">
-                                                <small class="text-muted d-block small fw-semibold text-uppercase" style="font-size: 0.6rem;">In Cart</small>
-                                                <span class="fw-bold text-primary product-in-cart-qty">0</span>
+                                            <div class="product-discount-banner d-none mb-2">
+                                                <small class="text-success"><i class="ti tabler-discount-2"></i> <span class="product-discount-label"></span></small>
                                             </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="bg-label-success bg-opacity-10 p-2 rounded-3 border border-success border-opacity-10 text-center">
-                                                <small class="text-muted d-block small fw-semibold text-uppercase" style="font-size: 0.6rem;">Available</small>
-                                                <span class="fw-bold text-success product-available-stock">0</span>
+
+                                            <div class="d-flex gap-2 mb-3">
+                                                <div class="flex-grow-1 bg-label-primary bg-opacity-10 p-2 rounded-3 border border-primary border-opacity-10 text-center">
+                                                    <small class="text-muted d-block small fw-semibold text-uppercase" style="font-size: 0.55rem;">Available</small>
+                                                    <span class="fw-bold text-primary product-available-stock">0</span>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <div class="input-group input-group-sm border border-primary rounded-pill overflow-hidden">
+                                                        <button class="btn btn-outline-primary border-0 px-2 product-qty-minus-btn" type="button"><i class="ti tabler-minus fs-5"></i></button>
+                                                        <input type="number" min="1" step="1" class="form-control border-0 text-center fw-bold product-qty-input bg-white" value="1" />
+                                                        <button class="btn btn-outline-primary border-0 px-2 product-qty-plus-btn" type="button"><i class="ti tabler-plus fs-5"></i></button>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    <div class="mb-4">
-                                        <label class="form-label fw-bold text-muted small text-uppercase mb-2">Quantity</label>
-                                        <div class="input-group input-group-lg border border-primary rounded-pill overflow-hidden shadow-sm">
-                                            <button class="btn btn-outline-primary border-0 px-4 product-qty-minus-btn"
-                                                type="button"><i class="ti tabler-minus"></i></button>
-                                            <input type="number" min="1" step="1"
-                                                class="form-control border-0 text-center fw-bold fs-4 product-qty-input bg-white"
-                                                value="1" />
-                                            <button class="btn btn-outline-primary border-0 px-4 product-qty-plus-btn"
-                                                type="button"><i class="ti tabler-plus"></i></button>
+                                            <button type="button" class="btn btn-primary btn-sm rounded-pill fw-bold w-100 btn-add-to-cart shadow-primary">
+                                                <i class="ti tabler-shopping-cart me-1"></i> Add to Cart
+                                            </button>
                                         </div>
-                                    </div>
-
-                                    <div class="d-grid gap-2">
-                                        <button type="button"
-                                            class="btn btn-primary btn-lg rounded-pill fw-bold btn-add-to-cart shadow-primary py-3">
-                                            <i class="ti tabler-shopping-cart me-2"></i> Add to Cart
-                                        </button>
-                                        <button type="button" class="btn btn-link text-muted btn-sm btn-clear-qty">
-                                            <i class="ti tabler-refresh me-1"></i> Clear Selection
-                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -315,13 +316,13 @@
         </div>
 
         <div class="order-payment-screen d-none">
-            <div class="d-flex align-items-center mb-4">
+            {{-- <div class="d-flex align-items-center mb-4">
                 <button type="button"
                     class="btn btn-sm bg-label-primary bg-opacity-10 text-primary border-0 rounded-pill btn-circle-38 me-3 payment-back-btn">
                     <i class="ti tabler-arrow-left fs-4"></i>
                 </button>
                 <h4 class="fw-bold mb-0">New Order</h4>
-            </div>
+            </div> --}}
 
             <div class="row g-4 payment-layout">
                 <div class="col-lg-6">
@@ -449,6 +450,31 @@
     @include('employee.order.sidebar-modal')
     @include('tenant.ecommerce.customers.partials.save-modal')
     @include('tenant.ecommerce.vehicles.partials.save-modal')
+
+    <div class="modal fade" id="draftShareModal" tabindex="-1" aria-labelledby="draftShareModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-start">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold" id="draftShareModalLabel">Share Estimate PDF</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="draft-share-form">
+                    <div class="modal-body">
+                        <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" role="alert">
+                            <i class="ti tabler-info-circle me-2 fs-5"></i>
+                            <span>This saves the current cart as an estimate, then emails the PDF.</span>
+                        </div>
+                        <label for="draft_share_email" class="form-label fw-bold">Recipient Email <span class="text-danger">*</span></label>
+                        <input type="email" id="draft_share_email" name="email" class="form-control" required placeholder="name@example.com">
+                    </div>
+                    <div class="modal-footer border-top">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary fw-bold btn-submit-draft-share">Send PDF</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('page-script')
@@ -459,7 +485,13 @@
             products: @json(route('employee.order.products')),
             search: @json(route('employee.order.search')),
             save: @json(route('employee.order.save')),
+            cartShow: @json(route('employee.order.cart.show')),
+            cartSave: @json(route('employee.order.cart.save')),
+            cartDestroy: @json(route('employee.order.cart.destroy')),
             show: @json(route('employee.order.show', ['order' => '__ORDER_ID__'])),
+            print: @json(route('employee.order.print', ['order' => '__ORDER_ID__'])),
+            pdf: @json(route('employee.order.pdf', ['order' => '__ORDER_ID__'])),
+            share: @json(route('employee.order.share', ['order' => '__ORDER_ID__'])),
             dropdownCustomers: @json(route('tenant.ecommerce.dropdowns.customers')),
             dropdownVehicles: @json(route('tenant.ecommerce.dropdowns.vehicles')),
             dropdownServices: @json(route('tenant.ecommerce.dropdowns.services')),

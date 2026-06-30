@@ -53,6 +53,9 @@ Constants on [`Order`](../app/Models/Order.php):
 | `GET /employee/order/listing` | `OrderController@listing` | `orders.view` | JSON: filtered/sorted/searched orders + tab counts |
 | `GET /employee/order/new` | `OrderController@create` | `orders.create` \| `pos.bill` | Renders the new-order POS screen |
 | `POST /employee/order/save` | `OrderController@store` | `orders.create` \| `pos.bill` | Persists the cart as an `Order` (or estimate) |
+| `GET /employee/order/cart` | `OrderCartController@show` | `orders.create` \| `pos.bill` | Loads the current employee's saved draft cart workspace |
+| `POST /employee/order/cart` | `OrderCartController@store` | `orders.create` \| `pos.bill` | Autosaves the current employee's draft cart workspace |
+| `DELETE /employee/order/cart` | `OrderCartController@destroy` | `orders.create` \| `pos.bill` | Clears the current employee's saved draft cart workspace |
 | `GET /employee/order/{order}` | `OrderController@show` | `orders.view` | Order detail / receipt view |
 | `POST /employee/order/{order}/pay` | `OrderController@pay` | `orders.create` \| `pos.bill` | Add a payment / convert an estimate into an order |
 | `GET /employee/order/{order}/print` | `OrderController@print` | `orders.view` | Printable receipt (auto-print Blade) |
@@ -99,6 +102,17 @@ Two [`Tenant`](../app/Models/Tenant.php#L223-L231) setting helpers shape this fl
 2. Adds product **line items** to the cart.
 3. Optionally adds **service fees**: catalog services (`type: service`, priced from the service) or ad-hoc **manual** fees (`type: manual`, free-text name + amount).
 4. Either **saves an estimate** or **proceeds to payment**.
+
+### Draft cart persistence
+
+The new-order page keeps its editable draft workspace in the database so a cashier can reload the browser and continue where they left off. [`OrderCartController`](../app/Http/Controllers/Employee/OrderCartController.php) stores one `order_carts` row per `(tenant_id, user_id)` with a sanitized JSON payload containing:
+
+- draft order tabs (`orders[]`, `active_order_id`, `next_order_number`),
+- selected customer and vehicle metadata,
+- product line ids, quantities, display prices, stock flags, discounts, and tax percentages used for the client-side preview,
+- selected service-fee draft lines.
+
+This is intentionally separate from `orders` and `order_items`. Autosave does **not** create an order number, lock stock, deduct inventory, take payment, or apply server-side totals. Those still happen only through the existing `POST /employee/order/save` flow below. After a real order or estimate is saved successfully, the active draft is removed from the saved cart payload so it will not reappear on reload.
 
 ### 2. Validation — `SaveOrderRequest`
 
@@ -238,6 +252,7 @@ See [database.md](database.md#orders) for full column lists.
 | `orders` | The bill. Money totals, status, `discount_details` (JSON breakdown), `notes` (JSON — incl. return records). |
 | `order_items` | Snapshotted line items (name/sku/unit frozen at sale time). |
 | `order_payments` | Append-only payment ledger. Positive = collection, **negative = refund**. |
+| `order_carts` | Per-employee saved draft workspace for the new-order page. Cleared/pruned after successful checkout or estimate save. |
 
 **Next in the journey:** [dashboards.md](dashboards.md) — how these orders roll up into analytics for staff, owners, and the platform admin.
 </content>

@@ -5,8 +5,9 @@
  * using the shared <template id="catalog-card-template"> so every level looks identical.
  * Talks to the backend exclusively through window.Catalog (catalog-api.js).
  *
- * Draft carts live client-side until checkout; checkout posts the active draft
- * order to the backend and then resets the saved draft.
+ * Draft carts are autosaved to the backend until checkout; checkout posts the
+ * active draft order to the existing save endpoint and then removes the saved
+ * draft.
  */
 
 (function ($) {
@@ -29,8 +30,12 @@
     const orders = []; // [{ id, label, items, customer, vehicle }]
     let activeOrderId = null;
     let nextOrderNumber = 1;
+    let currentProducts = []; // Store current products for detail view
     let isRestoringOrderMeta = false;
     let isSavingOrder = false;
+    let isHydratingSavedCart = false;
+    let cartPersistenceReady = false;
+    let cartSaveTimer = null;
     let paymentAmountInput = '';
     let paymentMethod = '';
 
@@ -53,6 +58,178 @@
     function currentCart() {
         const order = getActiveOrder();
         return order ? order.items : [];
+    }
+
+    function inCartQuantity(productId) {
+        const item = currentCart().find(function (cartItem) {
+            return String(cartItem.id) === String(productId);
+        });
+
+        return item ? Number(item.qty) || 0 : 0;
+    }
+
+    function syncVisibleProductCardCartCounts() {
+        $('.product-detail-card').each(function () {
+            const $card = $(this);
+            const productId = $card.data('id');
+            $card.find('.product-in-cart-count').text(inCartQuantity(productId));
+        });
+    }
+
+    function resolvedDeferred(value) {
+        const deferred = $.Deferred();
+        deferred.resolve(value);
+
+        return deferred.promise();
+    }
+
+    function draftCartRoutes() {
+        const routes = window.catalogRoutes || {};
+
+        return {
+            show: routes.cartShow || '',
+            save: routes.cartSave || '',
+            destroy: routes.cartDestroy || ''
+        };
+    }
+
+    function normalizeDraftItem(item) {
+        if (!item || !item.id) return null;
+
+        return {
+            id: parseInt(item.id, 10),
+            name: item.name || 'Product',
+            price: roundMoney(item.price),
+            qty: Math.max(parseInt(item.qty, 10) || 1, 1),
+            discount: item.discount || null,
+            tax_percentage: Number(item.tax_percentage) || 0,
+            current_stock: parseInt(item.current_stock, 10) || 0,
+            track_inventory: isTruthyFlag(item.track_inventory)
+        };
+    }
+
+    function normalizeDraftOrder(order, index) {
+        if (!order || !order.id) return null;
+
+        return {
+            id: String(order.id),
+            label: order.label || ('Order ' + (index + 1)),
+            items: (Array.isArray(order.items) ? order.items : [])
+                .map(normalizeDraftItem)
+                .filter(Boolean),
+            customer: order.customer || null,
+            vehicle: order.vehicle || null,
+            serviceFees: Array.isArray(order.serviceFees) ? order.serviceFees : []
+        };
+    }
+
+    function draftCartPayload() {
+        saveActiveOrderMeta();
+
+        return {
+            orders: orders.map(function (order) {
+                return {
+                    id: order.id,
+                    label: order.label,
+                    items: order.items || [],
+                    customer: order.customer || null,
+                    vehicle: order.vehicle || null,
+                    serviceFees: orderServiceFees(order)
+                };
+            }),
+            active_order_id: activeOrderId,
+            next_order_number: nextOrderNumber
+        };
+    }
+
+    function hydrateDraftCart(payload) {
+        payload = payload || {};
+        isHydratingSavedCart = true;
+
+        orders.length = 0;
+        (Array.isArray(payload.orders) ? payload.orders : []).forEach(function (order, index) {
+            const normalized = normalizeDraftOrder(order, index);
+            if (normalized) {
+                orders.push(normalized);
+            }
+        });
+
+        const savedActiveId = payload.active_order_id ? String(payload.active_order_id) : null;
+        activeOrderId = orders.some(function (order) { return order.id === savedActiveId; })
+            ? savedActiveId
+            : (orders[0] ? orders[0].id : null);
+
+        nextOrderNumber = Math.max(parseInt(payload.next_order_number, 10) || 1, orders.length + 1, 1);
+        isHydratingSavedCart = false;
+    }
+
+    function loadDraftCart() {
+        const showUrl = draftCartRoutes().show;
+
+        if (!showUrl) {
+            cartPersistenceReady = true;
+            return resolvedDeferred();
+        }
+
+        return $.get(showUrl)
+            .done(function (response) {
+                hydrateDraftCart(response.data || {});
+            })
+            .fail(function () {
+                notifyOrder('warning', 'Saved cart could not be loaded.');
+            })
+            .always(function () {
+                cartPersistenceReady = true;
+            });
+    }
+
+    function persistDraftCartNow() {
+        const routes = draftCartRoutes();
+
+        if (cartSaveTimer) {
+            clearTimeout(cartSaveTimer);
+            cartSaveTimer = null;
+        }
+
+        if (!cartPersistenceReady || isHydratingSavedCart) {
+            return resolvedDeferred();
+        }
+
+        const payload = draftCartPayload();
+
+        if (payload.orders.length === 0 && routes.destroy) {
+            return $.ajax({
+                url: routes.destroy,
+                method: 'DELETE',
+            }).fail(function () {
+                notifyOrder('warning', 'Cart could not be cleared after save.');
+            });
+        }
+
+        if (!routes.save) {
+            return resolvedDeferred();
+        }
+
+        return $.ajax({
+            url: routes.save,
+            method: 'POST',
+            data: JSON.stringify(payload),
+            contentType: 'application/json',
+        }).fail(function () {
+            notifyOrder('warning', 'Cart could not be saved for reload.');
+        });
+    }
+
+    function scheduleDraftCartSave(delay) {
+        if (!cartPersistenceReady || isHydratingSavedCart) return;
+
+        if (cartSaveTimer) {
+            clearTimeout(cartSaveTimer);
+        }
+
+        cartSaveTimer = setTimeout(function () {
+            persistDraftCartNow();
+        }, delay === undefined ? 500 : delay);
     }
 
     function ensureActiveOrder() {
@@ -262,6 +439,7 @@
         restoreActiveOrderMeta();
         fillServiceFeeForm();
         renderCart();
+        scheduleDraftCartSave();
     }
 
     function createOrder(carryCurrentSelection) {
@@ -323,12 +501,147 @@
             $card.attr('data-sku', item.sku || '');
             $card.attr('data-barcode', item.barcode || '');
             $card.attr('data-stock', item.current_stock || 0);
+            $card.attr('data-track-inventory', item.track_inventory ? '1' : '0');
             $card.attr('data-image', item.image_url || '');
             $card.attr('data-discount', encodePayload(item.discount || null));
             $card.attr('data-tax-percentage', item.tax_percentage || 0);
         }
 
         return $col[0].outerHTML;
+    }
+
+    function buildProductDetailCard(item) {
+        const price = formatMoney(Number(item.sale_price || 0));
+        const stock = item.current_stock || 0;
+        const sku = item.sku || '—';
+        const barcode = item.barcode || '—';
+        const hasImage = item.image_url && item.image_url !== '';
+        const discountLabel = item.discount ? formatDiscountLabel(item.discount) : '';
+
+        return ''
+            + '<div class="col-md-4">'
+            + '  <div class="card border-0 shadow-sm rounded-4 product-detail-card" '
+            + '       data-type="product" data-id="' + item.id + '" data-name="' + item.name + '" '
+            + '       data-price="' + Number(item.sale_price || 0).toFixed(2) + '" '
+            + '       data-sku="' + (item.sku || '') + '" '
+            + '       data-barcode="' + (item.barcode || '') + '" '
+            + '       data-stock="' + stock + '" '
+            + '       data-track-inventory="' + (item.track_inventory ? '1' : '0') + '" '
+            + '       data-image="' + (item.image_url || '') + '" '
+            + '       data-discount="' + encodePayload(item.discount || null) + '" '
+            + '       data-tax-percentage="' + (item.tax_percentage || 0) + '">'
+            + '    <div class="card-body p-3">'
+            + '      <div class="d-flex align-items-center gap-3 mb-3">'
+            + '        <div class="avatar avatar-lg flex-shrink-0">'
+            + '          <div class="avatar-initial rounded-3 bg-label-primary product-image-container">'
+            + '            <i class="ti tabler-package fs-3 product-default-icon"></i>'
+            + '            ' + (hasImage
+                ? '<img src="' + item.image_url + '" alt="' + item.name + '" class="rounded-3 w-100 h-100 object-fit-cover product-image" />'
+                : '')
+            + '          </div>'
+            + '        </div>'
+            + '        <div class="flex-grow-1 min-w-0">'
+            + '          <h6 class="fw-bold text-dark mb-1 text-truncate">' + item.name + '</h6>'
+            + '          <div class="d-flex gap-1 flex-wrap">'
+            + '            <small class="badge bg-label-secondary px-2 rounded-pill fs-tiny">SKU: ' + sku + '</small>'
+            + '            <small class="badge bg-label-info px-2 rounded-pill fs-tiny">BC: ' + barcode + '</small>'
+            + '          </div>'
+            + '        </div>'
+            + '      </div>'
+            + '      <div class="bg-light p-2 rounded-3 mb-3 border-start border-primary border-3">'
+            + '        <div class="d-flex justify-content-between align-items-center">'
+            + '          <span class="text-muted fw-semibold small">Unit Price</span>'
+            + '          <h5 class="fw-bold text-primary mb-0">' + price + '</h5>'
+            + '        </div>'
+            + '      </div>'
+            + '      ' + (discountLabel ? '<div class="product-discount-banner mb-2"><small class="text-success"><i class="ti tabler-discount-2"></i> ' + discountLabel + '</small></div>' : '')
+            + '      <div class="d-flex gap-2 mb-3">'
+            + '        <div class="flex-grow-1 bg-label-primary bg-opacity-10 p-2 rounded-3 border border-primary border-opacity-10 text-center">'
+            + '          <small class="text-muted d-block small fw-semibold text-uppercase" style="font-size: 0.55rem;">Available</small>'
+            + '          <span class="fw-bold text-primary product-available-stock">' + stock + '</span>'
+            + '        </div>'
+            + '        <div class="flex-grow-1">'
+            + '          <div class="input-group input-group-sm border border-primary rounded-pill overflow-hidden">'
+            + '            <button class="btn btn-outline-primary border-0 px-2 product-qty-minus-btn" type="button"><i class="ti tabler-minus fs-5"></i></button>'
+            + '            <input type="number" min="1" step="1" class="form-control border-0 text-center fw-bold product-qty-input bg-white" value="1" />'
+            + '            <button class="btn btn-outline-primary border-0 px-2 product-qty-plus-btn" type="button"><i class="ti tabler-plus fs-5"></i></button>'
+            + '          </div>'
+            + '        </div>'
+            + '      </div>'
+            + '      <button type="button" class="btn btn-primary btn-sm rounded-pill fw-bold w-100 btn-add-to-cart shadow-primary">'
+            + '        <i class="ti tabler-shopping-cart me-1"></i> Add to Cart'
+            + '      </button>'
+            + '    </div>'
+            + '  </div>'
+            + '</div>';
+    }
+
+    function buildPosProductCard(item) {
+        const productId = parseInt(item.id, 10);
+        const unitPrice = Number(item.sale_price ?? item.price ?? 0);
+        const price = formatMoney(unitPrice);
+        const stock = parseInt(item.current_stock, 10) || 0;
+        const sku = item.sku || '---';
+        const barcode = item.barcode || '---';
+        const hasImage = item.image_url && item.image_url !== '';
+        const discountLabel = item.discount ? formatDiscountLabel(item.discount) : '';
+        const trackInventory = isTruthyFlag(item.track_inventory);
+        const inCartQty = inCartQuantity(productId);
+
+        return ''
+            + '<div class="col-md-6">'
+            + '  <div class="card border-0 pos-product-card product-detail-card"'
+            + '       data-type="product" data-id="' + productId + '" data-name="' + escape(item.name || 'Product') + '"'
+            + '       data-price="' + unitPrice.toFixed(2) + '"'
+            + '       data-sku="' + escape(item.sku || '') + '"'
+            + '       data-barcode="' + escape(item.barcode || '') + '"'
+            + '       data-stock="' + stock + '"'
+            + '       data-track-inventory="' + (trackInventory ? '1' : '0') + '"'
+            + '       data-image="' + escape(item.image_url || '') + '"'
+            + '       data-discount="' + encodePayload(item.discount || null) + '"'
+            + '       data-tax-percentage="' + (item.tax_percentage || 0) + '">'
+            + '    <div class="pos-product-head">'
+            + '      <div class="pos-product-image product-image-container">'
+            + '        <i class="ti tabler-photo product-default-icon' + (hasImage ? ' d-none' : '') + '"></i>'
+            + '        ' + (hasImage ? '<img src="' + escape(item.image_url) + '" alt="' + escape(item.name || 'Product') + '" class="product-image" />' : '')
+            + '      </div>'
+            + '      <div class="pos-product-title-wrap">'
+            + '        <h5 class="pos-product-title">' + escape(item.name || 'Product') + '</h5>'
+            + '        <div class="pos-product-badges">'
+            + '          <span class="pos-product-badge pos-product-sku">SKU: ' + escape(sku) + '</span>'
+            + '          <span class="pos-product-badge pos-product-barcode">BC: ' + escape(barcode) + '</span>'
+            + '        </div>'
+            + '      </div>'
+            + '    </div>'
+            + '    <div class="pos-product-price-row">'
+            + '      <span>Unit Price</span>'
+            + '      <strong>' + price + '</strong>'
+            + '    </div>'
+            + '    <div class="pos-product-stats">'
+            + '      <div class="pos-product-stat pos-product-stat-cart">'
+            + '        <span>In Cart</span>'
+            + '        <strong class="product-in-cart-count">' + inCartQty + '</strong>'
+            + '      </div>'
+            + '      <div class="pos-product-stat pos-product-stat-stock">'
+            + '        <span>Available</span>'
+            + '        <strong class="product-available-stock">' + stock + '</strong>'
+            + '      </div>'
+            + '    </div>'
+            + '    ' + (discountLabel ? '<div class="product-discount-banner pos-product-discount"><small><i class="ti tabler-discount-2"></i> ' + escape(discountLabel) + '</small></div>' : '')
+            + '    <label class="pos-product-qty-label">Quantity</label>'
+            + '    <div class="pos-product-qty-control">'
+            + '      <button class="product-qty-minus-btn" type="button" aria-label="Decrease quantity"><i class="ti tabler-minus"></i></button>'
+            + '      <input type="number" min="1" step="1" class="product-qty-input input-group-text" value="1" aria-label="Quantity" />'
+            + '      <button class="product-qty-plus-btn" type="button" aria-label="Increase quantity"><i class="ti tabler-plus"></i></button>'
+            + '    </div>'
+            + '    <button type="button" class="btn btn-primary pos-product-add-btn btn-add-to-cart">'
+            + '      <i class="ti tabler-shopping-cart"></i><span>Add to Cart</span>'
+            + '    </button>'
+            + '    <button type="button" class="btn btn-link pos-product-clear-btn btn-clear-qty">'
+            + '      <i class="ti tabler-refresh"></i><span>Clear Selection</span>'
+            + '    </button>'
+            + '  </div>'
+            + '</div>';
     }
 
     function renderCards($container, items, emptyMessage) {
@@ -342,6 +655,19 @@
             return;
         }
         $container.html(items.map(buildCard).join(''));
+    }
+
+    function renderProductDetailCards($container, items, emptyMessage) {
+        if (!items || items.length === 0) {
+            $container.html(
+                '<div class="col-12 text-center py-5">'
+                + '<i class="icon-base ti tabler-package-off" style="font-size:3rem;color:#ccc;"></i>'
+                + '<p class="text-muted mt-2 mb-0">' + emptyMessage + '</p>'
+                + '</div>'
+            );
+            return;
+        }
+        $container.html(items.map(buildPosProductCard).join(''));
     }
 
     function showLoading($container) {
@@ -410,7 +736,29 @@
     function loadProducts(subCategoryId, q) {
         showLoading($grid);
         Catalog.getProducts({ subCategoryId: subCategoryId, q: q }).done(function (res) {
-            renderCards($grid, res.data || [], 'No products found.');
+            const products = res.data || [];
+            currentProducts = products; // Store for detail view
+
+            // Directly open product detail view for the first product
+            // Skip the intermediate product cards step
+            if (products.length > 0) {
+                const product = products[0];
+                openProductDetail({
+                    id: product.id,
+                    name: product.name,
+                    price: product.sale_price || 0,
+                    sale_price: product.sale_price || 0,
+                    sku: product.sku || '',
+                    barcode: product.barcode || '',
+                    current_stock: product.current_stock || 0,
+                    track_inventory: Boolean(product.track_inventory),
+                    image_url: product.image_url || '',
+                    discount: product.discount || null,
+                    tax_percentage: product.tax_percentage || 0,
+                });
+            } else {
+                renderCards($grid, [], 'No products found.');
+            }
         }).fail(function () {
             renderCards($grid, [], 'Failed to load products.');
         });
@@ -429,7 +777,12 @@
 
     // ─── Card click → drill down ───────────────────────────────────────
 
-    $(document).on('click', '.catalog-card', function () {
+    $(document).on('click', '.catalog-card', function (e) {
+        // If clicking on product detail card controls, don't open detail view
+        if ($(e.target).closest('.product-detail-card').length && !$(e.target).hasClass('product-detail-card')) {
+            return;
+        }
+
         const $card = $(this);
         const type = $card.data('type');
         const id = $card.data('id');
@@ -441,7 +794,7 @@
             showCatalog();
             loadSubCategories(id, '');
         } else if (type === 'sub_category') {
-            navStack.push({ level: 'products', meta: { id: id, name: name } });
+            // Don't push to navigation stack since we're directly opening product detail
             updateHeader();
             showCatalog();
             loadProducts(id, '');
@@ -453,12 +806,14 @@
                 sku: $card.data('sku') || '',
                 barcode: $card.data('barcode') || '',
                 current_stock: parseInt($card.data('stock')) || 0,
+                track_inventory: $card.attr('data-track-inventory') === '1',
                 image_url: $card.attr('data-image') || '',
                 discount: decodePayload($card.attr('data-discount') || ''),
                 tax_percentage: parseFloat($card.attr('data-tax-percentage')) || 0,
             });
         }
     });
+
 
     // ─── Back button (pops nav stack) ──────────────────────────────────
 
@@ -477,65 +832,52 @@
     function openProductDetail(product) {
         activeProduct = product;
         $('.product-detail-title').text('Product Details');
-        $('.product-name').text(product.name);
-        $('.product-sku').text(product.sku || '—');
-        $('.product-barcode').text(product.barcode || '—');
-        $('.product-price').text(formatMoney(product.price));
-        $('.product-discount-banner').addClass('d-none');
-        $('.product-discount-label').text('');
-        $('.product-qty-input').val(1);
 
-        // Handle Image
-        const $img = $('.product-image');
-        const $icon = $('.product-default-icon');
-        if (product.image_url) {
-            $img.attr('src', product.image_url).removeClass('d-none');
-            $icon.addClass('d-none');
-        } else {
-            $img.addClass('d-none').attr('src', '');
-            $icon.removeClass('d-none');
-        }
+        const $grid = $('.product-detail-grid');
+        $grid.empty();
 
-        // Update Stock & Cart status
-        const cart = currentCart();
-        const inCartItem = cart.find(function (i) { return i.id === product.id; });
-        $('.product-in-cart-qty').text(inCartItem ? inCartItem.qty : 0);
-        $('.product-available-stock').text(product.current_stock || 0);
+        const products = currentProducts && currentProducts.length > 0
+            ? [
+                product,
+                ...currentProducts.filter(function (item) {
+                    return String(item.id) !== String(product.id);
+                })
+            ]
+            : [product];
 
-        // Disable add to cart if out of stock
-        const $btnAdd = $('.btn-add-to-cart');
-        if ((product.current_stock || 0) <= 0) {
-            $btnAdd.prop('disabled', true).addClass('btn-secondary').removeClass('btn-primary').html('<i class="ti tabler-circle-x me-2"></i> Out of Stock');
-        } else {
-            $btnAdd.prop('disabled', false).addClass('btn-primary').removeClass('btn-secondary').html('<i class="ti tabler-shopping-cart me-2"></i> Add to Cart');
-        }
-
+        $grid.html(products.map(buildPosProductCard).join(''));
+        syncVisibleProductCardCartCounts();
         showProductDetail();
     }
 
     $(document).on('click', '.btn-back-from-product', function () {
         activeProduct = null;
         showCatalog();
+        loadCurrentLevel($searchInput.val() || '');
     });
 
     $(document).on('click', '.btn-clear-qty', function () {
-        $('.product-qty-input').val(1);
+        const $card = $(this).closest('.product-detail-card');
+        $card.find('.product-qty-input').val(1);
     });
 
     $(document).on('click', '.product-qty-plus-btn', function () {
-        const $input = $('.product-qty-input');
+        const $card = $(this).closest('.product-detail-card');
+        const $input = $card.find('.product-qty-input');
+        const stock = parseInt($card.data('stock')) || 0;
+        const track_inventory = $card.attr('data-track-inventory') === '1';
         const val = parseInt($input.val(), 10) || 1;
-        const max = activeProduct ? activeProduct.current_stock : 999999;
 
-        if (val < max) {
+        if (!track_inventory || val < stock) {
             $input.val(val + 1);
         } else {
-            notifyOrder('warning', 'Cannot exceed available stock (' + max + ').');
+            notifyOrder('warning', 'Cannot exceed available stock (' + stock + ').');
         }
     });
 
     $(document).on('click', '.product-qty-minus-btn', function () {
-        const $input = $('.product-qty-input');
+        const $card = $(this).closest('.product-detail-card');
+        const $input = $card.find('.product-qty-input');
         const val = parseInt($input.val(), 10) || 1;
         if (val > 1) {
             $input.val(val - 1);
@@ -543,53 +885,96 @@
     });
 
     $(document).on('change', '.product-qty-input', function () {
+        const $card = $(this).closest('.product-detail-card');
         const $input = $(this);
+        const stock = parseInt($card.data('stock')) || 0;
+        const track_inventory = $card.attr('data-track-inventory') === '1';
         let val = parseInt($input.val(), 10);
-        const max = activeProduct ? activeProduct.current_stock : 999999;
 
         if (isNaN(val) || val < 1) {
             $input.val(1);
-        } else if (val > max) {
-            $input.val(max);
-            notifyOrder('warning', 'Quantity capped at available stock (' + max + ').');
+        } else if (track_inventory && val > stock) {
+            $input.val(stock);
+            notifyOrder('warning', 'Quantity capped at available stock (' + stock + ').');
         }
     });
 
     $(document).on('click', '.btn-add-to-cart', function () {
-        if (!activeProduct) return;
-        const qty = Math.max(1, parseInt($('.product-qty-input').val(), 10) || 1);
-        const max = activeProduct.current_stock;
+        const $card = $(this).closest('.product-detail-card');
+        const id = $card.data('id');
+        const name = $card.data('name');
+        const price = parseFloat($card.data('price')) || 0;
+        const sku = $card.data('sku') || '';
+        const barcode = $card.data('barcode') || '';
+        const stock = parseInt($card.data('stock')) || 0;
+        const track_inventory = $card.attr('data-track-inventory') === '1';
+        const image_url = $card.attr('data-image') || '';
+        const discount = decodePayload($card.attr('data-discount') || '');
+        const tax_percentage = parseFloat($card.attr('data-tax-percentage')) || 0;
+        const qty = parseInt($card.find('.product-qty-input').val(), 10) || 1;
 
-        if (qty > max) {
-            notifyOrder('error', 'Insufficient stock. Available: ' + max);
+        if (track_inventory && stock <= 0) {
+            notifyOrder('error', 'Product is out of stock.');
             return;
         }
 
-        addToCart(activeProduct, qty);
-        activeProduct = null;
-        showCatalog();
+        if (track_inventory && qty > stock) {
+            notifyOrder('error', 'Insufficient stock. Available: ' + stock);
+            return;
+        }
+
+        addToCart({
+            id: id,
+            name: name,
+            price: price,
+            sale_price: price,
+            sku: sku,
+            barcode: barcode,
+            current_stock: stock,
+            track_inventory: track_inventory,
+            image_url: image_url,
+            discount: discount,
+            tax_percentage: tax_percentage
+        }, qty);
     });
 
-    // ─── Cart (front-end only) ─────────────────────────────────────────
+    // ─── Cart (database-backed draft) ──────────────────────────────────
 
     function addToCart(product, qty) {
         const cart = ensureActiveOrder().items;
         const existing = cart.find(function (i) { return i.id === product.id; });
+        const stock = parseInt(product.current_stock) || 0;
+        const track_inventory = product.track_inventory;
+
         if (existing) {
-            existing.qty += qty;
+            const nextQty = existing.qty + qty;
+            if (track_inventory && nextQty > stock) {
+                notifyOrder('error', 'Cannot exceed available stock (' + stock + ').');
+                return;
+            }
+            existing.qty = nextQty;
             existing.discount = product.discount || existing.discount || null;
             existing.tax_percentage = product.tax_percentage || existing.tax_percentage || 0;
+            existing.current_stock = stock;
+            existing.track_inventory = track_inventory;
         } else {
+            if (track_inventory && qty > stock) {
+                notifyOrder('error', 'Cannot exceed available stock (' + stock + ').');
+                return;
+            }
             cart.push({
                 id: product.id,
                 name: product.name,
                 price: product.price,
                 qty: qty,
                 discount: product.discount || null,
-                tax_percentage: product.tax_percentage || 0
+                tax_percentage: product.tax_percentage || 0,
+                current_stock: stock,
+                track_inventory: track_inventory
             });
         }
         renderCart();
+        scheduleDraftCartSave();
     }
 
     function removeFromCart(productId) {
@@ -597,14 +982,26 @@
         const idx = cart.findIndex(function (i) { return i.id === productId; });
         if (idx >= 0) cart.splice(idx, 1);
         renderCart();
+        scheduleDraftCartSave();
     }
 
     function changeQty(productId, delta) {
         const cart = currentCart();
         const item = cart.find(function (i) { return i.id === productId; });
         if (!item) return;
-        item.qty = Math.max(1, item.qty + delta);
+
+        const stock = parseInt(item.current_stock) || 0;
+        const track_inventory = item.track_inventory;
+        const nextQty = item.qty + delta;
+
+        if (delta > 0 && track_inventory && nextQty > stock) {
+            notifyOrder('warning', 'Cannot exceed available stock (' + stock + ').');
+            return;
+        }
+
+        item.qty = Math.max(1, nextQty);
         renderCart();
+        scheduleDraftCartSave();
     }
 
     function roundMoney(amount) {
@@ -1196,6 +1593,7 @@
         }
 
         updateSummary();
+        syncVisibleProductCardCartCounts();
     }
 
     function renderBreakdownHtml(label, amount, prefix, isDiscount) {
@@ -1334,6 +1732,7 @@
         $('.btn-pay').prop('disabled', !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder);
         $('.btn-pay .small').text(isSavingOrder ? 'Saving...' : 'Pay');
         $('.btn-save-estimate').prop('disabled', !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder);
+        $('.btn-draft-print, .btn-draft-pdf, .btn-draft-share').prop('disabled', !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder);
         renderCustomerDiscountBanner(totals);
         renderDiscountDrawer();
         refreshOrderDropdown();
@@ -1747,6 +2146,8 @@
             restoreActiveOrderMeta();
             renderCart();
         }
+
+        return persistDraftCartNow();
     }
 
     $(document).on('click', '.btn-remove-cart-item', function () {
@@ -1774,6 +2175,7 @@
         clearServiceFeeForm();
         renderServiceFeeLines();
         renderCart();
+        scheduleDraftCartSave();
     });
 
     $(document).on('click', '.add-order-btn', function (event) {
@@ -1786,12 +2188,14 @@
         }
 
         createOrder();
+        scheduleDraftCartSave();
     });
 
     $(document).on('change', '#order_type_filter', function () {
         const orderId = $(this).val();
         if (orderId && orderId !== activeOrderId) {
             selectOrder(orderId);
+            scheduleDraftCartSave();
         }
     });
 
@@ -1801,45 +2205,161 @@
         openPaymentScreen();
     });
 
-    $(document).on('click', '.btn-save-estimate', function () {
-        const saveUrl = (window.catalogRoutes || {}).save;
-        const showUrlTemplate = (window.catalogRoutes || {}).show;
+    function routeForSavedEstimate(routeKey, orderId) {
+        const template = (window.catalogRoutes || {})[routeKey];
 
-        if (isSavingOrder || !validateOrderForSave()) return;
+        return template ? template.replace('__ORDER_ID__', orderId) : '';
+    }
+
+    function saveCurrentEstimate(options) {
+        options = options || {};
+        const saveUrl = (window.catalogRoutes || {}).save;
+
+        if (isSavingOrder || !validateOrderForSave()) {
+            if (options.popup && !options.popup.closed) {
+                options.popup.close();
+            }
+
+            return $.Deferred().reject().promise();
+        }
 
         if (!saveUrl) {
             notifyOrder('error', 'Order save route is missing.');
-            return;
+            if (options.popup && !options.popup.closed) {
+                options.popup.close();
+            }
+
+            return $.Deferred().reject().promise();
         }
 
         const payload = currentOrderPayload();
-        if (!payload) return;
+        if (!payload) {
+            if (options.popup && !options.popup.closed) {
+                options.popup.close();
+            }
+
+            return $.Deferred().reject().promise();
+        }
 
         payload.is_estimate = true;
 
         isSavingOrder = true;
         updateSummary();
 
-        $.ajax({
+        return $.ajax({
             url: saveUrl,
             method: 'POST',
             data: JSON.stringify(payload),
             contentType: 'application/json',
         }).done(function (response) {
             notifyOrder('success', response.message || 'Estimate saved successfully.');
-            if (response.data && response.data.id && showUrlTemplate) {
-                const showUrl = showUrlTemplate.replace('__ORDER_ID__', response.data.id);
-                setTimeout(function () {
-                    window.location.href = showUrl;
-                }, 1000);
-            } else {
-                resetSavedOrder();
+            if (options.clearDraftAfterSave) {
+                const resetRequest = resetSavedOrder();
+                resetRequest.always(function () {
+                    if (typeof options.onSaved === 'function') {
+                        options.onSaved(response);
+                    }
+                });
+                return;
+            }
+
+            if (typeof options.onSaved === 'function') {
+                options.onSaved(response);
             }
         }).fail(function (xhr) {
             notifyOrder('error', orderErrorMessage(xhr));
+            if (options.popup && !options.popup.closed) {
+                options.popup.close();
+            }
         }).always(function () {
             isSavingOrder = false;
             updateSummary();
+        });
+    }
+
+    $(document).on('click', '.btn-save-estimate', function () {
+        saveCurrentEstimate({
+            onSaved: function (response) {
+                if (response.data && response.data.id) {
+                    const showUrl = routeForSavedEstimate('show', response.data.id);
+                    if (showUrl) {
+                        setTimeout(function () {
+                            window.location.href = showUrl;
+                        }, 1000);
+                    }
+                }
+            }
+        });
+    });
+
+    $(document).on('click', '.btn-draft-print', function () {
+        const popup = window.open('about:blank', '_blank');
+
+        saveCurrentEstimate({
+            popup: popup,
+            onSaved: function (response) {
+                const printUrl = response.data && response.data.id ? routeForSavedEstimate('print', response.data.id) : '';
+                if (popup && printUrl) {
+                    popup.location.href = printUrl;
+                }
+            }
+        });
+    });
+
+    $(document).on('click', '.btn-draft-pdf', function () {
+        const popup = window.open('about:blank', '_blank');
+
+        saveCurrentEstimate({
+            popup: popup,
+            onSaved: function (response) {
+                const pdfUrl = response.data && response.data.id ? routeForSavedEstimate('pdf', response.data.id) : '';
+                if (popup && pdfUrl) {
+                    popup.location.href = pdfUrl;
+                }
+            }
+        });
+    });
+
+    $('#draft-share-form').on('submit', function (event) {
+        event.preventDefault();
+
+        const $form = $(this);
+        const $submit = $form.find('.btn-submit-draft-share');
+        const email = String($form.find('[name="email"]').val() || '').trim();
+
+        if (!email || $submit.prop('disabled')) return;
+
+        $submit.prop('disabled', true).text('Sending...');
+
+        saveCurrentEstimate({
+            onSaved: function (response) {
+                const shareUrl = response.data && response.data.id ? routeForSavedEstimate('share', response.data.id) : '';
+                if (!shareUrl) {
+                    notifyOrder('error', 'Estimate share route is missing.');
+                    $submit.prop('disabled', false).text('Send PDF');
+                    return;
+                }
+
+                $.ajax({
+                    url: shareUrl,
+                    method: 'POST',
+                    data: { email: email },
+                    dataType: 'json',
+                }).done(function (shareResponse) {
+                    notifyOrder('success', shareResponse.message || 'Estimate PDF sent successfully.');
+                    const modalEl = document.getElementById('draftShareModal');
+                    if (modalEl && window.bootstrap && window.bootstrap.Modal) {
+                        window.bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                    }
+                    $form[0].reset();
+                }).fail(function (xhr) {
+                    notifyOrder('error', orderErrorMessage(xhr));
+                }).always(function () {
+                    $submit.prop('disabled', false).text('Send PDF');
+                });
+            }
+        }).fail(function () {
+            $submit.prop('disabled', false).text('Send PDF');
         });
     });
 
@@ -1923,7 +2443,7 @@
 
             renderCards($('.search-categories-grid'), cats, 'No categories match.');
             renderCards($('.search-sub-categories-grid'), subs, 'No sub categories match.');
-            renderCards($('.search-products-grid'), prods, 'No products match.');
+            renderProductDetailCards($('.search-products-grid'), prods, 'No products match.');
 
             showSearchResults();
         }).fail(function () {
@@ -2052,6 +2572,7 @@
             const $vehicleSelect = $('#add_vehicle_filter');
             $vehicleSelect.val(null).trigger('change');
             updateSummary();
+            scheduleDraftCartSave();
         });
 
         $('#add_vehicle_filter').on('change', function () {
@@ -2063,6 +2584,8 @@
             if (order) {
                 order.vehicle = readSelectSelection($(this));
             }
+
+            scheduleDraftCartSave();
         });
 
         $('#order_service_filter').on('change', function () {
@@ -2334,6 +2857,7 @@
         if (!syncServiceFeeFromForm({ notify: true, requireAmount: true })) return;
 
         renderCart();
+        scheduleDraftCartSave();
     });
 
     $(document).on('click', '#remove_custom_service_fee', function () {
@@ -2371,6 +2895,7 @@
 
         renderServiceFeeLines();
         renderCart();
+        scheduleDraftCartSave();
     });
 
     // ─── Boot ──────────────────────────────────────────────────────────
@@ -2388,8 +2913,12 @@
         $('#offcanvasDiscount').on('show.bs.offcanvas', function () {
             renderDiscountDrawer();
         });
-        refreshOrderDropdown();
-        renderCart();
+        loadDraftCart().always(function () {
+            refreshOrderDropdown();
+            restoreActiveOrderMeta();
+            fillServiceFeeForm();
+            renderCart();
+        });
 
         // Initialize centralized CustomerManager for "Add Customer" modal
         if (typeof window.CustomerManager === 'function') {

@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class OrderController extends Controller
@@ -43,6 +44,8 @@ class OrderController extends Controller
         $filters = $request->validate([
             'tab' => ['nullable', 'string', 'in:today,all,pending,estimates'],
             'q' => ['nullable', 'string', 'max:100'],
+            'page' => ['nullable', 'integer', 'min:1'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'sort' => [
                 'nullable',
                 'string',
@@ -78,12 +81,25 @@ class OrderController extends Controller
 
     public function store(SaveOrderRequest $request): JsonResponse
     {
-        $result = $this->orderRepository->store($request->validated(), $request->user());
+        try {
+            $result = $this->orderRepository->store($request->validated(), $request->user());
 
-        return response()->json([
-            'message' => $result['message'],
-            'data' => $result['data'],
-        ]);
+            return response()->json([
+                'message' => $result['message'],
+                'data' => $result['data'],
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+            logger()->error('Order save error: ' . $e->getMessage(), ['exception' => $e]);
+
+            return response()->json([
+                'message' => 'An error occurred while saving the order: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function pay(Order $order, Request $request): JsonResponse
@@ -104,19 +120,26 @@ class OrderController extends Controller
     public function print(Order $order): View
     {
         $details = $this->orderRepository->details($order);
+        $tenant = $order->tenant;
+        $vehicleRequired = $tenant?->isVehicleRequired() ?? true;
 
         return view('employee.order.print', [
             'order' => $order,
             'details' => $details,
+            'vehicleRequired' => $vehicleRequired,
         ]);
     }
 
     public function pdf(Order $order): Response
     {
         $details = $this->orderRepository->details($order);
+        $tenant = $order->tenant;
+        $vehicleRequired = $tenant?->isVehicleRequired() ?? true;
+
         $pdf = Pdf::loadView('employee.order.pdf', [
             'order' => $order,
             'details' => $details,
+            'vehicleRequired' => $vehicleRequired,
         ]);
 
         $filename = $order->status === Order::STATUS_ESTIMATE
@@ -142,9 +165,13 @@ class OrderController extends Controller
         }
 
         $details = $this->orderRepository->details($order);
+        $tenant = $order->tenant;
+        $vehicleRequired = $tenant?->isVehicleRequired() ?? true;
+
         $pdf = Pdf::loadView('employee.order.pdf', [
             'order' => $order,
             'details' => $details,
+            'vehicleRequired' => $vehicleRequired,
         ]);
 
         $filename = $order->status === Order::STATUS_ESTIMATE
@@ -176,6 +203,8 @@ class OrderController extends Controller
 
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:100'],
+            'page' => ['nullable', 'integer', 'min:1'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
 
         return response()->json($this->orderRepository->returnsListing($filters, $returnDays));
@@ -185,6 +214,8 @@ class OrderController extends Controller
     {
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:100'],
+            'page' => ['nullable', 'integer', 'min:1'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
 
         return response()->json($this->orderRepository->returnsHistory($filters));
