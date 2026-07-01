@@ -48,6 +48,7 @@
             const name = $('#newRoleName').val().trim();
             const id = $('#editRoleId').val();
             const $btn = $(this);
+            const originalHtml = $btn.html();
 
             if (!name) {
                 notyf.failure('Role name is required.');
@@ -59,7 +60,11 @@
                 return;
             }
 
-            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving...');
+            if (typeof window.appSetButtonLoading === 'function') {
+                window.appSetButtonLoading($btn, true, 'Saving...', originalHtml);
+            } else {
+                $btn.prop('disabled', true).html('Saving...');
+            }
 
             $.ajax({
                 url: routes.saveRole,
@@ -71,7 +76,11 @@
                     location.reload();
                 },
                 error(xhr) {
-                    $btn.prop('disabled', false).html('Save');
+                    if (typeof window.appSetButtonLoading === 'function') {
+                        window.appSetButtonLoading($btn, false, 'Saving...', originalHtml);
+                    } else {
+                        $btn.prop('disabled', false).html(originalHtml);
+                    }
                     notyf.failure(xhr.responseJSON?.message || 'Failed to save role.');
                 },
             });
@@ -179,6 +188,7 @@
         $('#syncPermissionsBtn').on('click', function () {
             const roleId = $('#permissionRoleSelect').val();
             const $btn = $(this);
+            const originalHtml = $btn.html();
 
             if (!roleId) {
                 notyf.failure('Please select a role first.');
@@ -190,7 +200,11 @@
                 permissions.push($(this).val());
             });
 
-            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving...');
+            if (typeof window.appSetButtonLoading === 'function') {
+                window.appSetButtonLoading($btn, true, 'Saving...', originalHtml);
+            } else {
+                $btn.prop('disabled', true).html('Saving...');
+            }
 
             $.ajax({
                 url: routes.syncPermissions,
@@ -198,11 +212,19 @@
                 headers: { 'X-CSRF-TOKEN': csrfToken },
                 data: { role_id: roleId, permissions: permissions },
                 success(response) {
-                    $btn.prop('disabled', false).html('<i class="ti tabler-check me-1"></i> Save Permissions');
+                    if (typeof window.appSetButtonLoading === 'function') {
+                        window.appSetButtonLoading($btn, false, 'Saving...', originalHtml);
+                    } else {
+                        $btn.prop('disabled', false).html(originalHtml);
+                    }
                     notyf.success(response.message || 'Permissions synced.');
                 },
                 error(xhr) {
-                    $btn.prop('disabled', false).html('<i class="ti tabler-check me-1"></i> Save Permissions');
+                    if (typeof window.appSetButtonLoading === 'function') {
+                        window.appSetButtonLoading($btn, false, 'Saving...', originalHtml);
+                    } else {
+                        $btn.prop('disabled', false).html(originalHtml);
+                    }
                     notyf.failure(xhr.responseJSON?.message || 'Failed to sync permissions.');
                 },
             });

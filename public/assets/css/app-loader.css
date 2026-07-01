@@ -1,4 +1,12 @@
-/* Generic application AJAX loader — self-contained, no external dependency. */
+/* Generic application loader — shared across overlays, inline states, and buttons. */
+:root {
+    --app-loader-blue: #2563eb;
+    --app-loader-cyan: #06b6d4;
+    --app-loader-amber: #f59e0b;
+    --app-loader-rose: #f43f5e;
+    --app-loader-slate: #475569;
+}
+
 #app-loader-overlay {
     position: fixed;
     inset: 0;
@@ -8,9 +16,14 @@
     align-items: center;
     justify-content: center;
     gap: 1rem;
-    background: rgba(255, 255, 255, 0.72);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
+    background:
+        radial-gradient(circle at 18% 20%, rgba(37, 99, 235, 0.24), transparent 30%),
+        radial-gradient(circle at 82% 24%, rgba(6, 182, 212, 0.22), transparent 26%),
+        radial-gradient(circle at 70% 78%, rgba(245, 158, 11, 0.2), transparent 28%),
+        radial-gradient(circle at 30% 82%, rgba(244, 63, 94, 0.2), transparent 24%),
+        rgba(255, 255, 255, 0.76);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.15s ease, visibility 0.15s ease;
@@ -21,39 +34,204 @@
     visibility: visible;
 }
 
-.app-loader-spinner {
-    width: 56px;
-    height: 56px;
+.app-loader-surface {
     position: relative;
-    display: inline-block;
+    min-width: 220px;
+    padding: 2rem 2.25rem;
+    border-radius: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    overflow: hidden;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.82));
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow:
+        0 24px 70px rgba(37, 99, 235, 0.16),
+        0 12px 28px rgba(15, 23, 42, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
-/* A ring of radial lines (spokes) that fade in sequence — the highlight
-   travels around the circle to give a smooth spinning effect (no dots). */
+.app-loader-orbit {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(2px);
+    opacity: 0.75;
+    pointer-events: none;
+}
+
+.app-loader-orbit-one {
+    width: 90px;
+    height: 90px;
+    top: -18px;
+    right: -16px;
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.3), rgba(37, 99, 235, 0));
+}
+
+.app-loader-orbit-two {
+    width: 86px;
+    height: 86px;
+    bottom: -22px;
+    left: -14px;
+    background: radial-gradient(circle, rgba(244, 63, 94, 0.22), rgba(245, 158, 11, 0));
+}
+
+.app-loader-spinner {
+    --app-loader-size: 56px;
+    --app-loader-thickness: 14px;
+    width: var(--app-loader-size);
+    height: var(--app-loader-size);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.app-loader-spinner::before,
+.app-loader-spinner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+}
+
+.app-loader-spinner::before {
+    background: conic-gradient(
+        from 0deg,
+        var(--app-loader-blue),
+        var(--app-loader-cyan),
+        var(--app-loader-amber),
+        var(--app-loader-rose),
+        var(--app-loader-blue)
+    );
+    animation: app-loader-spin 0.95s linear infinite;
+    box-shadow:
+        0 12px 30px rgba(37, 99, 235, 0.18),
+        0 0 0 1px rgba(255, 255, 255, 0.25) inset;
+}
+
+.app-loader-spinner::after {
+    inset: calc(var(--app-loader-thickness) / 2);
+    background:
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.82) 55%, rgba(255, 255, 255, 0.7) 100%);
+}
+
 .app-loader-spinner .spoke {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 4px;
-    height: 15px;
-    margin: -7.5px 0 0 -2px;
+    width: 3px;
+    height: calc(var(--app-loader-size) * 0.18);
+    margin: calc(var(--app-loader-size) * -0.09) 0 0 -1.5px;
     border-radius: 2px;
-    background-color: var(--bs-primary, #7367f0);
-    transform: rotate(var(--angle)) translateY(-18px);
-    opacity: 0.18;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(37, 99, 235, 0.38));
+    transform: rotate(var(--angle)) translateY(calc(var(--app-loader-size) * -0.35));
+    opacity: 0.22;
     animation: app-loader-spoke 1s linear infinite;
     animation-delay: var(--delay);
 }
 
+.app-loader-spinner.app-loader-spinner-sm {
+    --app-loader-size: 18px;
+    --app-loader-thickness: 6px;
+}
+
+.app-loader-spinner.app-loader-spinner-md {
+    --app-loader-size: 30px;
+    --app-loader-thickness: 10px;
+}
+
+.app-loader-spinner.app-loader-spinner-lg {
+    --app-loader-size: 64px;
+    --app-loader-thickness: 16px;
+}
+
 .app-loader-message {
-    font-size: 0.875rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--app-loader-slate);
+    text-align: center;
+}
+
+.app-loader-inline-block {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.employee-orders-loading.app-loader-inline-block {
+    padding: 0.85rem 1rem;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.78));
+    box-shadow: 0 10px 28px rgba(37, 99, 235, 0.08);
+}
+
+.app-loader-inline-block .app-loader-message {
+    font-size: 0.85rem;
     font-weight: 600;
-    color: #5d596c;
+}
+
+.app-loader-button-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.app-loader-button-label .app-loader-message {
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+}
+
+.spinner-border,
+.spinner-grow {
+    --bs-spinner-width: 1rem;
+    --bs-spinner-height: 1rem;
+    --bs-spinner-animation-speed: 0.95s;
+    width: var(--bs-spinner-width);
+    height: var(--bs-spinner-height);
+    border: 0;
+    border-radius: 50%;
+    display: inline-block;
+    vertical-align: text-bottom;
+    background: conic-gradient(
+        from 0deg,
+        var(--app-loader-blue),
+        var(--app-loader-cyan),
+        var(--app-loader-amber),
+        var(--app-loader-rose),
+        var(--app-loader-blue)
+    );
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
+    mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
+    animation: app-loader-spin var(--bs-spinner-animation-speed) linear infinite;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.22) inset;
+}
+
+.spinner-border-sm,
+.spinner-grow-sm {
+    --bs-spinner-width: 0.9rem;
+    --bs-spinner-height: 0.9rem;
+}
+
+.btn .spinner-border,
+.btn .spinner-grow {
+    margin-top: -0.1em;
 }
 
 @keyframes app-loader-spoke {
     0%, 39%, 100% { opacity: 0.18; }
     40% { opacity: 1; }
+}
+
+@keyframes app-loader-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Inline/contained variant: overlays the nearest positioned ancestor. */
@@ -62,8 +240,18 @@
     inset: 0;
     z-index: 20;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.6);
+    gap: 0.75rem;
+    background:
+        radial-gradient(circle at top, rgba(37, 99, 235, 0.12), transparent 36%),
+        rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     border-radius: inherit;
+}
+
+.app-loader-inline .app-loader-message {
+    font-size: 0.85rem;
 }

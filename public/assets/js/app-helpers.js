@@ -1,20 +1,15 @@
 'use strict';
 
 (function (window, document, $) {
-  const fallbackLoading = {
-    standard: function () {},
-    remove: function () {}
-  };
-
-  const getLoading = function () {
-    return typeof window.Notiflix !== 'undefined' && window.Notiflix.Loading
-      ? window.Notiflix.Loading
-      : fallbackLoading;
-  };
-
   const ensureHelpers = function () {
     window.Helpers = window.Helpers || {};
     return window.Helpers;
+  };
+
+  const getSharedLoader = function () {
+    return window.AppLoader && typeof window.AppLoader.show === 'function'
+      ? window.AppLoader
+      : null;
   };
 
   const resolveButton = function (button) {
@@ -55,12 +50,11 @@
     const originalHtml = defaultHtml || defaultButtonHtml($button);
 
     if (isLoading) {
+      const sharedLoader = getSharedLoader();
+      const label = loadingText || 'Processing...';
       $button
         .prop('disabled', true)
-        .html(
-          '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>' +
-          (loadingText || 'Processing...')
-        );
+        .html(sharedLoader ? sharedLoader.button(label) : label);
       return;
     }
 
@@ -68,16 +62,26 @@
   };
 
   const showLoading = function (message) {
-    getLoading().standard(message || 'Please wait...', {
-      backgroundColor: 'rgba(255, 255, 255, 0.85)',
-      svgColor: '#7367f0',
-      messageColor: '#5d596c',
-      clickToClose: false
-    });
+    const sharedLoader = getSharedLoader();
+    if (sharedLoader) {
+      sharedLoader.show(message || 'Please wait...');
+    }
   };
 
   const hideLoading = function (delay) {
-    getLoading().remove(delay || 0);
+    const sharedLoader = getSharedLoader();
+    if (!sharedLoader) {
+      return;
+    }
+
+    if (delay && typeof window.setTimeout === 'function') {
+      window.setTimeout(function () {
+        sharedLoader.hide(true);
+      }, delay);
+      return;
+    }
+
+    sharedLoader.hide(true);
   };
 
   const addLoaderToModalHeader = function (modalSelector, text) {
@@ -99,8 +103,9 @@
 
     $header.append(
       '<div class="modal-header-loader d-flex align-items-center text-primary ms-3">' +
-        '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>' +
-        '<span>' + (text || 'Loading...') + '</span>' +
+        (window.AppLoader && typeof window.AppLoader.inline === 'function'
+          ? window.AppLoader.inline(text || 'Loading...', 'app-loader-spinner-sm')
+          : '<span>' + (text || 'Loading...') + '</span>') +
       '</div>'
     );
   };
@@ -211,14 +216,7 @@
     }
 
     if (typeof window.Notiflix !== 'undefined' && window.Notiflix.Loading) {
-      window.Notiflix.Loading.init({
-        className: 'notiflix-loading',
-        zindex: 20000,
-        clickToClose: false,
-        svgColor: '#7367f0',
-        messageColor: '#5d596c',
-        backgroundColor: 'rgba(255, 255, 255, 0.85)'
-      });
+      // Notifications remain handled by Notiflix; loading is centralized in AppLoader.
     }
 
     initMutationObserver();

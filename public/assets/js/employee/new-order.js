@@ -671,10 +671,13 @@
     }
 
     function showLoading($container) {
+        var inlineLoader = window.AppLoader && typeof window.AppLoader.inline === 'function'
+            ? window.AppLoader.inline('Loading...', 'app-loader-spinner-md')
+            : '<div class="spinner-border text-primary" role="status"></div><p class="text-muted mt-2 mb-0">Loading...</p>';
+
         $container.html(
             '<div class="col-12 text-center py-5">'
-            + '<div class="spinner-border text-primary" role="status"></div>'
-            + '<p class="text-muted mt-2 mb-0">Loading...</p>'
+            + inlineLoader
             + '</div>'
         );
     }

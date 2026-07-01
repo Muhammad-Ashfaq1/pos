@@ -45,7 +45,11 @@
                 return;
             }
 
-            $button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Saving...');
+            if (typeof window.appSetButtonLoading === 'function') {
+                window.appSetButtonLoading($button, true, 'Saving...', originalText);
+            } else {
+                $button.prop('disabled', true).html('Saving...');
+            }
 
             $.ajax({
                 url: routes.save,
@@ -56,10 +60,18 @@
                 },
                 success(response) {
                     notyf.success(response.message || 'Operations settings saved successfully.');
-                    $button.prop('disabled', false).html(originalText);
+                    if (typeof window.appSetButtonLoading === 'function') {
+                        window.appSetButtonLoading($button, false, 'Saving...', originalText);
+                    } else {
+                        $button.prop('disabled', false).html(originalText);
+                    }
                 },
                 error(xhr) {
-                    $button.prop('disabled', false).html(originalText);
+                    if (typeof window.appSetButtonLoading === 'function') {
+                        window.appSetButtonLoading($button, false, 'Saving...', originalText);
+                    } else {
+                        $button.prop('disabled', false).html(originalText);
+                    }
 
                     if (xhr.status === 422 && xhr.responseJSON?.errors) {
                         const errorMessages = [];

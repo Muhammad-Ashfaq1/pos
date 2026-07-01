@@ -19,19 +19,38 @@
   var overlay = null;
   var messageEl = null;
 
+  function buildSpinnerMarkup(sizeClass) {
+    var spokes = '';
+    for (var i = 0; i < 12; i++) {
+      spokes += '<span class="spoke" style="--angle:' + (i * 30) + 'deg;--delay:' + (i / 12).toFixed(3) + 's"></span>';
+    }
+
+    return '<span class="app-loader-spinner ' + (sizeClass || '') + '">' + spokes + '</span>';
+  }
+
+  function buildInlineMarkup(message, sizeClass, extraClass) {
+    return '<span class="' + (extraClass || 'app-loader-inline-block') + '">' +
+      buildSpinnerMarkup(sizeClass || 'app-loader-spinner-sm') +
+      '<span class="app-loader-message">' + (message || 'Please wait...') + '</span>' +
+      '</span>';
+  }
+
+  function buildOverlayMarkup() {
+    return '<div class="app-loader-surface">' +
+      '<div class="app-loader-orbit app-loader-orbit-one"></div>' +
+      '<div class="app-loader-orbit app-loader-orbit-two"></div>' +
+      buildSpinnerMarkup('app-loader-spinner-lg') +
+      '<div class="app-loader-message"></div>' +
+      '</div>';
+  }
+
   function build() {
     if (overlay) return;
     overlay = document.createElement('div');
     overlay.id = 'app-loader-overlay';
     overlay.setAttribute('role', 'status');
     overlay.setAttribute('aria-live', 'polite');
-    var spokes = '';
-    for (var i = 0; i < 12; i++) {
-      spokes += '<span class="spoke" style="--angle:' + (i * 30) + 'deg;--delay:' + (i / 12).toFixed(3) + 's"></span>';
-    }
-    overlay.innerHTML =
-      '<div class="app-loader-spinner">' + spokes + '</div>' +
-      '<div class="app-loader-message"></div>';
+    overlay.innerHTML = buildOverlayMarkup();
     document.body.appendChild(overlay);
     messageEl = overlay.querySelector('.app-loader-message');
   }
@@ -77,7 +96,15 @@
     return thenable;
   }
 
-  var AppLoader = { show: show, hide: hide, wrap: wrap };
+  function inline(message, size) {
+    return buildInlineMarkup(message, size || 'app-loader-spinner-sm');
+  }
+
+  function button(message) {
+    return buildInlineMarkup(message, 'app-loader-spinner-sm', 'app-loader-button-label');
+  }
+
+  var AppLoader = { show: show, hide: hide, wrap: wrap, inline: inline, button: button };
   window.AppLoader = AppLoader;
 
   // Back the legacy helper with the generic loader so existing callers benefit.

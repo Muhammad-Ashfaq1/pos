@@ -438,7 +438,6 @@ $(function () {
     // ── Confirm return ────────────────────────────────────────────────────
     $('#confirmReturnBtn').on('click', function () {
         const $btn = $(this);
-        const $spinner = $btn.find('.spinner-border');
         const $btnText = $btn.find('.btn-text');
 
         const returnReason = $('#returnReason').val().trim();
@@ -475,8 +474,11 @@ $(function () {
         const calculatedRefund = calculateRefundAmount();
 
         $btn.prop('disabled', true);
-        $spinner.removeClass('d-none');
-        $btnText.text('Processing...');
+        if (window.AppLoader && typeof window.AppLoader.button === 'function') {
+            $btnText.html(window.AppLoader.button('Processing...'));
+        } else {
+            $btnText.text('Processing...');
+        }
 
         const returnUrl = returnUrlTemplate.replace('__ORDER_ID__', selectedOrder.id);
 
@@ -502,7 +504,6 @@ $(function () {
             },
             complete: function () {
                 $btn.prop('disabled', false);
-                $spinner.addClass('d-none');
                 $btnText.text('Process Return');
             }
         });
