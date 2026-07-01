@@ -62,7 +62,7 @@ $(function () {
         $('[data-returns-view]').addClass('d-none');
         $('[data-returns-view="' + tab + '"]').removeClass('d-none');
         $('[data-returns-search]').val('');
-        
+
         // Reset pagination when switching tabs
         if (tab === 'eligible') {
             state.eligible.page = 1;
@@ -549,14 +549,14 @@ $(function () {
     $(window).on('scroll', function () {
         const windowHeight = $(window).height();
         const scrollTop = $(window).scrollTop();
-        
+
         if (activeTab() === 'eligible') {
             const $list = $('[data-return-list]');
             if (!$list.length || $list.hasClass('d-none')) return;
-            
+
             const listHeight = $list.height();
             const listOffset = $list.offset().top;
-            
+
             // Load more when user scrolls near the bottom of the list
             if (scrollTop + windowHeight >= listOffset + listHeight - 200) {
                 loadMoreReturns();
@@ -564,10 +564,10 @@ $(function () {
         } else {
             const $list = $('[data-history-list]');
             if (!$list.length || $list.hasClass('d-none')) return;
-            
+
             const listHeight = $list.height();
             const listOffset = $list.offset().top;
-            
+
             // Load more when user scrolls near the bottom of the list
             if (scrollTop + windowHeight >= listOffset + listHeight - 200) {
                 loadMoreHistory();
