@@ -33,6 +33,7 @@
   dir="ltr"
   data-skin="default"
   data-bs-theme="light"
+  data-display-customizer="true"
   data-assets-path="{{ asset('assets') }}/"
   data-template="vertical-menu-template">
   <head>
@@ -104,13 +105,31 @@
     <!-- Page CSS -->
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/cards-advance.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/app-loader.css') }}?v={{ filemtime(public_path('assets/css/app-loader.css')) }}" />
+    <style>
+      html[data-display-customizer='true'] #template-customizer .template-customizer-open-btn {
+        z-index: 2 !important;
+      }
+
+      html[data-display-customizer='true'] #template-customizer {
+        display: flex !important;
+        visibility: visible !important;
+        z-index: 2147483647 !important;
+      }
+
+      @media (max-width: 1200px) {
+        html[data-display-customizer='true'] #template-customizer {
+          display: flex !important;
+          visibility: visible !important;
+        }
+      }
+    </style>
 
     <!-- Helpers -->
     <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
 
     <!--? Template customizer: To hide customizer set displayCustomizer value false in config.js.  -->
-    {{-- <script src="{{ asset('assets/vendor/js/template-customizer.js') }}"></script> --}}
+    <script src="{{ asset('assets/vendor/js/template-customizer.js') }}"></script>
 
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
 
@@ -227,6 +246,21 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-aio-3.2.8.min.js"></script>
     <script src="{{ asset('assets/js/app-helpers.js') }}"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        if (document.documentElement.getAttribute('data-display-customizer') !== 'true') {
+          return;
+        }
+
+        var customizer = document.getElementById('template-customizer');
+        if (!customizer) {
+          return;
+        }
+
+        customizer.style.visibility = 'visible';
+        customizer.classList.add('template-customizer-open');
+      });
+    </script>
     <script src="{{ asset('assets/js/app-loader.js') }}?v={{ filemtime(public_path('assets/js/app-loader.js')) }}"></script>
     <script src="{{ asset('assets/js/session-notifications.js') }}"></script>
     @stack('page-script')

@@ -16,13 +16,13 @@
     </div> --}}
 
     <div class="card mb-4">
-        <div class="card-body d-flex justify-content-between align-items-center py-3">
+        <div class="card-body d-flex justify-content-between align-items-center py-3 pb-1">
             <h5 class="mb-0">Customer discount group</h5>
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDiscountGroupModal">
                 <i class="ti tabler-plus me-1"></i> Add New group
             </button>
         </div>
-        <div class="card-datatable table-responsive p-5">
+        <div class="card-datatable table-responsive p-5 pt-1">
             <table class="table" id="discountGroupsTable" data-delete-url-pattern="{{ route('tenant.discounts.group.delete', ':id') }}">
                 <thead class="bg-label-primary">
                     <tr>

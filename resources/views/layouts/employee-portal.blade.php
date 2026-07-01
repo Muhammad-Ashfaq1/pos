@@ -5,10 +5,20 @@
     dir="ltr"
     data-skin="default"
     data-bs-theme="light"
+    data-display-customizer="true"
     data-assets-path="{{ asset('assets') }}/"
     data-template="vertical-menu-template">
 <head>
     <meta charset="utf-8" />
+    <script>
+        (function () {
+            const theme = localStorage.getItem('templateCustomizer-vertical-menu-template--Theme') || 'light';
+            const themeToApply = theme === 'system'
+                ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                : theme;
+            document.documentElement.setAttribute('data-bs-theme', themeToApply);
+        })();
+    </script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
@@ -31,6 +41,28 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/app-loader.css') }}?v={{ filemtime(public_path('assets/css/app-loader.css')) }}" />
+    <style>
+        html[data-display-customizer='true'] #template-customizer {
+            display: flex !important;
+            visibility: visible !important;
+            z-index: 2147483647 !important;
+        }
+
+        html[data-display-customizer='true'] #template-customizer .template-customizer-open-btn {
+            z-index: 2 !important;
+        }
+
+        @media (max-width: 1200px) {
+            html[data-display-customizer='true'] #template-customizer {
+                display: flex !important;
+                visibility: visible !important;
+            }
+        }
+    </style>
+
+    <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
+    <script src="{{ asset('assets/vendor/js/template-customizer.js') }}"></script>
+    <script src="{{ asset('assets/js/config.js') }}"></script>
     @yield('extra-css')
     @stack('extra-css')
 
@@ -597,8 +629,6 @@
     <script src="{{ asset('assets/vendor/libs/hammer/hammer.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
-    <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
-    <script src="{{ asset('assets/js/config.js') }}"></script>
     <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
     <script src="{{ asset('assets/js/main.js') }}"></script>
     <script>
@@ -628,6 +658,21 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-aio-3.2.8.min.js"></script>
     <script src="{{ asset('assets/js/app-helpers.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (document.documentElement.getAttribute('data-display-customizer') !== 'true') {
+                return;
+            }
+
+            var customizer = document.getElementById('template-customizer');
+            if (!customizer) {
+                return;
+            }
+
+            customizer.style.visibility = 'visible';
+            customizer.classList.add('template-customizer-open');
+        });
+    </script>
     <script src="{{ asset('assets/js/app-loader.js') }}?v={{ filemtime(public_path('assets/js/app-loader.js')) }}"></script>
     <script src="{{ asset('assets/js/session-notifications.js') }}"></script>
 
