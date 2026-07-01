@@ -61,13 +61,13 @@ jobs:
             --exclude='storage/app/public/shops/**' \
             --exclude='storage/app/public/products/**' \
             -e "ssh -o StrictHostKeyChecking=no -p 65002" \
-            ./ u407529782@145.79.26.191:/home/u407529782/domains/kba-jewellers.com/public_html/pos
+            ./ u407529782@145.79.26.191:/home/u407529782/domains/obtainsolutions.com/public_html/pos
 
       # Run Laravel commands on the server
       - name: Run Laravel Commands
         run: |
           sshpass -p '${{ secrets.SSH_PASSWORD }}' ssh -o StrictHostKeyChecking=no -p 65002 u407529782@145.79.26.191 << 'EOF'
-          cd /home/u407529782/domains/kba-jewellers.com/public_html/pos
+          cd /home/u407529782/domains/obtainsolutions.com/public_html/pos
           echo "Running migrations..."
           php artisan migrate --force
           echo "Syncing roles and permissions to all tenants/admins..."
@@ -91,7 +91,7 @@ jobs:
           fi
           # Create symbolic link for storage
           echo "Creating storage symlink..."
-          ln -sfn /home/u407529782/domains/kba-jewellers.com/public_html/pos/storage/app/public /home/u407529782/domains/kba-jewellers.com/public_html/pos/public/storage
+          ln -sfn /home/u407529782/domains/obtainsolutions.com/public_html/pos/storage/app/public /home/u407529782/domains/obtainsolutions.com/public_html/pos/public/storage
           # Verify symlink was created
           if [ -L public/storage ]; then
             echo "Storage symlink created successfully"
