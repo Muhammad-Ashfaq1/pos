@@ -363,6 +363,7 @@
 
                     <h6 class="mb-3">Catalog &amp; Records</h6>
                     <?php
+                        $vehicleFeatureEnabled = app(\App\Support\Tenancy\TenantContext::class)->current()?->isVehicleRequired() ?? true;
                         $catalogUrls = [
                             'Categories' => route('tenant.ecommerce.categories.index'),
                             'Sub Categories' => route('tenant.ecommerce.subcategories.index'),
@@ -407,6 +408,9 @@
                     </style>
                     <div class="row g-3">
                         @foreach ($application['catalog'] as $label => $count)
+                            @if (! $vehicleFeatureEnabled && $label === 'Vehicles')
+                                @continue
+                            @endif
                             <?php
                                 $targetUrl = $catalogUrls[$label] ?? '#';
                                 $meta = $catalogMeta[$label] ?? ['icon' => 'tabler-circle', 'color' => 'secondary'];

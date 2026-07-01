@@ -43,6 +43,7 @@ window.config = {
 
 window.assetsPath = document.documentElement.getAttribute('data-assets-path');
 window.templateName = document.documentElement.getAttribute('data-template');
+const displayCustomizerOverride = document.documentElement.getAttribute('data-display-customizer');
 
 /**
  * TemplateCustomizer
@@ -71,7 +72,10 @@ window.templateName = document.documentElement.getAttribute('data-template');
 
 if (typeof TemplateCustomizer !== 'undefined') {
   window.templateCustomizer = new TemplateCustomizer({
-    displayCustomizer: false,
+    displayCustomizer:
+      displayCustomizerOverride !== null
+        ? displayCustomizerOverride === 'true'
+        : false,
     lang: localStorage.getItem('templateCustomizer-' + templateName + '--Lang') || 'en', // Set default language here
     // defaultPrimaryColor: '#D11BB4',
     // defaultSkin: 1,

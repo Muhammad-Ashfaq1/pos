@@ -41,6 +41,22 @@
     }
   };
 
+  const alignCreateButtonWithSearch = function (table, actionsSelector) {
+    const $actions = $(actionsSelector);
+    if (!table || !$actions.length || typeof table.table !== 'function') {
+      return;
+    }
+
+    const $topStart = $(table.table().container()).find('.dt-layout-start').first();
+    if (!$topStart.length) {
+      return;
+    }
+
+    $topStart.addClass('w-100 d-flex justify-content-between align-items-center gap-2 flex-wrap');
+    $actions.removeClass('ms-auto');
+    $topStart.append($actions);
+  };
+
   const escapeHtml = function (value) {
     return $('<div>').text(value ?? '').html();
   };
@@ -768,11 +784,14 @@
         }
       ],
       drawCallback: function () {
+        alignCreateButtonWithSearch(this.api(), '#productTableActions');
         if (window.Helpers && window.Helpers.initToolTip) {
           window.Helpers.initToolTip(this.api().table().container());
         }
       }
     });
+
+    alignCreateButtonWithSearch(productTable, '#productTableActions');
   };
 
   const reloadTable = function () {

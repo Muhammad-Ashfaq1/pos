@@ -75,10 +75,11 @@
                         </div>
                     </div>
 
-                    <div class="employee-orders-loading d-none" data-return-loading>
-                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                        <span>Loading orders...</span>
-                    </div>
+                    <x-shared-loader
+                        class="employee-orders-loading d-none"
+                        data-return-loading
+                        message="Loading orders..."
+                    />
 
                     <div class="employee-orders-list" data-return-list></div>
 
@@ -99,10 +100,11 @@
                         </div>
                     </div>
 
-                    <div class="employee-orders-loading d-none" data-history-loading>
-                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                        <span>Loading returned orders...</span>
-                    </div>
+                    <x-shared-loader
+                        class="employee-orders-loading d-none"
+                        data-history-loading
+                        message="Loading returned orders..."
+                    />
 
                     <div class="employee-orders-list" data-history-list></div>
 
@@ -180,7 +182,6 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-danger" id="confirmReturnBtn">
-                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                         <span class="btn-text">Process Return</span>
                     </button>
                 </div>

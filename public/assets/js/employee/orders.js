@@ -238,15 +238,16 @@
   };
 
   const setLoading = function (isLoading) {
-    $('[data-order-loading]').toggleClass('d-none', !isLoading);
     $('[data-order-list]').toggleClass('d-none', isLoading);
     $('[data-order-refresh]').prop('disabled', isLoading);
-    $('[data-advanced-order-loading]').toggleClass('d-none', !isLoading);
     $('[data-advanced-order-list]').toggleClass('d-none', isLoading);
 
     if (isLoading) {
+      $('[data-order-loading], [data-advanced-order-loading]').removeClass('d-none');
       $('[data-order-empty]').addClass('d-none');
       $('[data-advanced-order-empty]').addClass('d-none');
+    } else {
+      $('[data-order-loading], [data-advanced-order-loading]').addClass('d-none');
     }
   };
 

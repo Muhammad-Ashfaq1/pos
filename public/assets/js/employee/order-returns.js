@@ -62,7 +62,7 @@ $(function () {
         $('[data-returns-view]').addClass('d-none');
         $('[data-returns-view="' + tab + '"]').removeClass('d-none');
         $('[data-returns-search]').val('');
-        
+
         // Reset pagination when switching tabs
         if (tab === 'eligible') {
             state.eligible.page = 1;
@@ -438,7 +438,6 @@ $(function () {
     // ── Confirm return ────────────────────────────────────────────────────
     $('#confirmReturnBtn').on('click', function () {
         const $btn = $(this);
-        const $spinner = $btn.find('.spinner-border');
         const $btnText = $btn.find('.btn-text');
 
         const returnReason = $('#returnReason').val().trim();
@@ -475,8 +474,11 @@ $(function () {
         const calculatedRefund = calculateRefundAmount();
 
         $btn.prop('disabled', true);
-        $spinner.removeClass('d-none');
-        $btnText.text('Processing...');
+        if (window.AppLoader && typeof window.AppLoader.button === 'function') {
+            $btnText.html(window.AppLoader.button('Processing...'));
+        } else {
+            $btnText.text('Processing...');
+        }
 
         const returnUrl = returnUrlTemplate.replace('__ORDER_ID__', selectedOrder.id);
 
@@ -502,7 +504,6 @@ $(function () {
             },
             complete: function () {
                 $btn.prop('disabled', false);
-                $spinner.addClass('d-none');
                 $btnText.text('Process Return');
             }
         });
@@ -548,14 +549,14 @@ $(function () {
     $(window).on('scroll', function () {
         const windowHeight = $(window).height();
         const scrollTop = $(window).scrollTop();
-        
+
         if (activeTab() === 'eligible') {
             const $list = $('[data-return-list]');
             if (!$list.length || $list.hasClass('d-none')) return;
-            
+
             const listHeight = $list.height();
             const listOffset = $list.offset().top;
-            
+
             // Load more when user scrolls near the bottom of the list
             if (scrollTop + windowHeight >= listOffset + listHeight - 200) {
                 loadMoreReturns();
@@ -563,10 +564,10 @@ $(function () {
         } else {
             const $list = $('[data-history-list]');
             if (!$list.length || $list.hasClass('d-none')) return;
-            
+
             const listHeight = $list.height();
             const listOffset = $list.offset().top;
-            
+
             // Load more when user scrolls near the bottom of the list
             if (scrollTop + windowHeight >= listOffset + listHeight - 200) {
                 loadMoreHistory();
