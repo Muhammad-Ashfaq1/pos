@@ -46,7 +46,7 @@ class ProductTypesRepository implements ProductTypeRepositoryInterface
 
         return [
             'success' => true,
-            'message' => $isUpdate ? 'Product type updated successfully.' : 'Product type created successfully.',
+            'message' => __('admin.catalog.product_type_saved'),
             'data' => $this->transformProductType($productType, $user),
         ];
     }
@@ -56,7 +56,7 @@ class ProductTypesRepository implements ProductTypeRepositoryInterface
         if ($productType->products()->exists()) {
             return [
                 'success' => false,
-                'message' => 'This product type is assigned to one or more products and cannot be deleted.',
+                'message' => __('admin.catalog.product_type_assigned'),
             ];
         }
 
@@ -64,7 +64,7 @@ class ProductTypesRepository implements ProductTypeRepositoryInterface
 
         return [
             'success' => true,
-            'message' => 'Product type deleted successfully.',
+            'message' => __('admin.catalog.product_type_deleted'),
         ];
     }
 
@@ -151,7 +151,7 @@ class ProductTypesRepository implements ProductTypeRepositoryInterface
             'sort_order' => $productType->sort_order,
             'products_count' => $productType->products_count ?? $productType->products()->count(),
             'is_active' => $productType->is_active,
-            'status_label' => $productType->is_active ? 'Active' : 'Inactive',
+            'status_label' => $productType->is_active ? __('app.active') : __('app.inactive'),
             'status_badge_class' => $productType->is_active ? 'bg-label-success' : 'bg-label-secondary',
             'created_at' => $productType->created_at?->format('d M Y'),
             'can_update' => $user?->can('update', $productType) ?? false,

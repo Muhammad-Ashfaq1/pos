@@ -50,7 +50,7 @@ class SubCategoriesRepository implements SubCategoryRepositoryInterface
 
         return [
             'success' => true,
-            'message' => $isUpdate ? 'Sub category updated successfully.' : 'Sub category created successfully.',
+            'message' => __('admin.catalog.sub_category_saved'),
             'data' => $this->transformSubCategory($subCategory, $user),
         ];
     }
@@ -61,7 +61,7 @@ class SubCategoriesRepository implements SubCategoryRepositoryInterface
 
         return [
             'success' => true,
-            'message' => 'Sub category deleted successfully.',
+            'message' => __('admin.catalog.sub_category_deleted'),
         ];
     }
 
@@ -161,7 +161,7 @@ class SubCategoriesRepository implements SubCategoryRepositoryInterface
             'description' => $subCategory->description,
             'sort_order' => $subCategory->sort_order,
             'is_active' => $subCategory->is_active,
-            'status_label' => $subCategory->is_active ? 'Active' : 'Inactive',
+            'status_label' => $subCategory->is_active ? __('app.active') : __('app.inactive'),
             'status_badge_class' => $subCategory->is_active ? 'bg-label-success' : 'bg-label-secondary',
             'created_at' => $subCategory->created_at?->format('d M Y'),
             'can_update' => $user?->can('update', $subCategory) ?? false,

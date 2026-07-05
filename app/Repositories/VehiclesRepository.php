@@ -57,7 +57,7 @@ class VehiclesRepository implements VehicleRepositoryInterface
 
         return [
             'success' => true,
-            'message' => $isUpdate ? 'Vehicle updated successfully.' : 'Vehicle created successfully.',
+            'message' => __('admin.catalog.vehicle_saved'),
             'data' => $this->transformVehicle($vehicle, $user),
         ];
     }
@@ -68,7 +68,7 @@ class VehiclesRepository implements VehicleRepositoryInterface
 
         return [
             'success' => true,
-            'message' => 'Vehicle deleted successfully.',
+            'message' => __('admin.catalog.vehicle_deleted'),
         ];
     }
 
@@ -215,9 +215,11 @@ class VehiclesRepository implements VehicleRepositoryInterface
             'odometer' => $vehicle->odometer !== null ? (string) $vehicle->odometer : null,
             'notes' => $vehicle->notes,
             'is_default' => $vehicle->is_default,
-            'default_label' => $vehicle->is_default ? 'Default' : 'Standard',
+            'default_label' => $vehicle->is_default
+                ? __('admin.models.default_vehicle')
+                : __('admin.models.standard_vehicle'),
             'default_badge_class' => $vehicle->is_default ? 'bg-label-primary' : 'bg-label-secondary',
-            'vehicle_label' => $vehicleLabel !== '' ? $vehicleLabel : 'Vehicle',
+            'vehicle_label' => $vehicleLabel !== '' ? $vehicleLabel : __('admin.catalog.vehicle'),
             'created_at' => $vehicle->created_at?->format('d M Y'),
             'can_update' => $user?->can('update', $vehicle) ?? false,
             'can_delete' => $user?->can('delete', $vehicle) ?? false,
@@ -292,7 +294,7 @@ class VehiclesRepository implements VehicleRepositoryInterface
                 'email' => $shouldPersistDetails ? ($data['inline_customer_email'] ?? null) : null,
                 'address' => $shouldPersistDetails ? ($data['inline_customer_address'] ?? null) : null,
                 'notes' => ! $shouldPersistDetails
-                    ? 'Auto-created from quick vehicle entry.'
+                    ? __('admin.catalog.quick_vehicle_note')
                     : $existingCustomer->notes,
             ]);
 
@@ -333,7 +335,7 @@ class VehiclesRepository implements VehicleRepositoryInterface
             'email' => $shouldPersistDetails ? ($data['inline_customer_email'] ?? null) : null,
             'address' => $shouldPersistDetails ? ($data['inline_customer_address'] ?? null) : null,
             'notes' => ! $shouldPersistDetails
-                ? 'Auto-created from quick vehicle entry.'
+                ? __('admin.catalog.quick_vehicle_note')
                 : null,
         ]);
 

@@ -8,16 +8,8 @@ use App\Repositories\Interface\ShopSettingsRepositoryInterface;
 class ShopSettingsRepository implements ShopSettingsRepositoryInterface
 {
     private const LOCALE_OPTIONS = [
-        'en'    => 'English',
-        'en_US' => 'English (United States)',
-        'en_GB' => 'English (United Kingdom)',
-        'en_AU' => 'English (Australia)',
-        'en_CA' => 'English (Canada)',
-        'ar'    => 'Arabic',
-        'ur'    => 'Urdu',
-        'de'    => 'German',
-        'es'    => 'Spanish',
-        'fr'    => 'French',
+        'en' => 'English',
+        'ar' => 'Arabic',
     ];
 
     private const CURRENCY_OPTIONS = [
@@ -47,12 +39,12 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
             'tenant' => $tenant,
             'form' => $this->buildFormData($tenant),
             'currencyOptions' => self::CURRENCY_OPTIONS,
-            'localeOptions' => self::LOCALE_OPTIONS,
+            'localeOptions' => $this->localeOptions(),
             'timezoneOptions' => array_combine(
                 \DateTimeZone::listIdentifiers(),
                 \DateTimeZone::listIdentifiers(),
             ),
-            'weekdayOptions' => self::WEEKDAYS,
+            'weekdayOptions' => $this->weekdayOptions(),
             'readiness' => $this->buildReadinessChecklist($tenant),
             'settingsSections' => $this->settingsSections(),
         ];
@@ -85,7 +77,7 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
 
         return [
             'success' => true,
-            'message' => 'Shop profile updated successfully.',
+            'message' => __('admin.settings.general_updated'),
         ];
     }
 
@@ -117,7 +109,7 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
 
         return [
             'success' => true,
-            'message' => 'Regional and billing settings updated successfully.',
+            'message' => __('admin.settings.regional_updated'),
         ];
     }
 
@@ -149,7 +141,7 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
 
         return [
             'success' => true,
-            'message' => 'Operations settings updated successfully.',
+            'message' => __('admin.settings.operations_updated'),
         ];
     }
 
@@ -175,7 +167,7 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
 
         return [
             'success' => true,
-            'message' => 'Notification and loyalty settings updated successfully.',
+            'message' => __('admin.settings.notifications_updated'),
         ];
     }
 
@@ -196,7 +188,7 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
 
         return [
             'success' => true,
-            'message' => 'Order and invoice settings updated successfully.',
+            'message' => __('admin.settings.order_invoice_updated'),
         ];
     }
 
@@ -209,50 +201,50 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
     {
         $sections = [
             [
-                'label' => 'Shop Profile',
+                'label' => __('admin.settings.shop_profile'),
                 'route' => 'tenant.settings.shop-profile.general',
                 'pattern' => 'tenant.settings.shop-profile.general',
                 'icon' => 'tabler-building-store',
-                'description' => 'Business identity, contact details, and address.',
+                'description' => __('admin.settings.shop_profile_desc'),
             ],
             [
-                'label' => 'Regional & Billing',
+                'label' => __('admin.settings.regional_billing'),
                 'route' => 'tenant.settings.shop-profile.regional',
                 'pattern' => 'tenant.settings.shop-profile.regional',
                 'icon' => 'tabler-world',
-                'description' => 'Currency, timezone, tax defaults, and invoice numbering.',
+                'description' => __('admin.settings.regional_billing_desc'),
             ],
             [
-                'label' => 'Operations',
+                'label' => __('admin.settings.operations'),
                 'route' => 'tenant.settings.shop-profile.operations',
                 'pattern' => 'tenant.settings.shop-profile.operations',
                 'icon' => 'tabler-settings-cog',
-                'description' => 'Inventory thresholds and business hours for this tenant.',
+                'description' => __('admin.settings.operations_desc'),
             ],
             [
-                'label' => 'Notifications & Loyalty',
+                'label' => __('admin.settings.notifications_loyalty'),
                 'route' => 'tenant.settings.shop-profile.notifications',
                 'pattern' => 'tenant.settings.shop-profile.notifications',
                 'icon' => 'tabler-bell',
-                'description' => 'Communication defaults and loyalty behavior.',
+                'description' => __('admin.settings.notifications_loyalty_desc'),
             ],
             [
-                'label' => 'Order & Invoice',
+                'label' => __('admin.settings.order_invoice'),
                 'route' => 'tenant.settings.shop-profile.order-invoice',
                 'pattern' => 'tenant.settings.shop-profile.order-invoice',
                 'icon' => 'tabler-receipt',
-                'description' => 'Vehicle requirements and return policy for orders.',
+                'description' => __('admin.settings.order_invoice_desc'),
             ],
         ];
 
         $user = auth()->user();
         if ($user?->isTenantAdmin() || $user?->can('roles.manage')) {
             $sections[] = [
-                'label' => 'Roles & Permissions',
+                'label' => __('admin.settings.roles_permissions'),
                 'route' => 'tenant.settings.roles-permissions.index',
                 'pattern' => 'tenant.settings.roles-permissions.index',
                 'icon' => 'tabler-shield-lock',
-                'description' => 'Manage staff roles, permissions, and impersonation.',
+                'description' => __('admin.settings.roles_permissions_desc'),
             ];
         }
 
@@ -310,19 +302,19 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
 
         $checks = [
             [
-                'label' => 'Business identity',
+                'label' => __('admin.settings.business_identity'),
                 'completed' => ! blank($form['shop_name']) && ! blank($form['business_name']) && ! blank($form['owner_name']),
             ],
             [
-                'label' => 'Contact details',
+                'label' => __('admin.settings.contact_details_check'),
                 'completed' => ! blank($form['business_email']) && ! blank($form['business_phone']),
             ],
             [
-                'label' => 'Address & region',
+                'label' => __('admin.settings.address_region'),
                 'completed' => ! blank($form['address']) && ! blank($form['city']) && ! blank($form['country']) && ! blank($form['timezone']),
             ],
             [
-                'label' => 'Billing defaults',
+                'label' => __('admin.settings.billing_defaults_check'),
                 'completed' => ! blank($form['currency']) && ! blank($form['tax_name']) && ! blank($form['invoice_prefix']),
             ],
         ];
@@ -342,6 +334,21 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
         $readiness = $this->buildReadinessChecklist($tenant);
 
         return $readiness['completed'] === $readiness['total'];
+    }
+
+    private function localeOptions(): array
+    {
+        return [
+            'en' => __('app.language_english'),
+            'ar' => __('app.language_arabic'),
+        ];
+    }
+
+    private function weekdayOptions(): array
+    {
+        return collect(self::WEEKDAYS)
+            ->mapWithKeys(fn (string $label, string $day): array => [$day => __("admin.settings.weekdays.{$day}")])
+            ->all();
     }
 
     private function normalizeNullableString(mixed $value): ?string

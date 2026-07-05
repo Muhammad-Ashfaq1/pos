@@ -1,8 +1,8 @@
 <!doctype html>
 <html
-    lang="en"
+    lang="{{ app()->getLocale() }}"
     class="layout-wide"
-    dir="ltr"
+    dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}"
     data-skin="default"
     data-bs-theme="light"
     data-display-customizer="true"
@@ -22,8 +22,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="description" content="@yield('meta_description', 'Employee Portal UI preview for the POS app.')" />
-    <title>@yield('title', 'Employee Portal')</title>
+    <meta name="description" content="@yield('meta_description', __('admin.nav.employee_panel'))" />
+    <title>@yield('title', __('admin.nav.employee_panel'))</title>
 
     <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
     @include('layouts.partials.pwa-head')
@@ -41,6 +41,9 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/app-loader.css') }}?v={{ filemtime(public_path('assets/css/app-loader.css')) }}" />
+    @if(app()->getLocale() === 'ar')
+        <link rel="stylesheet" href="{{ asset('css/custom-rtl.css') }}">
+    @endif
     <style>
         html[data-display-customizer='true'] #template-customizer {
             display: flex !important;
@@ -569,30 +572,31 @@
 
     @stack('styles')
 </head>
-<body class="employee-admin-preview">
+<body class="employee-admin-preview {{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     <div class="preview-shell">
         <header class="preview-header">
-            <div class="preview-container py-0">
+            <div class="preview-container py-4">
                 <div class="preview-header-inner">
                     <a href="{{ route('employee.dashboard') }}" class="preview-brand">
                         <span class="preview-brand-text">OIL<span>POS</span></span>
                     </a>
 
                     <div class="preview-header-actions">
+                        @include('layouts.partials.language-switcher')
                         @if (session()->has('impersonator_id'))
                             <div class="impersonation-banner">
                                 <i class="ti tabler-user-exclamation"></i>
                                 <span class="impersonation-banner-text">
-                                    Impersonating as <strong>{{ auth()->user()?->name }}</strong>
+                                    {{ __('admin.nav.impersonating_as', ['name' => auth()->user()?->name]) }}
                                 </span>
                                 <a href="{{ route('admin.impersonate.stop') }}" class="impersonation-banner-stop">
                                     <i class="ti tabler-x"></i>
-                                    <span>Stop</span>
+                                    <span>{{ __('admin.nav.stop') }}</span>
                                 </a>
                             </div>
                         @endif
                         @can('reports.view')
-                            <a href="{{ route('employee.reports.index', 'sales') }}" class="preview-circle-btn preview-circle-btn--indigo" title="Reports">
+                            <a href="{{ route('employee.reports.index', 'sales') }}" class="preview-circle-btn preview-circle-btn--indigo" title="{{ __('admin.nav.reports') }}">
                                 <i class="ti tabler-chart-histogram"></i>
                             </a>
                         @endcan
@@ -604,7 +608,7 @@
                         </button>
                         <form method="POST" action="{{ route('logout') }}" class="d-inline">
                             @csrf
-                            <button type="submit" class="preview-circle-btn preview-circle-btn--red" title="Logout">
+                            <button type="submit" class="preview-circle-btn preview-circle-btn--red" title="{{ __('admin.nav.sign_out') }}">
                                 <i class="ti tabler-logout"></i>
                             </button>
                         </form>
@@ -614,7 +618,7 @@
         </header>
 
         <main class="preview-main">
-            <div class="preview-container py-0">
+            <div class="preview-container py-4">
                 @yield('content')
             </div>
         </main>
@@ -634,6 +638,7 @@
     <script>
         window.appCurrency = { symbol: @json(\App\Support\Currency::symbol()), code: @json(\App\Support\Currency::code()) };
     </script>
+    @include('layouts.partials.locale-bridge')
     <script>
         window.sessionMessages = window.sessionMessages || {};
         @if (session('success'))

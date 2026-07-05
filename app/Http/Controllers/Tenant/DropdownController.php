@@ -132,9 +132,10 @@ class DropdownController extends Controller
 
         $query = Service::query()
             ->with('category:id,name')
-            ->select(['id', 'category_id', 'name', 'code', 'standard_price', 'tax_percentage', 'is_active'])
+            ->select(['id', 'category_id', 'name', 'title_en', 'title_ar', 'code', 'standard_price', 'tax_percentage', 'is_active'])
             ->when($activeOnly, fn ($builder) => $builder->where('is_active', true))
             ->search($search)
+            ->orderBy('title_en')
             ->orderBy('name')
             ->orderBy('id');
 
@@ -147,7 +148,7 @@ class DropdownController extends Controller
             'results' => $services->map(fn (Service $service) => [
                 'id' => $service->id,
                 'text' => $this->serviceOptionText($service),
-                'name' => $service->name,
+                'name' => $service->localized_title,
                 'code' => $service->code,
                 'category_name' => $service->category?->name,
                 'standard_price' => (float) $service->standard_price,
@@ -309,7 +310,7 @@ class DropdownController extends Controller
         $code = filled($service->code) ? " ({$service->code})" : '';
         $price = Currency::format($service->standard_price);
 
-        return "{$service->name}{$code} - {$price}";
+        return "{$service->localized_title}{$code} - {$price}";
     }
 
     private function discountGroupPayload(?DiscountGroup $group): ?array

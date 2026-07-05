@@ -1,17 +1,16 @@
 <!doctype html>
 
 <html
-  lang="en"
+  lang="{{ app()->getLocale() }}"
   class=" layout-wide  customizer-hide"
-  dir="ltr"
+  dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}"
   data-skin="default"
   data-bs-theme="light"
   data-assets-path="{{ asset('assets') }}/"
   data-template="vertical-menu-template">
 
 
-
-  <body>
+  <body class="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 
 <head>
     <meta charset="utf-8" />
@@ -62,6 +61,9 @@
     <!-- Page CSS -->
     <!-- Page -->
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/page-auth.css') }}" />
+    @if(app()->getLocale() === 'ar')
+      <link rel="stylesheet" href="{{ asset('css/custom-rtl.css') }}">
+    @endif
 
     <!-- Helpers -->
     <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
@@ -125,6 +127,7 @@
 
     <!-- Page JS -->
     <script src="{{ asset('assets/js/pages-auth.js') }}"></script>
+    @include('layouts.partials.locale-bridge')
     <script>
       window.sessionMessages = window.sessionMessages || {};
       @if (session('success'))

@@ -77,12 +77,12 @@ class Product extends Model
     public static function typeOptions(): array
     {
         return [
-            self::TYPE_INVENTORY => 'Inventory Item',
-            self::TYPE_OIL => 'Oil',
-            self::TYPE_FILTER => 'Filter',
-            self::TYPE_PART => 'Part',
-            self::TYPE_ADDITIVE => 'Additive',
-            self::TYPE_OTHER => 'Other',
+            self::TYPE_INVENTORY => __('admin.models.inventory_item'),
+            self::TYPE_OIL => __('admin.models.oil'),
+            self::TYPE_FILTER => __('admin.models.filter'),
+            self::TYPE_PART => __('admin.models.part'),
+            self::TYPE_ADDITIVE => __('admin.models.additive'),
+            self::TYPE_OTHER => __('admin.models.other'),
         ];
     }
 

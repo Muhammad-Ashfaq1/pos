@@ -46,7 +46,7 @@ class CategoriesRepository implements CategoryRepositoryInterface
 
         return [
             'success' => true,
-            'message' => $isUpdate ? 'Category updated successfully.' : 'Category created successfully.',
+            'message' => $isUpdate ? __('admin.catalog.category_saved') : __('admin.catalog.category_saved'),
             'data' => $this->transformCategory($category, $user),
         ];
     }
@@ -57,7 +57,7 @@ class CategoriesRepository implements CategoryRepositoryInterface
 
         return [
             'success' => true,
-            'message' => 'Category deleted successfully.',
+            'message' => __('admin.catalog.category_deleted'),
         ];
     }
 
@@ -142,7 +142,7 @@ class CategoriesRepository implements CategoryRepositoryInterface
             'description' => $category->description,
             'sort_order' => $category->sort_order,
             'is_active' => $category->is_active,
-            'status_label' => $category->is_active ? 'Active' : 'Inactive',
+            'status_label' => $category->is_active ? __('app.active') : __('app.inactive'),
             'status_badge_class' => $category->is_active ? 'bg-label-success' : 'bg-label-secondary',
             'created_at' => $category->created_at?->format('d M Y'),
             'can_update' => $user?->can('update', $category) ?? false,

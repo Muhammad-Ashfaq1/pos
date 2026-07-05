@@ -1,3 +1,6 @@
+@include('public.home-localized')
+@php return; @endphp
+
 @extends('layouts.public')
 
 @section('title', 'OCC - POS & Operations Software for Car Garages, Oil Change & Auto Service Shops')

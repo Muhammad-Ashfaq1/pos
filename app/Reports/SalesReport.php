@@ -19,7 +19,7 @@ class SalesReport extends ReportDefinition
 
     public function label(): string
     {
-        return 'Sales';
+        return __('admin.reports.sales');
     }
 
     protected function model(): string
@@ -43,8 +43,8 @@ class SalesReport extends ReportDefinition
     public function dateColumnOptions(): array
     {
         return [
-            'created_at' => 'Order Date',
-            'paid_at' => 'Paid Date',
+            'created_at' => __('admin.reports.order_date'),
+            'paid_at' => __('admin.reports.paid_date'),
         ];
     }
 
@@ -53,39 +53,43 @@ class SalesReport extends ReportDefinition
         return [
             [
                 'key' => 'status',
-                'label' => 'Status',
+                'label' => __('admin.common.status'),
                 'type' => 'select',
                 'options' => [
-                    Order::STATUS_PENDING => 'Pending',
-                    Order::STATUS_PARTIALLY_PAID => 'Partially Paid',
-                    Order::STATUS_PAID => 'Paid',
-                    Order::STATUS_RETURNED => 'Returned',
+                    Order::STATUS_PENDING => __('admin.common.pending'),
+                    Order::STATUS_PARTIALLY_PAID => __('admin.reports.partially_paid'),
+                    Order::STATUS_PAID => __('admin.reports.paid'),
+                    Order::STATUS_RETURNED => __('admin.reports.returned'),
                 ],
                 'apply' => fn (Builder $q, $v) => $q->where('status', $v),
             ],
             [
                 'key' => 'payment_method',
-                'label' => 'Payment Method',
+                'label' => __('admin.orders.payment_method'),
                 'type' => 'select',
-                'options' => ['cash' => 'Cash', 'card' => 'Card', 'check' => 'Check'],
+                'options' => [
+                    'cash' => __('admin.common.cash'),
+                    'card' => __('admin.common.card'),
+                    'check' => __('admin.common.check'),
+                ],
                 'apply' => fn (Builder $q, $v) => $q->where('payment_method', $v),
             ],
             [
                 'key' => 'created_by',
-                'label' => 'Retailer',
+                'label' => __('admin.reports.retailer'),
                 'type' => 'select',
                 'options' => fn () => ReportOptions::staff(),
                 'apply' => fn (Builder $q, $v) => $q->where('created_by', (int) $v),
             ],
             [
                 'key' => 'amount_min',
-                'label' => 'Min Total',
+                'label' => __('admin.reports.min_total'),
                 'type' => 'number',
                 'apply' => fn (Builder $q, $v) => $q->where('total_amount', '>=', (float) $v),
             ],
             [
                 'key' => 'amount_max',
-                'label' => 'Max Total',
+                'label' => __('admin.reports.max_total'),
                 'type' => 'number',
                 'apply' => fn (Builder $q, $v) => $q->where('total_amount', '<=', (float) $v),
             ],
@@ -106,17 +110,17 @@ class SalesReport extends ReportDefinition
     public function columns(): array
     {
         return [
-            ['key' => 'order_number', 'label' => 'Order #', 'value' => fn (Order $o) => $o->order_number],
-            ['key' => 'created_at', 'label' => 'Date', 'value' => fn (Order $o) => $o->created_at?->format('d M Y h:i A') ?? '—'],
-            ['key' => 'customer', 'label' => 'Customer', 'value' => fn (Order $o) => $o->customer?->name ?? '—'],
-            ['key' => 'status', 'label' => 'Status', 'value' => fn (Order $o) => ucwords(str_replace('_', ' ', (string) $o->status))],
-            ['key' => 'items', 'label' => 'Items', 'align' => 'center', 'value' => fn (Order $o) => (int) ($o->items_count ?? 0)],
-            ['key' => 'subtotal', 'label' => 'Subtotal', 'align' => 'end', 'value' => fn (Order $o) => Currency::format((float) $o->subtotal_amount)],
-            ['key' => 'discount', 'label' => 'Discount', 'align' => 'end', 'value' => fn (Order $o) => Currency::format((float) $o->discount_amount)],
-            ['key' => 'tax', 'label' => 'Tax', 'align' => 'end', 'value' => fn (Order $o) => Currency::format((float) $o->tax_amount)],
-            ['key' => 'total', 'label' => 'Total', 'align' => 'end', 'value' => fn (Order $o) => Currency::format((float) $o->total_amount)],
-            ['key' => 'paid', 'label' => 'Paid', 'align' => 'end', 'value' => fn (Order $o) => Currency::format((float) $o->payment_amount)],
-            ['key' => 'balance', 'label' => 'Balance', 'align' => 'end', 'value' => fn (Order $o) => Currency::format(max((float) $o->total_amount - (float) $o->payment_amount, 0))],
+            ['key' => 'order_number', 'label' => __('admin.reports.order_number'), 'value' => fn (Order $o) => $o->order_number],
+            ['key' => 'created_at', 'label' => __('admin.common.date'), 'value' => fn (Order $o) => $o->created_at?->format('d M Y h:i A') ?? '—'],
+            ['key' => 'customer', 'label' => __('admin.common.customer'), 'value' => fn (Order $o) => $o->customer?->name ?? '—'],
+            ['key' => 'status', 'label' => __('admin.common.status'), 'value' => fn (Order $o) => $this->statusLabel((string) $o->status)],
+            ['key' => 'items', 'label' => __('admin.orders.items'), 'align' => 'center', 'value' => fn (Order $o) => (int) ($o->items_count ?? 0)],
+            ['key' => 'subtotal', 'label' => __('admin.orders.subtotal'), 'align' => 'end', 'value' => fn (Order $o) => Currency::format((float) $o->subtotal_amount)],
+            ['key' => 'discount', 'label' => __('admin.common.discount'), 'align' => 'end', 'value' => fn (Order $o) => Currency::format((float) $o->discount_amount)],
+            ['key' => 'tax', 'label' => __('admin.common.tax'), 'align' => 'end', 'value' => fn (Order $o) => Currency::format((float) $o->tax_amount)],
+            ['key' => 'total', 'label' => __('admin.common.total'), 'align' => 'end', 'value' => fn (Order $o) => Currency::format((float) $o->total_amount)],
+            ['key' => 'paid', 'label' => __('admin.reports.paid'), 'align' => 'end', 'value' => fn (Order $o) => Currency::format((float) $o->payment_amount)],
+            ['key' => 'balance', 'label' => __('admin.reports.balance'), 'align' => 'end', 'value' => fn (Order $o) => Currency::format(max((float) $o->total_amount - (float) $o->payment_amount, 0))],
         ];
     }
 
@@ -135,13 +139,23 @@ class SalesReport extends ReportDefinition
             ->first();
 
         return [
-            ['label' => 'Orders', 'value' => (string) (int) ($row->orders_count ?? 0)],
-            ['label' => 'Gross Sales', 'value' => Currency::format((float) ($row->gross ?? 0))],
-            ['label' => 'Collected', 'value' => Currency::format((float) ($row->collected ?? 0))],
-            ['label' => 'Outstanding', 'value' => Currency::format((float) ($row->outstanding ?? 0))],
+            ['label' => __('admin.common.orders'), 'value' => (string) (int) ($row->orders_count ?? 0)],
+            ['label' => __('admin.reports.gross_sales'), 'value' => Currency::format((float) ($row->gross ?? 0))],
+            ['label' => __('admin.tenant_dashboard.collected'), 'value' => Currency::format((float) ($row->collected ?? 0))],
+            ['label' => __('admin.tenant_dashboard.outstanding'), 'value' => Currency::format((float) ($row->outstanding ?? 0))],
         ];
     }
 
+    private function statusLabel(string $status): string
+    {
+        return match ($status) {
+            Order::STATUS_PENDING => __('admin.common.pending'),
+            Order::STATUS_PARTIALLY_PAID => __('admin.reports.partially_paid'),
+            Order::STATUS_PAID => __('admin.reports.paid'),
+            Order::STATUS_RETURNED => __('admin.reports.returned'),
+            default => ucwords(str_replace('_', ' ', $status)),
+        };
+    }
     protected function applySearch(Builder $query, string $term): void
     {
         $query->where(function (Builder $q) use ($term): void {

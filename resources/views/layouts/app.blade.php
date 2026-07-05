@@ -28,9 +28,9 @@
 <!doctype html>
 
 <html
-  lang="en"
+  lang="{{ app()->getLocale() }}"
   class="{{ trim($bodyClasses) }}"
-  dir="ltr"
+  dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}"
   data-skin="default"
   data-bs-theme="light"
   data-display-customizer="true"
@@ -105,6 +105,9 @@
     <!-- Page CSS -->
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/cards-advance.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/app-loader.css') }}?v={{ filemtime(public_path('assets/css/app-loader.css')) }}" />
+    @if(app()->getLocale() === 'ar')
+      <link rel="stylesheet" href="{{ asset('css/custom-rtl.css') }}">
+    @endif
     <style>
       html[data-display-customizer='true'] #template-customizer .template-customizer-open-btn {
         z-index: 2 !important;
@@ -141,7 +144,7 @@
 
   </head>
 
-  <body>
+  <body class="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar  ">
       <div class="layout-container">
@@ -222,6 +225,7 @@
     <script>
       window.appCurrency = { symbol: @json(\App\Support\Currency::symbol()), code: @json(\App\Support\Currency::code()) };
     </script>
+    @include('layouts.partials.locale-bridge')
     <script>
       window.sessionMessages = window.sessionMessages || {};
       @if (session('success'))

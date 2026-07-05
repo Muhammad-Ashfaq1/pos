@@ -18,6 +18,6 @@ class DemoRequestController extends Controller
 
         return redirect()
             ->to(url()->previous() . '#contact')
-            ->with('demo_success', 'Thanks! Your demo request has been received. Our team will reach out shortly.');
+            ->with('demo_success', __('home.demo_modal.success'));
     }
 }

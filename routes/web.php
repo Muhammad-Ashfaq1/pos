@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\Public\DemoRequestController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -15,6 +16,9 @@ Route::get('/manifest.webmanifest', function () {
         ]);
 })->name('pwa.manifest');
 
+Route::get('/language/{locale}', [LanguageController::class, 'switch'])
+    ->name('language.switch');
+
 Route::get('/', function () {
     if (Auth::guard('customer')->check()) {
         return redirect()->route('customer.dashboard');
@@ -27,7 +31,7 @@ Route::get('/', function () {
     $user = Auth::user();
 
     return redirect()->route($user->defaultDashboardRouteName());
-});
+})->name('home');
 
 Route::post('/demo-request', [DemoRequestController::class, 'store'])
     ->middleware('throttle:5,1')

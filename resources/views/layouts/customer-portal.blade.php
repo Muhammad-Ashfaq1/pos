@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="light" data-assets-path="{{ asset('assets') }}/">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" data-bs-theme="light" data-assets-path="{{ asset('assets') }}/">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,6 +15,9 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/core.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/app-loader.css') }}?v={{ filemtime(public_path('assets/css/app-loader.css')) }}" />
+    @if(app()->getLocale() === 'ar')
+        <link rel="stylesheet" href="{{ asset('css/custom-rtl.css') }}">
+    @endif
 
     <style>
         :root, [data-bs-theme=light] { --bs-primary: #312e81; --bs-primary-rgb: 49, 46, 129; }
@@ -29,7 +32,7 @@
     </style>
     @stack('styles')
 </head>
-<body>
+<body class="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     @hasSection('portal-nav')
         @yield('portal-nav')
     @else
@@ -38,6 +41,7 @@
                 <div class="container d-flex align-items-center justify-content-between">
                     <a href="{{ route('customer.dashboard') }}" class="text-decoration-none portal-brand">OIL<span>POS</span></a>
                     <div class="d-flex align-items-center gap-3">
+                        @include('layouts.partials.language-switcher')
                         <span class="text-muted small d-none d-sm-inline">{{ auth('customer')->user()->name }}</span>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
@@ -67,6 +71,7 @@
     <script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-aio-3.2.8.min.js"></script>
     <script src="{{ asset('assets/js/app-loader.js') }}?v={{ filemtime(public_path('assets/js/app-loader.js')) }}"></script>
+    @include('layouts.partials.locale-bridge')
     <script>
         @if (session('success')) Notiflix.Notify.success(@json(session('success'))); @endif
         @if (session('error')) Notiflix.Notify.failure(@json(session('error'))); @endif

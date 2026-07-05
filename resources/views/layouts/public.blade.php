@@ -1,8 +1,8 @@
 <!doctype html>
 <html
-    lang="en"
+    lang="{{ app()->getLocale() }}"
     class="layout-wide"
-    dir="ltr"
+    dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}"
     data-skin="default"
     data-bs-theme="light"
     data-assets-path="{{ asset('assets') }}/"
@@ -30,13 +30,16 @@
     <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/public-landing.css') }}" />
+    @if(app()->getLocale() === 'ar')
+        <link rel="stylesheet" href="{{ asset('css/custom-rtl.css') }}">
+    @endif
 
     <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
     <script src="{{ asset('assets/js/config.js') }}"></script>
 
     @yield('styles')
 </head>
-<body>
+<body class="@yield('body_class') {{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     @yield('content')
 
     <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
@@ -49,6 +52,7 @@
     <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script>
     <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
     <script src="{{ asset('assets/js/main.js') }}"></script>
+    @include('layouts.partials.locale-bridge')
 
     @yield('scripts')
 </body>

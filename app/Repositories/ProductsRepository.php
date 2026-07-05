@@ -121,7 +121,7 @@ class ProductsRepository implements ProductRepositoryInterface
 
         return [
             'success' => true,
-            'message' => $isUpdate ? 'Product updated successfully.' : 'Product created successfully.',
+            'message' => __('admin.catalog.product_saved'),
             'data' => $this->transformProduct($product, $user),
         ];
     }
@@ -132,7 +132,7 @@ class ProductsRepository implements ProductRepositoryInterface
 
         return [
             'success' => true,
-            'message' => 'Product deleted successfully.',
+            'message' => __('admin.catalog.product_deleted'),
         ];
     }
 
@@ -301,9 +301,11 @@ class ProductsRepository implements ProductRepositoryInterface
             'minimum_stock_level' => (int) $product->minimum_stock_level,
             'reorder_level' => (int) $product->reorder_level,
             'track_inventory' => $product->track_inventory,
-            'track_inventory_label' => $product->track_inventory ? 'Tracked' : 'Not Tracked',
+            'track_inventory_label' => $product->track_inventory
+                ? __('admin.catalog.tracked')
+                : __('admin.catalog.not_tracked'),
             'is_active' => $product->is_active,
-            'status_label' => $product->is_active ? 'Active' : 'Inactive',
+            'status_label' => $product->is_active ? __('app.active') : __('app.inactive'),
             'status_badge_class' => $product->is_active ? 'bg-label-success' : 'bg-label-secondary',
             'primary_image_url' => $product->primaryImage?->url,
             'images' => $includeImages ? $this->imageService->transformMany($product->images) : [],
@@ -314,8 +316,8 @@ class ProductsRepository implements ProductRepositoryInterface
                 ? 'bg-label-secondary'
                 : ($isLowStock ? 'bg-label-warning' : 'bg-label-success'),
             'stock_status_label' => ! $product->track_inventory
-                ? 'No Tracking'
-                : ($isLowStock ? 'Low Stock' : 'In Stock'),
+                ? __('admin.catalog.no_tracking')
+                : ($isLowStock ? __('admin.catalog.low_stock_status') : __('admin.catalog.in_stock')),
             'created_at' => $product->created_at?->format('d M Y'),
             'can_update' => $user?->can('update', $product) ?? false,
             'can_delete' => $user?->can('delete', $product) ?? false,

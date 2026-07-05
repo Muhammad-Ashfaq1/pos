@@ -1,11 +1,11 @@
 @php
     $user = auth()->user();
-    $workspaceName = $user?->tenant?->display_name ?? 'Employee Workspace';
+    $workspaceName = $user?->tenant?->display_name ?? __('admin.nav.employee_workspace');
     $quickLinks = collect([
-        ($user?->can('customer.view') || $user?->can('customers.view')) ? ['label' => 'Customers', 'route' => route('tenant.ecommerce.customers.index'), 'icon' => 'tabler-users'] : null,
-        ($user?->can('vehicle.view') || $user?->can('vehicles.view')) ? ['label' => 'Vehicles', 'route' => route('tenant.ecommerce.vehicles.index'), 'icon' => 'tabler-car'] : null,
-        ($user?->can('product.view') || $user?->can('products.view')) ? ['label' => 'Products', 'route' => route('tenant.ecommerce.products.index'), 'icon' => 'tabler-package'] : null,
-        ($user?->can('service.view') || $user?->can('services.view')) ? ['label' => 'Services', 'route' => route('tenant.ecommerce.services.index'), 'icon' => 'tabler-tool'] : null,
+        ($user?->can('customer.view') || $user?->can('customers.view')) ? ['label' => __('admin.nav.customers'), 'route' => route('tenant.ecommerce.customers.index'), 'icon' => 'tabler-users'] : null,
+        ($user?->can('vehicle.view') || $user?->can('vehicles.view')) ? ['label' => __('admin.nav.vehicles'), 'route' => route('tenant.ecommerce.vehicles.index'), 'icon' => 'tabler-car'] : null,
+        ($user?->can('product.view') || $user?->can('products.view')) ? ['label' => __('admin.nav.products'), 'route' => route('tenant.ecommerce.products.index'), 'icon' => 'tabler-package'] : null,
+        ($user?->can('service.view') || $user?->can('services.view')) ? ['label' => __('admin.nav.services'), 'route' => route('tenant.ecommerce.services.index'), 'icon' => 'tabler-tool'] : null,
     ])->filter()->take(2)->values();
 @endphp
 
@@ -20,10 +20,10 @@
     <div class="navbar-nav-right d-flex align-items-center justify-content-between w-100" id="navbar-collapse">
         <div>
             <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-label-primary">Employee Panel</span>
+                <span class="badge bg-label-primary">{{ __('admin.nav.employee_panel') }}</span>
                 <h6 class="mb-0">{{ $workspaceName }}</h6>
             </div>
-            <small class="text-muted">{{ now()->format('l, d M Y') }} - Operator workspace for quick service, lookup, and catalog tasks.</small>
+            <small class="text-muted">{{ now()->translatedFormat('l, d M Y') }} - {{ __('admin.nav.operator_workspace_hint') }}</small>
         </div>
 
         <ul class="navbar-nav flex-row align-items-center gap-2 ms-auto">
@@ -32,10 +32,10 @@
                     <div class="d-flex align-items-center gap-2 px-3 py-1 rounded-pill border border-warning bg-label-warning">
                         <i class="icon-base ti tabler-user-exclamation icon-sm text-warning"></i>
                         <span class="small fw-medium text-warning d-none d-md-inline">
-                            Impersonating as <strong>{{ $user?->name }}</strong>
+                            {{ __('admin.nav.impersonating_as', ['name' => $user?->name]) }}
                         </span>
                         <a href="{{ route('admin.impersonate.stop') }}" class="btn btn-warning btn-sm py-0 px-2">
-                            <i class="icon-base ti tabler-x icon-xs me-1"></i>Stop
+                            <i class="icon-base ti tabler-x icon-xs me-1"></i>{{ __('admin.nav.stop') }}
                         </a>
                     </div>
                 </li>
@@ -51,33 +51,37 @@
             <li class="nav-item">
                 <a href="{{ route('employee.pos') }}" class="btn btn-primary btn-sm">
                     <i class="icon-base ti tabler-cash-register me-1"></i>
-                    POS / Workspace
+                    {{ __('admin.nav.pos_workspace') }}
                 </a>
+            </li>
+
+            <li class="nav-item">
+                @include('layouts.partials.language-switcher')
             </li>
 
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow" id="nav-theme" href="javascript:void(0);"
-                    data-bs-toggle="dropdown" aria-label="Theme: light" aria-expanded="false">
+                    data-bs-toggle="dropdown" aria-label="{{ __('admin.nav.theme') }}: {{ __('admin.nav.theme_light') }}" aria-expanded="false">
                     <i class="tabler-sun icon-base ti icon-md theme-icon-active"></i>
                 </a>
-                <span class="d-none" id="nav-theme-text">Theme</span>
+                <span class="d-none" id="nav-theme-text">{{ __('admin.nav.theme') }}</span>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-theme-text">
                     <li>
                         <button type="button" class="dropdown-item align-items-center waves-effect active"
                             data-bs-theme-value="light" aria-pressed="true">
-                            <span><i class="icon-base ti tabler-sun icon-22px me-3"></i>Light</span>
+                            <span><i class="icon-base ti tabler-sun icon-22px me-3"></i>{{ __('admin.nav.theme_light') }}</span>
                         </button>
                     </li>
                     <li>
                         <button type="button" class="dropdown-item align-items-center waves-effect"
                             data-bs-theme-value="dark" aria-pressed="false">
-                            <span><i class="icon-base ti tabler-moon-stars icon-22px me-3"></i>Dark</span>
+                            <span><i class="icon-base ti tabler-moon-stars icon-22px me-3"></i>{{ __('admin.nav.theme_dark') }}</span>
                         </button>
                     </li>
                     <li>
                         <button type="button" class="dropdown-item align-items-center waves-effect"
                             data-bs-theme-value="system" aria-pressed="false">
-                            <span><i class="icon-base ti tabler-device-desktop-analytics icon-22px me-3"></i>System</span>
+                            <span><i class="icon-base ti tabler-device-desktop-analytics icon-22px me-3"></i>{{ __('admin.nav.theme_system') }}</span>
                         </button>
                     </li>
                 </ul>
@@ -102,14 +106,14 @@
                     <li>
                         <a href="{{ route('employee.account') }}" class="dropdown-item">
                             <i class="icon-base ti tabler-user-circle me-2"></i>
-                            Account
+                            {{ __('admin.nav.account') }}
                         </a>
                     </li>
                     @if(session()->has('impersonator_id'))
                         <li>
                             <a href="{{ route('admin.impersonate.stop') }}" class="dropdown-item text-warning">
                                 <i class="icon-base ti tabler-user-x me-2"></i>
-                                Stop Impersonation
+                                {{ __('admin.nav.stop_impersonation') }}
                             </a>
                         </li>
                     @endif
@@ -119,7 +123,7 @@
                             @csrf
                             <button type="submit" class="dropdown-item">
                                 <i class="icon-base ti tabler-logout me-2"></i>
-                                Sign out
+                                {{ __('admin.nav.sign_out') }}
                             </button>
                         </form>
                     </li>

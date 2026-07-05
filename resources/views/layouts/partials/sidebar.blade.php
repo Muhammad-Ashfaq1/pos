@@ -7,7 +7,7 @@
     $currentRouteName = request()->route()?->getName();
     $settingsMenuItem = $user?->can('settings.manage')
         ? [
-            'label' => 'Settings',
+            'label' => __('admin.nav.settings'),
             'route' => 'tenant.settings.shop-profile.general',
             'pattern' => 'tenant.settings.shop-profile.*',
             'icon' => 'tabler-settings-cog',
@@ -16,19 +16,19 @@
 
     $adminMenuItems = [
         [
-            'label' => 'Dashboard',
+            'label' => __('admin.nav.dashboard'),
             'route' => 'admin.dashboard',
             'pattern' => 'admin.dashboard',
             'icon' => 'tabler-smart-home',
         ],
         [
-            'label' => 'Shops',
+            'label' => __('admin.nav.shops'),
             'route' => 'admin.shops.index',
             'pattern' => 'admin.shops.*',
             'icon' => 'tabler-building-store',
         ],
         [
-            'label' => 'Demo Requests',
+            'label' => __('admin.nav.demo_requests'),
             'route' => 'admin.demo-requests.index',
             'pattern' => 'admin.demo-requests.*',
             'icon' => 'tabler-calendar-event',
@@ -40,12 +40,12 @@
 
     $tenantMenuGroups = collect([
         [
-            'label' => 'Catalog',
+            'label' => __('admin.nav.catalog'),
             'icon' => 'tabler-box-seam',
             'items' => collect([
                 $user?->can('category.view')
                     ? [
-                        'label' => 'Categories',
+                        'label' => __('admin.nav.categories'),
                         'route' => 'tenant.ecommerce.categories.index',
                         'pattern' => 'tenant.ecommerce.categories.*',
                         'icon' => 'tabler-category',
@@ -53,7 +53,7 @@
                     : null,
                 $user?->can('subcategory.view')
                     ? [
-                        'label' => 'Sub Categories',
+                        'label' => __('admin.nav.sub_categories'),
                         'route' => 'tenant.ecommerce.subcategories.index',
                         'pattern' => 'tenant.ecommerce.subcategories.*',
                         'icon' => 'tabler-category-plus',
@@ -61,7 +61,7 @@
                     : null,
                 $user?->can('product-type.view')
                     ? [
-                        'label' => 'Product Types',
+                        'label' => __('admin.nav.product_types'),
                         'route' => 'tenant.ecommerce.product-types.index',
                         'pattern' => 'tenant.ecommerce.product-types.*',
                         'icon' => 'tabler-tags',
@@ -69,7 +69,7 @@
                     : null,
                 $user?->can('product.view') || $user?->can('products.view') || $user?->can('products.manage')
                     ? [
-                        'label' => 'Products',
+                        'label' => __('admin.nav.products'),
                         'route' => 'tenant.ecommerce.products.index',
                         'pattern' => 'tenant.ecommerce.products.*',
                         'icon' => 'tabler-package',
@@ -81,12 +81,12 @@
                 ->all(),
         ],
         [
-            'label' => 'Services',
+            'label' => __('admin.nav.services'),
             'icon' => 'tabler-tool',
             'items' => collect([
                 $user?->can('service.view')
                     ? [
-                        'label' => 'Services',
+                        'label' => __('admin.nav.services'),
                         'route' => 'tenant.ecommerce.services.index',
                         'pattern' => 'tenant.ecommerce.services.*',
                         'icon' => 'tabler-tool',
@@ -98,12 +98,12 @@
                 ->all(),
         ],
         [
-            'label' => 'Sales & Promotions',
+            'label' => __('admin.nav.sales_promotions'),
             'icon' => 'tabler-ticket',
             'items' => collect([
                 $user?->can('discount.manage')
                     ? [
-                        'label' => 'Discounts',
+                        'label' => __('admin.nav.discounts'),
                         'route' => 'tenant.ecommerce.discounts.index',
                         'pattern' => 'tenant.ecommerce.discounts.*',
                         'icon' => 'tabler-ticket',
@@ -115,12 +115,12 @@
                 ->all(),
         ],
         [
-            'label' => 'Customers & Vehicles',
+            'label' => __('admin.nav.customers_vehicles'),
             'icon' => 'tabler-users',
             'items' => collect([
                 $user?->can('customer.view') || $user?->can('customers.view')
                     ? [
-                        'label' => 'Customers',
+                        'label' => __('admin.nav.customers'),
                         'route' => 'tenant.ecommerce.customers.index',
                         'pattern' => 'tenant.ecommerce.customers.*',
                         'icon' => 'tabler-users',
@@ -128,7 +128,7 @@
                     : null,
                 $vehicleFeatureEnabled && ($user?->can('vehicle.view') || $user?->can('vehicles.view'))
                     ? [
-                        'label' => 'Vehicles',
+                        'label' => __('admin.nav.vehicles'),
                         'route' => 'tenant.ecommerce.vehicles.index',
                         'pattern' => 'tenant.ecommerce.vehicles.*',
                         'icon' => 'tabler-car',
@@ -140,12 +140,12 @@
                 ->all(),
         ],
         [
-            'label' => 'Reports',
+            'label' => __('admin.nav.reports'),
             'icon' => 'tabler-chart-bar',
             'items' => collect([
                 $user?->can('reports.view')
                     ? [
-                        'label' => 'Reports',
+                        'label' => __('admin.nav.reports'),
                         'route' => 'tenant.reports.index',
                         'pattern' => 'tenant.reports.*',
                         'icon' => 'tabler-chart-histogram',
@@ -158,12 +158,12 @@
                 ->all(),
         ],
         [
-            'label' => 'Discounts',
+            'label' => __('admin.nav.discounts'),
             'icon' => 'tabler-ticket',
             'items' => collect([
                 $user?->isTenantAdmin() || $user?->can('discount.group.manage')
                     ? [
-                        'label' => 'Discount groups',
+                        'label' => __('admin.nav.discount_groups'),
                         'route' => 'tenant.discounts.group.index',
                         'pattern' => 'tenant.discounts.group.*',
                         'icon' => 'tabler-ticket',
@@ -268,7 +268,7 @@
             <li class="menu-item {{ request()->routeIs($dashboardRoute) ? 'active' : '' }}">
                 <a href="{{ route($dashboardRoute) }}" class="menu-link">
                     <i class="menu-icon icon-base ti tabler-layout-dashboard"></i>
-                    <div>Dashboard</div>
+                    <div>{{ __('admin.nav.dashboard') }}</div>
                 </a>
             </li>
 
@@ -309,7 +309,7 @@
             <li class="menu-item">
                 <a href="{{ route('admin.impersonate.stop') }}" class="menu-link text-warning">
                     <i class="menu-icon icon-base ti tabler-user-x"></i>
-                    <div>Stop Impersonation</div>
+                    <div>{{ __('admin.nav.stop_impersonation') }}</div>
                 </a>
             </li>
         @endif

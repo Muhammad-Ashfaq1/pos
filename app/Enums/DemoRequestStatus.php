@@ -12,10 +12,10 @@ enum DemoRequestStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::New => 'New',
-            self::Contacted => 'Contacted',
-            self::Scheduled => 'Demo Scheduled',
-            self::Closed => 'Closed',
+            self::New => __('admin.demo_requests.status.new'),
+            self::Contacted => __('admin.demo_requests.status.contacted'),
+            self::Scheduled => __('admin.demo_requests.status.scheduled'),
+            self::Closed => __('admin.demo_requests.status.closed'),
         };
     }
 

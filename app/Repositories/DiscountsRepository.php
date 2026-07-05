@@ -42,7 +42,7 @@ class DiscountsRepository implements DiscountRepositoryInterface
 
         return [
             'success' => true,
-            'message' => $isUpdate ? 'Discount updated successfully.' : 'Discount created successfully.',
+            'message' => __('admin.catalog.discount_saved'),
             'data' => $this->transformDiscount($discount, $user),
         ];
     }
@@ -53,7 +53,7 @@ class DiscountsRepository implements DiscountRepositoryInterface
 
         return [
             'success' => true,
-            'message' => 'Discount deleted successfully.',
+            'message' => __('admin.catalog.discount_deleted'),
         ];
     }
 
@@ -198,10 +198,12 @@ class DiscountsRepository implements DiscountRepositoryInterface
             'ends_at_label' => $discount->ends_at?->format('d M Y h:i A'),
             'usage_limit' => $discount->usage_limit,
             'is_active' => $discount->is_active,
-            'status_label' => $discount->is_active ? 'Active' : 'Inactive',
+            'status_label' => $discount->is_active ? __('app.active') : __('app.inactive'),
             'status_badge_class' => $discount->is_active ? 'bg-label-success' : 'bg-label-secondary',
             'is_combinable' => $discount->is_combinable,
-            'combinable_label' => $discount->is_combinable ? 'Combinable' : 'Exclusive',
+            'combinable_label' => $discount->is_combinable
+                ? __('admin.catalog.combinable')
+                : __('admin.catalog.exclusive'),
             'combinable_badge_class' => $discount->is_combinable ? 'bg-label-info' : 'bg-label-warning',
             'requires_reason' => $discount->requires_reason,
             'requires_manager_approval' => $discount->requires_manager_approval,

@@ -11,6 +11,17 @@
   const $filterCategory = $('#service_filter_category');
   const $mappingsTableBody = $('#serviceMappingsTable tbody');
   let serviceTable = null;
+  const translations = Object.assign({}, window.AppTranslations || {}, window.serviceTranslations || {});
+
+  const t = function (key, fallback, replacements) {
+    let value = translations[key] || fallback || key;
+
+    Object.entries(replacements || {}).forEach(function (entry) {
+      value = String(value).replace(':' + entry[0], entry[1]);
+    });
+
+    return value;
+  };
 
   const serviceEditUrl = function (serviceId) {
     if (!window.serviceEditUrlTemplate) {
@@ -64,12 +75,12 @@
     const defaultText = isEdit ? $submitButton.data('update-text') : $submitButton.data('create-text');
 
     if (typeof window.appSetButtonLoading === 'function') {
-      window.appSetButtonLoading($submitButton, loading, 'Saving...', defaultText);
+      window.appSetButtonLoading($submitButton, loading, t('saving_service', 'Saving service...'), defaultText);
       return;
     }
 
     if (loading) {
-      $submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Saving...');
+      $submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>' + escapeHtml(t('saving_service', 'Saving service...')));
       return;
     }
 
@@ -90,7 +101,7 @@
     let option = $select.find('option[value="' + id + '"]');
 
     if (!option.length) {
-      option = new Option(text || 'Selected item', id, true, true);
+      option = new Option(text || t('selected_item', 'Selected item'), id, true, true);
       $select.append(option);
     }
 
@@ -235,7 +246,7 @@
       '<tr class="service-mapping-row">' +
         '<td>' +
           '<div class="position-relative">' +
-            '<select class="form-select service-product-select" data-placeholder="Select a product"></select>' +
+            '<select class="form-select service-product-select" data-placeholder="' + escapeHtml(t('select_product', 'Select a product')) + '"></select>' +
             '<div class="invalid-feedback"></div>' +
           '</div>' +
         '</td>' +
@@ -244,7 +255,7 @@
           '<div class="invalid-feedback"></div>' +
         '</td>' +
         '<td>' +
-          '<input type="text" class="form-control service-mapping-unit" maxlength="50" placeholder="Optional unit">' +
+          '<input type="text" class="form-control service-mapping-unit" maxlength="50" placeholder="' + escapeHtml(t('optional_unit', 'Optional unit')) + '">' +
           '<div class="invalid-feedback"></div>' +
         '</td>' +
         '<td>' +
@@ -288,7 +299,7 @@
       const productLabel = [mapping.product_name, mapping.product_sku ? '(' + mapping.product_sku + ')' : '']
         .filter(Boolean)
         .join(' ');
-      const option = new Option(productLabel || mapping.product_name || 'Selected product', mapping.product_id, true, true);
+      const option = new Option(productLabel || mapping.product_name || t('selected_product', 'Selected product'), mapping.product_id, true, true);
       $productSelect.append(option).trigger('change');
     }
 
@@ -319,7 +330,7 @@
     $('#service_requires_technician').prop('checked', false);
     ensureSelectOption($formCategory, null, null);
     renderMappingRows([]);
-    $('#serviceModalLabel').text('Add Service');
+    $('#serviceModalLabel').text(t('add_service', 'Add Service'));
     setSubmitButtonState(false);
     resetValidationState();
   };
@@ -327,9 +338,11 @@
   const fillForm = function (service) {
     $('#service_id').val(service.id);
     ensureSelectOption($formCategory, service.category_id, service.category_name);
-    $('#service_name').val(service.name);
+    $('#service_title_en').val(service.title_en || service.name || '');
+    $('#service_title_ar').val(service.title_ar);
     $('#service_code').val(service.code);
-    $('#service_description').val(service.description);
+    $('#service_description_en').val(service.description_en || service.description || '');
+    $('#service_description_ar').val(service.description_ar);
     $('#service_standard_price').val(service.standard_price);
     $('#service_estimated_duration_minutes').val(service.estimated_duration_minutes);
     $('#service_tax_percentage').val(service.tax_percentage);
@@ -338,7 +351,7 @@
     $('#service_is_active').prop('checked', Boolean(service.is_active));
     $('#service_requires_technician').prop('checked', Boolean(service.requires_technician));
     renderMappingRows(Array.isArray(service.mappings) ? service.mappings : []);
-    $('#serviceModalLabel').text('Edit Service');
+    $('#serviceModalLabel').text(t('edit_service', 'Edit Service'));
     setSubmitButtonState(false);
     resetValidationState();
   };
@@ -356,7 +369,7 @@
       html +=
         '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect edit-service-btn" ' +
         'data-id="' + row.id + '" ' +
-        'data-edit-url="' + escapeHtml(row.edit_url || serviceEditUrl(row.id)) + '" ' + tooltipAttrs('Edit') + '>' +
+        'data-edit-url="' + escapeHtml(row.edit_url || serviceEditUrl(row.id)) + '" ' + tooltipAttrs(t('edit', 'Edit')) + '>' +
         '<i class="icon-base ti tabler-edit icon-md"></i>' +
         '</button>';
     }
@@ -365,7 +378,7 @@
       html +=
         '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect delete-service-btn" ' +
         'data-url="' + row.delete_url + '" ' +
-        'data-name="' + escapeHtml(row.name) + '" ' + tooltipAttrs('Delete') + '>' +
+        'data-name="' + escapeHtml(row.name) + '" ' + tooltipAttrs(t('delete', 'Delete')) + '>' +
         '<i class="icon-base ti tabler-trash icon-md text-danger"></i>' +
         '</button>';
     }
@@ -383,14 +396,20 @@
     return $form.validate({
       ignore: [],
       rules: {
-        name: {
+        title_en: {
           required: true,
+          maxlength: 150
+        },
+        title_ar: {
           maxlength: 150
         },
         code: {
           maxlength: 50
         },
-        description: {
+        description_en: {
+          maxlength: 2000
+        },
+        description_ar: {
           maxlength: 2000
         },
         standard_price: {
@@ -414,6 +433,26 @@
         mileage_interval: {
           number: true,
           min: 0
+        }
+      },
+      messages: {
+        title_en: {
+          required: t('title_en_required', 'Please enter the English service title.'),
+          maxlength: t('title_en_max', 'The English service title may not be greater than 150 characters.')
+        },
+        title_ar: {
+          maxlength: t('title_ar_max', 'The Arabic service title may not be greater than 150 characters.')
+        },
+        description_en: {
+          maxlength: t('description_max', 'The description may not be greater than 2000 characters.')
+        },
+        description_ar: {
+          maxlength: t('description_max', 'The description may not be greater than 2000 characters.')
+        },
+        standard_price: {
+          required: t('standard_price_required', 'Please enter a standard price.'),
+          number: t('standard_price_numeric', 'The standard price must be numeric.'),
+          min: t('standard_price_min', 'The standard price must be zero or greater.')
         }
       },
       errorElement: 'div',
@@ -478,7 +517,7 @@
       layout: {
         topStart: {
           search: {
-            placeholder: 'Search by name, code, description or category',
+            placeholder: t('search_placeholder', 'Search by title, code, description or category'),
             text: '_INPUT_',
             className: 'form-control'
           }
@@ -499,7 +538,7 @@
         bottomEnd: 'paging'
       },
       language: {
-        emptyTable: 'No services found',
+        emptyTable: t('no_services_found', 'No services found'),
         paginate: {
           next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
           previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>'
@@ -517,6 +556,7 @@
         {
           data: 'category_name',
           render: function (data) {
+            return '<span class="text-nowrap">' + escapeHtml(data || t('not_available', 'Not available')) + '</span>';
             return '<span class="text-nowrap">' + escapeHtml(data || '—') + '</span>';
           }
         },
@@ -530,6 +570,7 @@
         {
           data: 'code',
           render: function (data) {
+            return escapeHtml(data || t('not_available', 'Not available'));
             return escapeHtml(data || '—');
           }
         },
@@ -542,6 +583,7 @@
         {
           data: 'estimated_duration_minutes',
           render: function (data) {
+            return data ? '<span class="text-nowrap">' + escapeHtml(String(data)) + ' ' + escapeHtml(t('minutes_short', 'min')) + '</span>' : escapeHtml(t('not_available', 'Not available'));
             return data ? '<span class="text-nowrap">' + escapeHtml(String(data)) + ' min</span>' : '—';
           }
         },
@@ -701,7 +743,7 @@
       setSubmitButtonState(true);
 
       if (window.appLoading && typeof window.appLoading.show === 'function') {
-        window.appLoading.show('Loading service...');
+        window.appLoading.show(t('loading_service', 'Loading service...'));
       }
 
       $.ajax({
@@ -719,7 +761,7 @@
             modal.hide();
           }
 
-          showAlert('error', xhr.responseJSON?.message || 'Unable to load service details.');
+          showAlert('error', xhr.responseJSON?.message || t('unable_to_load_service', 'Unable to load service details.'));
         })
         .always(function () {
           setSubmitButtonState(false);
@@ -748,7 +790,7 @@
 
       setSubmitButtonState(true);
       if (window.appLoading && typeof window.appLoading.show === 'function') {
-        window.appLoading.show('Saving service...');
+        window.appLoading.show(t('saving_service', 'Saving service...'));
       }
 
       $.ajax({
@@ -762,7 +804,7 @@
           }
 
           reloadTable();
-          showAlert('success', response.message || 'Service saved successfully.');
+          showAlert('success', response.message || t('service_saved', 'Service saved successfully.'));
         })
         .fail(function (xhr) {
           if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
@@ -774,7 +816,7 @@
             return;
           }
 
-          showAlert('error', xhr.responseJSON?.message || 'Unable to save service.');
+          showAlert('error', xhr.responseJSON?.message || t('unable_to_save_service', 'Unable to save service.'));
         })
         .always(function () {
           setSubmitButtonState(false);
@@ -792,12 +834,12 @@
       const name = $button.data('name');
 
       Swal.fire({
-        title: 'Delete service?',
-        text: 'This will remove "' + name + '" and its product mappings from the tenant catalog.',
+        title: t('delete_service_title', 'Delete service?'),
+        text: t('delete_service_text', 'This will remove ":name" and its product mappings from the tenant catalog.', { name: name }),
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonText: 'Yes, delete it',
-        cancelButtonText: 'Cancel',
+        confirmButtonText: t('yesDeleteIt', 'Yes, delete it'),
+        cancelButtonText: t('cancel', 'Cancel'),
         customClass: {
           confirmButton: 'btn btn-danger me-2',
           cancelButton: 'btn btn-label-secondary'
@@ -810,7 +852,7 @@
 
         $button.prop('disabled', true);
         if (window.appLoading && typeof window.appLoading.show === 'function') {
-          window.appLoading.show('Deleting service...');
+          window.appLoading.show(t('deleting_service', 'Deleting service...'));
         }
 
         $.ajax({
@@ -819,10 +861,10 @@
         })
           .done(function (response) {
             reloadTable();
-            showAlert('success', response.message || 'Service deleted successfully.');
+            showAlert('success', response.message || t('service_deleted', 'Service deleted successfully.'));
           })
           .fail(function (xhr) {
-            showAlert('error', xhr.responseJSON?.message || 'Unable to delete service.');
+            showAlert('error', xhr.responseJSON?.message || t('unable_to_delete_service', 'Unable to delete service.'));
           })
           .always(function () {
             $button.prop('disabled', false);

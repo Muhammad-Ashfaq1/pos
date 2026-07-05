@@ -34,11 +34,18 @@ class ServicesRepository implements ServiceRepositoryInterface
         $userId = $user?->getAuthIdentifier();
 
         $service = DB::transaction(function () use ($data, $service, $isUpdate, $userId): Service {
+            $titleEn = trim((string) ($data['title_en'] ?? $data['name'] ?? ''));
+            $descriptionEn = $data['description_en'] ?? $data['description'] ?? null;
+
             $payload = [
                 'category_id' => $data['category_id'] ?? null,
-                'name' => $data['name'],
+                'name' => $titleEn,
+                'title_en' => $titleEn,
+                'title_ar' => $data['title_ar'] ?? null,
                 'code' => $data['code'] ?? null,
-                'description' => $data['description'] ?? null,
+                'description' => $descriptionEn,
+                'description_en' => $descriptionEn,
+                'description_ar' => $data['description_ar'] ?? null,
                 'standard_price' => $this->normalizeMoney($data['standard_price']),
                 'estimated_duration_minutes' => $data['estimated_duration_minutes'] ?? null,
                 'tax_percentage' => $data['tax_percentage'] !== null && $data['tax_percentage'] !== ''
@@ -72,7 +79,7 @@ class ServicesRepository implements ServiceRepositoryInterface
 
         return [
             'success' => true,
-            'message' => $isUpdate ? 'Service updated successfully.' : 'Service created successfully.',
+            'message' => $isUpdate ? __('services.service_updated') : __('services.service_created'),
             'data' => $this->transformService($service, $user),
         ];
     }
@@ -83,7 +90,7 @@ class ServicesRepository implements ServiceRepositoryInterface
 
         return [
             'success' => true,
-            'message' => 'Service deleted successfully.',
+            'message' => __('services.service_deleted'),
         ];
     }
 
@@ -156,7 +163,9 @@ class ServicesRepository implements ServiceRepositoryInterface
                     ->limit(1),
                 $direction
             ),
-            'name' => fn (Builder $builder, string $direction) => $builder->orderBy('name', $direction),
+            'name' => fn (Builder $builder, string $direction) => $builder
+                ->orderBy('title_en', $direction)
+                ->orderBy('name', $direction),
             'code' => fn (Builder $builder, string $direction) => $builder->orderBy('code', $direction),
             'standard_price' => fn (Builder $builder, string $direction) => $builder->orderBy('standard_price', $direction),
             'estimated_duration_minutes' => fn (Builder $builder, string $direction) => $builder->orderBy('estimated_duration_minutes', $direction),
@@ -192,9 +201,15 @@ class ServicesRepository implements ServiceRepositoryInterface
             'id' => $service->id,
             'category_id' => $service->category_id,
             'category_name' => $service->category?->name,
-            'name' => $service->name,
+            'name' => $service->localized_title,
+            'title_en' => $service->title_en ?: $service->name,
+            'title_ar' => $service->title_ar,
             'code' => $service->code,
-            'description' => $service->description,
+            'description' => $service->localized_description,
+            'description_en' => $service->description_en ?: $service->description,
+            'description_ar' => $service->description_ar,
+            'localized_title' => $service->localized_title,
+            'localized_description' => $service->localized_description,
             'standard_price' => (string) $service->standard_price,
             'estimated_duration_minutes' => $service->estimated_duration_minutes,
             'tax_percentage' => $service->tax_percentage !== null ? (string) $service->tax_percentage : null,
@@ -202,9 +217,9 @@ class ServicesRepository implements ServiceRepositoryInterface
             'mileage_interval' => $service->mileage_interval,
             'is_active' => $service->is_active,
             'requires_technician' => $service->requires_technician,
-            'status_label' => $service->is_active ? 'Active' : 'Inactive',
+            'status_label' => $service->is_active ? __('app.active') : __('app.inactive'),
             'status_badge_class' => $service->is_active ? 'bg-label-success' : 'bg-label-secondary',
-            'requires_technician_label' => $service->requires_technician ? 'Required' : 'Not Required',
+            'requires_technician_label' => $service->requires_technician ? __('app.required') : __('app.not_required'),
             'requires_technician_badge_class' => $service->requires_technician ? 'bg-label-warning' : 'bg-label-secondary',
             'mapped_products_count' => $service->service_products_count
                 ?? ($service->relationLoaded('serviceProducts') ? $service->serviceProducts->count() : 0),

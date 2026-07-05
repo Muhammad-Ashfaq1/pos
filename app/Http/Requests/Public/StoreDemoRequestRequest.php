@@ -26,8 +26,12 @@ class StoreDemoRequestRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'business_name' => 'business name',
-            'business_type' => 'business type',
+            'name' => __('home.demo_modal.name'),
+            'business_name' => __('home.demo_modal.business_name'),
+            'email' => __('app.email'),
+            'phone' => __('app.phone'),
+            'business_type' => __('home.demo_modal.business_type'),
+            'message' => __('home.demo_modal.message'),
         ];
     }
 }

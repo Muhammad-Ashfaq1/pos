@@ -30,7 +30,7 @@ class SaveShopRegionalSettingsRequest extends BaseShopSettingsRequest
         return [
             'currency'            => ['required', 'string', Rule::in(self::ALLOWED_CURRENCIES)],
             'timezone'            => ['required', Rule::in(\DateTimeZone::listIdentifiers())],
-            'locale'              => ['required', 'string', 'max:10'],
+            'locale'              => ['required', 'string', Rule::in(['en', 'ar'])],
             'tax_name'            => ['required', 'string', 'max:100'],
             'tax_percentage'      => ['required', 'numeric', 'min:0', 'max:100'],
             'invoice_prefix'      => ['required', 'string', 'max:20'],
@@ -44,6 +44,7 @@ class SaveShopRegionalSettingsRequest extends BaseShopSettingsRequest
         return [
             'currency.in'             => 'Please select a supported currency.',
             'timezone.in'             => 'Please select a valid timezone.',
+            'locale.in'               => 'Please select a supported website language.',
             'tax_percentage.max'      => 'Tax percentage may not be greater than 100.',
             'invoice_next_number.min' => 'Invoice next number must be at least 1.',
         ];

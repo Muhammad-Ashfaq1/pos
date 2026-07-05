@@ -17,6 +17,10 @@ class SaveServiceRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
+            'title_en' => trim((string) ($this->input('title_en') ?: $this->input('name'))),
+            'title_ar' => trim((string) $this->input('title_ar')),
+            'description_en' => $this->input('description_en', $this->input('description')),
+            'description_ar' => $this->input('description_ar'),
             'mappings' => array_values($this->input('mappings', [])),
         ]);
     }
@@ -41,7 +45,7 @@ class SaveServiceRequest extends FormRequest
                     fn ($query) => $query->where('tenant_id', $tenantId)
                 ),
             ],
-            'name' => [
+            'title_en' => [
                 'required',
                 'string',
                 'max:150',
@@ -49,6 +53,7 @@ class SaveServiceRequest extends FormRequest
                     ->where(fn ($query) => $query->where('tenant_id', $tenantId))
                     ->ignore($serviceId),
             ],
+            'title_ar' => ['nullable', 'string', 'max:150'],
             'code' => [
                 'nullable',
                 'string',
@@ -57,7 +62,8 @@ class SaveServiceRequest extends FormRequest
                     ->where(fn ($query) => $query->where('tenant_id', $tenantId))
                     ->ignore($serviceId),
             ],
-            'description' => ['nullable', 'string', 'max:2000'],
+            'description_en' => ['nullable', 'string', 'max:2000'],
+            'description_ar' => ['nullable', 'string', 'max:2000'],
             'standard_price' => ['required', 'numeric', 'min:0'],
             'estimated_duration_minutes' => ['nullable', 'integer', 'min:0'],
             'tax_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
@@ -99,16 +105,16 @@ class SaveServiceRequest extends FormRequest
                 }
 
                 if ($productId <= 0) {
-                    $validator->errors()->add("mappings.{$index}.product_id", 'Please select a product.');
+                    $validator->errors()->add("mappings.{$index}.product_id", __('services.select_product_error'));
                 }
 
                 if ($quantity === null || $quantity === '') {
-                    $validator->errors()->add("mappings.{$index}.quantity", 'Please enter a quantity.');
+                    $validator->errors()->add("mappings.{$index}.quantity", __('services.quantity_error'));
                 }
 
                 if ($productId > 0) {
                     if (in_array($productId, $seenProductIds, true)) {
-                        $validator->errors()->add("mappings.{$index}.product_id", 'Each product can only be added once per service.');
+                        $validator->errors()->add("mappings.{$index}.product_id", __('services.duplicate_product_error'));
                     }
 
                     $seenProductIds[] = $productId;
@@ -120,30 +126,42 @@ class SaveServiceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'id.exists' => 'The selected service was not found for this shop.',
-            'category_id.exists' => 'The selected category was not found for this shop.',
-            'name.required' => 'Please enter a service name.',
-            'name.max' => 'The service name may not be greater than 150 characters.',
-            'name.unique' => 'This service name already exists for this shop.',
-            'code.max' => 'The service code may not be greater than 50 characters.',
-            'code.unique' => 'This service code already exists for this shop.',
-            'description.max' => 'The description may not be greater than 2000 characters.',
-            'standard_price.required' => 'Please enter a standard price.',
-            'standard_price.numeric' => 'The standard price must be numeric.',
-            'standard_price.min' => 'The standard price must be zero or greater.',
-            'estimated_duration_minutes.integer' => 'Estimated duration must be a whole number.',
-            'estimated_duration_minutes.min' => 'Estimated duration must be zero or greater.',
-            'tax_percentage.numeric' => 'Tax percentage must be numeric.',
-            'tax_percentage.min' => 'Tax percentage must be zero or greater.',
-            'tax_percentage.max' => 'Tax percentage may not be greater than 100.',
-            'reminder_interval_days.integer' => 'Reminder interval must be a whole number.',
-            'reminder_interval_days.min' => 'Reminder interval must be zero or greater.',
-            'mileage_interval.integer' => 'Mileage interval must be a whole number.',
-            'mileage_interval.min' => 'Mileage interval must be zero or greater.',
-            'mappings.*.product_id.exists' => 'The selected product was not found for this shop.',
-            'mappings.*.quantity.integer' => 'Mapped quantity must be a whole number.',
-            'mappings.*.quantity.min' => 'Mapped quantity must be at least 1.',
-            'mappings.*.unit.max' => 'The mapping unit may not be greater than 50 characters.',
+            'id.exists' => __('services.selected_service_missing'),
+            'category_id.exists' => __('services.selected_category_missing'),
+            'title_en.required' => __('services.title_en_required'),
+            'title_en.max' => __('services.title_en_max'),
+            'title_en.unique' => __('services.title_unique'),
+            'title_ar.max' => __('services.title_ar_max'),
+            'code.max' => __('services.code_max'),
+            'code.unique' => __('services.code_unique'),
+            'description_en.max' => __('services.description_max'),
+            'description_ar.max' => __('services.description_max'),
+            'standard_price.required' => __('services.standard_price_required'),
+            'standard_price.numeric' => __('services.standard_price_numeric'),
+            'standard_price.min' => __('services.standard_price_min'),
+            'estimated_duration_minutes.integer' => __('services.duration_integer'),
+            'estimated_duration_minutes.min' => __('services.duration_min'),
+            'tax_percentage.numeric' => __('services.tax_numeric'),
+            'tax_percentage.min' => __('services.tax_min'),
+            'tax_percentage.max' => __('services.tax_max'),
+            'reminder_interval_days.integer' => __('services.reminder_integer'),
+            'reminder_interval_days.min' => __('services.reminder_min'),
+            'mileage_interval.integer' => __('services.mileage_integer'),
+            'mileage_interval.min' => __('services.mileage_min'),
+            'mappings.*.product_id.exists' => __('services.selected_product_missing'),
+            'mappings.*.quantity.integer' => __('services.mapped_quantity_integer'),
+            'mappings.*.quantity.min' => __('services.mapped_quantity_min'),
+            'mappings.*.unit.max' => __('services.mapping_unit_max'),
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'title_en' => __('services.title_en'),
+            'title_ar' => __('services.title_ar'),
+            'description_en' => __('services.description_en'),
+            'description_ar' => __('services.description_ar'),
         ];
     }
 }

@@ -47,7 +47,7 @@ class CustomersRepository implements CustomerRepositoryInterface
 
         return [
             'success' => true,
-            'message' => $isUpdate ? 'Customer updated successfully.' : 'Customer created successfully.',
+            'message' => __('admin.catalog.customer_saved'),
             'data' => $this->transformCustomer($customer, $user),
         ];
     }
@@ -58,7 +58,7 @@ class CustomersRepository implements CustomerRepositoryInterface
 
         return [
             'success' => true,
-            'message' => 'Customer deleted successfully.',
+            'message' => __('admin.catalog.customer_deleted'),
         ];
     }
 

@@ -451,7 +451,7 @@ class OrdersRepository implements OrderRepositoryInterface
             ->values();
 
         $services = Service::query()
-            ->select(['id', 'name', 'code', 'standard_price', 'tax_percentage'])
+            ->select(['id', 'name', 'title_en', 'title_ar', 'code', 'standard_price', 'tax_percentage'])
             ->whereIn('id', $serviceIds->all())
             ->where('is_active', true)
             ->get()
@@ -477,7 +477,7 @@ class OrdersRepository implements OrderRepositoryInterface
                 $details[] = [
                     'type' => 'service',
                     'service_id' => $service->id,
-                    'name' => $service->name,
+                    'name' => $service->localized_title,
                     'code' => $service->code,
                     'amount' => $amount,
                     'tax_percentage' => (float) ($service->tax_percentage ?? 0),
@@ -499,9 +499,9 @@ class OrdersRepository implements OrderRepositoryInterface
             $details[] = [
                 'type' => 'manual',
                 'service_id' => $service?->id,
-                'name' => $name !== '' ? $name : ($service?->name ?? 'Manual Service Fee'),
+                'name' => $name !== '' ? $name : ($service?->localized_title ?? __('services.manual_service_fee')),
                 'code' => $service?->code,
-                'service_name' => $service?->name,
+                'service_name' => $service?->localized_title,
                 'amount' => $amount,
                 'tax_percentage' => (float) ($service?->tax_percentage ?? 0),
             ];
@@ -510,8 +510,8 @@ class OrdersRepository implements OrderRepositoryInterface
         $amount = round(collect($details)->sum(fn ($fee) => (float) $fee['amount']), 2);
         $taxLines = collect($details)
             ->map(fn (array $fee) => [
-                'type' => 'Service',
-                'name' => $fee['name'] ?? 'Service Fee',
+                'type' => __('services.service'),
+                'name' => $fee['name'] ?? __('services.service_fee'),
                 'quantity' => 1,
                 'base' => (float) ($fee['amount'] ?? 0),
                 'tax_percentage' => (float) ($fee['tax_percentage'] ?? 0),

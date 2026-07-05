@@ -62,19 +62,19 @@ class Discount extends Model
     public static function typeOptions(): array
     {
         return [
-            self::TYPE_FIXED => 'Fixed',
-            self::TYPE_PERCENTAGE => 'Percentage',
+            self::TYPE_FIXED => __('admin.common.fixed'),
+            self::TYPE_PERCENTAGE => __('admin.common.percentage'),
         ];
     }
 
     public static function appliesToOptions(): array
     {
         return [
-            self::APPLIES_TO_BILL => 'Bill',
-            self::APPLIES_TO_ITEM => 'Item',
-            self::APPLIES_TO_CUSTOMER_PROFILE => 'Customer Profile',
-            self::APPLIES_TO_VOUCHER => 'Voucher',
-            self::APPLIES_TO_PROMOTION => 'Promotion',
+            self::APPLIES_TO_BILL => __('admin.models.bill'),
+            self::APPLIES_TO_ITEM => __('admin.models.item'),
+            self::APPLIES_TO_CUSTOMER_PROFILE => __('admin.models.customer_profile'),
+            self::APPLIES_TO_VOUCHER => __('admin.models.voucher'),
+            self::APPLIES_TO_PROMOTION => __('admin.models.promotion'),
         ];
     }
 

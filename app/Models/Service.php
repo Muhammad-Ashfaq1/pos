@@ -16,8 +16,12 @@ class Service extends Model
     protected $fillable = [
         'category_id',
         'name',
+        'title_en',
+        'title_ar',
         'code',
         'description',
+        'description_en',
+        'description_ar',
         'standard_price',
         'estimated_duration_minutes',
         'tax_percentage',
@@ -81,11 +85,35 @@ class Service extends Model
         return $query->where(function (Builder $builder) use ($term): void {
             $builder
                 ->where('name', 'like', "%{$term}%")
+                ->orWhere('title_en', 'like', "%{$term}%")
+                ->orWhere('title_ar', 'like', "%{$term}%")
                 ->orWhere('code', 'like', "%{$term}%")
                 ->orWhere('description', 'like', "%{$term}%")
+                ->orWhere('description_en', 'like', "%{$term}%")
+                ->orWhere('description_ar', 'like', "%{$term}%")
                 ->orWhereHas('category', function (Builder $categoryQuery) use ($term): void {
                     $categoryQuery->where('name', 'like', "%{$term}%");
                 });
         });
+    }
+
+    public function getLocalizedTitleAttribute(): string
+    {
+        $locale = app()->getLocale();
+
+        return $this->{"title_{$locale}"}
+            ?: $this->title_en
+            ?: $this->name
+            ?: '';
+    }
+
+    public function getLocalizedDescriptionAttribute(): string
+    {
+        $locale = app()->getLocale();
+
+        return $this->{"description_{$locale}"}
+            ?: $this->description_en
+            ?: $this->description
+            ?: '';
     }
 }

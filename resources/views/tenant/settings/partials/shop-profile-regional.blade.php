@@ -17,8 +17,8 @@
             </select>
         </div>
         <div class="col-md-4 mb-3">
-            <label for="locale" class="form-label">Locale <span class="text-danger">*</span></label>
-            <select id="locale" name="locale" class="form-select select2" data-placeholder="Select locale" required>
+            <label for="locale" class="form-label">Default Website Language <span class="text-danger">*</span></label>
+            <select id="locale" name="locale" class="form-select select2" data-placeholder="Select default language" required>
                 @foreach($localeOptions as $value => $label)
                     <option value="{{ $value }}" @selected(old('locale', $form['locale']) === $value)>{{ $label }}</option>
                 @endforeach

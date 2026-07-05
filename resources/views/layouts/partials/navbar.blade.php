@@ -2,10 +2,12 @@
     $user = auth()->user();
     $isSuperAdmin = $user?->isSuperAdmin();
     $isEmployee = $user?->isEmployee();
-    $contextLabel = $isSuperAdmin ? 'Central Admin' : ($isEmployee ? 'Employee Panel' : 'Tenant Workspace');
+    $contextLabel = $isSuperAdmin
+        ? __('admin.nav.central_admin')
+        : ($isEmployee ? __('admin.nav.employee_panel') : __('admin.nav.tenant_workspace'));
     $contextName = $isSuperAdmin
         ? config('app.name', 'Oil Change POS')
-        : $user?->tenant?->display_name ?? 'Shop Workspace';
+        : $user?->tenant?->display_name ?? __('admin.nav.shop_workspace');
 @endphp
 
 <nav class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
@@ -28,39 +30,42 @@
                     <div class="d-flex align-items-center gap-2 px-3 py-1 rounded-pill border border-warning bg-label-warning">
                         <i class="icon-base ti tabler-user-exclamation icon-sm text-warning"></i>
                         <span class="small fw-medium text-warning d-none d-sm-inline">
-                            Impersonating as <strong>{{ $user?->name }}</strong>
+                            {{ __('admin.nav.impersonating_as', ['name' => $user?->name]) }}
                         </span>
                         <a href="{{ route('admin.impersonate.stop') }}" class="btn btn-warning btn-sm py-0 px-2">
-                            <i class="icon-base ti tabler-x icon-xs me-1"></i>Stop
+                            <i class="icon-base ti tabler-x icon-xs me-1"></i>{{ __('admin.nav.stop') }}
                         </a>
                     </div>
                 </li>
             @endif
+            <li class="nav-item">
+                @include('layouts.partials.language-switcher')
+            </li>
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow" id="nav-theme" href="javascript:void(0);"
-                    data-bs-toggle="dropdown" aria-label="Theme: light" aria-expanded="false">
+                    data-bs-toggle="dropdown" aria-label="{{ __('admin.nav.theme') }}: {{ __('admin.nav.theme_light') }}" aria-expanded="false">
                     <i class="tabler-sun icon-base ti icon-md theme-icon-active"></i>
                 </a>
-                <span class="d-none" id="nav-theme-text">Theme</span>
+                <span class="d-none" id="nav-theme-text">{{ __('admin.nav.theme') }}</span>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-theme-text">
                     <li>
                         <button type="button" class="dropdown-item align-items-center waves-effect active"
                             data-bs-theme-value="light" aria-pressed="true">
-                            <span><i class="icon-base ti tabler-sun icon-22px me-3" data-icon="sun"></i>Light</span>
+                            <span><i class="icon-base ti tabler-sun icon-22px me-3" data-icon="sun"></i>{{ __('admin.nav.theme_light') }}</span>
                         </button>
                     </li>
                     <li>
                         <button type="button" class="dropdown-item align-items-center waves-effect"
                             data-bs-theme-value="dark" aria-pressed="false">
                             <span><i class="icon-base ti tabler-moon-stars icon-22px me-3"
-                                    data-icon="moon-stars"></i>Dark</span>
+                                    data-icon="moon-stars"></i>{{ __('admin.nav.theme_dark') }}</span>
                         </button>
                     </li>
                     <li>
                         <button type="button" class="dropdown-item align-items-center waves-effect"
                             data-bs-theme-value="system" aria-pressed="false">
                             <span><i class="icon-base ti tabler-device-desktop-analytics icon-22px me-3"
-                                    data-icon="device-desktop-analytics"></i>System</span>
+                                    data-icon="device-desktop-analytics"></i>{{ __('admin.nav.theme_system') }}</span>
                         </button>
                     </li>
                 </ul>
@@ -97,7 +102,7 @@
                             @csrf
                             <button type="submit" class="dropdown-item">
                                 <i class="icon-base ti tabler-logout me-2"></i>
-                                Sign out
+                                {{ __('admin.nav.sign_out') }}
                             </button>
                         </form>
                     </li>

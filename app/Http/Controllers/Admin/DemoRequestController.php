@@ -47,10 +47,10 @@ class DemoRequestController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Demo request updated.',
+            'message' => __('admin.demo_requests.updated'),
             'status' => $status->value,
             'status_label' => $status->label(),
-            'badge_class' => 'bg-label-' . $status->badgeClass(),
+            'badge_class' => 'bg-label-'.$status->badgeClass(),
         ]);
     }
 
@@ -60,7 +60,7 @@ class DemoRequestController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Demo request removed.',
+            'message' => __('admin.demo_requests.removed'),
         ]);
     }
 }

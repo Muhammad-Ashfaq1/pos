@@ -81,9 +81,9 @@ class Customer extends Model implements AuthenticatableContract
     public static function typeOptions(): array
     {
         return [
-            self::TYPE_REGISTERED => 'Registered',
-            self::TYPE_WALK_IN => 'Walk In',
-            self::TYPE_CORPORATE => 'Corporate',
+            self::TYPE_REGISTERED => __('admin.models.registered'),
+            self::TYPE_WALK_IN => __('admin.models.walk_in'),
+            self::TYPE_CORPORATE => __('admin.models.corporate'),
         ];
     }
 
