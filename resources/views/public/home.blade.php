@@ -74,16 +74,87 @@
 
                     <div class="col-lg-5">
                         <div class="hero-visual-card p-3 p-lg-4">
-                            <img src="{{ asset('assets/img/illustrations/card-website-analytics-1.png') }}" alt="OCC platform overview" class="img-fluid d-block mx-auto" style="max-height: 360px;">
-
-                            <div class="floating-panel" style="top: 1.5rem; right: 1rem;">
-                                <div class="fw-semibold">Today at the service bay</div>
-                                <small class="text-muted">27 jobs billed, 9 repeat visits tracked</small>
+                            <div class="mockup-window" aria-hidden="true">
+                                <div class="mockup-topbar">
+                                    <span class="mockup-dot"></span>
+                                    <span class="mockup-dot"></span>
+                                    <span class="mockup-dot"></span>
+                                    <span class="mockup-url"><i class="icon-base ti tabler-lock icon-xs"></i> occ.app/pos</span>
+                                </div>
+                                <div class="mockup-body">
+                                    <div class="mockup-stats">
+                                        <div class="mockup-stat">
+                                            <small>Today's Sales</small>
+                                            <div class="mockup-stat-value">$2,840</div>
+                                            <span class="mockup-trend up"><i class="icon-base ti tabler-trending-up icon-xs"></i> +12%</span>
+                                        </div>
+                                        <div class="mockup-stat">
+                                            <small>Jobs Billed</small>
+                                            <div class="mockup-stat-value">27</div>
+                                            <span class="mockup-trend up"><i class="icon-base ti tabler-trending-up icon-xs"></i> +4</span>
+                                        </div>
+                                        <div class="mockup-stat">
+                                            <small>Due Reminders</small>
+                                            <div class="mockup-stat-value">9</div>
+                                            <span class="mockup-trend warn"><i class="icon-base ti tabler-bell icon-xs"></i> today</span>
+                                        </div>
+                                    </div>
+                                    <div class="mockup-chart">
+                                        <span style="--h: 42%"></span>
+                                        <span style="--h: 68%"></span>
+                                        <span style="--h: 54%"></span>
+                                        <span style="--h: 82%"></span>
+                                        <span style="--h: 60%"></span>
+                                        <span style="--h: 92%"></span>
+                                        <span style="--h: 74%"></span>
+                                    </div>
+                                    <div class="mockup-rows">
+                                        <div class="mockup-row">
+                                            <span class="mockup-row-icon"><i class="icon-base ti tabler-droplet"></i></span>
+                                            <div class="mockup-row-text">
+                                                <div class="mockup-row-title">Oil Change — Toyota Corolla</div>
+                                                <div class="mockup-row-sub">5W-30 Synthetic · Filter replaced</div>
+                                            </div>
+                                            <span class="mockup-badge paid">Paid</span>
+                                        </div>
+                                        <div class="mockup-row">
+                                            <span class="mockup-row-icon"><i class="icon-base ti tabler-wheel"></i></span>
+                                            <div class="mockup-row-text">
+                                                <div class="mockup-row-title">Tire Rotation — Honda Civic</div>
+                                                <div class="mockup-row-sub">Alignment check included</div>
+                                            </div>
+                                            <span class="mockup-badge wip">In Bay</span>
+                                        </div>
+                                        <div class="mockup-row">
+                                            <span class="mockup-row-icon"><i class="icon-base ti tabler-battery-charging"></i></span>
+                                            <div class="mockup-row-text">
+                                                <div class="mockup-row-title">Battery Service — Kia Sportage</div>
+                                                <div class="mockup-row-sub">Loyalty discount applied</div>
+                                            </div>
+                                            <span class="mockup-badge paid">Paid</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="floating-panel" style="bottom: 1.5rem; left: 1rem;">
-                                <div class="fw-semibold">Follow-up campaigns ready</div>
-                                <small class="text-muted">Reminder flows prepared for the next service visit</small>
+                            <div class="floating-panel" style="top: 2.4rem; right: -0.5rem;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="floating-panel-icon success"><i class="icon-base ti tabler-circle-check"></i></span>
+                                    <div>
+                                        <div class="fw-semibold">Repeat visit detected</div>
+                                        <small class="text-muted">Full vehicle history loaded</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="floating-panel" style="bottom: 2rem; left: -0.5rem;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="floating-panel-icon info"><i class="icon-base ti tabler-bell-ringing"></i></span>
+                                    <div>
+                                        <div class="fw-semibold">Reminders queued</div>
+                                        <small class="text-muted">9 customers due for service</small>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -96,20 +167,30 @@
     <section class="pb-2 pt-0">
         <div class="container">
             <p class="text-center text-muted text-uppercase fw-semibold small mb-3" style="letter-spacing: .08em;">Built for every corner of the auto service market</p>
-            <div class="industry-strip">
-                @foreach ([
+            @php
+                $industries = [
                     ['icon' => 'tabler-car-garage', 'label' => 'Car Garages'],
                     ['icon' => 'tabler-droplet', 'label' => 'Oil Change'],
                     ['icon' => 'tabler-wheel', 'label' => 'Tire & Brake'],
                     ['icon' => 'tabler-spray', 'label' => 'Detailing'],
                     ['icon' => 'tabler-engine', 'label' => 'Workshops'],
                     ['icon' => 'tabler-gauge', 'label' => 'Quick Lube'],
-                ] as $industry)
-                    <span class="industry-chip">
-                        <i class="icon-base ti {{ $industry['icon'] }}"></i>
-                        {{ $industry['label'] }}
-                    </span>
-                @endforeach
+                    ['icon' => 'tabler-settings', 'label' => 'Spare Parts'],
+                    ['icon' => 'tabler-battery-charging', 'label' => 'Battery Service'],
+                    ['icon' => 'tabler-car-crash', 'label' => 'Repair Centers'],
+                ];
+            @endphp
+            <div class="industry-strip">
+                <div class="industry-track">
+                    @foreach ([0, 1] as $copy)
+                        @foreach ($industries as $industry)
+                            <span class="industry-chip" @if($copy === 1) aria-hidden="true" @endif>
+                                <i class="icon-base ti {{ $industry['icon'] }}"></i>
+                                {{ $industry['label'] }}
+                            </span>
+                        @endforeach
+                    @endforeach
+                </div>
             </div>
         </div>
     </section>
@@ -422,18 +503,27 @@
             <div class="text-center mx-auto mb-5" style="max-width: 760px;">
                 <span class="section-kicker mb-3">
                     <i class="icon-base ti tabler-message-2-star"></i>
-                    Social Proof
+                    What Shops Say
                 </span>
                 <h2 class="fw-bolder mb-3">Voices from the kind of businesses OCC is designed to support.</h2>
                 <p class="text-muted fs-5 mb-0">
-                    These testimonials are static placeholders for now, but they reflect the real operational concerns workshop and quick-lube businesses usually have.
+                    Built around the daily operational concerns of workshops, quick-lube counters, tire shops, and detailing studios.
                 </p>
             </div>
 
             <div class="row g-3">
                 <div class="col-lg-4">
                     <div class="testimonial-card">
-                        <div class="quote-mark mb-2">“</div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="quote-mark">“</div>
+                            <div class="star-row">
+                                <i class="icon-base ti tabler-star-filled"></i>
+                                <i class="icon-base ti tabler-star-filled"></i>
+                                <i class="icon-base ti tabler-star-filled"></i>
+                                <i class="icon-base ti tabler-star-filled"></i>
+                                <i class="icon-base ti tabler-star-filled"></i>
+                            </div>
+                        </div>
                         <p class="text-muted mb-4">
                             We were using manual notes for service history and simple billing for sales. OCC feels more like an actual shop operating system instead of just an invoice screen.
                         </p>
@@ -448,7 +538,16 @@
                 </div>
                 <div class="col-lg-4">
                     <div class="testimonial-card">
-                        <div class="quote-mark mb-2">“</div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="quote-mark">“</div>
+                            <div class="star-row">
+                                <i class="icon-base ti tabler-star-filled"></i>
+                                <i class="icon-base ti tabler-star-filled"></i>
+                                <i class="icon-base ti tabler-star-filled"></i>
+                                <i class="icon-base ti tabler-star-filled"></i>
+                                <i class="icon-base ti tabler-star-filled"></i>
+                            </div>
+                        </div>
                         <p class="text-muted mb-4">
                             The biggest value is seeing service activity, stock visibility, and customer history together. It gives our team a more professional workflow at the counter.
                         </p>
@@ -463,7 +562,16 @@
                 </div>
                 <div class="col-lg-4">
                     <div class="testimonial-card">
-                        <div class="quote-mark mb-2">“</div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="quote-mark">“</div>
+                            <div class="star-row">
+                                <i class="icon-base ti tabler-star-filled"></i>
+                                <i class="icon-base ti tabler-star-filled"></i>
+                                <i class="icon-base ti tabler-star-filled"></i>
+                                <i class="icon-base ti tabler-star-filled"></i>
+                                <i class="icon-base ti tabler-star-filled"></i>
+                            </div>
+                        </div>
                         <p class="text-muted mb-4">
                             For us the appeal is that OCC speaks the language of quick service shops: vehicles, services, reminders, loyalty, staff roles, and repeat visits.
                         </p>
@@ -485,11 +593,11 @@
             <div class="text-center mx-auto mb-5" style="max-width: 760px;">
                 <span class="section-kicker mb-3">
                     <i class="icon-base ti tabler-credit-card"></i>
-                    Pricing Placeholder
+                    Plans & Pricing
                 </span>
-                <h2 class="fw-bolder mb-3">Positioned for shops evaluating software as a real growth investment.</h2>
+                <h2 class="fw-bolder mb-3">A plan for every stage of your shop's growth.</h2>
                 <p class="text-muted fs-5 mb-0">
-                    Pricing is static for now, but the structure below helps present OCC as a serious SaaS product for different levels of workshop operations.
+                    From a single oil change counter to a multi-location service network — start with the plan that matches your operation today and scale when you're ready.
                 </p>
             </div>
 
@@ -512,6 +620,7 @@
 
                 <div class="col-lg-4">
                     <div class="plan-card featured">
+                        <span class="plan-ribbon"><i class="icon-base ti tabler-flame icon-xs"></i> Most Popular</span>
                         <span class="badge bg-primary mb-3">Business</span>
                         <h4 class="fw-bolder">Business Growth</h4>
                         <p class="text-muted">For active quick service centers that need stronger stock visibility, retention features, and staff structure.</p>
@@ -643,7 +752,7 @@
                     <div class="col-lg-8">
                         <span class="section-kicker mb-3 bg-white text-dark">
                             <i class="icon-base ti tabler-megaphone"></i>
-                            Final CTA
+                            Get Started Today
                         </span>
                         <h2 class="fw-bolder text-white mb-3">Start managing your shop smarter with a system built for garages, oil change, and auto service operations.</h2>
                         <p class="text-white text-opacity-75 fs-5 mb-0">
@@ -733,6 +842,10 @@
     </div>
 </div>
 
+<a href="#home" id="backToTop" class="back-to-top" aria-label="Back to top">
+    <i class="icon-base ti tabler-arrow-up"></i>
+</a>
+
 <footer class="footer-shell pt-5 pb-4">
     <div class="container">
         <div class="row g-4">
@@ -798,7 +911,7 @@
 
         <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
             <p class="mb-0">&copy; {{ now()->year }} OCC. All rights reserved.</p>
-            <p class="mb-0">Static public landing page content for showcase and product positioning.</p>
+            <p class="mb-0">Crafted for garages, oil change shops, and auto service businesses.</p>
         </div>
     </div>
 </footer>
@@ -809,20 +922,40 @@
     (function () {
         // Solidify navbar background after scrolling past the hero.
         var navbar = document.querySelector('.landing-navbar');
-        if (navbar) {
-            var onScroll = function () {
+        var backToTop = document.getElementById('backToTop');
+        var onScroll = function () {
+            if (navbar) {
                 navbar.classList.toggle('is-scrolled', window.scrollY > 24);
-            };
-            window.addEventListener('scroll', onScroll, { passive: true });
-            onScroll();
+            }
+            if (backToTop) {
+                backToTop.classList.toggle('is-visible', window.scrollY > 600);
+            }
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+
+        // Highlight the nav link of the section currently in view.
+        if (window.bootstrap && bootstrap.ScrollSpy) {
+            new bootstrap.ScrollSpy(document.body, { target: '#publicNavbar', rootMargin: '-30% 0px -60% 0px' });
         }
 
-        // Reveal sections as they enter the viewport.
-        var targets = document.querySelectorAll('.landing-card, .service-pill, .testimonial-card, .plan-card, .stats-band, .timeline-step');
+        // Reveal sections as they enter the viewport, staggered within each row.
+        var targets = document.querySelectorAll('.landing-card, .service-pill, .testimonial-card, .plan-card, .stats-band, .timeline-step, .contact-card');
         if (!('IntersectionObserver' in window) || !targets.length) {
             return;
         }
-        targets.forEach(function (el) { el.classList.add('reveal'); });
+        targets.forEach(function (el) {
+            el.classList.add('reveal');
+            // Cards sit alone inside col-* wrappers; climb until the node has
+            // real siblings so grid items get a left-to-right stagger.
+            var node = el;
+            while (node.parentElement && node.parentElement.children.length === 1) {
+                node = node.parentElement;
+            }
+            var siblings = node.parentElement ? node.parentElement.children : [node];
+            var index = Array.prototype.indexOf.call(siblings, node);
+            el.style.transitionDelay = Math.min(Math.max(index, 0), 5) * 70 + 'ms';
+        });
         var observer = new IntersectionObserver(function (entries) {
             entries.forEach(function (entry) {
                 if (entry.isIntersecting) {
