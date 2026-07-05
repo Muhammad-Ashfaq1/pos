@@ -11,10 +11,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="index, follow" />
-    <meta name="description" content="@yield('meta_description', 'OCC is a SaaS POS and operations system for oil change shops, quick auto service centers, and workshop businesses.')" />
-    <title>@yield('title', 'OCC - Oil Change POS SaaS')</title>
+    <meta name="description" content="@yield('meta_description', 'AutoServe is a SaaS POS and operations system for car garages, oil change shops, quick auto service centers, and workshop businesses.')" />
+    <title>@yield('title', 'AutoServe - Integrated Automotive Solutions')</title>
 
-    <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/img/favicon/favicon-32.png') }}" />
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon/favicon.png') }}" />
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/favicon/apple-touch-icon.png') }}" />
     @include('layouts.partials.pwa-head')
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />

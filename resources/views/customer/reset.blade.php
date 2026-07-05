@@ -10,7 +10,10 @@
 <div class="card border-0 shadow-sm rounded-4 mx-auto mt-5" style="max-width:440px;">
     <div class="card-body p-4 p-md-5">
         <div class="text-center mb-4">
-            <span class="portal-brand">OIL<span>POS</span></span>
+            <span class="portal-brand d-inline-flex align-items-center gap-2 justify-content-center">
+                @include('layouts.partials.brand-logo', ['size' => 34])
+                Auto<span>Serve</span>
+            </span>
             <p class="text-muted mb-0 mt-2">Set your password</p>
         </div>
         <form method="POST" action="{{ route('customer.reset.submit') }}">

@@ -26,7 +26,9 @@
     <meta name="description" content="" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/img/favicon/favicon-32.png') }}" />
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon/favicon.png') }}" />
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/favicon/apple-touch-icon.png') }}" />
     @include('layouts.partials.pwa-head')
 
     <!-- Fonts -->

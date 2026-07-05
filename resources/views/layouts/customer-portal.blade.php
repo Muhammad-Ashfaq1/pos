@@ -7,7 +7,9 @@
     <meta name="robots" content="noindex, nofollow" />
     <title>@yield('title', 'My Account')</title>
 
-    <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/img/favicon/favicon-32.png') }}" />
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon/favicon.png') }}" />
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/favicon/apple-touch-icon.png') }}" />
     @include('layouts.partials.pwa-head')
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -36,7 +38,10 @@
         @auth('customer')
             <nav class="portal-navbar py-3 mb-4">
                 <div class="container d-flex align-items-center justify-content-between">
-                    <a href="{{ route('customer.dashboard') }}" class="text-decoration-none portal-brand">OIL<span>POS</span></a>
+                    <a href="{{ route('customer.dashboard') }}" class="text-decoration-none portal-brand d-inline-flex align-items-center gap-2">
+                        @include('layouts.partials.brand-logo', ['size' => 34])
+                        Auto<span>Serve</span>
+                    </a>
                     <div class="d-flex align-items-center gap-3">
                         <span class="text-muted small d-none d-sm-inline">{{ auth('customer')->user()->name }}</span>
                         <form method="POST" action="{{ route('logout') }}">

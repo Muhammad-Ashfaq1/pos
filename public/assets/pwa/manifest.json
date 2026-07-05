@@ -1,18 +1,25 @@
 {
   "id": "/",
-  "name": "Oil Change POS",
-  "short_name": "POS",
-  "description": "Multi-tenant Point of Sale and auto-service shop platform.",
+  "name": "AutoServe",
+  "short_name": "AutoServe",
+  "description": "AutoServe \u2014 multi-tenant POS and operations platform for auto service businesses.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "any",
   "background_color": "#ffffff",
   "theme_color": "#4f46e5",
   "lang": "en",
   "dir": "ltr",
-  "categories": ["business", "productivity", "shopping"],
+  "categories": [
+    "business",
+    "productivity",
+    "shopping"
+  ],
   "icons": [
     {
       "src": "/assets/img/pwa/icon-192.png",

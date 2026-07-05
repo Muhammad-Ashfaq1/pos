@@ -1,5 +1,4 @@
-{{-- AutoServe brand mark: gear, wrench, growth arrow, oil drop, tire (vector recreation of assets/img/logo/occ.png) --}}
-<svg width="{{ $size ?? 30 }}" height="{{ $size ?? 30 }}" viewBox="0 0 72 72" role="img" aria-label="{{ config('app.name') }} logo" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="asGear" x1="6" y1="12" x2="62" y2="66" gradientUnits="userSpaceOnUse">
       <stop stop-color="#2A69AE"/>

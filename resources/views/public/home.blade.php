@@ -1,17 +1,17 @@
 @extends('layouts.public')
 
-@section('title', 'OCC - POS & Operations Software for Car Garages, Oil Change & Auto Service Shops')
-@section('meta_description', 'OCC is an all-in-one SaaS platform for car garages, oil change shops, tire & brake centers, detailing studios and auto service businesses — POS billing, inventory, vehicle & service history, reminders, loyalty, and staff roles in one place.')
+@section('title', 'AutoServe - POS & Operations Software for Car Garages, Oil Change & Auto Service Shops')
+@section('meta_description', 'AutoServe is an all-in-one SaaS platform for car garages, oil change shops, tire & brake centers, detailing studios and auto service businesses — POS billing, inventory, vehicle & service history, reminders, loyalty, and staff roles in one place.')
 
 @section('content')
 <div class="scroll-progress" aria-hidden="true"><span id="scrollProgressBar"></span></div>
 <nav class="navbar navbar-expand-lg landing-navbar sticky-top py-3">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-3" href="#home">
-            <span class="brand-mark">O</span>
+            @include('layouts.partials.brand-logo', ['size' => 44])
             <span>
-                <span class="fw-bolder fs-4 text-heading d-block lh-1">OCC</span>
-                <small class="text-muted">Auto Service POS SaaS</small>
+                <span class="fw-bolder fs-4 text-heading d-block lh-1">AutoServe</span>
+                <small class="text-muted">Integrated Automotive Solutions</small>
             </span>
         </a>
 
@@ -58,7 +58,7 @@
                         </h1>
 
                         <p class="hero-copy text-white text-opacity-75 mb-4 hero-subtext">
-                            OCC is an all-in-one SaaS platform for car garages, oil change shops, tire &amp; brake centers, detailing studios, and quick auto service businesses — POS billing, inventory visibility, customer and vehicle history, reminders, loyalty, and staff access control in one place.
+                            AutoServe is an all-in-one SaaS platform for car garages, oil change shops, tire &amp; brake centers, detailing studios, and quick auto service businesses — POS billing, inventory visibility, customer and vehicle history, reminders, loyalty, and staff access control in one place.
                         </p>
 
                         <div class="hero-chip-row mb-4">
@@ -80,7 +80,7 @@
                                     <span class="mockup-dot"></span>
                                     <span class="mockup-dot"></span>
                                     <span class="mockup-dot"></span>
-                                    <span class="mockup-url"><i class="icon-base ti tabler-lock icon-xs"></i> occ.app/pos</span>
+                                    <span class="mockup-url"><i class="icon-base ti tabler-lock icon-xs"></i> autoserve.app/pos</span>
                                 </div>
                                 <div class="mockup-body">
                                     <div class="mockup-stats">
@@ -204,11 +204,11 @@
                 <div class="col-lg-5" data-reveal="left">
                     <span class="section-kicker mb-3">
                         <i class="icon-base ti tabler-bolt"></i>
-                        Why OCC
+                        Why AutoServe
                     </span>
                     <h2 class="fw-bolder mb-3">The system that helps garages and auto service businesses move beyond manual handling.</h2>
                     <p class="text-muted fs-5 mb-4">
-                        OCC is designed for car garages, oil change shops, tire and brake centers, and detailing studios still juggling paper slips, WhatsApp follow-ups, disconnected stock notes, or basic billing tools. It gives owners and managers a professional way to run daily service operations.
+                        AutoServe is designed for car garages, oil change shops, tire and brake centers, and detailing studios still juggling paper slips, WhatsApp follow-ups, disconnected stock notes, or basic billing tools. It gives owners and managers a professional way to run daily service operations.
                     </p>
 
                     <div class="d-flex flex-column gap-3">
@@ -285,7 +285,7 @@
                     </span>
                     <h2 class="fw-bolder mb-3">Structured for the actual services garages, oil change shops, and workshop teams deliver every day.</h2>
                     <p class="text-muted fs-5 mb-0">
-                        OCC fits routine maintenance, repairs, fast-turn visits, consumable sales, and add-on workshop work that happens across busy auto service businesses.
+                        AutoServe fits routine maintenance, repairs, fast-turn visits, consumable sales, and add-on workshop work that happens across busy auto service businesses.
                     </p>
                 </div>
 
@@ -332,7 +332,7 @@
                 </span>
                 <h2 class="fw-bolder mb-3">A cleaner business stack for onboarding, service workflow, customer handling, and operational visibility.</h2>
                 <p class="text-muted fs-5 mb-0">
-                    OCC combines shop onboarding, operations, CRM, billing, reminders, and reports in one business-focused system tailored to car garages, oil change shops, and auto service businesses.
+                    AutoServe combines shop onboarding, operations, CRM, billing, reminders, and reports in one business-focused system tailored to car garages, oil change shops, and auto service businesses.
                 </p>
             </div>
 
@@ -375,9 +375,9 @@
                     </span>
                     <h2 class="fw-bolder mb-3">A straightforward rollout path from registration to daily operations.</h2>
                     <p class="text-muted fs-5 mb-4">
-                        OCC is built to keep onboarding practical. Start with registration, get approved, prepare your products and services, and begin day-to-day billing with much better record discipline.
+                        AutoServe is built to keep onboarding practical. Start with registration, get approved, prepare your products and services, and begin day-to-day billing with much better record discipline.
                     </p>
-                    <img src="{{ asset('assets/img/illustrations/girl-with-laptop-light.png') }}" alt="OCC onboarding workflow" class="img-fluid">
+                    <img src="{{ asset('assets/img/illustrations/girl-with-laptop-light.png') }}" alt="AutoServe onboarding workflow" class="img-fluid">
                 </div>
 
                 <div class="col-lg-7">
@@ -385,7 +385,7 @@
                         <div class="timeline-step">
                             <span class="timeline-number">1</span>
                             <h5 class="mb-1">Register your shop</h5>
-                            <p class="text-muted mb-0">Submit owner and business details to begin your OCC workspace request.</p>
+                            <p class="text-muted mb-0">Submit owner and business details to begin your AutoServe workspace request.</p>
                         </div>
                         <div class="timeline-step">
                             <span class="timeline-number">2</span>
@@ -510,7 +510,7 @@
                     <i class="icon-base ti tabler-message-2-star"></i>
                     What Shops Say
                 </span>
-                <h2 class="fw-bolder mb-3">Voices from the kind of businesses OCC is designed to support.</h2>
+                <h2 class="fw-bolder mb-3">Voices from the kind of businesses AutoServe is designed to support.</h2>
                 <p class="text-muted fs-5 mb-0">
                     Built around the daily operational concerns of workshops, quick-lube counters, tire shops, and detailing studios.
                 </p>
@@ -530,7 +530,7 @@
                             </div>
                         </div>
                         <p class="text-muted mb-4">
-                            We were using manual notes for service history and simple billing for sales. OCC feels more like an actual shop operating system instead of just an invoice screen.
+                            We were using manual notes for service history and simple billing for sales. AutoServe feels more like an actual shop operating system instead of just an invoice screen.
                         </p>
                         <div class="d-flex align-items-center gap-3">
                             <img src="{{ asset('assets/img/avatars/1.png') }}" class="rounded-circle" width="54" height="54" alt="Testimonial avatar">
@@ -578,7 +578,7 @@
                             </div>
                         </div>
                         <p class="text-muted mb-4">
-                            For us the appeal is that OCC speaks the language of quick service shops: vehicles, services, reminders, loyalty, staff roles, and repeat visits.
+                            For us the appeal is that AutoServe speaks the language of quick service shops: vehicles, services, reminders, loyalty, staff roles, and repeat visits.
                         </p>
                         <div class="d-flex align-items-center gap-3">
                             <img src="{{ asset('assets/img/avatars/7.png') }}" class="rounded-circle" width="54" height="54" alt="Testimonial avatar">
@@ -673,7 +673,7 @@
                     </span>
                     <h2 class="fw-bolder mb-3">Answers for shop owners and managers comparing systems.</h2>
                     <p class="text-muted fs-5 mb-0">
-                        OCC is aimed at practical business use, so the questions below focus on real workshop and oil-change operations rather than generic software talking points.
+                        AutoServe is aimed at practical business use, so the questions below focus on real workshop and oil-change operations rather than generic software talking points.
                     </p>
                 </div>
 
@@ -681,12 +681,12 @@
                         <div class="faq-panel">
                         <div class="accordion" id="faqAccordion">
                             @foreach ([
-                                ['q' => 'Is OCC only for oil change shops?', 'a' => 'OCC is designed mainly for oil change shops, quick lube counters, and similar quick automotive service businesses where repeat visits, consumables, service history, and fast billing matter.'],
-                                ['q' => 'Can I manage billing and inventory together?', 'a' => 'Yes. OCC is positioned as an all-in-one business platform that combines service billing, workshop products, consumables, and stock visibility into one operating flow.'],
-                                ['q' => 'Can my staff have different permissions?', 'a' => 'Yes. OCC is built with role-based access so owners, managers, technicians, cashiers, and other team members can operate with different permission levels.'],
-                                ['q' => 'Can customers view their history?', 'a' => 'The product direction includes customer-facing service and invoice visibility. Even where the full portal is still evolving, OCC is designed around better visit transparency and customer trust.'],
+                                ['q' => 'Is AutoServe only for oil change shops?', 'a' => 'AutoServe is designed mainly for oil change shops, quick lube counters, and similar quick automotive service businesses where repeat visits, consumables, service history, and fast billing matter.'],
+                                ['q' => 'Can I manage billing and inventory together?', 'a' => 'Yes. AutoServe is positioned as an all-in-one business platform that combines service billing, workshop products, consumables, and stock visibility into one operating flow.'],
+                                ['q' => 'Can my staff have different permissions?', 'a' => 'Yes. AutoServe is built with role-based access so owners, managers, technicians, cashiers, and other team members can operate with different permission levels.'],
+                                ['q' => 'Can customers view their history?', 'a' => 'The product direction includes customer-facing service and invoice visibility. Even where the full portal is still evolving, AutoServe is designed around better visit transparency and customer trust.'],
                                 ['q' => 'Do shops need admin approval?', 'a' => 'Yes. Shop registration is followed by platform admin review and approval before the tenant workspace is activated.'],
-                                ['q' => 'Can I manage walk-in and registered customers?', 'a' => 'Yes. OCC is intended to support real counter operations where businesses deal with both repeat registered customers and walk-in service traffic.'],
+                                ['q' => 'Can I manage walk-in and registered customers?', 'a' => 'Yes. AutoServe is intended to support real counter operations where businesses deal with both repeat registered customers and walk-in service traffic.'],
                             ] as $index => $faq)
                                 <div class="accordion-item">
                                     <h2 class="accordion-header" id="faq-heading-{{ $index }}">
@@ -727,7 +727,7 @@
                         </span>
                         <h2 class="fw-bolder text-white mb-3">Talk to us about onboarding, product walkthroughs, or the right rollout path for your workshop.</h2>
                         <p class="text-white text-opacity-75 fs-5 mb-0">
-                            Whether you run one oil change counter or you are planning a more structured quick-service operation, OCC can be presented around your business workflow.
+                            Whether you run one oil change counter or you are planning a more structured quick-service operation, AutoServe can be presented around your business workflow.
                         </p>
                     </div>
                     <div class="col-lg-5">
@@ -736,14 +736,14 @@
                                 <div class="contact-card">
                                     <div class="landing-icon mb-3"><i class="icon-base ti tabler-mail"></i></div>
                                     <div class="fw-semibold mb-1">Sales</div>
-                                    <div class="text-muted small">sales@oilchangepos.test</div>
+                                    <div class="text-muted small">sales@autoserve.test</div>
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="contact-card">
                                     <div class="landing-icon mb-3"><i class="icon-base ti tabler-lifebuoy"></i></div>
                                     <div class="fw-semibold mb-1">Support</div>
-                                    <div class="text-muted small">support@oilchangepos.test</div>
+                                    <div class="text-muted small">support@autoserve.test</div>
                                 </div>
                             </div>
                         </div>
@@ -787,7 +787,7 @@
             <div class="modal-header border-0 pb-0">
                 <div>
                     <span class="section-kicker mb-2"><i class="icon-base ti tabler-calendar-event"></i> Request A Demo</span>
-                    <h4 class="fw-bolder mb-1" id="demoModalLabel">See OCC in action at your shop</h4>
+                    <h4 class="fw-bolder mb-1" id="demoModalLabel">See AutoServe in action at your shop</h4>
                     <p class="text-muted mb-0">Tell us a little about your business and our team will reach out to schedule a walkthrough.</p>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -860,14 +860,14 @@
         <div class="row g-4">
             <div class="col-lg-4">
                 <div class="d-flex align-items-center gap-3 mb-3">
-                    <span class="brand-mark">O</span>
+                    @include('layouts.partials.brand-logo', ['size' => 40])
                     <div>
-                        <div class="fw-bolder text-white">OCC</div>
-                        <small>Oil Change POS SaaS</small>
+                        <div class="fw-bolder text-white">AutoServe</div>
+                        <small>Integrated Automotive Solutions</small>
                     </div>
                 </div>
                 <p class="mb-3">
-                    OCC is a business-focused SaaS platform for car garages, oil change shops, tire and brake centers, detailing studios, and workshop teams that want POS, inventory, customer records, reminders, and operational visibility in one system.
+                    AutoServe is a business-focused SaaS platform for car garages, oil change shops, tire and brake centers, detailing studios, and workshop teams that want POS, inventory, customer records, reminders, and operational visibility in one system.
                 </p>
                 <div class="d-flex gap-2">
                     <span class="landing-icon bg-white bg-opacity-10 text-white"><i class="icon-base ti tabler-brand-facebook"></i></span>
@@ -909,8 +909,8 @@
             <div class="col-sm-6 col-lg-2">
                 <h6 class="text-white mb-3">Support</h6>
                 <div class="d-flex flex-column gap-2">
-                    <a href="mailto:support@oilchangepos.test">support@oilchangepos.test</a>
-                    <a href="mailto:sales@oilchangepos.test">sales@oilchangepos.test</a>
+                    <a href="mailto:support@autoserve.test">support@autoserve.test</a>
+                    <a href="mailto:sales@autoserve.test">sales@autoserve.test</a>
                     <span>Mon-Sat | 9:00 AM - 6:00 PM</span>
                 </div>
             </div>
@@ -919,7 +919,7 @@
         <hr class="border-secondary my-4">
 
         <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
-            <p class="mb-0">&copy; {{ now()->year }} OCC. All rights reserved.</p>
+            <p class="mb-0">&copy; {{ now()->year }} AutoServe. All rights reserved.</p>
             <p class="mb-0">Crafted for garages, oil change shops, and auto service businesses.</p>
         </div>
     </div>

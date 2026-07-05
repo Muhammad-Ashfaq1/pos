@@ -25,7 +25,9 @@
     <meta name="description" content="@yield('meta_description', 'Employee Portal UI preview for the POS app.')" />
     <title>@yield('title', 'Employee Portal')</title>
 
-    <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/img/favicon/favicon-32.png') }}" />
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon/favicon.png') }}" />
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/favicon/apple-touch-icon.png') }}" />
     @include('layouts.partials.pwa-head')
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -141,6 +143,7 @@
         .employee-admin-preview .preview-brand {
             display: flex;
             align-items: center;
+            gap: 0.6rem;
             text-decoration: none;
         }
 
@@ -575,7 +578,8 @@
             <div class="preview-container py-0">
                 <div class="preview-header-inner">
                     <a href="{{ route('employee.dashboard') }}" class="preview-brand">
-                        <span class="preview-brand-text">OIL<span>POS</span></span>
+                        @include('layouts.partials.brand-logo', ['size' => 40])
+                        <span class="preview-brand-text">Auto<span>Serve</span></span>
                     </a>
 
                     <div class="preview-header-actions">
