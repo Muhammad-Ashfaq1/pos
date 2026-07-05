@@ -4,6 +4,7 @@
 @section('meta_description', 'OCC is an all-in-one SaaS platform for car garages, oil change shops, tire & brake centers, detailing studios and auto service businesses — POS billing, inventory, vehicle & service history, reminders, loyalty, and staff roles in one place.')
 
 @section('content')
+<div class="scroll-progress" aria-hidden="true"><span id="scrollProgressBar"></span></div>
 <nav class="navbar navbar-expand-lg landing-navbar sticky-top py-3">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-3" href="#home">
@@ -31,7 +32,7 @@
 
             <div class="d-flex flex-column flex-lg-row gap-2 mt-3 mt-lg-0">
                 <a href="{{ route('login') }}" class="btn btn-label-secondary">Login</a>
-                <a href="{{ route('register') }}" class="btn btn-primary">Register Your Shop</a>
+                <a href="{{ route('register') }}" class="btn btn-warning">Register Your Shop</a>
             </div>
         </div>
     </div>
@@ -200,7 +201,7 @@
         <span class="deco-dots" style="bottom: 3rem; left: 2%;"></span>
         <div class="container">
             <div class="row align-items-center g-5">
-                <div class="col-lg-5">
+                <div class="col-lg-5" data-reveal="left">
                     <span class="section-kicker mb-3">
                         <i class="icon-base ti tabler-bolt"></i>
                         Why OCC
@@ -277,7 +278,7 @@
         <span class="deco-blob" style="bottom: -5rem; right: -4rem;"></span>
         <div class="container">
             <div class="row align-items-start g-5">
-                <div class="col-lg-4">
+                <div class="col-lg-4" data-reveal="left">
                     <span class="section-kicker mb-3">
                         <i class="icon-base ti tabler-tool"></i>
                         Services Showcase
@@ -367,7 +368,7 @@
         <span class="deco-blob" style="top: -4rem; left: -5rem;"></span>
         <div class="container">
             <div class="row g-5 align-items-center">
-                <div class="col-lg-5">
+                <div class="col-lg-5" data-reveal="left">
                     <span class="section-kicker mb-3">
                         <i class="icon-base ti tabler-route"></i>
                         How It Works
@@ -412,10 +413,12 @@
         </div>
     </section>
 
-    <section class="landing-section">
+    <section class="landing-section has-deco">
+        <span class="deco-road" style="top: 3rem; left: 6%; transform: rotate(6deg);"></span>
+        <span class="deco-dots" style="bottom: 2rem; right: 3%;"></span>
         <div class="container">
             <div class="row g-4">
-                <div class="col-lg-6">
+                <div class="col-lg-6" data-reveal="left">
                     <div class="landing-card">
                         <span class="section-kicker mb-3">
                             <i class="icon-base ti tabler-briefcase"></i>
@@ -442,7 +445,7 @@
                     </div>
                 </div>
 
-                <div class="col-lg-6">
+                <div class="col-lg-6" data-reveal="right">
                     <div class="landing-card">
                         <span class="section-kicker mb-3">
                             <i class="icon-base ti tabler-user-heart"></i>
@@ -478,27 +481,29 @@
                 <span class="section-deco deco-spin" style="bottom: -4rem; left: 2rem; font-size: 13rem; color: #fff; opacity: .06;"><i class="icon-base ti tabler-settings"></i></span>
                 <div class="row g-4 text-center">
                     <div class="col-md-3 stat-item">
-                        <div class="display-6 fw-bolder">10+</div>
+                        <div class="display-6 fw-bolder"><span data-count="12">12</span>+</div>
                         <div class="text-white text-opacity-75">Business modules in one platform</div>
                     </div>
                     <div class="col-md-3 stat-item">
-                        <div class="display-6 fw-bolder">25-Day</div>
-                        <div class="text-white text-opacity-75">Reminder support showcase value</div>
+                        <div class="display-6 fw-bolder"><span data-count="17">17</span>+</div>
+                        <div class="text-white text-opacity-75">Auto services supported out of the box</div>
                     </div>
                     <div class="col-md-3 stat-item">
-                        <div class="display-6 fw-bolder">Multi-Role</div>
-                        <div class="text-white text-opacity-75">Access for owners, managers, cashiers, and staff</div>
+                        <div class="display-6 fw-bolder"><span data-count="5">5</span></div>
+                        <div class="text-white text-opacity-75">Steps from registration to daily billing</div>
                     </div>
                     <div class="col-md-3 stat-item">
-                        <div class="display-6 fw-bolder">All-In-One</div>
-                        <div class="text-white text-opacity-75">Service, inventory, CRM, billing, and reports</div>
+                        <div class="display-6 fw-bolder"><span data-count="100">100</span>%</div>
+                        <div class="text-white text-opacity-75">Cloud-based — run it from any device</div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="landing-section section-soft">
+    <section class="landing-section section-soft has-deco">
+        <span class="section-deco deco-spin" style="top: -2rem; left: -3rem; font-size: 13rem;"><i class="icon-base ti tabler-steering-wheel"></i></span>
+        <span class="deco-blob" style="bottom: -5rem; right: -4rem;"></span>
         <div class="container">
             <div class="text-center mx-auto mb-5" style="max-width: 760px;">
                 <span class="section-kicker mb-3">
@@ -588,7 +593,9 @@
         </div>
     </section>
 
-    <section class="landing-section bg-white" id="plans">
+    <section class="landing-section bg-white has-deco" id="plans">
+        <span class="section-deco deco-float" style="top: 3rem; right: -2rem; font-size: 12rem;"><i class="icon-base ti tabler-key"></i></span>
+        <span class="deco-dots" style="bottom: 4rem; left: 2%;"></span>
         <div class="container">
             <div class="text-center mx-auto mb-5" style="max-width: 760px;">
                 <span class="section-kicker mb-3">
@@ -654,10 +661,12 @@
         </div>
     </section>
 
-    <section class="landing-section" id="faq">
+    <section class="landing-section has-deco" id="faq">
+        <span class="deco-blob" style="top: -4rem; right: -5rem;"></span>
+        <span class="deco-road" style="bottom: 3.5rem; left: 5%; transform: rotate(-5deg);"></span>
         <div class="container">
             <div class="row g-5 align-items-start">
-                <div class="col-lg-4">
+                <div class="col-lg-4" data-reveal="left">
                     <span class="section-kicker mb-3">
                         <i class="icon-base ti tabler-help-circle"></i>
                         Frequently Asked Questions
@@ -923,6 +932,7 @@
         // Solidify navbar background after scrolling past the hero.
         var navbar = document.querySelector('.landing-navbar');
         var backToTop = document.getElementById('backToTop');
+        var progressBar = document.getElementById('scrollProgressBar');
         var onScroll = function () {
             if (navbar) {
                 navbar.classList.toggle('is-scrolled', window.scrollY > 24);
@@ -930,9 +940,38 @@
             if (backToTop) {
                 backToTop.classList.toggle('is-visible', window.scrollY > 600);
             }
+            if (progressBar) {
+                var max = document.documentElement.scrollHeight - window.innerHeight;
+                progressBar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+            }
         };
         window.addEventListener('scroll', onScroll, { passive: true });
         onScroll();
+
+        var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // Count the stats band numbers up when it scrolls into view.
+        var counters = document.querySelectorAll('[data-count]');
+        if (counters.length && 'IntersectionObserver' in window && !reduceMotion) {
+            var counterObserver = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (!entry.isIntersecting) return;
+                    counterObserver.unobserve(entry.target);
+                    var el = entry.target;
+                    var target = parseInt(el.getAttribute('data-count'), 10) || 0;
+                    var start = null;
+                    var step = function (ts) {
+                        if (!start) start = ts;
+                        var progress = Math.min((ts - start) / 1400, 1);
+                        el.textContent = Math.round(target * (1 - Math.pow(1 - progress, 3)));
+                        if (progress < 1) requestAnimationFrame(step);
+                    };
+                    el.textContent = '0';
+                    requestAnimationFrame(step);
+                });
+            }, { threshold: 0.5 });
+            counters.forEach(function (el) { counterObserver.observe(el); });
+        }
 
         // Highlight the nav link of the section currently in view.
         if (window.bootstrap && bootstrap.ScrollSpy) {
@@ -940,12 +979,15 @@
         }
 
         // Reveal sections as they enter the viewport, staggered within each row.
-        var targets = document.querySelectorAll('.landing-card, .service-pill, .testimonial-card, .plan-card, .stats-band, .timeline-step, .contact-card');
+        var targets = document.querySelectorAll('.landing-card, .service-pill, .testimonial-card, .plan-card, .stats-band, .timeline-step, .contact-card, [data-reveal]');
         if (!('IntersectionObserver' in window) || !targets.length) {
             return;
         }
         targets.forEach(function (el) {
             el.classList.add('reveal');
+            var direction = el.getAttribute('data-reveal');
+            if (direction === 'left') el.classList.add('reveal-left');
+            if (direction === 'right') el.classList.add('reveal-right');
             // Cards sit alone inside col-* wrappers; climb until the node has
             // real siblings so grid items get a left-to-right stagger.
             var node = el;
