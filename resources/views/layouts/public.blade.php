@@ -12,7 +12,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="index, follow" />
     <meta name="description" content="@yield('meta_description', 'AutoServe is a SaaS POS and operations system for car garages, oil change shops, quick auto service centers, and workshop businesses.')" />
+    <meta name="keywords" content="@yield('meta_keywords', 'auto repair shop software, garage management software, oil change POS software, auto service point of sale, workshop billing software')" />
+    <meta name="author" content="{{ config('app.name') }}" />
     <title>@yield('title', 'AutoServe - Integrated Automotive Solutions')</title>
+
+    <link rel="canonical" href="{{ url()->current() }}" />
+
+    {{-- Open Graph / social sharing --}}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="{{ config('app.name') }}" />
+    <meta property="og:title" content="@yield('title', 'AutoServe - Integrated Automotive Solutions')" />
+    <meta property="og:description" content="@yield('meta_description', 'AutoServe is a SaaS POS and operations system for car garages, oil change shops, quick auto service centers, and workshop businesses.')" />
+    <meta property="og:url" content="{{ url()->current() }}" />
+    <meta property="og:image" content="{{ asset('assets/img/logo/occ.png') }}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@yield('title', 'AutoServe - Integrated Automotive Solutions')" />
+    <meta name="twitter:description" content="@yield('meta_description', 'AutoServe is a SaaS POS and operations system for car garages, oil change shops, quick auto service centers, and workshop businesses.')" />
+    <meta name="twitter:image" content="{{ asset('assets/img/logo/occ.png') }}" />
 
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/img/favicon/favicon-32.png') }}" />
     <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon/favicon.png') }}" />

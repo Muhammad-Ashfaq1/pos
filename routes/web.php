@@ -15,6 +15,16 @@ Route::get('/manifest.webmanifest', function () {
         ]);
 })->name('pwa.manifest');
 
+// Minimal sitemap: the landing page is the only indexable URL (app pages are noindex).
+Route::get('/sitemap.xml', function () {
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>'
+        .'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        .'<url><loc>'.url('/').'</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>'
+        .'</urlset>';
+
+    return response($xml, 200, ['Content-Type' => 'application/xml']);
+})->name('sitemap');
+
 Route::get('/', function () {
     if (Auth::guard('customer')->check()) {
         return redirect()->route('customer.dashboard');

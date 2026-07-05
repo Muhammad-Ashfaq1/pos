@@ -2,6 +2,18 @@
 
 @section('title', 'AutoServe - POS & Operations Software for Car Garages, Oil Change & Auto Service Shops')
 @section('meta_description', 'AutoServe is an all-in-one SaaS platform for car garages, oil change shops, tire & brake centers, detailing studios and auto service businesses — POS billing, inventory, vehicle & service history, reminders, loyalty, and staff roles in one place.')
+@section('meta_keywords', 'auto repair shop software, garage management software, oil change POS software, quick lube software, tire shop POS system, auto service point of sale, vehicle service history software, workshop billing software, car detailing shop software, spare parts inventory software, mechanic shop management software, auto shop CRM, car service reminder software, brake shop software, multi tenant auto shop SaaS, POS for car garages, automotive workshop software, auto parts store POS')
+
+@php
+    $faqs = [
+        ['q' => 'Is AutoServe only for oil change shops?', 'a' => 'AutoServe is designed mainly for oil change shops, quick lube counters, and similar quick automotive service businesses where repeat visits, consumables, service history, and fast billing matter.'],
+        ['q' => 'Can I manage billing and inventory together?', 'a' => 'Yes. AutoServe is positioned as an all-in-one business platform that combines service billing, workshop products, consumables, and stock visibility into one operating flow.'],
+        ['q' => 'Can my staff have different permissions?', 'a' => 'Yes. AutoServe is built with role-based access so owners, managers, technicians, cashiers, and other team members can operate with different permission levels.'],
+        ['q' => 'Can customers view their history?', 'a' => 'The product direction includes customer-facing service and invoice visibility. Even where the full portal is still evolving, AutoServe is designed around better visit transparency and customer trust.'],
+        ['q' => 'Do shops need admin approval?', 'a' => 'Yes. Shop registration is followed by platform admin review and approval before the tenant workspace is activated.'],
+        ['q' => 'Can I manage walk-in and registered customers?', 'a' => 'Yes. AutoServe is intended to support real counter operations where businesses deal with both repeat registered customers and walk-in service traffic.'],
+    ];
+@endphp
 
 @section('content')
 <div class="scroll-progress" aria-hidden="true"><span id="scrollProgressBar"></span></div>
@@ -680,14 +692,7 @@
                 <div class="col-lg-8">
                         <div class="faq-panel">
                         <div class="accordion" id="faqAccordion">
-                            @foreach ([
-                                ['q' => 'Is AutoServe only for oil change shops?', 'a' => 'AutoServe is designed mainly for oil change shops, quick lube counters, and similar quick automotive service businesses where repeat visits, consumables, service history, and fast billing matter.'],
-                                ['q' => 'Can I manage billing and inventory together?', 'a' => 'Yes. AutoServe is positioned as an all-in-one business platform that combines service billing, workshop products, consumables, and stock visibility into one operating flow.'],
-                                ['q' => 'Can my staff have different permissions?', 'a' => 'Yes. AutoServe is built with role-based access so owners, managers, technicians, cashiers, and other team members can operate with different permission levels.'],
-                                ['q' => 'Can customers view their history?', 'a' => 'The product direction includes customer-facing service and invoice visibility. Even where the full portal is still evolving, AutoServe is designed around better visit transparency and customer trust.'],
-                                ['q' => 'Do shops need admin approval?', 'a' => 'Yes. Shop registration is followed by platform admin review and approval before the tenant workspace is activated.'],
-                                ['q' => 'Can I manage walk-in and registered customers?', 'a' => 'Yes. AutoServe is intended to support real counter operations where businesses deal with both repeat registered customers and walk-in service traffic.'],
-                            ] as $index => $faq)
+                            @foreach ($faqs as $index => $faq)
                                 <div class="accordion-item">
                                     <h2 class="accordion-header" id="faq-heading-{{ $index }}">
                                         <button class="accordion-button {{ $index !== 0 ? 'collapsed' : '' }}" type="button" data-bs-toggle="collapse" data-bs-target="#faq-collapse-{{ $index }}" aria-expanded="{{ $index === 0 ? 'true' : 'false' }}" aria-controls="faq-collapse-{{ $index }}">
@@ -927,6 +932,44 @@
 @endsection
 
 @section('scripts')
+@php
+    $structuredData = [
+        [
+            '@context' => 'https://schema.org',
+            '@type' => 'SoftwareApplication',
+            'name' => config('app.name'),
+            'applicationCategory' => 'BusinessApplication',
+            'operatingSystem' => 'Web',
+            'url' => url('/'),
+            'image' => asset('assets/img/logo/occ.png'),
+            'description' => 'All-in-one SaaS platform for car garages, oil change shops, tire & brake centers, detailing studios and auto service businesses — POS billing, inventory, vehicle & service history, reminders, loyalty, and staff roles.',
+            'audience' => [
+                '@type' => 'BusinessAudience',
+                'name' => 'Car garages, oil change shops, tire and brake centers, detailing studios, auto repair workshops, spare parts shops',
+            ],
+        ],
+        [
+            '@context' => 'https://schema.org',
+            '@type' => 'Organization',
+            'name' => config('app.name'),
+            'url' => url('/'),
+            'logo' => asset('assets/img/logo/occ.png'),
+            'slogan' => 'Integrated Automotive Solutions',
+        ],
+        [
+            '@context' => 'https://schema.org',
+            '@type' => 'FAQPage',
+            'mainEntity' => collect($faqs)->map(fn ($faq) => [
+                '@type' => 'Question',
+                'name' => $faq['q'],
+                'acceptedAnswer' => ['@type' => 'Answer', 'text' => $faq['a']],
+            ])->values()->all(),
+        ],
+    ];
+@endphp
+@foreach ($structuredData as $schema)
+<script type="application/ld+json">{!! json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+@endforeach
 <script>
     (function () {
         // Solidify navbar background after scrolling past the hero.
