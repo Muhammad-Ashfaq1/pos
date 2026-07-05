@@ -15,7 +15,10 @@
           <!-- Logo -->
           <div class="app-brand justify-content-center mb-6">
             <a href="{{ route('login') }}" class="app-brand-link">
-              <span class="app-brand-text demo text-heading fw-bold">Vuexy</span>
+              <span class="app-brand-logo demo">
+                @include('layouts.partials.brand-logo')
+              </span>
+              <span class="app-brand-text demo text-heading fw-bold ms-2">{{ config('app.name') }}</span>
             </a>
           </div>
 
