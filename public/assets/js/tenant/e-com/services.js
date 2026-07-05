@@ -167,6 +167,7 @@
       placeholder: $element.data('placeholder'),
       allowClear: Boolean($element.data('allow-clear')),
       ajax: {
+        global: false, // table/dropdown has its own indicator — skip the global overlay
         url: window.categoryDropdownUrl,
         delay: 250,
         dataType: 'json',
@@ -205,6 +206,7 @@
       placeholder: $element.data('placeholder'),
       allowClear: true,
       ajax: {
+        global: false, // table/dropdown has its own indicator — skip the global overlay
         url: window.serviceProductDropdownUrl,
         delay: 250,
         dataType: 'json',
@@ -465,6 +467,7 @@
       searching: true,
       ordering: true,
       ajax: {
+        global: false, // table/dropdown has its own indicator — skip the global overlay
         url: window.serviceListingUrl,
         data: function (d) {
           d.status = $('#service_status').val();

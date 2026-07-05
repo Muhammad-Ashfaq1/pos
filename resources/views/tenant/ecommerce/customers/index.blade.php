@@ -116,5 +116,5 @@
         };
     </script>
     <script src="{{ asset('assets/js/tenant/e-com/customers.js') }}?v={{ filemtime(public_path('assets/js/tenant/e-com/customers.js')) }}"></script>
-    <script src="{{ asset('assets/js/tenant/e-com/customer-manager.js') }}"></script>
+    <script src="{{ asset('assets/js/tenant/e-com/customer-manager.js') }}?v={{ filemtime(public_path('assets/js/tenant/e-com/customer-manager.js')) }}"></script>
 @endsection

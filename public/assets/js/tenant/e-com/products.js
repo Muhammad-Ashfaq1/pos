@@ -303,6 +303,7 @@
       placeholder: $element.data('placeholder'),
       allowClear: Boolean($element.data('allow-clear')),
       ajax: {
+        global: false, // table/dropdown has its own indicator — skip the global overlay
         url: window.categoryDropdownUrl,
         delay: 250,
         dataType: 'json',
@@ -343,6 +344,7 @@
       placeholder: $element.data('placeholder'),
       allowClear: Boolean($element.data('allow-clear')),
       ajax: {
+        global: false, // table/dropdown has its own indicator — skip the global overlay
         url: window.subCategoryDropdownUrl,
         delay: 250,
         dataType: 'json',
@@ -384,6 +386,7 @@
       placeholder: $element.data('placeholder'),
       allowClear: Boolean($element.data('allow-clear')),
       ajax: {
+        global: false, // table/dropdown has its own indicator — skip the global overlay
         url: window.discountDropdownUrl,
         delay: 250,
         dataType: 'json',
@@ -644,6 +647,7 @@
       searching: true,
       ordering: true,
       ajax: {
+        global: false, // table/dropdown has its own indicator — skip the global overlay
         url: window.productListingUrl,
         data: function (d) {
           d.status = $('#product_status').val();

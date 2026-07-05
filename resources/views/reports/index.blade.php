@@ -141,5 +141,5 @@
     @if($isEmployee)
         <script src="{{ asset('assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js') }}"></script>
     @endif
-    <script src="{{ asset('assets/js/reports/index.js') }}"></script>
+    <script src="{{ asset('assets/js/reports/index.js') }}?v={{ filemtime(public_path('assets/js/reports/index.js')) }}"></script>
 @endsection

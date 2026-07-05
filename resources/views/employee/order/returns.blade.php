@@ -75,11 +75,6 @@
                         </div>
                     </div>
 
-                    <x-shared-loader
-                        class="employee-orders-loading d-none"
-                        data-return-loading
-                        message="Loading orders..."
-                    />
 
                     <div class="employee-orders-list" data-return-list></div>
 
@@ -100,11 +95,6 @@
                         </div>
                     </div>
 
-                    <x-shared-loader
-                        class="employee-orders-loading d-none"
-                        data-history-loading
-                        message="Loading returned orders..."
-                    />
 
                     <div class="employee-orders-list" data-history-list></div>
 

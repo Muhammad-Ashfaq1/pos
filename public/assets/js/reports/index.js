@@ -128,6 +128,7 @@
       ordering: true,
       order: [],
       ajax: {
+        global: false, // table/dropdown has its own indicator — skip the global overlay
         url: config.dataUrl,
         data: function (d) {
           $.extend(d, collectFilters());

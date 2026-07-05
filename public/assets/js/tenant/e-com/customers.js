@@ -170,6 +170,7 @@
       searching: true,
       ordering: true,
       ajax: {
+        global: false, // table/dropdown has its own indicator — skip the global overlay
         url: window.customerListingUrl,
         data: function (d) {
           d.customer_type = $('#customer_type_filter').val();

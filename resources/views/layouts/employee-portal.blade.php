@@ -661,7 +661,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-aio-3.2.8.min.js"></script>
-    <script src="{{ asset('assets/js/app-helpers.js') }}"></script>
+    <script src="{{ asset('assets/js/app-helpers.js') }}?v={{ filemtime(public_path('assets/js/app-helpers.js')) }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             if (document.documentElement.getAttribute('data-display-customizer') !== 'true') {

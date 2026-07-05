@@ -66,11 +66,6 @@
                     </div>
                 </div>
 
-                <x-shared-loader
-                    class="employee-orders-loading d-none"
-                    data-order-loading
-                    message="Loading orders..."
-                />
 
                 <div class="employee-orders-list" data-order-list></div>
 

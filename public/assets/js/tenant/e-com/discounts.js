@@ -242,6 +242,7 @@
       searching: true,
       ordering: true,
       ajax: {
+        global: false, // table/dropdown has its own indicator — skip the global overlay
         url: window.discountListingUrl,
         data: function (d) {
           d.status = $('#discount_status').val();

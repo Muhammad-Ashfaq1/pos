@@ -78,7 +78,6 @@ $(function () {
     // ── Eligible orders ───────────────────────────────────────────────────
     function loadReturns(search = '', append = false) {
         const $list = $('[data-return-list]');
-        const $loading = $('[data-return-loading]');
         const $empty = $('[data-return-empty]');
 
         if (state.eligible.loading) {
@@ -86,7 +85,6 @@ $(function () {
         }
 
         state.eligible.loading = true;
-        $loading.removeClass('d-none');
 
         if (!append) {
             $list.addClass('d-none');
@@ -102,7 +100,6 @@ $(function () {
                 per_page: state.eligible.per_page
             },
             success: function (response) {
-                $loading.addClass('d-none');
                 const orders = response.orders || [];
                 const pagination = response.pagination || {};
 
@@ -125,7 +122,6 @@ $(function () {
                 }
             },
             error: function () {
-                $loading.addClass('d-none');
                 if (!append) {
                     $empty.removeClass('d-none');
                 }
@@ -140,7 +136,6 @@ $(function () {
     // ── Return history ────────────────────────────────────────────────────
     function loadHistory(search = '', append = false) {
         const $list = $('[data-history-list]');
-        const $loading = $('[data-history-loading]');
         const $empty = $('[data-history-empty]');
 
         if (state.history.loading) {
@@ -148,7 +143,6 @@ $(function () {
         }
 
         state.history.loading = true;
-        $loading.removeClass('d-none');
 
         if (!append) {
             $list.addClass('d-none');
@@ -164,7 +158,6 @@ $(function () {
                 per_page: state.history.per_page
             },
             success: function (response) {
-                $loading.addClass('d-none');
                 const orders = response.orders || [];
                 const pagination = response.pagination || {};
 
@@ -187,7 +180,6 @@ $(function () {
                 }
             },
             error: function () {
-                $loading.addClass('d-none');
                 if (!append) {
                     $empty.removeClass('d-none');
                 }

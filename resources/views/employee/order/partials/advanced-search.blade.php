@@ -95,11 +95,6 @@
             <h5>Order List</h5>
         </div>
 
-        <x-shared-loader
-            class="employee-orders-loading d-none"
-            data-advanced-order-loading
-            message="Loading orders..."
-        />
 
         <div class="employee-orders-advanced-list" data-advanced-order-list></div>
 

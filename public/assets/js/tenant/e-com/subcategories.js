@@ -129,6 +129,7 @@
       placeholder: $element.data('placeholder'),
       allowClear: Boolean($element.data('allow-clear')),
       ajax: {
+        global: false, // table/dropdown has its own indicator — skip the global overlay
         url: window.categoryDropdownUrl,
         delay: 250,
         dataType: 'json',
@@ -312,6 +313,7 @@
       searching: true,
       ordering: true,
       ajax: {
+        global: false, // table/dropdown has its own indicator — skip the global overlay
         url: window.subCategoryListingUrl,
         data: function (d) {
           d.status = $('#subcategory_status').val();

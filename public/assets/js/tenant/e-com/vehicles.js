@@ -83,6 +83,7 @@
       placeholder: $element.data('placeholder'),
       allowClear: Boolean($element.data('allow-clear')),
       ajax: {
+        global: false, // table/dropdown has its own indicator — skip the global overlay
         url: window.customerDropdownUrl,
         delay: 250,
         dataType: 'json',
@@ -139,6 +140,7 @@
       searching: true,
       ordering: true,
       ajax: {
+        global: false, // table/dropdown has its own indicator — skip the global overlay
         url: window.vehicleListingUrl,
         data: function (d) {
           d.customer_id = $filterCustomer.val() || initialCustomerId;

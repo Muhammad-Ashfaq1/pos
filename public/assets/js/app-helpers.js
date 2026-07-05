@@ -36,6 +36,9 @@
     return html;
   };
 
+  // Loading display is centralized in the AppLoader overlay (auto-wired to
+  // every ajax call), so this only guards against double-submits — it must
+  // not render a second, duplicate spinner inside the button.
   const setButtonLoading = function (button, isLoading, loadingText, defaultHtml) {
     if (!$) {
       return;
@@ -50,11 +53,7 @@
     const originalHtml = defaultHtml || defaultButtonHtml($button);
 
     if (isLoading) {
-      const sharedLoader = getSharedLoader();
-      const label = loadingText || 'Processing...';
-      $button
-        .prop('disabled', true)
-        .html(sharedLoader ? sharedLoader.button(label) : label);
+      $button.prop('disabled', true);
       return;
     }
 
