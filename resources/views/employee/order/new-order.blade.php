@@ -371,6 +371,18 @@
                                     </div>
                                     <div class="payment-tax-breakdowns mt-2"></div>
                                 </div>
+                                <div class="payment-gift-card-section d-none border-bottom pb-3 mb-3">
+                                    <div class="d-flex justify-content-between small">
+                                        <span class="payment-gift-card-name">Gift Card:</span>
+                                        <span class="fw-bold text-success payment-gift-card-amount">-@money(0)</span>
+                                    </div>
+                                </div>
+                                <div class="payment-reward-card-section d-none border-bottom pb-3 mb-3">
+                                    <div class="d-flex justify-content-between small">
+                                        <span class="payment-reward-card-name">Reward Card:</span>
+                                        <span class="fw-bold text-primary payment-reward-card-points">0 points</span>
+                                    </div>
+                                </div>
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <h5 class="fw-bold mb-0">Balance Due:</h5>
                                     <h3 class="fw-bold text-primary mb-0 payment-balance-due">@money(0)</h3>
@@ -380,11 +392,11 @@
                             <div class="payment-items-list flex-grow-1"></div>
 
                             <div class="payment-actions-grid mt-4">
-                                <button type="button" class="payment-utility-btn">
+                                <button type="button" class="payment-utility-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasGiftCards">
                                     <i class="ti tabler-gift"></i>
                                     <span>Gift Cards</span>
                                 </button>
-                                <button type="button" class="payment-utility-btn">
+                                <button type="button" class="payment-utility-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRewardCards">
                                     <i class="ti tabler-trophy"></i>
                                     <span>Reward Cards</span>
                                 </button>

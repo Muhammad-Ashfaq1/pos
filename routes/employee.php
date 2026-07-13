@@ -3,6 +3,7 @@
 use App\Http\Controllers\Employee\OrderCartController;
 use App\Http\Controllers\Employee\OrderController;
 use App\Http\Controllers\Employee\PanelController;
+use App\Http\Controllers\Employee\CardController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SharedDataController;
 use App\Http\Controllers\Tenant\ProductController;
@@ -15,6 +16,9 @@ Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.
         Route::get('/dashboard', [PanelController::class, 'dashboard'])
             ->middleware('permission:dashboard.view')
             ->name('dashboard');
+
+        Route::get('/cards', [CardController::class, 'index'])->name('cards.index');
+        Route::post('/cards', [CardController::class, 'store'])->name('cards.store');
 
         Route::prefix('order')
             ->name('order.')

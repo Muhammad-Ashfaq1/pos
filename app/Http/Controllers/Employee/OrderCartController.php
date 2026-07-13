@@ -119,6 +119,10 @@ class OrderCartController extends Controller
             'customer' => $this->sanitizeSelection(Arr::get($order, 'customer')),
             'vehicle' => $this->sanitizeSelection(Arr::get($order, 'vehicle')),
             'serviceFees' => $serviceFees,
+            'appliedCards' => [
+                'gift' => $this->sanitizeDraftValue(Arr::get($order, 'appliedCards.gift')),
+                'reward' => $this->sanitizeDraftValue(Arr::get($order, 'appliedCards.reward')),
+            ],
         ];
     }
 
