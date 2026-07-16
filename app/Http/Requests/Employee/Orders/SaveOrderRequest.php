@@ -37,6 +37,14 @@ class SaveOrderRequest extends FormRequest
             'customer_id' => $this->filled('customer_id') ? (int) $this->input('customer_id') : null,
             'vehicle_id' => $this->filled('vehicle_id') ? (int) $this->input('vehicle_id') : null,
             'service_fees' => $serviceFees,
+            'selected_cards' => [
+                'gift_card_id' => $this->filled('selected_cards.gift_card_id')
+                    ? (int) $this->input('selected_cards.gift_card_id')
+                    : null,
+                'reward_card_id' => $this->filled('selected_cards.reward_card_id')
+                    ? (int) $this->input('selected_cards.reward_card_id')
+                    : null,
+            ],
             'notes' => $this->normalizeNullableString($this->input('notes')),
         ]);
     }
@@ -85,6 +93,25 @@ class SaveOrderRequest extends FormRequest
             ],
             'service_fees.*.name' => ['nullable', 'string', 'max:150'],
             'service_fees.*.amount' => ['nullable', 'numeric', 'min:0', 'max:999999.99'],
+            'selected_cards' => ['nullable', 'array'],
+            'selected_cards.gift_card_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('cards', 'id')->where(
+                    fn ($query) => $query
+                        ->where('tenant_id', $tenantId)
+                        ->where('card_type', 'gift')
+                ),
+            ],
+            'selected_cards.reward_card_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('cards', 'id')->where(
+                    fn ($query) => $query
+                        ->where('tenant_id', $tenantId)
+                        ->where('card_type', 'reward')
+                ),
+            ],
             'is_estimate' => ['nullable', 'boolean'],
             'payment' => [Rule::requiredIf(! $this->boolean('is_estimate')), 'array'],
             'payment.method' => [Rule::requiredIf(! $this->boolean('is_estimate')), 'sometimes', 'string', Rule::in(['cash', 'card', 'check'])],
@@ -154,6 +181,8 @@ class SaveOrderRequest extends FormRequest
             'service_fees.*.name.max' => 'Manual service fee title may not be greater than 150 characters.',
             'service_fees.*.amount.min' => 'Service fee amount cannot be negative.',
             'service_fees.*.amount.max' => 'Service fee amount is too large.',
+            'selected_cards.gift_card_id.exists' => 'The selected gift card is no longer available.',
+            'selected_cards.reward_card_id.exists' => 'The selected reward card is no longer available.',
             'payment.required' => 'Please enter payment details before checkout.',
             'payment.method.required' => 'Please select a payment method.',
             'payment.method.in' => 'Please select a valid payment method.',

@@ -119,7 +119,10 @@
                 .filter(Boolean),
             customer: order.customer || null,
             vehicle: order.vehicle || null,
-            serviceFees: Array.isArray(order.serviceFees) ? order.serviceFees : []
+            serviceFees: Array.isArray(order.serviceFees) ? order.serviceFees : [],
+            appliedCards: order.appliedCards && typeof order.appliedCards === 'object'
+                ? order.appliedCards
+                : { gift: null, reward: null }
         };
     }
 
@@ -134,7 +137,8 @@
                     items: order.items || [],
                     customer: order.customer || null,
                     vehicle: order.vehicle || null,
-                    serviceFees: orderServiceFees(order)
+                    serviceFees: orderServiceFees(order),
+                    appliedCards: order.appliedCards || { gift: null, reward: null }
                 };
             }),
             active_order_id: activeOrderId,
@@ -449,7 +453,8 @@
             items: [],
             customer: carryCurrentSelection ? readSelectSelection($('#customer_type_filter')) : null,
             vehicle: carryCurrentSelection ? readSelectSelection($('#add_vehicle_filter')) : null,
-            serviceFees: []
+            serviceFees: [],
+            appliedCards: { gift: null, reward: null }
         };
 
         nextOrderNumber += 1;
@@ -1157,6 +1162,59 @@
         return order.serviceFee && order.serviceFee.amount ? [order.serviceFee] : [];
     }
 
+    function orderAppliedCard(order, type) {
+        return order && order.appliedCards ? (order.appliedCards[type] || null) : null;
+    }
+
+    function cardIsEligible(card, order, totals) {
+        if (!card || !order) return false;
+
+        const minimumSpend = roundMoney(card.minimum_spend || 0);
+        if (totals.orderSubtotal + 0.001 < minimumSpend) return false;
+
+        if (card.product_id) {
+            return order.items.some(function (item) {
+                return String(item.id) === String(card.product_id);
+            });
+        }
+
+        return true;
+    }
+
+    function giftCardAmountForOrder(order, totals) {
+        const card = orderAppliedCard(order, 'gift');
+
+        if (!cardIsEligible(card, order, totals)) return 0;
+
+        return roundMoney(Math.min(Number(card.value) || 0, totals.total));
+    }
+
+    function syncOrderCardDrawers() {
+        const order = getActiveOrder();
+        const totals = totalsForOrder(order);
+
+        ['gift', 'reward'].forEach(function (type) {
+            const applied = orderAppliedCard(order, type);
+            const $list = $('.order-card-list[data-card-type="' + type + '"]');
+
+            $list.find('.order-card-option').each(function () {
+                const $option = $(this);
+                const card = {
+                    id: $option.data('card-id'),
+                    product_id: $option.data('product-id') || null,
+                    minimum_spend: $option.data('minimum-spend'),
+                    value: $option.data('card-value')
+                };
+                const eligible = cardIsEligible(card, order, totals);
+
+                $option.toggleClass('is-ineligible', !eligible);
+                $option.find('.order-card-radio')
+                    .prop('disabled', !eligible)
+                    .prop('checked', !!applied && String(applied.id) === String(card.id));
+            });
+        });
+    }
+
     function serviceFeeLabel(serviceFee) {
         const normalized = normalizedServiceFeeLine(serviceFee);
 
@@ -1814,13 +1872,33 @@
         const serviceFees = order ? orderServiceFees(order) : [];
         const normalizedFees = normalizedServiceFees(serviceFees);
         const amount = paymentAmountValue();
-        const remaining = Math.max(totals.total - amount, 0);
-        const changeDue = Math.max(amount - totals.total, 0);
+        const giftCard = orderAppliedCard(order, 'gift');
+        const rewardCard = orderAppliedCard(order, 'reward');
+        const giftCardAmount = giftCardAmountForOrder(order, totals);
+        const amountDueAfterGiftCard = roundMoney(Math.max(totals.total - giftCardAmount, 0));
+        const remaining = Math.max(amountDueAfterGiftCard - amount, 0);
+        const changeDue = Math.max(amount - amountDueAfterGiftCard, 0);
         const canCheckout = order && order.items.length > 0 && totals.orderSubtotal > 0 && !isSavingOrder;
 
         $('.payment-order-number').text(paymentOrderNumber());
         $('.payment-total').text(formatMoney(totals.total));
         $('.payment-subtotal').text(formatMoney(totals.productSubtotal));
+
+        $('.payment-gift-card-section').toggleClass('d-none', giftCardAmount <= 0);
+        if (giftCardAmount > 0 && giftCard) {
+            $('.payment-gift-card-name').text((giftCard.name || 'Gift Card') + ':');
+            $('.payment-gift-card-amount').text('-' + formatMoney(giftCardAmount));
+        }
+
+        const rewardIsEligible = cardIsEligible(rewardCard, order, totals);
+        $('.payment-reward-card-section').toggleClass('d-none', !rewardIsEligible);
+        if (rewardIsEligible) {
+            $('.payment-reward-card-name').text((rewardCard.name || 'Reward Card') + ':');
+            $('.payment-reward-card-points').text(Math.round(Number(rewardCard.value) || 0) + ' points');
+        }
+
+        $('.payment-utility-btn[data-bs-target="#offcanvasGiftCards"]').toggleClass('active', giftCardAmount > 0);
+        $('.payment-utility-btn[data-bs-target="#offcanvasRewardCards"]').toggleClass('active', rewardIsEligible);
 
         // Service Fee & Breakdowns
         const $serviceFeeSection = $('.payment-service-fee-section');
@@ -1949,6 +2027,7 @@
             .text(isSavingOrder ? 'Processing...' : 'Checkout');
 
         renderPaymentItems();
+        syncOrderCardDrawers();
     }
 
     function openPaymentScreen() {
@@ -2005,6 +2084,8 @@
 
     function validatePaymentForCheckout() {
         const totals = cartTotals();
+        const order = getActiveOrder();
+        const amountDue = roundMoney(Math.max(totals.total - giftCardAmountForOrder(order, totals), 0));
         const amount = paymentAmountValue();
 
         if (!paymentMethod) {
@@ -2013,7 +2094,7 @@
             return false;
         }
 
-        if (totals.total > 0 && amount <= 0) {
+        if (amountDue > 0 && amount <= 0) {
             notifyOrder('error', 'Please enter the payment amount.');
             return false;
         }
@@ -2111,6 +2192,8 @@
 
         const serviceFees = orderServiceFees(order);
         const serviceFeeDetails = serviceFeeDetailsPayload(orderServiceFees(order), totals);
+        const giftCard = orderAppliedCard(order, 'gift');
+        const rewardCard = orderAppliedCard(order, 'reward');
 
         return {
             customer_id: order.customer ? order.customer.id : null,
@@ -2123,6 +2206,10 @@
             service_fees: serviceFeeDetails ? serviceFeeDetails.fees : [],
             service_fee_amount: roundMoney((totals.servicePrice || 0) + (totals.serviceFee || 0)),
             service_fee_details: serviceFeeDetails,
+            selected_cards: {
+                gift_card_id: cardIsEligible(giftCard, order, totals) ? giftCard.id : null,
+                reward_card_id: cardIsEligible(rewardCard, order, totals) ? rewardCard.id : null
+            },
             items: order.items.map(function (item) {
                 return {
                     product_id: item.id,
@@ -2387,10 +2474,68 @@
         $('.payment-methods').removeClass('is-invalid');
 
         if (paymentMethod && paymentMethod !== 'cash' && paymentAmountInput === '') {
-            setPaymentAmount(cartTotals().total.toFixed(2));
+            const totals = cartTotals();
+            const amountDue = Math.max(totals.total - giftCardAmountForOrder(getActiveOrder(), totals), 0);
+            setPaymentAmount(amountDue.toFixed(2));
             return;
         }
 
+        renderPaymentScreen();
+    });
+
+    $(document).on('shown.bs.offcanvas', '.order-card-offcanvas', function () {
+        syncOrderCardDrawers();
+    });
+
+    $(document).on('click', '.apply-order-card', function () {
+        const type = String($(this).data('card-type') || '');
+        const order = getActiveOrder();
+        const $selected = $('.order-card-list[data-card-type="' + type + '"] .order-card-radio:checked')
+            .closest('.order-card-option');
+
+        if (!order || !$selected.length) {
+            notifyOrder('warning', 'Please select an eligible card first.');
+            return;
+        }
+
+        const card = {
+            id: Number($selected.data('card-id')),
+            type: type,
+            name: String($selected.data('card-name') || ''),
+            value: Number($selected.data('card-value')) || 0,
+            minimum_spend: Number($selected.data('minimum-spend')) || 0,
+            product_id: $selected.data('product-id') || null
+        };
+        const totals = totalsForOrder(order);
+
+        if (!cardIsEligible(card, order, totals)) {
+            notifyOrder('warning', 'This card is not eligible for the current order.');
+            return;
+        }
+
+        order.appliedCards = order.appliedCards || { gift: null, reward: null };
+        order.appliedCards[type] = card;
+
+        if (type === 'gift' && giftCardAmountForOrder(order, totals) >= totals.total && !paymentMethod) {
+            paymentMethod = 'cash';
+        }
+
+        scheduleDraftCartSave();
+        renderPaymentScreen();
+        bootstrap.Offcanvas.getOrCreateInstance($selected.closest('.offcanvas')[0]).hide();
+        notifyOrder('success', card.name + ' applied.');
+    });
+
+    $(document).on('click', '.clear-order-card', function () {
+        const type = String($(this).data('card-type') || '');
+        const order = getActiveOrder();
+
+        if (!order) return;
+
+        order.appliedCards = order.appliedCards || { gift: null, reward: null };
+        order.appliedCards[type] = null;
+        $('.order-card-list[data-card-type="' + type + '"] .order-card-radio').prop('checked', false);
+        scheduleDraftCartSave();
         renderPaymentScreen();
     });
 

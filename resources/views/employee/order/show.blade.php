@@ -118,12 +118,25 @@
                             <strong>-{{ $order['credit_applied_label'] }}</strong>
                         </div>
                     @endif
+                    @if (($order['gift_card_amount'] ?? 0) > 0)
+                        <div class="employee-order-details-payment-line employee-order-details-discount-row">
+                            <span>{{ data_get($order, 'card_details.gift.name', 'Gift Card') }}:</span>
+                            <strong>-{{ $order['gift_card_amount_label'] }}</strong>
+                        </div>
+                    @endif
                 </div>
 
                 @if (($order['credit_earned'] ?? 0) > 0)
                     <div class="alert alert-success d-flex align-items-center gap-2 py-2 px-3 mt-3 mb-0">
                         <i class="ti tabler-coin fs-5"></i>
                         <span class="small fw-semibold">Customer earned {{ $order['credit_earned_label'] }} store credit on this order.</span>
+                    </div>
+                @endif
+
+                @if (($order['reward_points_earned'] ?? 0) > 0)
+                    <div class="alert alert-info d-flex align-items-center gap-2 py-2 px-3 mt-3 mb-0">
+                        <i class="ti tabler-trophy fs-5"></i>
+                        <span class="small fw-semibold">{{ data_get($order, 'card_details.reward.name', 'Reward Card') }} awarded {{ number_format($order['reward_points_earned']) }} points.</span>
                     </div>
                 @endif
 
