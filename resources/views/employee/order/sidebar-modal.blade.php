@@ -52,6 +52,70 @@
         </div>
     </div>
 
+    @foreach([
+        'gift' => ['title' => 'Gift Cards', 'icon' => 'tabler-gift', 'valueSuffix' => ''],
+        'reward' => ['title' => 'Reward Cards', 'icon' => 'tabler-trophy', 'valueSuffix' => ' points'],
+    ] as $cardType => $config)
+        <div class="offcanvas offcanvas-start offcanvas-discount order-card-offcanvas" tabindex="-1"
+            id="offcanvas{{ ucfirst($cardType) }}Cards"
+            aria-labelledby="offcanvas{{ ucfirst($cardType) }}CardsLabel">
+            <div class="offcanvas-header border-bottom py-3">
+                <div class="d-flex align-items-center gap-3">
+                    <button type="button"
+                        class="btn btn-sm bg-label-primary bg-opacity-10 text-primary border-0 rounded-pill btn-circle-38"
+                        data-bs-dismiss="offcanvas">
+                        <i class="ti tabler-arrow-left fs-4"></i>
+                    </button>
+                    <h4 class="offcanvas-title fw-bold" id="offcanvas{{ ucfirst($cardType) }}CardsLabel">{{ $config['title'] }}</h4>
+                </div>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body p-4">
+                <p class="text-muted mb-4">Choose a valid {{ $cardType }} card to apply to this order.</p>
+
+                <div class="order-card-list" data-card-type="{{ $cardType }}">
+                    @forelse($orderCards->get($cardType, collect()) as $card)
+                        <label class="order-card-option" data-card-id="{{ $card->id }}"
+                            data-card-type="{{ $cardType }}" data-card-name="{{ $card->name }}"
+                            data-card-value="{{ (float) $card->value }}"
+                            data-minimum-spend="{{ (float) $card->minimum_spend }}"
+                            data-product-id="{{ $card->product_id }}">
+                            <input class="form-check-input order-card-radio" type="radio"
+                                name="selected_{{ $cardType }}_card" value="{{ $card->id }}">
+                            <span class="order-card-option-icon"><i class="ti {{ $config['icon'] }}"></i></span>
+                            <span class="min-w-0 flex-grow-1">
+                                <span class="d-block fw-bold">{{ $card->name }}</span>
+                                <span class="d-block text-primary fw-bold">
+                                    @if($cardType === 'gift')
+                                        {{ \App\Support\Currency::format((float) $card->value) }}
+                                    @else
+                                        {{ number_format((float) $card->value) }}{{ $config['valueSuffix'] }}
+                                    @endif
+                                </span>
+                                <small class="text-muted d-block">
+                                    Min. spend {{ \App\Support\Currency::format((float) $card->minimum_spend) }}
+                                    @if($card->valid_until)
+                                        &middot; Valid through {{ $card->valid_until->format('M d, Y') }}
+                                    @endif
+                                </small>
+                            </span>
+                        </label>
+                    @empty
+                        <div class="text-center py-5 border rounded-3 bg-light bg-opacity-50">
+                            <i class="ti {{ $config['icon'] }} fs-1 text-muted"></i>
+                            <p class="text-muted mb-0 mt-2">No valid {{ strtolower($config['title']) }} available.</p>
+                        </div>
+                    @endforelse
+                </div>
+
+                <div class="d-flex justify-content-between gap-2 mt-4">
+                    <button type="button" class="btn btn-outline-danger clear-order-card" data-card-type="{{ $cardType }}">Remove</button>
+                    <button type="button" class="btn btn-primary apply-order-card" data-card-type="{{ $cardType }}">Apply Card</button>
+                </div>
+            </div>
+        </div>
+    @endforeach
+
     <!-- Service Fee Offcanvas -->
     <div class="offcanvas offcanvas-start offcanvas-discount" tabindex="-1" id="offcanvasServiceFee"
         aria-labelledby="offcanvasServiceFeeLabel">

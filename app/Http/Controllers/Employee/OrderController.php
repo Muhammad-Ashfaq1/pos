@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Employee;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Employee\Orders\SaveOrderRequest;
 use App\Mail\ShareOrderMail;
+use App\Models\Card;
 use App\Models\Order;
 use App\Repositories\Interface\OrderRepositoryInterface;
 use App\Support\Tenancy\TenantContext;
@@ -36,6 +37,12 @@ class OrderController extends Controller
         return view('employee.order.new-order', [
             'vehicleRequired' => $tenant?->isVehicleRequired() ?? true,
             'returnDaysAfterPurchase' => $tenant?->returnDaysAfterPurchase() ?? 30,
+            'orderCards' => Card::query()
+                ->currentlyValid()
+                ->whereIn('card_type', [Card::TYPE_GIFT, Card::TYPE_REWARD])
+                ->orderBy('name')
+                ->get(['id', 'product_id', 'card_type', 'name', 'value', 'minimum_spend', 'valid_until'])
+                ->groupBy('card_type'),
         ]);
     }
 

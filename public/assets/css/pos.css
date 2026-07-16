@@ -153,6 +153,12 @@
     font-size: 1.35rem;
 }
 
+.payment-utility-btn.active {
+    border-color: #1f1b6d;
+    background: #1f1b6d;
+    color: #fbbf24;
+}
+
 .payment-items-list {
     border-top: 1px solid #edf0f7;
     padding-top: 1rem;
@@ -690,6 +696,46 @@
 
 .offcanvas-discount {
     width: 400px !important;
+}
+
+.order-card-list {
+    display: grid;
+    gap: .85rem;
+}
+
+.order-card-option {
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+    padding: 1rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .85rem;
+    cursor: pointer;
+    transition: border-color .2s ease, background-color .2s ease, opacity .2s ease;
+}
+
+.order-card-option:hover,
+.order-card-option:has(.order-card-radio:checked) {
+    border-color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), .06);
+}
+
+.order-card-option.is-ineligible {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.order-card-option-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 2.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), .12);
+    font-size: 1.25rem;
 }
 
 .fs-tiny {

@@ -73,10 +73,8 @@
             --preview-page: #f8f8fc;
             --preview-card: #ffffff;
             --preview-border: #c7d2fe;
-            /* --preview-indigo: #4338ca;
-            --preview-indigo-dark: #312e81; */
-            --preview-indigo: #312e81;
-            --preview-indigo-dark: #262363;
+            --preview-indigo: var(--bs-primary);
+            --preview-indigo-dark: color-mix(in srgb, var(--bs-primary) 78%, #000);
             --preview-muted: #64748b;
             --preview-slate-light: #94a3b8;
             --preview-amber: #fbbf24;
@@ -90,26 +88,6 @@
             background:
                 radial-gradient(circle at top right, rgba(165, 180, 252, 0.18), transparent 22%),
                 linear-gradient(180deg, #fafafd 0%, #f5f6fb 100%);
-        }
-
-        :root, [data-bs-theme=light] {
-            --bs-primary: #312e81;
-            --bs-primary-rgb: 49, 46, 129;
-            --bs-link-color: #312e81;
-            --bs-link-hover-color: #262363;
-        }
-
-        .btn-primary {
-            --bs-btn-bg: #312e81;
-            --bs-btn-border-color: #312e81;
-            --bs-btn-hover-bg: #28256a;
-            --bs-btn-hover-border-color: #262363;
-            --bs-btn-active-bg: #262363;
-            --bs-btn-active-border-color: #23215d;
-        }
-
-        .text-primary {
-            color: #312e81 !important;
         }
 
         .employee-admin-preview .preview-shell {
@@ -249,6 +227,7 @@
 
         .employee-admin-preview .preview-main {
             padding-bottom: 8rem;
+            padding-top: 2rem;
         }
 
         .employee-admin-preview .preview-grid {
@@ -368,6 +347,7 @@
         .employee-admin-preview .preview-tile:hover {
             transform: translateY(-2px);
             box-shadow: 0 18px 36px rgba(67, 56, 202, 0.08);
+            background-color: lightgray;
         }
 
         .employee-admin-preview .preview-chip--blue {
