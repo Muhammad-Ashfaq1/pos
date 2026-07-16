@@ -18,7 +18,7 @@
         ['label' => 'Returns', 'icon' => 'tabler-arrow-back-up', 'url' => route('employee.order.returns'), 'permission' => 'orders.view'],
         ['label' => 'Product Setup', 'icon' => 'tabler-package-import', 'url' => route('employee.products.index'), 'permission' => 'product.create'],
         ['label' => 'Invoices', 'icon' => 'tabler-file-invoice'],
-        ['label' => 'Cards', 'icon' => 'tabler-cards', 'url' => route('employee.cards.index')],
+        ['label' => 'Discounts', 'icon' => 'tabler-badge'],
     ];
 
     $tiles = collect($tiles)

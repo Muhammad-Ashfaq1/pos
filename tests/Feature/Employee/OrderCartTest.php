@@ -53,10 +53,6 @@ class OrderCartTest extends TestCase
                     'customer' => ['id' => 3, 'text' => 'Jane Doe'],
                     'vehicle' => ['id' => 7, 'text' => 'ABC-123'],
                     'serviceFees' => [],
-                    'appliedCards' => [
-                        'gift' => ['id' => 12, 'name' => 'Summer Gift', 'value' => 25],
-                        'reward' => ['id' => 13, 'name' => 'VIP Reward', 'value' => 100],
-                    ],
                 ],
             ],
             'active_order_id' => 'draft-1',
@@ -78,8 +74,6 @@ class OrderCartTest extends TestCase
             ->getJson(route('employee.order.cart.show'))
             ->assertOk()
             ->assertJsonPath('data.orders.0.items.0.name', 'Oil Filter')
-            ->assertJsonPath('data.orders.0.appliedCards.gift.id', 12)
-            ->assertJsonPath('data.orders.0.appliedCards.reward.value', 100)
             ->assertJsonPath('data.active_order_id', 'draft-1');
 
         $this->actingAs($employee)
