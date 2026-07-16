@@ -7,7 +7,6 @@
             'items' => [
                 ['label' => 'Dashboard', 'route' => 'employee.dashboard', 'pattern' => 'employee.dashboard', 'icon' => 'tabler-layout-dashboard', 'visible' => true],
                 ['label' => 'POS / Workspace', 'route' => 'employee.pos', 'pattern' => 'employee.workspace|employee.pos', 'icon' => 'tabler-cash-register', 'visible' => true],
-                ['label' => 'Cards', 'route' => 'employee.cards.index', 'pattern' => 'employee.cards.*', 'icon' => 'tabler-cards', 'visible' => true],
             ],
         ],
         [
@@ -66,7 +65,7 @@
 
         #layout-menu.employee-menu .employee-mini-stat {
             border-radius: 0.75rem;
-            background: rgba(var(--bs-primary-rgb), 0.08);
+            background: rgba(115, 103, 240, 0.08);
         }
     </style>
 @endonce

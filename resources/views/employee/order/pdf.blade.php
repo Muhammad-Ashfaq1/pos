@@ -286,12 +286,6 @@
                 <td class="text-right">{{ $details['total_amount_label'] }}</td>
             </tr>
             @if($order->status !== 'estimate')
-                @if(($order->gift_card_amount ?? 0) > 0)
-                    <tr style="color: #16a34a;">
-                        <td>{{ data_get($order->card_details, 'gift.name', 'Gift Card') }}:</td>
-                        <td class="text-right">-{{ $details['gift_card_amount_label'] }}</td>
-                    </tr>
-                @endif
                 <tr>
                     <td>Paid Amount:</td>
                     <td class="text-right">{{ $details['payment_amount_label'] }}</td>
@@ -302,11 +296,6 @@
                 </tr>
             @endif
         </table>
-
-        @if(($order->reward_points_earned ?? 0) > 0)
-            <p><strong>{{ data_get($order->card_details, 'reward.name', 'Reward Card') }}:</strong>
-                {{ number_format($order->reward_points_earned) }} reward points earned</p>
-        @endif
 
         @if(!empty($order->notes))
             @php

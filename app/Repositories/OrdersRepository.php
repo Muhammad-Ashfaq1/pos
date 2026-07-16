@@ -2,7 +2,6 @@
 
 namespace App\Repositories;
 
-use App\Models\Card;
 use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\DiscountGroup;
@@ -184,16 +183,6 @@ class OrdersRepository implements OrderRepositoryInterface
             $taxAmount = $tax['amount'];
             $taxBaseAmount = $tax['base'];
             $totalAmount = round(max($subtotalAmount + $serviceFeeAmount - $discountAmount, 0) + $taxAmount, 2);
-            $cardSelection = $isEstimate
-                ? ['gift' => null, 'reward' => null, 'details' => null]
-                : $this->selectedCards(
-                    $data['selected_cards'] ?? [],
-                    $requestedProductIds,
-                    round($subtotalAmount + $serviceFeeAmount, 2)
-                );
-            $giftCardAmount = $cardSelection['gift']
-                ? round(min((float) $cardSelection['gift']->value, $totalAmount), 2)
-                : 0.0;
 
             if ($isEstimate) {
                 $cashPayment = 0.0;
@@ -208,10 +197,10 @@ class OrdersRepository implements OrderRepositoryInterface
                 $paymentMethod = data_get($data, 'payment.method');
                 $creditsRequested = round((float) data_get($data, 'payment.credits_applied', 0), 2);
                 $availableCredit = $customer ? round((float) $customer->credit_balance, 2) : 0.0;
-                // Store credit cannot consume value already covered by the gift card.
-                $creditsApplied = round(min(max($creditsRequested, 0), $availableCredit, max($totalAmount - $giftCardAmount, 0)), 2);
-                // payment_amount tracks all value paid toward the order.
-                $paymentAmount = round($cashPayment + $creditsApplied + $giftCardAmount, 2);
+                // Store credit can never exceed the customer's balance or the order total.
+                $creditsApplied = round(min(max($creditsRequested, 0), $availableCredit, $totalAmount), 2);
+                // payment_amount tracks ALL value paid toward the order (cash + credit).
+                $paymentAmount = round($cashPayment + $creditsApplied, 2);
                 $status = match (true) {
                     $paymentAmount >= $totalAmount => Order::STATUS_PAID,
                     $paymentAmount > 0 => Order::STATUS_PARTIALLY_PAID,
@@ -252,9 +241,6 @@ class OrdersRepository implements OrderRepositoryInterface
                 'payment_method' => $paymentMethod,
                 'payment_amount' => $paymentAmount,
                 'credit_applied' => $creditsApplied,
-                'gift_card_amount' => $giftCardAmount,
-                'reward_points_earned' => 0,
-                'card_details' => $cardSelection['details'],
                 'change_amount' => $changeAmount,
                 'paid_at' => $isPaid ? now() : null,
                 'notes' => $data['notes'] ?? null,
@@ -283,21 +269,11 @@ class OrdersRepository implements OrderRepositoryInterface
                 ]);
             }
 
-            if (! $isEstimate && $giftCardAmount > 0) {
-                $order->payments()->create([
-                    'tenant_id' => $order->tenant_id,
-                    'amount' => $giftCardAmount,
-                    'payment_method' => 'gift_card',
-                    'created_by' => $userId,
-                ]);
-            }
-
             if (! $isEstimate) {
                 $this->deductTrackedStock($products, $requestedQuantityByProduct, $userId);
             }
 
             if (! $isEstimate && $isPaid) {
-                $this->awardSelectedRewardPoints($order, $customer);
                 $this->applyVisitAndEarn($order, $customer, $userId);
             }
 
@@ -309,92 +285,6 @@ class OrdersRepository implements OrderRepositoryInterface
             'message' => "Order {$order->order_number} saved successfully.",
             'data' => $this->transformOrder($order),
         ];
-    }
-
-    private function selectedCards(array $selection, Collection $productIds, float $qualifyingSpend): array
-    {
-        $requested = collect([
-            Card::TYPE_GIFT => data_get($selection, 'gift_card_id'),
-            Card::TYPE_REWARD => data_get($selection, 'reward_card_id'),
-        ])->filter()->map(fn ($id) => (int) $id);
-
-        if ($requested->isEmpty()) {
-            return ['gift' => null, 'reward' => null, 'details' => null];
-        }
-
-        $cards = Card::query()
-            ->whereIn('id', $requested->values()->all())
-            ->get()
-            ->keyBy('id');
-        $resolved = [];
-        $details = [];
-
-        foreach ($requested as $type => $cardId) {
-            $card = $cards->get($cardId);
-            $label = $type === Card::TYPE_GIFT ? 'gift card' : 'reward card';
-
-            if (! $card || $card->card_type !== $type) {
-                throw ValidationException::withMessages([
-                    "selected_cards.{$type}_card_id" => "The selected {$label} is no longer available.",
-                ]);
-            }
-
-            if (! $card->is_active || ($card->valid_until && $card->valid_until->isBefore(today()))) {
-                throw ValidationException::withMessages([
-                    "selected_cards.{$type}_card_id" => "The selected {$label} has expired or is inactive.",
-                ]);
-            }
-
-            if ($qualifyingSpend + 0.001 < (float) $card->minimum_spend) {
-                throw ValidationException::withMessages([
-                    "selected_cards.{$type}_card_id" => "This {$label} requires a minimum spend of ".$this->moneyLabel((float) $card->minimum_spend).'.',
-                ]);
-            }
-
-            if ($card->product_id && ! $productIds->contains((int) $card->product_id)) {
-                throw ValidationException::withMessages([
-                    "selected_cards.{$type}_card_id" => "This {$label} requires its linked product to be in the order.",
-                ]);
-            }
-
-            $resolved[$type] = $card;
-            $details[$type] = [
-                'id' => $card->id,
-                'name' => $card->name,
-                'value' => (float) $card->value,
-                'minimum_spend' => (float) $card->minimum_spend,
-                'product_id' => $card->product_id,
-                'valid_until' => $card->valid_until?->toDateString(),
-            ];
-        }
-
-        return [
-            'gift' => $resolved[Card::TYPE_GIFT] ?? null,
-            'reward' => $resolved[Card::TYPE_REWARD] ?? null,
-            'details' => $details ?: null,
-        ];
-    }
-
-    private function awardSelectedRewardPoints(Order $order, ?Customer $customer): void
-    {
-        if (! $customer || (int) $order->reward_points_earned > 0) {
-            return;
-        }
-
-        $points = max(0, (int) round((float) data_get($order->card_details, 'reward.value', 0)));
-
-        if ($points === 0) {
-            return;
-        }
-
-        $lockedCustomer = Customer::query()->lockForUpdate()->find($customer->getKey());
-
-        if (! $lockedCustomer) {
-            return;
-        }
-
-        $lockedCustomer->increment('loyalty_points_balance', $points);
-        $order->forceFill(['reward_points_earned' => $points])->save();
     }
 
     private function productDiscountAmount(?Discount $discount, float $unitPrice, int $quantity): float
@@ -757,9 +647,6 @@ class OrdersRepository implements OrderRepositoryInterface
             'total_amount' => (float) $order->total_amount,
             'payment_method' => $order->payment_method,
             'payment_amount' => (float) $order->payment_amount,
-            'gift_card_amount' => (float) $order->gift_card_amount,
-            'reward_points_earned' => (int) $order->reward_points_earned,
-            'card_details' => $order->card_details,
             'change_amount' => (float) $order->change_amount,
             'paid_at' => $order->paid_at?->toISOString(),
             'items' => $order->items->map(fn ($item) => [
@@ -934,7 +821,7 @@ class OrdersRepository implements OrderRepositoryInterface
                 )
                 ->orderBy('id'),
             'date_opened' => $query->orderByDesc('created_at')->orderByDesc('id'),
-            'order_id' => $query->orderByDesc('id'),
+            'order_id' => $query->orderBy('id'),
             'order_total' => $query->orderByDesc('total_amount')->orderByDesc('created_at'),
             'oldest' => $query->orderBy('created_at')->orderBy('id'),
             'amount_desc' => $query->orderByDesc('total_amount')->orderByDesc('created_at'),
@@ -1014,10 +901,6 @@ class OrdersRepository implements OrderRepositoryInterface
             'payment_amount_label' => $this->moneyLabel($paymentAmount),
             'credit_applied' => (float) $order->credit_applied,
             'credit_applied_label' => $this->moneyLabel((float) $order->credit_applied),
-            'gift_card_amount' => (float) $order->gift_card_amount,
-            'gift_card_amount_label' => $this->moneyLabel((float) $order->gift_card_amount),
-            'reward_points_earned' => (int) $order->reward_points_earned,
-            'card_details' => $order->card_details,
             'credit_earned' => (float) $order->credit_earned,
             'credit_earned_label' => $this->moneyLabel((float) $order->credit_earned),
             'balance_due' => $balanceDue,
@@ -1278,7 +1161,6 @@ class OrdersRepository implements OrderRepositoryInterface
             }
 
             if ($order->status === Order::STATUS_PAID) {
-                $this->awardSelectedRewardPoints($order, $customer);
                 $this->applyVisitAndEarn($order, $customer, $userId);
             }
 
