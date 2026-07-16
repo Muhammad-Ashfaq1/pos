@@ -66,7 +66,7 @@
 
         #layout-menu.employee-menu .employee-mini-stat {
             border-radius: 0.75rem;
-            background: rgba(var(--bs-primary-rgb), 0.08);
+            background: rgba(115, 103, 240, 0.08);
         }
     </style>
 @endonce
