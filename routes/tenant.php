@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DiscountGroupController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Tenant\CardController;
 use App\Http\Controllers\Tenant\CategoryController;
 use App\Http\Controllers\Tenant\CustomerController;
 use App\Http\Controllers\Tenant\DashboardController;
@@ -182,6 +183,35 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                         Route::delete('/{discount}', 'destroy')
                             ->middleware('permission:discount.manage')
                             ->name('destroy');
+                    });
+
+                Route::prefix('cards')
+                    ->name('cards.')
+                    ->controller(CardController::class)
+                    ->group(function () {
+                        Route::get('/', 'index')
+                            ->middleware('permission:cards.manage')
+                            ->name('index');
+
+                        Route::prefix('{type}')
+                            ->whereIn('type', ['discount', 'gift', 'reward'])
+                            ->group(function () {
+                                Route::get('/', 'typeIndex')
+                                    ->middleware('permission:cards.manage')
+                                    ->name('type');
+                                Route::get('/listing', 'listing')
+                                    ->middleware('permission:cards.manage')
+                                    ->name('listing');
+                                Route::get('/{card}/edit', 'edit')
+                                    ->middleware('permission:cards.manage')
+                                    ->name('edit');
+                                Route::post('/save', 'save')
+                                    ->middleware('permission:cards.manage')
+                                    ->name('save');
+                                Route::delete('/{card}', 'destroy')
+                                    ->middleware('permission:cards.manage')
+                                    ->name('destroy');
+                            });
                     });
 
                 Route::prefix('customers')

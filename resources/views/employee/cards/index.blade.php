@@ -1,9 +1,11 @@
 @extends('layouts.employee-portal')
 
-@section('title', 'Cards')
+@section('title', 'Discounts')
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/gift-card.css') }}?v={{ filemtime(public_path('assets/css/gift-card.css')) }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/reward-card.css') }}?v={{ filemtime(public_path('assets/css/reward-card.css')) }}">
 @endpush
 
 @section('content')
@@ -12,7 +14,7 @@
             'discount' => [
                 'title' => 'Discount Cards',
                 'singular' => 'Discount Card',
-                'icon' => 'tabler-discount-2',
+                'icon' => 'tabler-ticket',
                 'modal' => 'addDiscountCardModal',
             ],
             'gift' => [
@@ -29,6 +31,9 @@
             ],
         ];
         $currencySymbol = \App\Support\Currency::symbol();
+        $organizationName = auth()->user()?->tenant?->display_name
+            ?? (function_exists('tenant') ? tenant()?->display_name : null)
+            ?? 'Shop';
         $initialModule = old('card_type', request('module', 'discount'));
         if (! array_key_exists($initialModule, $modules)) {
             $initialModule = 'discount';
@@ -36,7 +41,7 @@
     @endphp
 
     <div class="employee-orders-page">
-        <x-employee.page-header title="Cards" :back-url="route('employee.dashboard')" back-title="Back to dashboard">
+        <x-employee.page-header title="Discounts" :back-url="route('employee.dashboard')" back-title="Back to dashboard">
             <x-slot:actions>
                 <button
                     type="button"
@@ -86,6 +91,36 @@
                             <i class="ti {{ $config['icon'] }}"></i>
                             <span>No {{ strtolower($config['title']) }} yet. Create one to get started.</span>
                         </div>
+                    @elseif ($module === 'gift')
+                        <div class="gift-card-list">
+                            @foreach ($cards as $card)
+                                <x-gift-card
+                                    :amount="$card->value"
+                                    :status="data_get($card->details, 'payment_status', 'unpaid')"
+                                    :card-label="$card->name"
+                                    :unique-id="$card->id"
+                                    :expires-at="$card->valid_until"
+                                    :organization-name="$organizationName"
+                                />
+                            @endforeach
+                        </div>
+                    @elseif ($module === 'reward')
+                        <div class="reward-card-list">
+                            @foreach ($cards as $card)
+                                <x-reward-card
+                                    :name="$card->name"
+                                    :value="$card->value"
+                                    :discount-type="$card->discount_type"
+                                    :minimum-spend="$card->minimum_spend"
+                                    :valid-until="$card->valid_until"
+                                    :unique-id="$card->id"
+                                    :product-ids="$card->productIds()"
+                                    :editable="true"
+                                    :collected="in_array(strtolower((string) data_get($card->details, 'status', '')), ['collected', 'redeemed'], true)
+                                        || filter_var(data_get($card->details, 'collected'), FILTER_VALIDATE_BOOLEAN)"
+                                />
+                            @endforeach
+                        </div>
                     @else
                         <div class="employee-loyalty-cards">
                             @foreach ($cards as $card)
@@ -98,29 +133,28 @@
                                             <span class="employee-order-number">{{ $card->name }}</span>
                                         </div>
                                         <span class="badge bg-label-primary">
-                                            @if ($module === 'discount')
-                                                {{ ucfirst($card->discount_type) }}
-                                            @else
-                                                {{ $config['singular'] }}
-                                            @endif
+                                            {{ ucfirst($card->discount_type) }}
                                         </span>
                                     </div>
 
                                     <div class="employee-loyalty-card-value">
-                                        @if ($module === 'discount')
-                                            {{ $card->discount_type === 'percentage'
-                                                ? rtrim(rtrim(number_format((float) $card->value, 2, '.', ''), '0'), '.') . '%'
-                                                : \App\Support\Currency::format((float) $card->value) }}
-                                        @elseif ($module === 'gift')
-                                            {{ \App\Support\Currency::format((float) $card->value) }}
-                                        @else
-                                            {{ number_format((float) $card->value) }} points
-                                        @endif
+                                        {{ $card->discount_type === 'percentage'
+                                            ? rtrim(rtrim(number_format((float) $card->value, 2, '.', ''), '0'), '.') . '%'
+                                            : \App\Support\Currency::format((float) $card->value) }}
                                     </div>
 
                                     <div class="employee-loyalty-card-meta">
                                         <span>Min. spend {{ \App\Support\Currency::format((float) $card->minimum_spend) }}</span>
-                                        <span>Product: {{ $card->product?->name ?? 'All products' }}</span>
+                                        @php
+                                            $cardProductNames = collect($card->productIds())
+                                                ->map(fn ($id) => $productsById->get($id)?->name)
+                                                ->filter()
+                                                ->values();
+                                        @endphp
+                                        <span>
+                                            Product{{ $cardProductNames->count() === 1 ? '' : 's' }}:
+                                            {{ $cardProductNames->isEmpty() ? 'All products' : $cardProductNames->implode(', ') }}
+                                        </span>
                                         <span>
                                             {{ $card->valid_until
                                                 ? 'Valid until '.$card->valid_until->format('M d, Y')
@@ -240,24 +274,26 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label" for="discount_product_id">Select Product</label>
+                                <label class="form-label" for="discount_product_ids">Select Products</label>
                                 <select
-                                    class="form-select {{ $errors->has('product_id') && old('card_type') === 'discount' ? 'is-invalid' : '' }}"
-                                    id="discount_product_id"
-                                    name="product_id"
+                                    class="form-select select2 card-product-select {{ ($errors->has('product_ids') || $errors->has('product_ids.*')) && old('card_type') === 'discount' ? 'is-invalid' : '' }}"
+                                    id="discount_product_ids"
+                                    name="product_ids[]"
+                                    multiple
+                                    data-placeholder="Select a product"
+                                    data-dropdown-parent="#addDiscountCardModal"
                                 >
-                                    <option value="">All products</option>
                                     @foreach ($products as $product)
                                         <option
                                             value="{{ $product->id }}"
-                                            @selected(old('card_type') === 'discount' && (string) old('product_id') === (string) $product->id)
+                                            @selected(old('card_type') === 'discount' && in_array((string) $product->id, array_map('strval', (array) old('product_ids', [])), true))
                                         >
                                             {{ $product->name }}
                                         </option>
                                     @endforeach
                                 </select>
-                                @if ($errors->has('product_id') && old('card_type') === 'discount')
-                                    <div class="invalid-feedback">{{ $errors->first('product_id') }}</div>
+                                @if (($errors->has('product_ids') || $errors->has('product_ids.*')) && old('card_type') === 'discount')
+                                    <div class="invalid-feedback d-block">{{ $errors->first('product_ids') ?: $errors->first('product_ids.*') }}</div>
                                 @endif
                             </div>
 
@@ -304,6 +340,12 @@
             'step' => '1',
         ],
     ] as $module => $config)
+        @php
+            $isRewardEditError = $module === 'reward'
+                && $errors->any()
+                && old('card_type') === 'reward'
+                && old('_edit_card_id');
+        @endphp
         <div
             class="modal fade"
             id="add{{ ucfirst($module) }}CardModal"
@@ -315,12 +357,33 @@
         >
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
-                    <form method="POST" action="{{ route('employee.cards.store') }}" novalidate>
+                    <form
+                        method="POST"
+                        action="{{ $isRewardEditError
+                            ? route('employee.cards.update', old('_edit_card_id'))
+                            : route('employee.cards.store') }}"
+                        novalidate
+                        @if ($module === 'reward')
+                            id="rewardCardForm"
+                            data-store-action="{{ route('employee.cards.store') }}"
+                            data-update-action-template="{{ route('employee.cards.update', ['card' => '__CARD__']) }}"
+                            data-add-title="Add {{ $config['title'] }}"
+                            data-edit-title="Edit {{ $config['title'] }}"
+                            data-add-submit="Save {{ $config['title'] }}"
+                            data-edit-submit="Update {{ $config['title'] }}"
+                        @endif
+                    >
                         @csrf
+                        @if ($isRewardEditError)
+                            @method('PUT')
+                            <input type="hidden" name="_edit_card_id" value="{{ old('_edit_card_id') }}">
+                        @endif
                         <input type="hidden" name="card_type" value="{{ $module }}">
 
                         <div class="modal-header">
-                            <h5 class="modal-title" id="add{{ ucfirst($module) }}CardModalLabel">Add {{ $config['title'] }}</h5>
+                            <h5 class="modal-title" id="add{{ ucfirst($module) }}CardModalLabel">
+                                {{ $isRewardEditError ? 'Edit' : 'Add' }} {{ $config['title'] }}
+                            </h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
 
@@ -389,24 +452,26 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label" for="{{ $module }}_product_id">Select Product</label>
+                                    <label class="form-label" for="{{ $module }}_product_ids">Select Products</label>
                                     <select
-                                        class="form-select {{ $errors->has('product_id') && old('card_type') === $module ? 'is-invalid' : '' }}"
-                                        id="{{ $module }}_product_id"
-                                        name="product_id"
+                                        class="form-select select2 card-product-select {{ ($errors->has('product_ids') || $errors->has('product_ids.*')) && old('card_type') === $module ? 'is-invalid' : '' }}"
+                                        id="{{ $module }}_product_ids"
+                                        name="product_ids[]"
+                                        multiple
+                                        data-placeholder="Select a product"
+                                        data-dropdown-parent="#add{{ ucfirst($module) }}CardModal"
                                     >
-                                        <option value="">All products</option>
                                         @foreach ($products as $product)
                                             <option
                                                 value="{{ $product->id }}"
-                                                @selected(old('card_type') === $module && (string) old('product_id') === (string) $product->id)
+                                                @selected(old('card_type') === $module && in_array((string) $product->id, array_map('strval', (array) old('product_ids', [])), true))
                                             >
                                                 {{ $product->name }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @if ($errors->has('product_id') && old('card_type') === $module)
-                                        <div class="invalid-feedback">{{ $errors->first('product_id') }}</div>
+                                    @if (($errors->has('product_ids') || $errors->has('product_ids.*')) && old('card_type') === $module)
+                                        <div class="invalid-feedback d-block">{{ $errors->first('product_ids') ?: $errors->first('product_ids.*') }}</div>
                                     @endif
                                 </div>
 
@@ -429,7 +494,9 @@
 
                         <div class="modal-footer">
                             <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button class="btn btn-primary" type="submit">Save {{ $config['title'] }}</button>
+                            <button class="btn btn-primary" type="submit" @if ($module === 'reward') data-reward-submit @endif>
+                                {{ $isRewardEditError ? 'Update' : 'Save' }} {{ $config['title'] }}
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -447,6 +514,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const value = document.getElementById('discountValue');
     const addCardBtn = document.getElementById('addCardBtn');
     const addCardLabel = document.querySelector('[data-add-card-label]');
+    const rewardForm = document.getElementById('rewardCardForm');
+    const rewardModal = document.getElementById('addRewardCardModal');
 
     function updateDiscountField() {
         const percentage = type.value === 'percentage';
@@ -476,6 +545,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         addCardBtn.setAttribute('data-bs-target', tab.dataset.cardModal);
         addCardLabel.textContent = tab.dataset.cardLabel;
+        addCardBtn.setAttribute('data-active-module', module);
 
         const url = new URL(window.location.href);
         url.searchParams.set('module', module);
@@ -489,6 +559,203 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     activateModule(@json($initialModule));
+
+    function initCardProductSelects() {
+        if (!window.jQuery || typeof jQuery.fn.select2 !== 'function') {
+            return;
+        }
+
+        jQuery('.card-product-select').each(function () {
+            const $select = jQuery(this);
+
+            if ($select.data('select2')) {
+                return;
+            }
+
+            const dropdownParentSelector = $select.data('dropdown-parent');
+            const options = {
+                width: '100%',
+                placeholder: $select.data('placeholder') || 'Select a product',
+                allowClear: true,
+                closeOnSelect: false,
+                minimumResultsForSearch: 0,
+                dropdownParent: dropdownParentSelector ? jQuery(dropdownParentSelector) : $select.parent(),
+            };
+
+            // Multi-select hides dropdown search by default; decorate like order_service_filter.
+            // Force dropdown below the field (Select2 AttachBody otherwise flips upward near modal bottom).
+            if (jQuery.fn.select2.amd) {
+                const Utils = jQuery.fn.select2.amd.require('select2/utils');
+                const Dropdown = jQuery.fn.select2.amd.require('select2/dropdown');
+                const DropdownSearch = jQuery.fn.select2.amd.require('select2/dropdown/search');
+                const AttachBody = jQuery.fn.select2.amd.require('select2/dropdown/attachBody');
+
+                function AttachBodyForceBelow() {}
+
+                AttachBodyForceBelow.prototype._positionDropdown = function () {
+                    const offset = this.$container.offset();
+                    const containerBottom = offset.top + this.$container.outerHeight(false);
+                    const css = {
+                        left: offset.left,
+                        top: containerBottom,
+                    };
+
+                    let $offsetParent = this.$dropdownParent;
+                    if (!$offsetParent || !$offsetParent.length) {
+                        $offsetParent = jQuery(document.body);
+                    }
+
+                    if ($offsetParent[0] !== document.body) {
+                        const parentOffset = $offsetParent.offset();
+                        css.top -= parentOffset.top;
+                        css.left -= parentOffset.left;
+                        css.top += $offsetParent.scrollTop();
+                        css.left += $offsetParent.scrollLeft();
+                    }
+
+                    this.$dropdown
+                        .removeClass('select2-dropdown--above')
+                        .addClass('select2-dropdown--below');
+                    this.$container
+                        .removeClass('select2-container--above')
+                        .addClass('select2-container--below');
+
+                    this.$dropdownContainer.css(css);
+                };
+
+                options.dropdownAdapter = Utils.Decorate(
+                    Utils.Decorate(
+                        Utils.Decorate(Dropdown, DropdownSearch),
+                        AttachBody
+                    ),
+                    AttachBodyForceBelow
+                );
+            }
+
+            $select.select2(options);
+        });
+    }
+
+    initCardProductSelects();
+
+    function setRewardProductIds(productIds) {
+        const $select = window.jQuery ? jQuery('#reward_product_ids') : null;
+        if (!$select || !$select.length) {
+            return;
+        }
+
+        initCardProductSelects();
+        $select.val((productIds || []).map(String)).trigger('change');
+    }
+
+    function clearRewardValidationState() {
+        if (!rewardForm) {
+            return;
+        }
+
+        rewardForm.querySelectorAll('.is-invalid').forEach(function (el) {
+            el.classList.remove('is-invalid');
+        });
+        rewardForm.querySelectorAll('.invalid-feedback').forEach(function (el) {
+            el.remove();
+        });
+    }
+
+    function resetRewardFormToCreate() {
+        if (!rewardForm) {
+            return;
+        }
+
+        rewardForm.setAttribute('action', rewardForm.dataset.storeAction);
+        rewardForm.querySelectorAll('input[name="_method"], input[name="_edit_card_id"]').forEach(function (el) {
+            el.remove();
+        });
+
+        rewardForm.reset();
+        document.getElementById('reward_minimum_spend').value = '0';
+        setRewardProductIds([]);
+        clearRewardValidationState();
+
+        document.getElementById('addRewardCardModalLabel').textContent = rewardForm.dataset.addTitle;
+        const submitBtn = rewardForm.querySelector('[data-reward-submit]');
+        if (submitBtn) {
+            submitBtn.textContent = rewardForm.dataset.addSubmit;
+        }
+    }
+
+    function openRewardEdit(card) {
+        if (!rewardForm || !rewardModal || !card || !card.id) {
+            return;
+        }
+
+        clearRewardValidationState();
+
+        const updateAction = rewardForm.dataset.updateActionTemplate.replace('__CARD__', String(card.id));
+        rewardForm.setAttribute('action', updateAction);
+
+        let methodInput = rewardForm.querySelector('input[name="_method"]');
+        if (!methodInput) {
+            methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            const csrf = rewardForm.querySelector('input[name="_token"]');
+            if (csrf) {
+                csrf.insertAdjacentElement('afterend', methodInput);
+            } else {
+                rewardForm.prepend(methodInput);
+            }
+        }
+        methodInput.value = 'PUT';
+
+        let editIdInput = rewardForm.querySelector('input[name="_edit_card_id"]');
+        if (!editIdInput) {
+            editIdInput = document.createElement('input');
+            editIdInput.type = 'hidden';
+            editIdInput.name = '_edit_card_id';
+            rewardForm.appendChild(editIdInput);
+        }
+        editIdInput.value = String(card.id);
+
+        document.getElementById('reward_card_name').value = card.name || '';
+        document.getElementById('reward_card_value').value = card.value != null ? card.value : '';
+        document.getElementById('reward_minimum_spend').value = card.minimum_spend != null ? card.minimum_spend : '0';
+        document.getElementById('reward_valid_until').value = card.valid_until || '';
+        setRewardProductIds(card.product_ids || []);
+
+        document.getElementById('addRewardCardModalLabel').textContent = rewardForm.dataset.editTitle;
+        const submitBtn = rewardForm.querySelector('[data-reward-submit]');
+        if (submitBtn) {
+            submitBtn.textContent = rewardForm.dataset.editSubmit;
+        }
+
+        bootstrap.Modal.getOrCreateInstance(rewardModal).show();
+    }
+
+    document.querySelectorAll('[data-edit-reward-card]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            let card = {};
+            try {
+                card = JSON.parse(button.getAttribute('data-card') || '{}');
+            } catch (e) {
+                card = {};
+            }
+            openRewardEdit(card);
+        });
+    });
+
+    if (rewardModal) {
+        rewardModal.addEventListener('hidden.bs.modal', function () {
+            resetRewardFormToCreate();
+        });
+    }
+
+    if (addCardBtn) {
+        addCardBtn.addEventListener('click', function () {
+            if (addCardBtn.getAttribute('data-bs-target') === '#addRewardCardModal') {
+                resetRewardFormToCreate();
+            }
+        });
+    }
 
     @if ($errors->any())
         const errorType = @json(old('card_type', 'discount'));

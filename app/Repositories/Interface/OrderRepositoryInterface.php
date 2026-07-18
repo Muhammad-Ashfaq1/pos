@@ -11,6 +11,8 @@ interface OrderRepositoryInterface
 
     public function details(Order $order): array;
 
+    public function editDraft(Order $order): array;
+
     public function store(array $data, ?Authenticatable $user = null): array;
 
     public function addPayment(Order $order, array $paymentData, ?Authenticatable $user = null): array;

@@ -1,0 +1,210 @@
+.reward-card {
+    --rc-border: #e2e5ec;
+    --rc-navy: #1e1b4b;
+    --rc-navy-soft: #2f2a5e;
+    --rc-yellow: #ffb800;
+    --rc-edit-bg: #d2d0eb;
+    --rc-edit-icon: #13102b;
+    --rc-id-bg: #e8f5ec;
+    --rc-id-border: #2e7d32;
+    --rc-id-text: #1b7a3a;
+    --rc-watermark: rgba(157, 163, 207, 0.48);
+    --rc-divider: #e5e7eb;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 1rem 1.15rem 1.1rem;
+    border: 1px solid var(--rc-border);
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.reward-card:hover {
+    border-color: #cfd5e0;
+    box-shadow: 0 4px 14px rgba(30, 27, 75, 0.06);
+}
+
+.reward-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.reward-card__title {
+    margin: 0;
+    color: var(--rc-navy);
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.3;
+    min-width: 0;
+}
+
+.reward-card__edit {
+    flex: 0 0 2.2rem;
+    width: 2.2rem;
+    height: 2.2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
+    background: var(--rc-edit-bg);
+    color: var(--rc-edit-icon);
+    font-size: 1.15rem;
+    line-height: 1;
+    text-decoration: none;
+    cursor: default;
+}
+
+.reward-card__edit:not(:disabled) {
+    cursor: pointer;
+}
+
+a.reward-card__edit:hover,
+button.reward-card__edit:hover {
+    background: #c2c0e2;
+}
+
+button.reward-card__edit {
+    cursor: pointer;
+}
+
+.reward-card__body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 7.75rem;
+    align-items: stretch;
+}
+
+.reward-card__left,
+.reward-card__right {
+    display: flex;
+    flex-direction: column;
+    padding: 0.4rem 0.9rem;
+}
+
+.reward-card__left {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-right: 1px solid var(--rc-divider);
+}
+
+.reward-card__right {
+    position: relative;
+    justify-content: flex-start;
+    overflow: hidden;
+    padding-top: 0.15rem;
+    padding-bottom: 0.15rem;
+}
+
+.reward-card__discount {
+    color: var(--rc-yellow);
+    font-size: clamp(1.45rem, 3vw, 1.85rem);
+    font-weight: 800;
+    line-height: 1.05;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.01em;
+}
+
+.reward-card__min-label {
+    color: var(--rc-navy-soft);
+    font-size: 0.78rem;
+    font-weight: 500;
+    line-height: 1.25;
+    margin-bottom: 0.2rem;
+}
+
+.reward-card__min-value {
+    color: var(--rc-navy);
+    font-size: 1.1rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.reward-card__valid-date {
+    color: var(--rc-navy-soft);
+    font-size: 0.84rem;
+    font-weight: 500;
+    line-height: 1.35;
+}
+
+.reward-card__watermark {
+    position: absolute;
+    top: 36%;
+    left: 56%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    color: var(--rc-watermark);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+    white-space: nowrap;
+    z-index: 1;
+}
+
+.reward-card__id-badge {
+    margin-top: auto;
+    align-self: flex-end;
+    padding: 0.22rem 0.6rem;
+    border-radius: 0.3rem;
+    border: 1.5px solid var(--rc-id-border);
+    background: var(--rc-id-bg);
+    color: var(--rc-id-text);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.3;
+}
+
+/* Listing layout on Cards page */
+.reward-card-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+}
+
+@media (max-width: 575px) {
+    .reward-card-list {
+        grid-template-columns: 1fr;
+    }
+
+    .reward-card__body {
+        min-height: 6.75rem;
+    }
+
+    .reward-card__left,
+    .reward-card__right {
+        padding-left: 0.65rem;
+        padding-right: 0.65rem;
+    }
+}
+
+@media print {
+    .reward-card {
+        break-inside: avoid;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+}
+
+/* Add Reward Card button styling specifically when active */
+#addCardBtn[data-active-module="reward"] {
+    background-color: #121042 !important;
+    border-color: #121042 !important;
+    color: #ffb800 !important;
+    font-weight: 600;
+}
+
+#addCardBtn[data-active-module="reward"] i,
+#addCardBtn[data-active-module="reward"] span {
+    color: #ffb800 !important;
+}

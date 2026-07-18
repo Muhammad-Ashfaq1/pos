@@ -1099,6 +1099,36 @@
     min-height: 18rem;
 }
 
+.card-product-select + .select2-container {
+    width: 100% !important;
+}
+
+.card-product-select.is-invalid + .select2-container .select2-selection {
+    border-color: #ea5455;
+}
+
+.modal .card-product-select + .select2-container .select2-selection--multiple {
+    min-height: calc(1.5em + 0.875rem + 2px);
+    padding: 0.25rem 0.5rem;
+}
+
+/* Multi-select placeholder lives on the inline search input; give it room when empty. */
+.card-product-select + .select2-container .select2-selection--multiple .select2-selection__rendered:not(:has(.select2-selection__choice)) .select2-search--inline {
+    float: none;
+    display: block;
+    width: 100%;
+}
+
+.card-product-select + .select2-container .select2-selection--multiple .select2-selection__rendered:not(:has(.select2-selection__choice)) .select2-search__field {
+    width: 100% !important;
+    margin-top: 0;
+}
+
+.card-product-select + .select2-container .select2-selection--multiple .select2-search__field::placeholder {
+    color: #a8aaae;
+    opacity: 1;
+}
+
 .employee-loyalty-cards {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

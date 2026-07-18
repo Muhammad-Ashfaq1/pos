@@ -34,6 +34,7 @@ class SaveOrderRequest extends FormRequest
             ->all();
 
         $this->merge([
+            'order_id' => $this->filled('order_id') ? (int) $this->input('order_id') : null,
             'customer_id' => $this->filled('customer_id') ? (int) $this->input('customer_id') : null,
             'vehicle_id' => $this->filled('vehicle_id') ? (int) $this->input('vehicle_id') : null,
             'service_fees' => $serviceFees,
@@ -110,6 +111,15 @@ class SaveOrderRequest extends FormRequest
                     fn ($query) => $query
                         ->where('tenant_id', $tenantId)
                         ->where('card_type', 'reward')
+                ),
+            ],
+            'order_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('orders', 'id')->where(
+                    fn ($query) => $query
+                        ->where('tenant_id', $tenantId)
+                        ->where('status', 'estimate')
                 ),
             ],
             'is_estimate' => ['nullable', 'boolean'],

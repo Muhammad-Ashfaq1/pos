@@ -1,4 +1,4 @@
-<div class="preview-card">
+<div class="preview-card" id="employee-product-mix">
     <div class="preview-card-header">
         <div>
             <h2 class="preview-card-title">Product Mix</h2>
@@ -13,24 +13,24 @@
 
             <div class="preview-updated">
                 <span class="preview-updated-label">Updated</span>
-                <span class="preview-updated-time">19 seconds ago</span>
+                <span class="preview-updated-time" data-product-mix-updated-time>1 second ago</span>
             </div>
 
-            <button type="button" class="preview-refresh-btn">
+            <button type="button" class="preview-refresh-btn" data-product-mix-refresh aria-label="Refresh product mix">
                 <i class="ti tabler-refresh"></i>
             </button>
 
-            <span class="preview-status-dot"></span>
+            <span class="preview-status-dot" data-product-mix-status></span>
         </div>
     </div>
 
     <div class="preview-card-body">
-        <div class="preview-stats-grid">
+        <div class="preview-stats-grid" data-product-mix-stats>
             @foreach($summaryCards as $card)
                 <div class="preview-chip {{ $card['chip'] }}">
                     <div>
                         <div class="preview-chip-number-row">
-                            <span class="preview-chip-value">{{ $card['value'] }}</span>
+                            <span class="preview-chip-value" data-product-mix-value="{{ $card['key'] }}">{{ $card['value'] }}</span>
                             <span class="preview-chip-label">{{ $card['label'] }}</span>
                         </div>
                         <div class="preview-chip-meta">{{ $card['meta'] }}</div>

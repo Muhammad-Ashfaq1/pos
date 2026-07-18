@@ -50,6 +50,14 @@ class Card extends Model
         ];
     }
 
+    public static function discountTypeOptions(): array
+    {
+        return [
+            'percentage' => 'Percentage',
+            'fixed' => 'Fixed Amount',
+        ];
+    }
+
     public function scopeCurrentlyValid(Builder $query): Builder
     {
         return $query
@@ -60,8 +68,38 @@ class Card extends Model
             });
     }
 
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
+        $term = trim((string) $term);
+
+        if ($term === '') {
+            return $query;
+        }
+
+        return $query->where(function (Builder $builder) use ($term): void {
+            $builder
+                ->where('name', 'like', "%{$term}%")
+                ->orWhere('card_type', 'like', "%{$term}%")
+                ->orWhere('discount_type', 'like', "%{$term}%");
+        });
+    }
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function productIds(): array
+    {
+        $ids = data_get($this->details, 'product_ids');
+
+        if (is_array($ids) && $ids !== []) {
+            return array_values(array_unique(array_map('intval', $ids)));
+        }
+
+        return $this->product_id ? [(int) $this->product_id] : [];
     }
 }

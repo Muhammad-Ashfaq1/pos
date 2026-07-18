@@ -79,7 +79,8 @@
                             data-card-type="{{ $cardType }}" data-card-name="{{ $card->name }}"
                             data-card-value="{{ (float) $card->value }}"
                             data-minimum-spend="{{ (float) $card->minimum_spend }}"
-                            data-product-id="{{ $card->product_id }}">
+                            data-product-id="{{ $card->product_id }}"
+                            data-product-ids="{{ implode(',', $card->productIds()) }}">
                             <input class="form-check-input order-card-radio" type="radio"
                                 name="selected_{{ $cardType }}_card" value="{{ $card->id }}">
                             <span class="order-card-option-icon"><i class="ti {{ $config['icon'] }}"></i></span>

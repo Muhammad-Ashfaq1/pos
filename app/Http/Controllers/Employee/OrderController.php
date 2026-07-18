@@ -30,18 +30,32 @@ class OrderController extends Controller
         return view('employee.order.index');
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         $tenant = $this->tenantContext->current();
+        $editOrder = null;
+
+        if ($request->filled('order')) {
+            $order = Order::query()->findOrFail($request->integer('order'));
+
+            abort_unless(
+                $order->status === Order::STATUS_ESTIMATE,
+                404,
+                'Only estimates can be processed into the order form.'
+            );
+
+            $editOrder = $this->orderRepository->editDraft($order);
+        }
 
         return view('employee.order.new-order', [
             'vehicleRequired' => $tenant?->isVehicleRequired() ?? true,
             'returnDaysAfterPurchase' => $tenant?->returnDaysAfterPurchase() ?? 30,
+            'editOrder' => $editOrder,
             'orderCards' => Card::query()
                 ->currentlyValid()
                 ->whereIn('card_type', [Card::TYPE_GIFT, Card::TYPE_REWARD])
                 ->orderBy('name')
-                ->get(['id', 'product_id', 'card_type', 'name', 'value', 'minimum_spend', 'valid_until'])
+                ->get(['id', 'product_id', 'card_type', 'name', 'value', 'minimum_spend', 'valid_until', 'details'])
                 ->groupBy('card_type'),
         ]);
     }
