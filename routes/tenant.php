@@ -190,26 +190,26 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                     ->controller(CardController::class)
                     ->group(function () {
                         Route::get('/', 'index')
-                            ->middleware('permission:cards.manage')
+                            ->middleware('permission:cards.view|cards.manage')
                             ->name('index');
 
                         Route::prefix('{type}')
                             ->whereIn('type', ['discount', 'gift', 'reward'])
                             ->group(function () {
                                 Route::get('/', 'typeIndex')
-                                    ->middleware('permission:cards.manage')
+                                    ->middleware('permission:cards.view|cards.manage')
                                     ->name('type');
                                 Route::get('/listing', 'listing')
-                                    ->middleware('permission:cards.manage')
+                                    ->middleware('permission:cards.view|cards.manage')
                                     ->name('listing');
                                 Route::get('/{card}/edit', 'edit')
-                                    ->middleware('permission:cards.manage')
+                                    ->middleware('permission:cards.update|cards.manage')
                                     ->name('edit');
                                 Route::post('/save', 'save')
-                                    ->middleware('permission:cards.manage')
+                                    ->middleware('permission:cards.create|cards.update|cards.manage')
                                     ->name('save');
                                 Route::delete('/{card}', 'destroy')
-                                    ->middleware('permission:cards.manage')
+                                    ->middleware('permission:cards.delete|cards.manage')
                                     ->name('destroy');
                             });
                     });

@@ -12,7 +12,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class CardController extends Controller
 {
@@ -32,7 +31,7 @@ class CardController extends Controller
     public function typeIndex(string $type): View
     {
         $this->authorize('viewAny', Card::class);
-        $cardType = $this->resolveCardType($type);
+        $cardType = Card::resolveTypeOrFail($type);
 
         return $this->repo->index($cardType);
     }
@@ -40,7 +39,7 @@ class CardController extends Controller
     public function listing(string $type, Request $request): JsonResponse
     {
         $this->authorize('viewAny', Card::class);
-        $cardType = $this->resolveCardType($type);
+        $cardType = Card::resolveTypeOrFail($type);
 
         $validated = $request->validate([
             'draw' => ['nullable', 'integer'],
@@ -75,7 +74,7 @@ class CardController extends Controller
 
     public function save(string $type, SaveCardRequest $request): JsonResponse
     {
-        $cardType = $this->resolveCardType($type);
+        $cardType = Card::resolveTypeOrFail($type);
         $validated = $request->validated();
         $validated['card_type'] = $cardType;
 
@@ -114,21 +113,12 @@ class CardController extends Controller
         ]);
     }
 
-    private function resolveCardType(string $type): string
-    {
-        if (! array_key_exists($type, Card::typeOptions())) {
-            throw new NotFoundHttpException;
-        }
-
-        return $type;
-    }
-
     private function assertCardMatchesType(Card $card, string $type): void
     {
-        $cardType = $this->resolveCardType($type);
+        $cardType = Card::resolveTypeOrFail($type);
 
         if ($card->card_type !== $cardType) {
-            throw new NotFoundHttpException;
+            abort(404);
         }
     }
 }

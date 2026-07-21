@@ -43,11 +43,96 @@ class Card extends Model
 
     public static function typeOptions(): array
     {
+        return collect(self::typeMeta())
+            ->mapWithKeys(fn (array $meta, string $type) => [$type => $meta['singular']])
+            ->all();
+    }
+
+    /**
+     * Single source of truth for card-type UI/metadata across portals.
+     *
+     * @return array<string, array{
+     *     title: string,
+     *     singular: string,
+     *     tab: string,
+     *     icon: string,
+     *     modal: string,
+     *     value_label: string,
+     *     value_prefix: string|null,
+     *     uses_currency_prefix: bool,
+     *     value_step: string
+     * }>
+     */
+    public static function typeMeta(): array
+    {
         return [
-            self::TYPE_DISCOUNT => 'Discount Card',
-            self::TYPE_GIFT => 'Gift Card',
-            self::TYPE_REWARD => 'Reward Card',
+            self::TYPE_DISCOUNT => [
+                'title' => 'Discount Cards',
+                'singular' => 'Discount Card',
+                'tab' => 'Discount',
+                'icon' => 'tabler-ticket',
+                'modal' => 'addDiscountCardModal',
+                'value_label' => 'Discount Percentage',
+                'value_prefix' => '%',
+                'uses_currency_prefix' => false,
+                'value_step' => '0.01',
+            ],
+            self::TYPE_GIFT => [
+                'title' => 'Gift Cards',
+                'singular' => 'Gift Card',
+                'tab' => 'Gift',
+                'icon' => 'tabler-gift',
+                'modal' => 'addGiftCardModal',
+                'value_label' => 'Gift Amount',
+                'value_prefix' => null,
+                'uses_currency_prefix' => true,
+                'value_step' => '0.01',
+            ],
+            self::TYPE_REWARD => [
+                'title' => 'Reward Cards',
+                'singular' => 'Reward Card',
+                'tab' => 'Reward',
+                'icon' => 'tabler-trophy',
+                'modal' => 'addRewardCardModal',
+                'value_label' => 'Reward Points',
+                'value_prefix' => 'PTS',
+                'uses_currency_prefix' => false,
+                'value_step' => '1',
+            ],
         ];
+    }
+
+    /**
+     * @return array{
+     *     title: string,
+     *     singular: string,
+     *     tab: string,
+     *     icon: string,
+     *     modal: string,
+     *     value_label: string,
+     *     value_prefix: string|null,
+     *     uses_currency_prefix: bool,
+     *     value_step: string
+     * }
+     */
+    public static function metaFor(string $type): array
+    {
+        $meta = self::typeMeta()[$type] ?? null;
+
+        if ($meta === null) {
+            abort(404);
+        }
+
+        return $meta;
+    }
+
+    public static function resolveTypeOrFail(string $type): string
+    {
+        if (! array_key_exists($type, self::typeMeta())) {
+            abort(404);
+        }
+
+        return $type;
     }
 
     public static function discountTypeOptions(): array

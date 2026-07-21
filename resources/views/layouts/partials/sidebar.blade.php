@@ -115,45 +115,6 @@
                 ->all(),
         ],
         [
-            'label' => 'Cards',
-            'icon' => 'tabler-cards',
-            'items' => collect([
-                $user?->can('cards.manage')
-                    ? [
-                        'label' => 'Discount Cards',
-                        'route' => 'tenant.ecommerce.cards.type',
-                        'routeParams' => ['type' => 'discount'],
-                        'pattern' => 'tenant.ecommerce.cards.*',
-                        'cardType' => 'discount',
-                        'icon' => 'tabler-ticket',
-                    ]
-                    : null,
-                $user?->can('cards.manage')
-                    ? [
-                        'label' => 'Gift Cards',
-                        'route' => 'tenant.ecommerce.cards.type',
-                        'routeParams' => ['type' => 'gift'],
-                        'pattern' => 'tenant.ecommerce.cards.*',
-                        'cardType' => 'gift',
-                        'icon' => 'tabler-gift',
-                    ]
-                    : null,
-                $user?->can('cards.manage')
-                    ? [
-                        'label' => 'Reward Cards',
-                        'route' => 'tenant.ecommerce.cards.type',
-                        'routeParams' => ['type' => 'reward'],
-                        'pattern' => 'tenant.ecommerce.cards.*',
-                        'cardType' => 'reward',
-                        'icon' => 'tabler-trophy',
-                    ]
-                    : null,
-            ])
-                ->filter()
-                ->values()
-                ->all(),
-        ],
-        [
             'label' => 'Customers & Vehicles',
             'icon' => 'tabler-users',
             'items' => collect([
@@ -200,6 +161,36 @@
             'label' => 'Discounts',
             'icon' => 'tabler-ticket',
             'items' => collect([
+                $user?->can('cards.view') || $user?->can('cards.manage')
+                    ? [
+                        'label' => 'Discount',
+                        'route' => 'tenant.ecommerce.cards.type',
+                        'routeParams' => ['type' => 'discount'],
+                        'pattern' => 'tenant.ecommerce.cards.*',
+                        'cardType' => 'discount',
+                        'icon' => 'tabler-ticket',
+                    ]
+                    : null,
+                $user?->can('cards.view') || $user?->can('cards.manage')
+                    ? [
+                        'label' => 'Gift',
+                        'route' => 'tenant.ecommerce.cards.type',
+                        'routeParams' => ['type' => 'gift'],
+                        'pattern' => 'tenant.ecommerce.cards.*',
+                        'cardType' => 'gift',
+                        'icon' => 'tabler-gift',
+                    ]
+                    : null,
+                $user?->can('cards.view') || $user?->can('cards.manage')
+                    ? [
+                        'label' => 'Reward',
+                        'route' => 'tenant.ecommerce.cards.type',
+                        'routeParams' => ['type' => 'reward'],
+                        'pattern' => 'tenant.ecommerce.cards.*',
+                        'cardType' => 'reward',
+                        'icon' => 'tabler-trophy',
+                    ]
+                    : null,
                 $user?->isTenantAdmin() || $user?->can('discount.group.manage')
                     ? [
                         'label' => 'Discount groups',

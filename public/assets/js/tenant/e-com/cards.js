@@ -55,9 +55,10 @@
   const setSubmitButtonState = function (loading) {
     const isEdit = Boolean($('#card_id').val());
     const defaultText = isEdit ? $submitButton.data('update-text') : $submitButton.data('create-text');
+    $submitButton.data('default-text', defaultText);
 
-    if (typeof window.appSetButtonLoading === 'function') {
-      window.appSetButtonLoading($submitButton, loading, 'Saving...', defaultText);
+    if (window.CardForm) {
+      window.CardForm.setButtonLoading($submitButton, loading, 'Saving...');
       return;
     }
 
@@ -65,10 +66,20 @@
   };
 
   const setSelect2ErrorState = function ($element, invalid) {
+    if (window.CardForm) {
+      window.CardForm.setSelect2ErrorState($element, invalid);
+      return;
+    }
+
     $element.next('.select2').find('.select2-selection').toggleClass('is-invalid', invalid);
   };
 
   const resetValidationState = function () {
+    if (window.CardForm) {
+      window.CardForm.clearValidation($form);
+      return;
+    }
+
     $form.find('.is-invalid').removeClass('is-invalid');
     $form.find('.invalid-feedback').text('');
     if ($discountType.length) {
@@ -101,90 +112,19 @@
         allowClear: Boolean($this.data('allow-clear')),
         minimumResultsForSearch: $this.data('minimum-results-for-search') ?? 0
       }).on('change', function () {
+        if (window.CardForm) {
+          window.CardForm.clearFieldError($this);
+          return;
+        }
+
         setSelect2ErrorState($this, false);
         $this.closest('.position-relative').find('.invalid-feedback').text('');
       });
     });
 
-    initProductSelect2();
-  };
-
-  const initProductSelect2 = function () {
-    if (typeof $.fn.select2 !== 'function') {
-      return;
+    if (window.CardForm) {
+      window.CardForm.initProductSelects();
     }
-
-    $('.card-product-select').each(function () {
-      const $this = $(this);
-
-      if ($this.data('select2')) {
-        return;
-      }
-
-      const dropdownParentSelector = $this.data('dropdown-parent');
-      const options = {
-        width: '100%',
-        placeholder: $this.data('placeholder') || 'Select a product',
-        allowClear: true,
-        closeOnSelect: false,
-        minimumResultsForSearch: 0,
-        dropdownParent: dropdownParentSelector ? $(dropdownParentSelector) : $this.parent(),
-      };
-
-      // Multi-select hides dropdown search by default; decorate like employee cards.
-      if ($.fn.select2.amd) {
-        const Utils = $.fn.select2.amd.require('select2/utils');
-        const Dropdown = $.fn.select2.amd.require('select2/dropdown');
-        const DropdownSearch = $.fn.select2.amd.require('select2/dropdown/search');
-        const AttachBody = $.fn.select2.amd.require('select2/dropdown/attachBody');
-
-        function AttachBodyForceBelow() {}
-
-        AttachBodyForceBelow.prototype._positionDropdown = function () {
-          const offset = this.$container.offset();
-          const containerBottom = offset.top + this.$container.outerHeight(false);
-          const css = {
-            left: offset.left,
-            top: containerBottom,
-          };
-
-          let $offsetParent = this.$dropdownParent;
-          if (!$offsetParent || !$offsetParent.length) {
-            $offsetParent = $(document.body);
-          }
-
-          if ($offsetParent[0] !== document.body) {
-            const parentOffset = $offsetParent.offset();
-            css.top -= parentOffset.top;
-            css.left -= parentOffset.left;
-            css.top += $offsetParent.scrollTop();
-            css.left += $offsetParent.scrollLeft();
-          }
-
-          this.$dropdown
-            .removeClass('select2-dropdown--above')
-            .addClass('select2-dropdown--below');
-          this.$container
-            .removeClass('select2-container--above')
-            .addClass('select2-container--below');
-
-          this.$dropdownContainer.css(css);
-        };
-
-        options.dropdownAdapter = Utils.Decorate(
-          Utils.Decorate(
-            Utils.Decorate(Dropdown, DropdownSearch),
-            AttachBody
-          ),
-          AttachBodyForceBelow
-        );
-      }
-
-      $this.select2(options).on('change', function () {
-        setSelect2ErrorState($this, false);
-        $this.closest('.col-md-6').find('.invalid-feedback').text('');
-      });
-    });
   };
 
   const updateTypeDependentFields = function () {
@@ -192,11 +132,29 @@
       return;
     }
 
+    if (window.CardForm) {
+      window.CardForm.updateDiscountFields($form, {
+        currencySymbol: window.currencySymbol || window.appCurrency?.symbol || ''
+      });
+      return;
+    }
+
     const isPercentage = $discountType.val() === 'percentage';
     const valueLabel = isPercentage ? 'Discount Percentage' : 'Fixed Amount';
+    $form.find('[data-card-value-label]').html(valueLabel + ' <span class="text-danger">*</span>');
+    $form.find('[data-card-value]').attr('max', isPercentage ? '100' : null);
+  };
 
-    $('#card_value_label').html(valueLabel + ' <span class="text-danger">*</span>');
-    $('#card_value').attr('max', isPercentage ? '100' : null);
+  const todayDateString = function () {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+
+    return now.getFullYear() + '-' + month + '-' + day;
+  };
+
+  const setValidUntilMin = function (minDate) {
+    $('#card_valid_until').attr('min', minDate || todayDateString());
   };
 
   const resetForm = function () {
@@ -209,6 +167,7 @@
     $('#card_product_ids').val(null).trigger('change');
     $('#card_minimum_spend').val('0');
     $('#card_is_active').prop('checked', true);
+    setValidUntilMin(todayDateString());
     $('#cardModalLabel').text('Add ' + cardSingular);
     setSubmitButtonState(false);
     resetValidationState();
@@ -216,6 +175,11 @@
   };
 
   const fillForm = function (card) {
+    const today = todayDateString();
+    const existingDate = card.valid_until || '';
+    // Friendly edit: keep showing an already-expired date; new picks stay today+.
+    const minDate = existingDate && existingDate < today ? existingDate : today;
+
     $('#card_id').val(card.id);
     $('#card_type').val(cardType);
     $('#card_name').val(card.name);
@@ -225,7 +189,8 @@
     $('#card_value').val(card.value);
     $('#card_minimum_spend').val(card.minimum_spend);
     $('#card_product_ids').val(card.product_ids || []).trigger('change');
-    $('#card_valid_until').val(card.valid_until || '');
+    setValidUntilMin(minDate);
+    $('#card_valid_until').val(existingDate);
     $('#card_is_active').prop('checked', Boolean(card.is_active));
     $('#cardModalLabel').text('Edit ' + cardSingular);
     setSubmitButtonState(false);
@@ -448,6 +413,11 @@
   };
 
   const renderValidationErrors = function (errors) {
+    if (window.CardForm) {
+      window.CardForm.renderValidationErrors($form, errors);
+      return;
+    }
+
     Object.entries(errors || {}).forEach(function (entry) {
       const field = entry[0];
       const message = Array.isArray(entry[1]) ? entry[1][0] : entry[1];

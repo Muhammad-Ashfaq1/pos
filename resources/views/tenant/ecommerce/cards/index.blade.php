@@ -5,11 +5,7 @@
 @section('content')
     @php
         $singular = $activeModule['singular'];
-        $isDiscount = $cardType === \App\Models\Card::TYPE_DISCOUNT;
-        $isReward = $cardType === \App\Models\Card::TYPE_REWARD;
-        $valueLabel = $isDiscount
-            ? 'Discount Percentage'
-            : ($isReward ? 'Reward Points' : 'Gift Amount');
+        $valueLabel = \App\Models\Card::metaFor($cardType)['value_label'];
     @endphp
 
     @once
@@ -141,80 +137,17 @@
                     </div>
 
                     <div class="modal-body">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="card_name" class="form-label">Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="card_name" name="name" maxlength="150">
-                                <div class="invalid-feedback"></div>
-                            </div>
-
-                            @if ($isDiscount)
-                                <div class="col-md-6" id="card_discount_type_wrap">
-                                    <label for="card_discount_type" class="form-label">Discount Type <span class="text-danger">*</span></label>
-                                    <div class="position-relative">
-                                        <select id="card_discount_type" name="discount_type" class="form-select select2" data-placeholder="Select a discount type" data-dropdown-parent="#cardModal">
-                                            @foreach($discountTypes as $type => $label)
-                                                <option value="{{ $type }}">{{ $label }}</option>
-                                            @endforeach
-                                        </select>
-                                        <div class="invalid-feedback"></div>
-                                    </div>
-                                </div>
-                            @endif
-
-                            <div class="col-md-6">
-                                <label for="card_value" class="form-label" id="card_value_label">{{ $valueLabel }} <span class="text-danger">*</span></label>
-                                <input
-                                    type="number"
-                                    step="{{ $isReward ? '1' : '0.01' }}"
-                                    min="0.01"
-                                    class="form-control"
-                                    id="card_value"
-                                    name="value"
-                                    @if ($isDiscount) max="100" @endif
-                                >
-                                <div class="invalid-feedback"></div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="card_minimum_spend" class="form-label">Minimum Spend <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" min="0" class="form-control" id="card_minimum_spend" name="minimum_spend" value="0">
-                                <div class="invalid-feedback"></div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label" for="card_product_ids">Select Products</label>
-                                <select
-                                    id="card_product_ids"
-                                    name="product_ids[]"
-                                    class="form-select select2 card-product-select"
-                                    multiple
-                                    data-placeholder="Select a product"
-                                    data-dropdown-parent="#cardModal"
-                                >
-                                    @foreach($products as $product)
-                                        <option value="{{ $product->id }}">{{ $product->name }}</option>
-                                    @endforeach
-                                </select>
-                                <div class="invalid-feedback"></div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="card_valid_until" class="form-label">Valid Until</label>
-                                <input type="date" class="form-control" id="card_valid_until" name="valid_until">
-                                <div class="invalid-feedback"></div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label d-block">Status</label>
-                                <input type="hidden" name="is_active" value="0">
-                                <div class="form-check form-switch mt-2">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="card_is_active" name="is_active" value="1" checked>
-                                    <label class="form-check-label" for="card_is_active">Active</label>
-                                </div>
-                                <div class="invalid-feedback d-block"></div>
-                            </div>
-                        </div>
+                        <x-cards.form-fields
+                            :card-type="$cardType"
+                            :products="$products"
+                            id-prefix="card"
+                            modal-id="cardModal"
+                            :currency-symbol="\App\Support\Currency::symbol()"
+                            :discount-types="$discountTypes"
+                            :show-status="true"
+                            :value-label="$valueLabel"
+                            :discount-select2="true"
+                        />
                     </div>
 
                     <div class="modal-footer">
@@ -244,5 +177,6 @@
         window.cardSingular = @json($singular);
         window.currencySymbol = @json(\App\Support\Currency::symbol());
     </script>
+    <script src="{{ asset('assets/js/cards-form.js') }}?v={{ filemtime(public_path('assets/js/cards-form.js')) }}"></script>
     <script src="{{ asset('assets/js/tenant/e-com/cards.js') }}?v={{ filemtime(public_path('assets/js/tenant/e-com/cards.js')) }}"></script>
 @endsection

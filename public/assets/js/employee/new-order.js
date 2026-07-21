@@ -199,6 +199,33 @@
         return true;
     }
 
+    /**
+     * "New Order" must not reopen a cart that was seeded from Process Order.
+     * Keep only plain drafts (no saved_order_id); drop estimate-linked drafts.
+     */
+    function discardEstimateDraftsForFreshOrder() {
+        const remaining = orders.filter(function (order) {
+            return !order.saved_order_id;
+        });
+
+        if (remaining.length === orders.length) {
+            return false;
+        }
+
+        isHydratingSavedCart = true;
+        orders.length = 0;
+        remaining.forEach(function (order) {
+            orders.push(order);
+        });
+
+        activeOrderId = orders.some(function (order) { return order.id === activeOrderId; })
+            ? activeOrderId
+            : (orders[0] ? orders[0].id : null);
+        isHydratingSavedCart = false;
+
+        return true;
+    }
+
     function loadDraftCart() {
         const showUrl = draftCartRoutes().show;
 
@@ -3109,7 +3136,11 @@
         });
         loadDraftCart().always(function () {
             if (window.editOrder) {
+                // Process Order: seed / refresh the estimate draft in the cart.
                 applyEditOrder(window.editOrder);
+                scheduleDraftCartSave(0);
+            } else if (discardEstimateDraftsForFreshOrder()) {
+                // New Order: do not restore a previous Process Order estimate.
                 scheduleDraftCartSave(0);
             }
 

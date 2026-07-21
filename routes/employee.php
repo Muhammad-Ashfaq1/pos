@@ -21,9 +21,16 @@ Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.
             ->middleware('permission:dashboard.view')
             ->name('dashboard.product-mix');
 
-        Route::get('/cards', [CardController::class, 'index'])->name('cards.index');
-        Route::post('/cards', [CardController::class, 'store'])->name('cards.store');
-        Route::put('/cards/{card}', [CardController::class, 'update'])->name('cards.update');
+        Route::get('/cards', [CardController::class, 'index'])
+            ->middleware('permission:cards.view|cards.create|cards.manage')
+            ->name('cards.index');
+        Route::get('/cards/{type}', [CardController::class, 'typeIndex'])
+            ->whereIn('type', ['discount', 'gift', 'reward'])
+            ->middleware('permission:cards.view|cards.create|cards.manage')
+            ->name('cards.type');
+        Route::post('/cards', [CardController::class, 'store'])
+            ->middleware('permission:cards.create|cards.manage')
+            ->name('cards.store');
 
         Route::prefix('order')
             ->name('order.')

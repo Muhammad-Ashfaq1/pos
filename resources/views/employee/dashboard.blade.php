@@ -18,11 +18,19 @@
         ['label' => 'Returns', 'icon' => 'tabler-arrow-back-up', 'url' => route('employee.order.returns'), 'permission' => 'orders.view'],
         ['label' => 'Product Setup', 'icon' => 'tabler-package-import', 'url' => route('employee.products.index'), 'permission' => 'product.create'],
         ['label' => 'Invoices', 'icon' => 'tabler-file-invoice'],
-        ['label' => 'Discounts', 'icon' => 'tabler-ticket', 'url' => route('employee.cards.index')],
+        ['label' => 'Discounts', 'icon' => 'tabler-ticket', 'url' => route('employee.cards.type', 'discount'), 'permission' => ['cards.view', 'cards.manage']],
     ];
 
     $tiles = collect($tiles)
-        ->filter(fn ($tile) => empty($tile['permission']) || ($user?->can($tile['permission']) ?? false))
+        ->filter(function ($tile) use ($user) {
+            if (empty($tile['permission'])) {
+                return true;
+            }
+
+            $permissions = is_array($tile['permission']) ? $tile['permission'] : [$tile['permission']];
+
+            return collect($permissions)->contains(fn ($permission) => $user?->can($permission) ?? false);
+        })
         ->values()
         ->all();
 

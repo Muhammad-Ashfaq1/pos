@@ -15,23 +15,15 @@ class CardsRepository implements CardRepositoryInterface
 {
     public function index(string $cardType): View
     {
-        $modules = [
-            Card::TYPE_DISCOUNT => [
-                'title' => 'Discount Cards',
-                'singular' => 'Discount Card',
-                'icon' => 'tabler-ticket',
-            ],
-            Card::TYPE_GIFT => [
-                'title' => 'Gift Cards',
-                'singular' => 'Gift Card',
-                'icon' => 'tabler-gift',
-            ],
-            Card::TYPE_REWARD => [
-                'title' => 'Reward Cards',
-                'singular' => 'Reward Card',
-                'icon' => 'tabler-trophy',
-            ],
-        ];
+        $modules = collect(Card::typeMeta())
+            ->mapWithKeys(fn (array $meta, string $type) => [
+                $type => [
+                    'title' => $meta['title'],
+                    'singular' => $meta['singular'],
+                    'icon' => $meta['icon'],
+                ],
+            ])
+            ->all();
 
         return view('tenant.ecommerce.cards.index', [
             'cardType' => $cardType,
@@ -51,7 +43,47 @@ class CardsRepository implements CardRepositoryInterface
         ]);
     }
 
-    public function store(array $data, ?Card $card = null, ?Authenticatable $user = null): array
+    public function employeeIndex(string $cardType): View
+    {
+        $cards = Card::query()
+            ->where('card_type', $cardType)
+            ->latest()
+            ->get();
+
+        $cardCounts = Card::query()
+            ->selectRaw('card_type, COUNT(*) as aggregate')
+            ->groupBy('card_type')
+            ->pluck('aggregate', 'card_type');
+
+        $linkedProductIds = $cards
+            ->flatMap(fn (Card $card) => $card->productIds())
+            ->unique()
+            ->values()
+            ->all();
+
+        return view('employee.cards.index', [
+            'cardType' => $cardType,
+            'cardsByType' => $cards->groupBy('card_type'),
+            'cardCounts' => $cardCounts,
+            'products' => Product::query()
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name']),
+            'productsById' => $linkedProductIds === []
+                ? collect()
+                : Product::query()
+                    ->whereIn('id', $linkedProductIds)
+                    ->get(['id', 'name'])
+                    ->keyBy('id'),
+        ]);
+    }
+
+    public function store(
+        array $data,
+        ?Card $card = null,
+        ?Authenticatable $user = null,
+        bool $includeData = true
+    ): array
     {
         $isUpdate = $card !== null;
         $userId = $user?->getAuthIdentifier();
@@ -68,17 +100,37 @@ class CardsRepository implements CardRepositoryInterface
             $card->save();
         }
 
-        $card->load('product:id,name');
-
         $label = Card::typeOptions()[$card->card_type] ?? 'Card';
+
+        if ($includeData) {
+            $card->load('product:id,name');
+        }
 
         return [
             'success' => true,
             'message' => $isUpdate
                 ? "{$label} updated successfully."
                 : "{$label} created successfully.",
-            'data' => $this->transformCard($card, $user),
+            'data' => $includeData ? $this->transformCard($card, $user) : null,
+            'card' => $card,
         ];
+    }
+
+    public function renderEmployeeCardHtml(Card $card, string $organizationName = 'Shop'): string
+    {
+        $productIds = $card->productIds();
+        $productsById = $productIds === []
+            ? collect()
+            : Product::query()
+                ->whereIn('id', $productIds)
+                ->get(['id', 'name'])
+                ->keyBy('id');
+
+        return view('employee.cards.partials.card-item', [
+            'card' => $card,
+            'organizationName' => $organizationName,
+            'productsById' => $productsById,
+        ])->render();
     }
 
     public function destroy(Card $card): array
@@ -156,7 +208,7 @@ class CardsRepository implements CardRepositoryInterface
             'discount_type' => $cardType === Card::TYPE_DISCOUNT
                 ? ($data['discount_type'] ?? null)
                 : null,
-            'value' => $this->normalizeMoney($data['value']),
+            'value' => $this->normalizeMoney($data['value'] ?? 0),
             'minimum_spend' => $this->normalizeMoney($data['minimum_spend'] ?? 0),
             'product_id' => $productIds[0] ?? null,
             'details' => $details === [] ? null : $details,

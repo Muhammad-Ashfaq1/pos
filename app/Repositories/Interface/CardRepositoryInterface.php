@@ -10,11 +10,20 @@ interface CardRepositoryInterface
 {
     public function index(string $cardType): View;
 
-    public function store(array $data, ?Card $card = null, ?Authenticatable $user = null): array;
+    public function employeeIndex(string $cardType): View;
+
+    public function store(
+        array $data,
+        ?Card $card = null,
+        ?Authenticatable $user = null,
+        bool $includeData = true
+    ): array;
 
     public function destroy(Card $card): array;
 
     public function getCardsListing(array $filters, ?Authenticatable $user = null): array;
 
     public function getCardFormData(Card $card, ?Authenticatable $user = null): array;
+
+    public function renderEmployeeCardHtml(Card $card, string $organizationName = 'Shop'): string;
 }
