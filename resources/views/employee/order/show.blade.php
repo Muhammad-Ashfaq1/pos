@@ -147,9 +147,9 @@
 
                 <div class="d-grid gap-2 mt-4">
                     @if($order['status'] === 'estimate')
-                        <button type="button" class="btn btn-primary btn-lg w-100 fw-bold btn-process-order" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                        <a href="{{ route('employee.order.new-order', ['order' => $order['id']]) }}" class="btn btn-primary btn-lg w-100 fw-bold btn-process-order">
                             <i class="ti tabler-check me-1"></i> Process Order
-                        </button>
+                        </a>
                     @elseif($order['status'] !== 'paid')
                         <button type="button" class="btn btn-primary btn-lg w-100 fw-bold btn-pay-balance" data-bs-toggle="modal" data-bs-target="#paymentModal">
                             <i class="ti tabler-coin me-1"></i> Pay Balance
@@ -192,7 +192,7 @@
             <div class="modal-content text-start">
                 <div class="modal-header border-bottom">
                     <h5 class="modal-title fw-bold" id="paymentModalLabel">
-                        {{ $order['status'] === 'estimate' ? 'Process Order' : 'Collect Payment' }}
+                        Collect Payment
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>

@@ -115,6 +115,7 @@ class OrderCartController extends Controller
         return [
             'id' => $id,
             'label' => $this->limitedString(Arr::get($order, 'label'), 60) ?? 'Order '.($index + 1),
+            'saved_order_id' => $this->positiveInt(Arr::get($order, 'saved_order_id')),
             'items' => $items,
             'customer' => $this->sanitizeSelection(Arr::get($order, 'customer')),
             'vehicle' => $this->sanitizeSelection(Arr::get($order, 'vehicle')),
@@ -123,6 +124,7 @@ class OrderCartController extends Controller
                 'gift' => $this->sanitizeDraftValue(Arr::get($order, 'appliedCards.gift')),
                 'reward' => $this->sanitizeDraftValue(Arr::get($order, 'appliedCards.reward')),
             ],
+            'notes' => $this->limitedString(Arr::get($order, 'notes'), 2000),
         ];
     }
 
@@ -203,6 +205,17 @@ class OrderCartController extends Controller
     private function money(mixed $value): float
     {
         return round(max(0, min((float) $value, 999999.99)), 2);
+    }
+
+    private function positiveInt(mixed $value): ?int
+    {
+        $id = filter_var($value, FILTER_VALIDATE_INT);
+
+        if ($id === false || $id <= 0) {
+            return null;
+        }
+
+        return $id;
     }
 
     private function limitedString(mixed $value, int $limit): ?string

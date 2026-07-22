@@ -7,7 +7,7 @@
             'items' => [
                 ['label' => 'Dashboard', 'route' => 'employee.dashboard', 'pattern' => 'employee.dashboard', 'icon' => 'tabler-layout-dashboard', 'visible' => true],
                 ['label' => 'POS / Workspace', 'route' => 'employee.pos', 'pattern' => 'employee.workspace|employee.pos', 'icon' => 'tabler-cash-register', 'visible' => true],
-                ['label' => 'Cards', 'route' => 'employee.cards.index', 'pattern' => 'employee.cards.*', 'icon' => 'tabler-cards', 'visible' => true],
+                ['label' => 'Discounts', 'route' => 'employee.cards.type', 'routeParams' => ['type' => 'discount'], 'pattern' => 'employee.cards.*', 'icon' => 'tabler-ticket', 'visible' => $user?->can('cards.view') || $user?->can('cards.manage')],
             ],
         ],
         [
@@ -110,7 +110,7 @@
 
             @foreach($group['items'] as $item)
                 <li class="menu-item {{ $isActive($item['pattern']) ? 'active' : '' }}">
-                    <a href="{{ route($item['route']) }}" class="menu-link">
+                    <a href="{{ route($item['route'], $item['routeParams'] ?? []) }}" class="menu-link">
                         <i class="menu-icon icon-base ti {{ $item['icon'] }}"></i>
                         <div>{{ $item['label'] }}</div>
                     </a>

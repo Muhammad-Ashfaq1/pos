@@ -75,11 +75,157 @@ class OrdersRepository implements OrderRepositoryInterface
         return $this->transformDetailedOrder($order);
     }
 
+    public function editDraft(Order $order): array
+    {
+        if ($order->status !== Order::STATUS_ESTIMATE) {
+            throw ValidationException::withMessages([
+                'order' => 'Only estimates can be opened for processing.',
+            ]);
+        }
+
+        $order->load([
+            'customer:id,name,phone,email,customer_type,discount_group_id',
+            'customer.discountGroup:id,name,type,value,min_limit,is_active',
+            'vehicle:id,plate_number,registration_number,make,model,year,customer_id',
+            'items' => fn ($query) => $query->orderBy('id'),
+            'items.product:id,name,sale_price,tax_percentage,current_stock,track_inventory,discount_id,is_active',
+            'items.product.discount:id,name,code,discount_type,applies_to,value,max_discount_amount,is_active,starts_at,ends_at',
+        ]);
+
+        $customer = $order->customer;
+        $vehicle = $order->vehicle;
+        $discountGroup = $customer?->discountGroup;
+
+        $items = $order->items
+            ->filter(fn ($item) => $item->product_id && $item->product)
+            ->map(function ($item) {
+                $product = $item->product;
+
+                return [
+                    'id' => (int) $product->id,
+                    'name' => $product->name ?: $item->product_name,
+                    'price' => round((float) $product->sale_price, 2),
+                    'qty' => max((int) $item->quantity, 1),
+                    'discount' => $this->mapItemDiscount($product->discount),
+                    'tax_percentage' => (float) ($product->tax_percentage ?? 0),
+                    'current_stock' => (int) ($product->current_stock ?? 0),
+                    'track_inventory' => (bool) ($product->track_inventory ?? false),
+                ];
+            })
+            ->values()
+            ->all();
+
+        $serviceFees = collect(is_array($order->service_fee_details) ? $order->service_fee_details : [])
+            ->filter(fn ($fee) => is_array($fee) && (float) ($fee['amount'] ?? 0) > 0)
+            ->map(function (array $fee) {
+                $serviceId = filled($fee['service_id'] ?? null) ? (int) $fee['service_id'] : null;
+                $name = trim((string) ($fee['name'] ?? ($fee['service_name'] ?? 'Service Fee')));
+                $amount = round((float) ($fee['amount'] ?? 0), 2);
+                $taxPercentage = (float) ($fee['tax_percentage'] ?? 0);
+                $isCatalogService = ($fee['type'] ?? null) === 'service';
+
+                $service = null;
+                if ($serviceId) {
+                    $service = [
+                        'id' => $serviceId,
+                        'name' => $name,
+                        'text' => $name,
+                        'code' => $fee['code'] ?? null,
+                        'standard_price' => $isCatalogService ? $amount : 0.0,
+                        'tax_percentage' => $taxPercentage,
+                        'is_active' => true,
+                    ];
+                }
+
+                return [
+                    'service' => $service,
+                    'title' => $name,
+                    'amount' => $amount,
+                    'tax_percentage' => $taxPercentage,
+                ];
+            })
+            ->values()
+            ->all();
+
+        $customerSelection = null;
+        if ($customer) {
+            $customerSelection = [
+                'id' => $customer->id,
+                'text' => $customer->name ?: 'Walk-In Customer',
+                'name' => $customer->name,
+                'customer_type' => $customer->customer_type,
+                'phone' => $customer->phone,
+                'email' => $customer->email,
+                'discount_group_id' => $customer->discount_group_id,
+                'discount_group' => $discountGroup && $discountGroup->is_active ? [
+                    'id' => $discountGroup->id,
+                    'name' => $discountGroup->name,
+                    'type' => $discountGroup->type,
+                    'value' => (float) $discountGroup->value,
+                    'min_limit' => (float) $discountGroup->min_limit,
+                    'is_active' => (bool) $discountGroup->is_active,
+                    'label' => $this->discountGroupLabel($discountGroup),
+                ] : null,
+            ];
+        }
+
+        $vehicleSelection = null;
+        if ($vehicle) {
+            $vehicleLabel = trim(collect([
+                $vehicle->year,
+                $vehicle->make,
+                $vehicle->model,
+            ])->filter()->implode(' '));
+
+            if ($vehicleLabel === '') {
+                $vehicleLabel = $vehicle->plate_number ?: ('Vehicle #'.$vehicle->id);
+            }
+
+            $vehicleSelection = [
+                'id' => $vehicle->id,
+                'text' => $vehicleLabel,
+                'plate_number' => $vehicle->plate_number,
+                'registration_number' => $vehicle->registration_number,
+                'make' => $vehicle->make,
+                'model' => $vehicle->model,
+                'year' => $vehicle->year,
+                'customer_id' => $vehicle->customer_id,
+            ];
+        }
+
+        return [
+            'id' => 'estimate-'.$order->id,
+            'label' => $order->order_number ?: ('Estimate #'.$order->id),
+            'saved_order_id' => $order->id,
+            'items' => $items,
+            'customer' => $customerSelection,
+            'vehicle' => $vehicleSelection,
+            'serviceFees' => $serviceFees,
+            'appliedCards' => ['gift' => null, 'reward' => null],
+            'notes' => $order->notes,
+        ];
+    }
+
     public function store(array $data, ?Authenticatable $user = null): array
     {
         $userId = $user?->getAuthIdentifier();
 
         $order = DB::transaction(function () use ($data, $userId): Order {
+            $existingOrder = null;
+
+            if (! empty($data['order_id'])) {
+                $existingOrder = Order::query()
+                    ->whereKey((int) $data['order_id'])
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $existingOrder || $existingOrder->status !== Order::STATUS_ESTIMATE) {
+                    throw ValidationException::withMessages([
+                        'order_id' => 'The selected estimate is no longer available for editing.',
+                    ]);
+                }
+            }
+
             $requestedItems = collect($data['items']);
             $requestedProductIds = $requestedItems
                 ->pluck('product_id')
@@ -235,8 +381,7 @@ class OrdersRepository implements OrderRepositoryInterface
                 ],
             ];
 
-            $order = Order::query()->create([
-                'order_number' => $this->makeOrderNumber($isEstimate ? 'EST' : 'ORD'),
+            $orderAttributes = [
                 'customer_id' => $data['customer_id'] ?? null,
                 'vehicle_id' => $data['vehicle_id'] ?? null,
                 'discount_group_id' => $customerDiscount['group']['id'] ?? null,
@@ -258,11 +403,26 @@ class OrdersRepository implements OrderRepositoryInterface
                 'change_amount' => $changeAmount,
                 'paid_at' => $isPaid ? now() : null,
                 'notes' => $data['notes'] ?? null,
-                'created_by' => $userId,
                 'updated_by' => $userId,
-            ]);
+            ];
 
-            $order->items()->createMany($orderItems);
+            if ($existingOrder) {
+                if (! $isEstimate) {
+                    $orderAttributes['order_number'] = $this->makeOrderNumber('ORD');
+                }
+
+                $existingOrder->forceFill($orderAttributes)->save();
+                $existingOrder->items()->delete();
+                $existingOrder->items()->createMany($orderItems);
+                $order = $existingOrder;
+            } else {
+                $order = Order::query()->create(array_merge($orderAttributes, [
+                    'order_number' => $this->makeOrderNumber($isEstimate ? 'EST' : 'ORD'),
+                    'created_by' => $userId,
+                ]));
+
+                $order->items()->createMany($orderItems);
+            }
 
             if (! $isEstimate && $cashPayment > 0) {
                 $order->payments()->create([
@@ -351,9 +511,11 @@ class OrdersRepository implements OrderRepositoryInterface
                 ]);
             }
 
-            if ($card->product_id && ! $productIds->contains((int) $card->product_id)) {
+            $linkedProductIds = $card->productIds();
+
+            if ($linkedProductIds !== [] && $productIds->intersect($linkedProductIds)->isEmpty()) {
                 throw ValidationException::withMessages([
-                    "selected_cards.{$type}_card_id" => "This {$label} requires its linked product to be in the order.",
+                    "selected_cards.{$type}_card_id" => "This {$label} requires at least one of its linked products to be in the order.",
                 ]);
             }
 
@@ -364,6 +526,7 @@ class OrdersRepository implements OrderRepositoryInterface
                 'value' => (float) $card->value,
                 'minimum_spend' => (float) $card->minimum_spend,
                 'product_id' => $card->product_id,
+                'product_ids' => $linkedProductIds,
                 'valid_until' => $card->valid_until?->toDateString(),
             ];
         }
@@ -1095,6 +1258,51 @@ class OrdersRepository implements OrderRepositoryInterface
     private function moneyLabel(float $amount): string
     {
         return Currency::format($amount);
+    }
+
+    private function mapItemDiscount(?Discount $discount): ?array
+    {
+        if (! $discount || ! $discount->is_active || $discount->applies_to !== Discount::APPLIES_TO_ITEM) {
+            return null;
+        }
+
+        if ($discount->starts_at && $discount->starts_at->isFuture()) {
+            return null;
+        }
+
+        if ($discount->ends_at && $discount->ends_at->isPast()) {
+            return null;
+        }
+
+        $valueLabel = $discount->discount_type === Discount::TYPE_PERCENTAGE
+            ? rtrim(rtrim(number_format((float) $discount->value, 2, '.', ''), '0'), '.').'%'
+            : Currency::format($discount->value);
+        $code = filled($discount->code) ? " ({$discount->code})" : '';
+
+        return [
+            'id' => $discount->id,
+            'name' => $discount->name,
+            'code' => $discount->code,
+            'discount_type' => $discount->discount_type,
+            'applies_to' => $discount->applies_to,
+            'type' => $discount->discount_type,
+            'value' => (float) $discount->value,
+            'max_discount_amount' => $discount->max_discount_amount !== null ? (float) $discount->max_discount_amount : null,
+            'max_amount' => $discount->max_discount_amount !== null ? (float) $discount->max_discount_amount : null,
+            'is_active' => (bool) $discount->is_active,
+            'starts_at' => $discount->starts_at?->toISOString(),
+            'ends_at' => $discount->ends_at?->toISOString(),
+            'label' => "{$discount->name}{$code} - {$valueLabel}",
+        ];
+    }
+
+    private function discountGroupLabel(DiscountGroup $group): string
+    {
+        $value = $group->type === 'percentage'
+            ? rtrim(rtrim(number_format((float) $group->value, 2, '.', ''), '0'), '.').'%'
+            : Currency::format($group->value);
+
+        return trim("{$group->name} - {$value}");
     }
 
     private function timeSinceLabel(\Carbon\Carbon $date): string

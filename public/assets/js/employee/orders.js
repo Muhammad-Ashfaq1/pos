@@ -380,7 +380,9 @@
     }
 
     state.loading = true;
-    setLoading(true);
+    if (!append) {
+      setLoading(true);
+    }
 
     $.ajax({
       url: config.listingUrl,
@@ -411,7 +413,9 @@
       })
       .always(function () {
         state.loading = false;
-        setLoading(false);
+        if (!append) {
+          setLoading(false);
+        }
       });
   };
 

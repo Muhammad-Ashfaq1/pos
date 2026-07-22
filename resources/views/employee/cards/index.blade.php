@@ -1,61 +1,49 @@
 @extends('layouts.employee-portal')
 
-@section('title', 'Cards')
+@section('title', 'Discounts')
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/gift-card.css') }}?v={{ filemtime(public_path('assets/css/gift-card.css')) }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/reward-card.css') }}?v={{ filemtime(public_path('assets/css/reward-card.css')) }}">
 @endpush
 
 @section('content')
     @php
-        $modules = [
-            'discount' => [
-                'title' => 'Discount Cards',
-                'singular' => 'Discount Card',
-                'icon' => 'tabler-discount-2',
-                'modal' => 'addDiscountCardModal',
-            ],
-            'gift' => [
-                'title' => 'Gift Cards',
-                'singular' => 'Gift Card',
-                'icon' => 'tabler-gift',
-                'modal' => 'addGiftCardModal',
-            ],
-            'reward' => [
-                'title' => 'Reward Cards',
-                'singular' => 'Reward Card',
-                'icon' => 'tabler-trophy',
-                'modal' => 'addRewardCardModal',
-            ],
-        ];
+        $modules = \App\Models\Card::typeMeta();
         $currencySymbol = \App\Support\Currency::symbol();
-        $initialModule = old('card_type', request('module', 'discount'));
+        $organizationName = auth()->user()?->tenant?->display_name
+            ?? (function_exists('tenant') ? tenant()?->display_name : null)
+            ?? 'Shop';
+        $initialModule = old('card_type', $cardType ?? 'discount');
         if (! array_key_exists($initialModule, $modules)) {
             $initialModule = 'discount';
         }
     @endphp
 
     <div class="employee-orders-page">
-        <x-employee.page-header title="Cards" :back-url="route('employee.dashboard')" back-title="Back to dashboard">
+        <x-employee.page-header title="Discounts" :back-url="route('employee.dashboard')" back-title="Back to dashboard">
             <x-slot:actions>
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    id="addCardBtn"
-                    data-bs-toggle="modal"
-                    data-bs-target="#{{ $modules[$initialModule]['modal'] }}"
-                >
-                    <i class="ti tabler-plus me-1"></i>
-                    <span data-add-card-label>Add {{ $modules[$initialModule]['singular'] }}</span>
-                </button>
+                @can('create', \App\Models\Card::class)
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        id="addCardBtn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#{{ $modules[$initialModule]['modal'] }}"
+                    >
+                        <i class="ti tabler-plus me-1"></i>
+                        <span data-add-card-label>Add {{ $modules[$initialModule]['singular'] }}</span>
+                    </button>
+                @endcan
             </x-slot:actions>
         </x-employee.page-header>
 
         <section class="employee-orders-panel employee-orders-results employee-cards-panel">
             <div class="employee-orders-tabs" role="tablist" aria-label="Card types">
                 @foreach ($modules as $module => $config)
-                    <button
-                        type="button"
+                    <a
+                        href="{{ route('employee.cards.type', $module) }}"
                         class="employee-orders-tab {{ $module === $initialModule ? 'active' : '' }}"
                         data-card-section="{{ $module }}"
                         data-card-modal="#{{ $config['modal'] }}"
@@ -63,9 +51,9 @@
                         role="tab"
                         aria-selected="{{ $module === $initialModule ? 'true' : 'false' }}"
                     >
-                        {{ $config['singular'] }}
-                        (<span>{{ $cardsByType->get($module, collect())->count() }}</span>)
-                    </button>
+                        {{ $config['tab'] }}
+                        (<span>{{ (int) $cardCounts->get($module, 0) }}</span>)
+                    </a>
                 @endforeach
             </div>
 
@@ -87,47 +75,20 @@
                             <span>No {{ strtolower($config['title']) }} yet. Create one to get started.</span>
                         </div>
                     @else
-                        <div class="employee-loyalty-cards">
+                        @php
+                            $listClass = match ($module) {
+                                'gift' => 'gift-card-list',
+                                'reward' => 'reward-card-list',
+                                default => 'employee-loyalty-cards',
+                            };
+                        @endphp
+                        <div class="{{ $listClass }}" data-card-list="{{ $module }}">
                             @foreach ($cards as $card)
-                                <article class="employee-loyalty-card">
-                                    <div class="employee-loyalty-card-top">
-                                        <div class="employee-loyalty-card-title">
-                                            <span class="employee-loyalty-card-icon">
-                                                <i class="ti {{ $config['icon'] }}"></i>
-                                            </span>
-                                            <span class="employee-order-number">{{ $card->name }}</span>
-                                        </div>
-                                        <span class="badge bg-label-primary">
-                                            @if ($module === 'discount')
-                                                {{ ucfirst($card->discount_type) }}
-                                            @else
-                                                {{ $config['singular'] }}
-                                            @endif
-                                        </span>
-                                    </div>
-
-                                    <div class="employee-loyalty-card-value">
-                                        @if ($module === 'discount')
-                                            {{ $card->discount_type === 'percentage'
-                                                ? rtrim(rtrim(number_format((float) $card->value, 2, '.', ''), '0'), '.') . '%'
-                                                : \App\Support\Currency::format((float) $card->value) }}
-                                        @elseif ($module === 'gift')
-                                            {{ \App\Support\Currency::format((float) $card->value) }}
-                                        @else
-                                            {{ number_format((float) $card->value) }} points
-                                        @endif
-                                    </div>
-
-                                    <div class="employee-loyalty-card-meta">
-                                        <span>Min. spend {{ \App\Support\Currency::format((float) $card->minimum_spend) }}</span>
-                                        <span>Product: {{ $card->product?->name ?? 'All products' }}</span>
-                                        <span>
-                                            {{ $card->valid_until
-                                                ? 'Valid until '.$card->valid_until->format('M d, Y')
-                                                : 'No expiry date' }}
-                                        </span>
-                                    </div>
-                                </article>
+                                @include('employee.cards.partials.card-item', [
+                                    'card' => $card,
+                                    'organizationName' => $organizationName,
+                                    'productsById' => $productsById,
+                                ])
                             @endforeach
                         </div>
                     @endif
@@ -148,7 +109,13 @@
     >
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-                <form method="POST" action="{{ route('employee.cards.store') }}" novalidate>
+                <form
+                    method="POST"
+                    action="{{ route('employee.cards.store') }}"
+                    class="js-employee-card-form"
+                    data-card-type="discount"
+                    novalidate
+                >
                     @csrf
                     <input type="hidden" name="card_type" value="discount">
 
@@ -158,278 +125,71 @@
                     </div>
 
                     <div class="modal-body">
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label class="form-label" for="discount_card_name">
-                                    Card Name <span class="text-danger">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    class="form-control {{ $errors->has('name') && old('card_type') === 'discount' ? 'is-invalid' : '' }}"
-                                    id="discount_card_name"
-                                    name="name"
-                                    value="{{ old('card_type') === 'discount' ? old('name') : '' }}"
-                                    maxlength="150"
-                                    required
-                                >
-                                @if ($errors->has('name') && old('card_type') === 'discount')
-                                    <div class="invalid-feedback">{{ $errors->first('name') }}</div>
-                                @endif
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label" for="discountType">
-                                    Discount Type <span class="text-danger">*</span>
-                                </label>
-                                <select
-                                    class="form-select {{ $errors->has('discount_type') && old('card_type') === 'discount' ? 'is-invalid' : '' }}"
-                                    id="discountType"
-                                    name="discount_type"
-                                    required
-                                >
-                                    <option value="percentage" @selected(old('discount_type', 'percentage') === 'percentage')>Percentage</option>
-                                    <option value="fixed" @selected(old('discount_type') === 'fixed')>Fixed Amount</option>
-                                </select>
-                                @if ($errors->has('discount_type') && old('card_type') === 'discount')
-                                    <div class="invalid-feedback">{{ $errors->first('discount_type') }}</div>
-                                @endif
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label" for="discountValue" id="discountValueLabel">
-                                    Discount Percentage <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group has-validation">
-                                    <span class="input-group-text" id="discountValuePrefix">%</span>
-                                    <input
-                                        type="number"
-                                        class="form-control {{ $errors->has('value') && old('card_type') === 'discount' ? 'is-invalid' : '' }}"
-                                        id="discountValue"
-                                        name="value"
-                                        value="{{ old('card_type') === 'discount' ? old('value') : '' }}"
-                                        min="0.01"
-                                        step="0.01"
-                                        required
-                                    >
-                                    @if ($errors->has('value') && old('card_type') === 'discount')
-                                        <div class="invalid-feedback">{{ $errors->first('value') }}</div>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label" for="discount_minimum_spend">
-                                    Minimum Spend Amount <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group has-validation">
-                                    <span class="input-group-text">{{ $currencySymbol }}</span>
-                                    <input
-                                        type="number"
-                                        class="form-control {{ $errors->has('minimum_spend') && old('card_type') === 'discount' ? 'is-invalid' : '' }}"
-                                        id="discount_minimum_spend"
-                                        name="minimum_spend"
-                                        value="{{ old('card_type') === 'discount' ? old('minimum_spend', 0) : 0 }}"
-                                        min="0"
-                                        step="0.01"
-                                        required
-                                    >
-                                    @if ($errors->has('minimum_spend') && old('card_type') === 'discount')
-                                        <div class="invalid-feedback">{{ $errors->first('minimum_spend') }}</div>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label" for="discount_product_id">Select Product</label>
-                                <select
-                                    class="form-select {{ $errors->has('product_id') && old('card_type') === 'discount' ? 'is-invalid' : '' }}"
-                                    id="discount_product_id"
-                                    name="product_id"
-                                >
-                                    <option value="">All products</option>
-                                    @foreach ($products as $product)
-                                        <option
-                                            value="{{ $product->id }}"
-                                            @selected(old('card_type') === 'discount' && (string) old('product_id') === (string) $product->id)
-                                        >
-                                            {{ $product->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @if ($errors->has('product_id') && old('card_type') === 'discount')
-                                    <div class="invalid-feedback">{{ $errors->first('product_id') }}</div>
-                                @endif
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label" for="discount_valid_until">
-                                    Valid Until <span class="text-danger">*</span>
-                                </label>
-                                <input
-                                    type="date"
-                                    class="form-control {{ $errors->has('valid_until') && old('card_type') === 'discount' ? 'is-invalid' : '' }}"
-                                    id="discount_valid_until"
-                                    name="valid_until"
-                                    value="{{ old('card_type') === 'discount' ? old('valid_until') : '' }}"
-                                    min="{{ now()->toDateString() }}"
-                                    required
-                                >
-                                @if ($errors->has('valid_until') && old('card_type') === 'discount')
-                                    <div class="invalid-feedback">{{ $errors->first('valid_until') }}</div>
-                                @endif
-                            </div>
-                        </div>
+                        <x-cards.form-fields
+                            card-type="discount"
+                            :products="$products"
+                            id-prefix="employee_discount"
+                            modal-id="addDiscountCardModal"
+                            :currency-symbol="$currencySymbol"
+                            name-column="col-12"
+                            :valid-until-required="true"
+                        />
                     </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button class="btn btn-primary" type="submit">Save Card</button>
+                        <button class="btn btn-primary" type="submit" data-card-submit>Save Card</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    @foreach ([
-        'gift' => [
-            'title' => 'Gift Card',
-            'valueLabel' => 'Gift Amount',
-            'prefix' => $currencySymbol,
-            'step' => '0.01',
-        ],
-        'reward' => [
-            'title' => 'Reward Card',
-            'valueLabel' => 'Reward Points',
-            'prefix' => 'PTS',
-            'step' => '1',
-        ],
-    ] as $module => $config)
+    @foreach (collect(\App\Models\Card::typeMeta())->except(\App\Models\Card::TYPE_DISCOUNT) as $module => $config)
         <div
             class="modal fade"
-            id="add{{ ucfirst($module) }}CardModal"
+            id="{{ $config['modal'] }}"
             tabindex="-1"
-            aria-labelledby="add{{ ucfirst($module) }}CardModalLabel"
+            aria-labelledby="{{ $config['modal'] }}Label"
             aria-hidden="true"
             data-bs-backdrop="static"
             data-bs-keyboard="false"
         >
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
-                    <form method="POST" action="{{ route('employee.cards.store') }}" novalidate>
+                    <form
+                        method="POST"
+                        action="{{ route('employee.cards.store') }}"
+                        class="js-employee-card-form"
+                        data-card-type="{{ $module }}"
+                        novalidate
+                    >
                         @csrf
                         <input type="hidden" name="card_type" value="{{ $module }}">
 
                         <div class="modal-header">
-                            <h5 class="modal-title" id="add{{ ucfirst($module) }}CardModalLabel">Add {{ $config['title'] }}</h5>
+                            <h5 class="modal-title" id="{{ $config['modal'] }}Label">
+                                Add {{ $config['singular'] }}
+                            </h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
 
                         <div class="modal-body">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label" for="{{ $module }}_card_name">
-                                        Card Name <span class="text-danger">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        class="form-control {{ $errors->has('name') && old('card_type') === $module ? 'is-invalid' : '' }}"
-                                        id="{{ $module }}_card_name"
-                                        name="name"
-                                        value="{{ old('card_type') === $module ? old('name') : '' }}"
-                                        maxlength="150"
-                                        required
-                                    >
-                                    @if ($errors->has('name') && old('card_type') === $module)
-                                        <div class="invalid-feedback">{{ $errors->first('name') }}</div>
-                                    @endif
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label" for="{{ $module }}_card_value">
-                                        {{ $config['valueLabel'] }} <span class="text-danger">*</span>
-                                    </label>
-                                    <div class="input-group has-validation">
-                                        <span class="input-group-text">{{ $config['prefix'] }}</span>
-                                        <input
-                                            type="number"
-                                            class="form-control {{ $errors->has('value') && old('card_type') === $module ? 'is-invalid' : '' }}"
-                                            id="{{ $module }}_card_value"
-                                            name="value"
-                                            value="{{ old('card_type') === $module ? old('value') : '' }}"
-                                            min="0.01"
-                                            step="{{ $config['step'] }}"
-                                            required
-                                        >
-                                        @if ($errors->has('value') && old('card_type') === $module)
-                                            <div class="invalid-feedback">{{ $errors->first('value') }}</div>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label" for="{{ $module }}_minimum_spend">
-                                        Minimum Spend Amount <span class="text-danger">*</span>
-                                    </label>
-                                    <div class="input-group has-validation">
-                                        <span class="input-group-text">{{ $currencySymbol }}</span>
-                                        <input
-                                            type="number"
-                                            class="form-control {{ $errors->has('minimum_spend') && old('card_type') === $module ? 'is-invalid' : '' }}"
-                                            id="{{ $module }}_minimum_spend"
-                                            name="minimum_spend"
-                                            value="{{ old('card_type') === $module ? old('minimum_spend', 0) : 0 }}"
-                                            min="0"
-                                            step="0.01"
-                                            required
-                                        >
-                                        @if ($errors->has('minimum_spend') && old('card_type') === $module)
-                                            <div class="invalid-feedback">{{ $errors->first('minimum_spend') }}</div>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label" for="{{ $module }}_product_id">Select Product</label>
-                                    <select
-                                        class="form-select {{ $errors->has('product_id') && old('card_type') === $module ? 'is-invalid' : '' }}"
-                                        id="{{ $module }}_product_id"
-                                        name="product_id"
-                                    >
-                                        <option value="">All products</option>
-                                        @foreach ($products as $product)
-                                            <option
-                                                value="{{ $product->id }}"
-                                                @selected(old('card_type') === $module && (string) old('product_id') === (string) $product->id)
-                                            >
-                                                {{ $product->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @if ($errors->has('product_id') && old('card_type') === $module)
-                                        <div class="invalid-feedback">{{ $errors->first('product_id') }}</div>
-                                    @endif
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label" for="{{ $module }}_valid_until">Valid Until</label>
-                                    <input
-                                        type="date"
-                                        class="form-control {{ $errors->has('valid_until') && old('card_type') === $module ? 'is-invalid' : '' }}"
-                                        id="{{ $module }}_valid_until"
-                                        name="valid_until"
-                                        value="{{ old('card_type') === $module ? old('valid_until') : '' }}"
-                                        min="{{ now()->toDateString() }}"
-                                    >
-                                    @if ($errors->has('valid_until') && old('card_type') === $module)
-                                        <div class="invalid-feedback">{{ $errors->first('valid_until') }}</div>
-                                    @endif
-                                </div>
-                            </div>
+                            <x-cards.form-fields
+                                :card-type="$module"
+                                :products="$products"
+                                :id-prefix="'employee_'.$module"
+                                :modal-id="$config['modal']"
+                                :currency-symbol="$currencySymbol"
+                                :value-label="$config['value_label']"
+                            />
                         </div>
 
                         <div class="modal-footer">
                             <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button class="btn btn-primary" type="submit">Save {{ $config['title'] }}</button>
+                            <button class="btn btn-primary" type="submit" data-card-submit>
+                                Save {{ $config['singular'] }}
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -440,63 +200,11 @@
 
 @push('page-script')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const type = document.getElementById('discountType');
-    const label = document.getElementById('discountValueLabel');
-    const prefix = document.getElementById('discountValuePrefix');
-    const value = document.getElementById('discountValue');
-    const addCardBtn = document.getElementById('addCardBtn');
-    const addCardLabel = document.querySelector('[data-add-card-label]');
-
-    function updateDiscountField() {
-        const percentage = type.value === 'percentage';
-        label.innerHTML = (percentage ? 'Discount Percentage' : 'Fixed Amount') + ' <span class="text-danger">*</span>';
-        prefix.textContent = percentage ? '%' : @json($currencySymbol);
-        value.max = percentage ? '100' : '';
-    }
-
-    type.addEventListener('change', updateDiscountField);
-    updateDiscountField();
-
-    function activateModule(module) {
-        const tab = document.querySelector('[data-card-section="' + module + '"]');
-        if (!tab) {
-            return;
-        }
-
-        document.querySelectorAll('[data-card-section]').forEach(function (item) {
-            const active = item.dataset.cardSection === module;
-            item.classList.toggle('active', active);
-            item.setAttribute('aria-selected', active ? 'true' : 'false');
-        });
-
-        document.querySelectorAll('[data-card-panel]').forEach(function (panel) {
-            panel.classList.toggle('d-none', panel.dataset.cardPanel !== module);
-        });
-
-        addCardBtn.setAttribute('data-bs-target', tab.dataset.cardModal);
-        addCardLabel.textContent = tab.dataset.cardLabel;
-
-        const url = new URL(window.location.href);
-        url.searchParams.set('module', module);
-        window.history.replaceState({}, '', url);
-    }
-
-    document.querySelectorAll('[data-card-section]').forEach(function (button) {
-        button.addEventListener('click', function () {
-            activateModule(button.dataset.cardSection);
-        });
-    });
-
-    activateModule(@json($initialModule));
-
-    @if ($errors->any())
-        const errorType = @json(old('card_type', 'discount'));
-        const modalId = errorType === 'discount'
-            ? 'addDiscountCardModal'
-            : 'add' + errorType.charAt(0).toUpperCase() + errorType.slice(1) + 'CardModal';
-        bootstrap.Modal.getOrCreateInstance(document.getElementById(modalId)).show();
-    @endif
-});
+    window.employeeCards = {
+        currencySymbol: @json($currencySymbol),
+        initialModule: @json($initialModule),
+    };
 </script>
+<script src="{{ asset('assets/js/cards-form.js') }}?v={{ filemtime(public_path('assets/js/cards-form.js')) }}"></script>
+<script src="{{ asset('assets/js/employee/cards.js') }}?v={{ filemtime(public_path('assets/js/employee/cards.js')) }}"></script>
 @endpush

@@ -3,61 +3,54 @@
 namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Employee\Cards\SaveCardRequest;
 use App\Models\Card;
-use App\Models\Product;
+use App\Repositories\Interface\CardRepositoryInterface;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class CardController extends Controller
 {
-    public function index(): View
+    public function __construct(
+        private readonly CardRepositoryInterface $repo
+    ) {}
+
+    public function index(): RedirectResponse
     {
-        return view('employee.cards.index', [
-            'cardsByType' => Card::query()
-                ->with('product:id,name')
-                ->latest()
-                ->get()
-                ->groupBy('card_type'),
-            'products' => Product::query()
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->get(['id', 'name']),
-        ]);
+        $this->authorize('viewAny', Card::class);
+
+        return redirect()->route('employee.cards.type', Card::TYPE_DISCOUNT);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function typeIndex(string $type): View
     {
-        $validated = $request->validate([
-            'card_type' => ['required', Rule::in(array_keys(Card::typeOptions()))],
-            'name' => ['required', 'string', 'max:150'],
-            'discount_type' => [
-                Rule::requiredIf($request->input('card_type') === Card::TYPE_DISCOUNT),
-                'nullable',
-                Rule::in(['percentage', 'fixed']),
-            ],
-            'value' => ['required', 'numeric', 'gt:0'],
-            'minimum_spend' => ['required', 'numeric', 'min:0'],
-            'product_id' => [
-                'nullable',
-                Rule::exists('products', 'id')->where(
-                    fn ($query) => $query->where('tenant_id', auth()->user()->tenant_id)
-                ),
-            ],
-            'valid_until' => ['nullable', 'date', 'after_or_equal:today'],
-        ]);
+        $this->authorize('viewAny', Card::class);
 
-        if ($validated['card_type'] === Card::TYPE_DISCOUNT && $validated['discount_type'] === 'percentage' && (float) $validated['value'] > 100) {
-            return back()
-                ->withErrors(['value' => 'The percentage discount cannot be greater than 100%.'])
-                ->withInput();
-        }
+        return $this->repo->employeeIndex(
+            Card::resolveTypeOrFail($type)
+        );
+    }
 
-        $validated['created_by'] = auth()->id();
-        Card::query()->create($validated);
+    public function store(SaveCardRequest $request): JsonResponse
+    {
+        $this->authorize('create', Card::class);
 
-        return to_route('employee.cards.index', ['module' => $validated['card_type']])
-            ->with('success', Card::typeOptions()[$validated['card_type']].' created successfully.');
+        $validated = $request->validated();
+        $result = $this->repo->store(
+            $validated,
+            user: $request->user(),
+            includeData: false,
+        );
+
+        $organizationName = $request->user()?->tenant?->display_name
+            ?? (function_exists('tenant') ? tenant()?->display_name : null)
+            ?? 'Shop';
+
+        return response()->json([
+            'message' => $result['message'],
+            'card_type' => $validated['card_type'],
+            'html' => $this->repo->renderEmployeeCardHtml($result['card'], $organizationName),
+        ], 201);
     }
 }

@@ -514,6 +514,7 @@
             vehicleRequired: @json($vehicleRequired),
             returnDaysAfterPurchase: @json($returnDaysAfterPurchase),
         };
+        window.editOrder = @json($editOrder ?? null);
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"></script>
     <script src="{{ asset('assets/js/tenant/e-com/customer-manager.js') }}?v={{ filemtime(public_path('assets/js/tenant/e-com/customer-manager.js')) }}"></script>

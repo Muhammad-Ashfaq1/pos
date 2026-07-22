@@ -5,9 +5,9 @@
 @php
     $user = auth()->user();
     $summaryCards = [
-        ['value' => number_format($orders_completed_today), 'label' => 'Orders', 'meta' => 'Completed Today', 'icon' => 'tabler-calendar-event', 'chip' => 'preview-chip--blue'],
-        ['value' => number_format($orders_incomplete_today), 'label' => 'Orders', 'meta' => 'Incompleted Today', 'icon' => 'tabler-map-pin-share', 'chip' => 'preview-chip--purple'],
-        ['value' => number_format($products_available), 'label' => 'Products', 'meta' => 'Available Today', 'icon' => 'tabler-search', 'chip' => 'preview-chip--violet'],
+        ['key' => 'orders_completed_today', 'value' => number_format($orders_completed_today), 'label' => 'Orders', 'meta' => 'Completed Today', 'icon' => 'tabler-calendar-event', 'chip' => 'preview-chip--blue'],
+        ['key' => 'orders_incomplete_today', 'value' => number_format($orders_incomplete_today), 'label' => 'Orders', 'meta' => 'Incompleted Today', 'icon' => 'tabler-map-pin-share', 'chip' => 'preview-chip--purple'],
+        ['key' => 'products_available', 'value' => number_format($products_available), 'label' => 'Products', 'meta' => 'Available Today', 'icon' => 'tabler-search', 'chip' => 'preview-chip--violet'],
     ];
 
     $tiles = [
@@ -18,11 +18,19 @@
         ['label' => 'Returns', 'icon' => 'tabler-arrow-back-up', 'url' => route('employee.order.returns'), 'permission' => 'orders.view'],
         ['label' => 'Product Setup', 'icon' => 'tabler-package-import', 'url' => route('employee.products.index'), 'permission' => 'product.create'],
         ['label' => 'Invoices', 'icon' => 'tabler-file-invoice'],
-        ['label' => 'Cards', 'icon' => 'tabler-cards', 'url' => route('employee.cards.index')],
+        ['label' => 'Discounts', 'icon' => 'tabler-ticket', 'url' => route('employee.cards.type', 'discount'), 'permission' => ['cards.view', 'cards.manage']],
     ];
 
     $tiles = collect($tiles)
-        ->filter(fn ($tile) => empty($tile['permission']) || ($user?->can($tile['permission']) ?? false))
+        ->filter(function ($tile) use ($user) {
+            if (empty($tile['permission'])) {
+                return true;
+            }
+
+            $permissions = is_array($tile['permission']) ? $tile['permission'] : [$tile['permission']];
+
+            return collect($permissions)->contains(fn ($permission) => $user?->can($permission) ?? false);
+        })
         ->values()
         ->all();
 
@@ -66,7 +74,30 @@
     @include('employee.partials.preview-bottom-nav', ['bottomNav' => $bottomNav])
 @endsection
 
+@push('styles')
+    <style>
+        .employee-admin-preview .preview-refresh-btn.is-refreshing i {
+            animation: product-mix-spin 0.8s linear infinite;
+        }
+
+        .employee-admin-preview .preview-status-dot.is-live {
+            background: #22c55e;
+        }
+
+        @keyframes product-mix-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+@endpush
+
 @push('page-script')
+    <script>
+        window.employeeDashboardConfig = {
+            productMixUrl: @json(route('employee.dashboard.product-mix'))
+        };
+    </script>
+    <script src="{{ asset('assets/js/employee/dashboard.js') }}?v={{ filemtime(public_path('assets/js/employee/dashboard.js')) }}"></script>
     <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
     <script>
         $(function() {

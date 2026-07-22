@@ -161,6 +161,36 @@
             'label' => 'Discounts',
             'icon' => 'tabler-ticket',
             'items' => collect([
+                $user?->can('cards.view') || $user?->can('cards.manage')
+                    ? [
+                        'label' => 'Discount',
+                        'route' => 'tenant.ecommerce.cards.type',
+                        'routeParams' => ['type' => 'discount'],
+                        'pattern' => 'tenant.ecommerce.cards.*',
+                        'cardType' => 'discount',
+                        'icon' => 'tabler-ticket',
+                    ]
+                    : null,
+                $user?->can('cards.view') || $user?->can('cards.manage')
+                    ? [
+                        'label' => 'Gift',
+                        'route' => 'tenant.ecommerce.cards.type',
+                        'routeParams' => ['type' => 'gift'],
+                        'pattern' => 'tenant.ecommerce.cards.*',
+                        'cardType' => 'gift',
+                        'icon' => 'tabler-gift',
+                    ]
+                    : null,
+                $user?->can('cards.view') || $user?->can('cards.manage')
+                    ? [
+                        'label' => 'Reward',
+                        'route' => 'tenant.ecommerce.cards.type',
+                        'routeParams' => ['type' => 'reward'],
+                        'pattern' => 'tenant.ecommerce.cards.*',
+                        'cardType' => 'reward',
+                        'icon' => 'tabler-trophy',
+                    ]
+                    : null,
                 $user?->isTenantAdmin() || $user?->can('discount.group.manage')
                     ? [
                         'label' => 'Discount groups',
@@ -178,9 +208,18 @@
         ->filter(fn(array $group): bool => !empty($group['items']))
         ->values();
 
-    $isGroupActive = function (array $group) use ($currentRouteName): bool {
+    $isMenuItemActive = function (array $item) use ($currentRouteName): bool {
+        if (isset($item['cardType'])) {
+            return request()->routeIs('tenant.ecommerce.cards.*')
+                && request()->route('type') === $item['cardType'];
+        }
+
+        return str($currentRouteName ?? '')->is($item['pattern']);
+    };
+
+    $isGroupActive = function (array $group) use ($isMenuItemActive): bool {
         return collect($group['items'])->contains(
-            fn(array $item): bool => str($currentRouteName ?? '')->is($item['pattern']),
+            fn (array $item): bool => $isMenuItemActive($item),
         );
     };
 @endphp
@@ -274,7 +313,7 @@
 
                     <ul class="menu-sub">
                         @foreach ($group['items'] as $item)
-                            <li class="menu-item {{ request()->routeIs($item['pattern']) ? 'active' : '' }}">
+                            <li class="menu-item {{ $isMenuItemActive($item) ? 'active' : '' }}">
                                 <a href="{{ route($item['route'], $item['routeParams'] ?? []) }}" class="menu-link">
                                     <i class="menu-icon icon-base ti {{ $item['icon'] }}"></i>
                                     <div>{{ $item['label'] }}</div>

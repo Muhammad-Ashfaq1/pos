@@ -111,9 +111,14 @@
     function normalizeDraftOrder(order, index) {
         if (!order || !order.id) return null;
 
+        const savedOrderId = order.saved_order_id
+            ? parseInt(order.saved_order_id, 10)
+            : null;
+
         return {
             id: String(order.id),
             label: order.label || ('Order ' + (index + 1)),
+            saved_order_id: savedOrderId && savedOrderId > 0 ? savedOrderId : null,
             items: (Array.isArray(order.items) ? order.items : [])
                 .map(normalizeDraftItem)
                 .filter(Boolean),
@@ -122,7 +127,8 @@
             serviceFees: Array.isArray(order.serviceFees) ? order.serviceFees : [],
             appliedCards: order.appliedCards && typeof order.appliedCards === 'object'
                 ? order.appliedCards
-                : { gift: null, reward: null }
+                : { gift: null, reward: null },
+            notes: order.notes || null
         };
     }
 
@@ -134,11 +140,13 @@
                 return {
                     id: order.id,
                     label: order.label,
+                    saved_order_id: order.saved_order_id || null,
                     items: order.items || [],
                     customer: order.customer || null,
                     vehicle: order.vehicle || null,
                     serviceFees: orderServiceFees(order),
-                    appliedCards: order.appliedCards || { gift: null, reward: null }
+                    appliedCards: order.appliedCards || { gift: null, reward: null },
+                    notes: order.notes || null
                 };
             }),
             active_order_id: activeOrderId,
@@ -165,6 +173,57 @@
 
         nextOrderNumber = Math.max(parseInt(payload.next_order_number, 10) || 1, orders.length + 1, 1);
         isHydratingSavedCart = false;
+    }
+
+    function applyEditOrder(editOrder) {
+        const normalized = normalizeDraftOrder(editOrder, orders.length);
+        if (!normalized) return false;
+
+        isHydratingSavedCart = true;
+
+        const existingIndex = orders.findIndex(function (order) {
+            return order.saved_order_id
+                && String(order.saved_order_id) === String(normalized.saved_order_id);
+        });
+
+        if (existingIndex >= 0) {
+            orders.splice(existingIndex, 1, normalized);
+        } else {
+            orders.push(normalized);
+        }
+
+        activeOrderId = normalized.id;
+        nextOrderNumber = Math.max(nextOrderNumber, orders.length + 1, 1);
+        isHydratingSavedCart = false;
+
+        return true;
+    }
+
+    /**
+     * "New Order" must not reopen a cart that was seeded from Process Order.
+     * Keep only plain drafts (no saved_order_id); drop estimate-linked drafts.
+     */
+    function discardEstimateDraftsForFreshOrder() {
+        const remaining = orders.filter(function (order) {
+            return !order.saved_order_id;
+        });
+
+        if (remaining.length === orders.length) {
+            return false;
+        }
+
+        isHydratingSavedCart = true;
+        orders.length = 0;
+        remaining.forEach(function (order) {
+            orders.push(order);
+        });
+
+        activeOrderId = orders.some(function (order) { return order.id === activeOrderId; })
+            ? activeOrderId
+            : (orders[0] ? orders[0].id : null);
+        isHydratingSavedCart = false;
+
+        return true;
     }
 
     function loadDraftCart() {
@@ -450,11 +509,13 @@
         const order = {
             id: 'draft-' + nextOrderNumber + '-' + Date.now(),
             label: 'Order ' + nextOrderNumber,
+            saved_order_id: null,
             items: [],
             customer: carryCurrentSelection ? readSelectSelection($('#customer_type_filter')) : null,
             vehicle: carryCurrentSelection ? readSelectSelection($('#add_vehicle_filter')) : null,
             serviceFees: [],
-            appliedCards: { gift: null, reward: null }
+            appliedCards: { gift: null, reward: null },
+            notes: null
         };
 
         nextOrderNumber += 1;
@@ -1172,9 +1233,15 @@
         const minimumSpend = roundMoney(card.minimum_spend || 0);
         if (totals.orderSubtotal + 0.001 < minimumSpend) return false;
 
-        if (card.product_id) {
-            return order.items.some(function (item) {
-                return String(item.id) === String(card.product_id);
+        const linkedProductIds = Array.isArray(card.product_ids) && card.product_ids.length
+            ? card.product_ids
+            : (card.product_id ? [card.product_id] : []);
+
+        if (linkedProductIds.length) {
+            return linkedProductIds.some(function (productId) {
+                return order.items.some(function (item) {
+                    return String(item.id) === String(productId);
+                });
             });
         }
 
@@ -1199,9 +1266,13 @@
 
             $list.find('.order-card-option').each(function () {
                 const $option = $(this);
+                const productIdsAttr = String($option.attr('data-product-ids') || '').trim();
                 const card = {
                     id: $option.data('card-id'),
                     product_id: $option.data('product-id') || null,
+                    product_ids: productIdsAttr
+                        ? productIdsAttr.split(',').map(function (id) { return id.trim(); }).filter(Boolean)
+                        : [],
                     minimum_spend: $option.data('minimum-spend'),
                     value: $option.data('card-value')
                 };
@@ -2196,6 +2267,7 @@
         const rewardCard = orderAppliedCard(order, 'reward');
 
         return {
+            order_id: order.saved_order_id || null,
             customer_id: order.customer ? order.customer.id : null,
             vehicle_id: order.vehicle ? order.vehicle.id : null,
             payment: {
@@ -2210,6 +2282,7 @@
                 gift_card_id: cardIsEligible(giftCard, order, totals) ? giftCard.id : null,
                 reward_card_id: cardIsEligible(rewardCard, order, totals) ? rewardCard.id : null
             },
+            notes: order.notes || null,
             items: order.items.map(function (item) {
                 return {
                     product_id: item.id,
@@ -3062,6 +3135,15 @@
             renderDiscountDrawer();
         });
         loadDraftCart().always(function () {
+            if (window.editOrder) {
+                // Process Order: seed / refresh the estimate draft in the cart.
+                applyEditOrder(window.editOrder);
+                scheduleDraftCartSave(0);
+            } else if (discardEstimateDraftsForFreshOrder()) {
+                // New Order: do not restore a previous Process Order estimate.
+                scheduleDraftCartSave(0);
+            }
+
             refreshOrderDropdown();
             restoreActiveOrderMeta();
             fillServiceFeeForm();

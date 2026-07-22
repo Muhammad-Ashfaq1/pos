@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Repositories\CardsRepository;
 use App\Repositories\CategoriesRepository;
 use App\Repositories\CustomersRepository;
 use App\Repositories\DiscountsRepository;
+use App\Repositories\Interface\CardRepositoryInterface;
 use App\Repositories\Interface\CategoryRepositoryInterface;
 use App\Repositories\Interface\CustomerRepositoryInterface;
 use App\Repositories\Interface\DiscountRepositoryInterface;
@@ -44,6 +46,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CustomerRepositoryInterface::class, CustomersRepository::class);
         $this->app->bind(VehicleRepositoryInterface::class, VehiclesRepository::class);
         $this->app->bind(DiscountRepositoryInterface::class, DiscountsRepository::class);
+        $this->app->bind(CardRepositoryInterface::class, CardsRepository::class);
         $this->app->bind(OrderRepositoryInterface::class, OrdersRepository::class);
         $this->app->bind(ShopSettingsRepositoryInterface::class, ShopSettingsRepository::class);
         $this->app->bind(ReportRepositoryInterface::class, ReportsRepository::class);

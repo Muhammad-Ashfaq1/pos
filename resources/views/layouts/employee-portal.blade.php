@@ -248,13 +248,14 @@
         }
 
         .employee-admin-preview .preview-main {
+            padding-top: 0.75rem;
             padding-bottom: 8rem;
         }
 
         .employee-admin-preview .preview-grid {
             display: grid;
             grid-template-columns: minmax(0, 1fr);
-            gap: 1rem;
+            gap: 1.25rem;
         }
 
         .employee-admin-preview .preview-left-column,
@@ -262,6 +263,7 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
+            padding-top: 2rem;
         }
 
         .employee-admin-preview .preview-card {
@@ -457,14 +459,16 @@
             display: grid;
             grid-template-columns: 1fr;
             gap: 1rem;
+            align-items: start;
         }
 
         .employee-admin-preview .preview-tile {
             min-height: 9.7rem;
+            height: auto;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
-            padding: 1.5rem;
+            padding: 2rem 1.5rem 1.5rem;
             text-align: center;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
@@ -473,7 +477,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
+            width: 100%;
+            padding-top: 0.35rem;
         }
 
         .employee-admin-preview .preview-tile-icon-wrap {
@@ -566,6 +572,13 @@
 
             .employee-admin-preview .preview-grid {
                 grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: 1.5rem;
+                align-items: start;
+            }
+
+            .employee-admin-preview .preview-left-column,
+            .employee-admin-preview .preview-right-column {
+                padding-top: 2.25rem;
             }
         }
     </style>
