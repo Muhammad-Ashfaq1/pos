@@ -99,12 +99,6 @@
                         </div>
                     </li>
                     <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <a href="{{ route('employee.account') }}" class="dropdown-item">
-                            <i class="icon-base ti tabler-user-circle me-2"></i>
-                            Account
-                        </a>
-                    </li>
                     @if(session()->has('impersonator_id'))
                         <li>
                             <a href="{{ route('admin.impersonate.stop') }}" class="dropdown-item text-warning">

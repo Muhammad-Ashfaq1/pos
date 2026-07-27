@@ -44,6 +44,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'tenant_id',
         'role',
         'phone',
+        'avatar',
         'failed_attempts',
         'locked_until',
         'is_active',

@@ -202,12 +202,17 @@ class DropdownController extends Controller
         $perPage = min((int) $request->integer('per_page', 20), 50);
         $page = max((int) $request->integer('page', 1), 1);
         $customerType = trim((string) $request->string('customer_type')->toString());
+        $customerId = $request->integer('id');
 
         $query = Customer::query()
             ->with('discountGroup:id,name,type,value,min_limit,is_active')
-            ->select(['id', 'customer_type', 'discount_group_id', 'name', 'phone', 'email'])
-            ->when($customerType !== '', fn ($builder) => $builder->where('customer_type', $customerType))
-            ->search($search)
+            ->select(['id', 'customer_type', 'discount_group_id', 'name', 'phone', 'email', 'credit_balance'])
+            ->when($customerId > 0, fn ($builder) => $builder->whereKey($customerId))
+            ->when($customerId <= 0, function ($builder) use ($search, $customerType): void {
+                $builder
+                    ->when($customerType !== '', fn ($q) => $q->where('customer_type', $customerType))
+                    ->search($search);
+            })
             ->orderBy('name')
             ->orderBy('id');
 
@@ -224,6 +229,7 @@ class DropdownController extends Controller
                 'customer_type' => $customer->customer_type,
                 'phone' => $customer->phone,
                 'email' => $customer->email,
+                'credit_balance' => (float) $customer->credit_balance,
                 'discount_group' => $this->discountGroupPayload($customer->discountGroup),
             ])->all(),
             'pagination' => [

@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsureCentralUser;
 use App\Http\Middleware\EnsureEmployeePanelAccess;
 use App\Http\Middleware\EnsureImpersonatingSession;
 use App\Http\Middleware\EnsureTenantIsApproved;
+use App\Http\Middleware\InitializeAccountContext;
 use App\Http\Middleware\InitializeTenancyForCustomer;
 use App\Http\Middleware\InitializeTenancyFromAuthenticatedUser;
 use App\Http\Middleware\IsSuperAdmin;
@@ -44,6 +45,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant.init' => InitializeTenancyFromAuthenticatedUser::class,
             'tenant.approved' => EnsureTenantIsApproved::class,
             'customer.tenant.init' => InitializeTenancyForCustomer::class,
+            'account.context' => InitializeAccountContext::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

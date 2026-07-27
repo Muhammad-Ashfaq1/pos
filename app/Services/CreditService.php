@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Customer;
 use App\Models\CustomerCreditTransaction;
 use App\Models\Order;
+use App\Support\Currency;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -17,6 +19,42 @@ use Illuminate\Validation\ValidationException;
  */
 class CreditService
 {
+    /**
+     * Tenant minimum balance required before any store credit can be redeemed.
+     */
+    public function minRedeemBalance(): float
+    {
+        $tenant = app(TenantContext::class)->current();
+
+        return $tenant?->creditMinRedeemBalance() ?? 50.0;
+    }
+
+    /**
+     * Whether the customer's current wallet may be used at checkout.
+     */
+    public function canRedeem(Customer $customer, ?float $minimum = null): bool
+    {
+        $min = $minimum ?? $this->minRedeemBalance();
+
+        return round((float) $customer->credit_balance, 2) + 0.001 >= $min;
+    }
+
+    /**
+     * Reject redeem attempts while the wallet is below the unlock threshold.
+     */
+    public function assertCanRedeem(Customer $customer, ?float $minimum = null): void
+    {
+        $min = $minimum ?? $this->minRedeemBalance();
+
+        if ($this->canRedeem($customer, $min)) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'credits_applied' => 'Store credit can be used when the balance is at least '.Currency::format($min).'.',
+        ]);
+    }
+
     /**
      * Grant store credit (e.g. earned on a paid order).
      * Returns null when the amount rounds to zero (nothing recorded).
@@ -33,7 +71,7 @@ class CreditService
     }
 
     /**
-     * Redeem store credit against an order. Guards against over-spending.
+     * Redeem store credit against an order. Guards against unlock threshold and over-spending.
      */
     public function redeem(Customer $customer, float $amount, ?Order $order, ?int $userId = null): CustomerCreditTransaction
     {
@@ -44,6 +82,8 @@ class CreditService
                 'credits_applied' => 'Credit to redeem must be greater than zero.',
             ]);
         }
+
+        $this->assertCanRedeem($customer);
 
         return $this->record($customer, CustomerCreditTransaction::TYPE_REDEEM, -$amount, $order, 'Store credit redeemed', $userId);
     }

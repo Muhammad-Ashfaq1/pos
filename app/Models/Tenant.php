@@ -44,6 +44,7 @@ class Tenant extends Model implements TenantContract
         'orders' => [
             'vehicle_required' => true,
             'return_days_after_purchase' => 7,
+            'credit_min_redeem_balance' => 50,
         ],
         'business_hours' => [
             'monday' => ['is_closed' => false, 'open' => '09:00', 'close' => '18:00'],
@@ -228,5 +229,13 @@ class Tenant extends Model implements TenantContract
     public function returnDaysAfterPurchase(): int
     {
         return (int) $this->setting('orders.return_days_after_purchase', 30);
+    }
+
+    /**
+     * Minimum store-credit wallet balance required before any redeem is allowed.
+     */
+    public function creditMinRedeemBalance(): float
+    {
+        return round((float) $this->setting('orders.credit_min_redeem_balance', 50), 2);
     }
 }

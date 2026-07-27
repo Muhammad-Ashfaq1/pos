@@ -141,6 +141,25 @@ class CustomerPortalService
         return $customer->refresh();
     }
 
+    /**
+     * Logged-in customer changing their own password (portal profile).
+     */
+    public function changePassword(Customer $customer, string $currentPassword, string $newPassword): Customer
+    {
+        if (! Hash::check($currentPassword, (string) $customer->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => 'Your current password is incorrect.',
+            ]);
+        }
+
+        $customer->forceFill([
+            'password' => $newPassword,
+            'password_set_at' => now(),
+        ])->save();
+
+        return $customer->refresh();
+    }
+
     private function generateResetToken(Customer $customer): string
     {
         $token = Str::random(64);
