@@ -41,13 +41,13 @@
 .account-settings-header {
     display: flex;
     align-items: center;
-    gap: 1.15rem;
-    margin-bottom: 1.75rem;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 .account-settings-avatar {
-    width: 84px;
-    height: 84px;
+    width: 120px;
+    height: 120px;
     border-radius: 999px;
     background: #eef2ff;
     display: flex;
@@ -68,7 +68,7 @@
 }
 
 .account-settings-avatar span#account-avatar-initial {
-    font-size: 1.85rem;
+    font-size: 2.75rem;
     font-weight: 700;
     color: #2563eb;
 }

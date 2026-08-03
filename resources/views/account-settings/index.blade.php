@@ -100,20 +100,31 @@
         }
 
         // Password visibility toggles
-        root.querySelectorAll('.form-password-toggle .input-group-text').forEach((toggle) => {
-            toggle.addEventListener('click', function () {
-                const input = this.parentElement.querySelector('input');
-                const icon = this.querySelector('i');
-                if (!input || !icon) return;
+        root.querySelectorAll('.form-password-toggle').forEach((container) => {
+            const toggleBtn = container.querySelector('.input-group-text');
+            const input = container.querySelector('input');
+            const icon = container.querySelector('i');
+            if (!input || !toggleBtn || !icon) return;
 
+            const toggleVisibility = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 if (input.type === 'password') {
                     input.type = 'text';
-                    icon.classList.replace('tabler-eye-off', 'tabler-eye');
+                    icon.classList.remove('tabler-eye-off');
+                    icon.classList.add('tabler-eye');
                 } else {
                     input.type = 'password';
-                    icon.classList.replace('tabler-eye', 'tabler-eye-off');
+                    icon.classList.remove('tabler-eye');
+                    icon.classList.add('tabler-eye-off');
                 }
-            });
+            };
+
+            toggleBtn.addEventListener('click', toggleVisibility);
+            icon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleVisibility(e);
+            }, true);
         });
     })();
 </script>
