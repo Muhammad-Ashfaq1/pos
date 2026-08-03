@@ -58,7 +58,6 @@ class SaveOrderRequest extends FormRequest
     public function rules(): array
     {
         $tenantId = app(TenantContext::class)->id();
-        $vehicleRequired = app(TenantContext::class)->current()?->isVehicleRequired() ?? true;
 
         return [
             'customer_id' => [
@@ -69,7 +68,7 @@ class SaveOrderRequest extends FormRequest
                 ),
             ],
             'vehicle_id' => [
-                ...($vehicleRequired ? ['required'] : ['nullable']),
+                'nullable',
                 'integer',
                 Rule::exists('vehicles', 'id')->where(
                     fn ($query) => $query->where('tenant_id', $tenantId)
@@ -223,7 +222,6 @@ class SaveOrderRequest extends FormRequest
         return [
             'customer_id.required' => 'Please select a customer before saving the order.',
             'customer_id.exists' => 'The selected customer is no longer available.',
-            'vehicle_id.required' => 'Please select a vehicle before saving the order.',
             'vehicle_id.exists' => 'The selected vehicle is no longer available.',
             'items.required' => 'Please add at least one item before saving the order.',
             'items.min' => 'Please add at least one item before saving the order.',

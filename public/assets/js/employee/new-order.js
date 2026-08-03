@@ -2398,12 +2398,6 @@
             return false;
         }
 
-        if (orderSettings.vehicleRequired && !$vehicleSelect.val()) {
-            markSelectInvalid($vehicleSelect, true);
-            notifyOrder('error', 'Please select a vehicle before saving the order.');
-            return false;
-        }
-
         const totals = cartTotals();
         const invalidFee = normalizedServiceFees(orderServiceFees(order)).find(function (fee) {
             return !fee.service || !fee.service.id;

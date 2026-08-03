@@ -49,12 +49,12 @@
                             @if($vehicleRequired)
                             <div class="mb-3" id="vehicleFieldWrapper">
                                 <div class="d-flex justify-content-between">
-                                    <label for="add_vehicle_filter" class="form-label">Add Vehicle <span class="text-danger">*</span></label>
+                                    <label for="add_vehicle_filter" class="form-label">Add Vehicle</label>
                                     <a class="text-primary add-vehicle-btn" href="javascript:void(0);"
                                         data-bs-toggle="modal" data-bs-target="#vehicleModal">+ Add Vehicle</a>
                                 </div>
                                 <select id="add_vehicle_filter" class="form-select filter-control select2"
-                                    data-placeholder="Select a vehicle" data-allow-clear="false"
+                                    data-placeholder="Select a vehicle (optional)" data-allow-clear="false"
                                     data-ajax-url="{{ route('tenant.ecommerce.dropdowns.vehicles') }}">
                                     <option value=""></option>
                                 </select>
