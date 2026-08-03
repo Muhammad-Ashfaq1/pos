@@ -4,6 +4,7 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/employee-order-details.css') }}?v={{ filemtime(public_path('assets/css/employee-order-details.css')) }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/pos.css') }}?v={{ filemtime(public_path('assets/css/pos.css')) }}">
 @endpush
 
 @section('content')
@@ -204,25 +205,18 @@
                             <div class="fs-4 fw-bold text-primary">{{ $order['balance_due_label'] }}</div>
                         </div>
 
-                        @if (($order['customer_credit_balance'] ?? 0) > 0)
-                            <div class="mb-3 p-3 rounded-3" style="background:#eef2ff;">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <label for="credits_applied" class="form-label fw-bold mb-0">
-                                        <i class="ti tabler-wallet me-1 text-primary"></i>Use Store Credit
-                                    </label>
-                                    <span class="small text-muted">Available: <strong class="text-primary">{{ $order['customer_credit_balance_label'] }}</strong></span>
-                                </div>
-                                <div class="input-group">
-                                    <span class="input-group-text">{{ \App\Support\Currency::symbol() }}</span>
-                                    <input type="number" id="credits_applied" name="credits_applied" class="form-control"
-                                        step="0.01" min="0"
-                                        max="{{ $order['customer_credit_balance'] }}"
-                                        data-balance="{{ $order['customer_credit_balance'] }}"
-                                        data-due="{{ round(max($order['total_amount'] - $order['payment_amount'], 0), 2) }}"
-                                        value="0">
-                                    <button type="button" class="btn btn-outline-primary" id="apply-max-credit">Max</button>
-                                </div>
-                                <small class="text-muted">Credit is applied first; the remaining balance is collected below.</small>
+                        @if (! empty($order['credit_can_redeem']))
+                            <div class="mb-3">
+                                @include('employee.order.partials.store-credit-card', [
+                                    'balanceLabel' => $order['customer_credit_balance_label'],
+                                    'inputId' => 'credits_applied',
+                                    'inputName' => 'credits_applied',
+                                    'inputMax' => $order['customer_credit_balance'],
+                                    'inputDataBalance' => $order['customer_credit_balance'],
+                                    'inputDataDue' => round(max($order['total_amount'] - $order['payment_amount'], 0), 2),
+                                    'maxButtonId' => 'apply-max-credit',
+                                    'clearButtonId' => 'clear-credit',
+                                ])
                             </div>
                         @endif
 
@@ -412,6 +406,10 @@
                 creditInput.on('input change', recalcCash);
                 $('#apply-max-credit').on('click', function() {
                     creditInput.val(Math.min(balance, due).toFixed(2));
+                    recalcCash();
+                });
+                $('#clear-credit').on('click', function() {
+                    creditInput.val('0.00');
                     recalcCash();
                 });
             }

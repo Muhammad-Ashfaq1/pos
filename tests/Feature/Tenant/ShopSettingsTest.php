@@ -95,6 +95,7 @@ class ShopSettingsTest extends TestCase
         $response = $this->actingAs($user)->post(route('tenant.settings.shop-profile.order-invoice.save'), [
             'vehicle_required' => '0',
             'return_days_after_purchase' => 14,
+            'credit_min_redeem_balance' => 75,
         ]);
 
         $response->assertOk();
@@ -107,8 +108,10 @@ class ShopSettingsTest extends TestCase
 
         $this->assertFalse($tenant->isVehicleRequired());
         $this->assertSame(14, $tenant->returnDaysAfterPurchase());
+        $this->assertSame(75.0, $tenant->creditMinRedeemBalance());
         $this->assertFalse((bool) data_get($tenant->settings, 'orders.vehicle_required'));
         $this->assertSame(14, data_get($tenant->settings, 'orders.return_days_after_purchase'));
+        $this->assertEquals(75, data_get($tenant->settings, 'orders.credit_min_redeem_balance'));
     }
 
     public function test_tenant_admin_can_view_order_invoice_settings_page(): void
@@ -121,6 +124,7 @@ class ShopSettingsTest extends TestCase
         $response->assertSee('Order & Invoice Settings', false);
         $response->assertSee('Vehicle required?');
         $response->assertSee('Return Days After Purchase');
+        $response->assertSee('Store Credit Unlock Balance');
     }
 
     private function createTenantUserWithSettingsPermission(): array

@@ -156,6 +156,7 @@ class OrdersRepository implements OrderRepositoryInterface
                 'customer_type' => $customer->customer_type,
                 'phone' => $customer->phone,
                 'email' => $customer->email,
+                'credit_balance' => (float) $customer->credit_balance,
                 'discount_group_id' => $customer->discount_group_id,
                 'discount_group' => $discountGroup && $discountGroup->is_active ? [
                     'id' => $discountGroup->id,
@@ -201,7 +202,7 @@ class OrdersRepository implements OrderRepositoryInterface
             'customer' => $customerSelection,
             'vehicle' => $vehicleSelection,
             'serviceFees' => $serviceFees,
-            'appliedCards' => ['gift' => null, 'reward' => null],
+            'appliedCards' => ['discount' => null, 'gift' => null, 'reward' => null],
             'notes' => $order->notes,
         ];
     }
@@ -325,18 +326,29 @@ class OrdersRepository implements OrderRepositoryInterface
             $customerDiscountBase = round($afterProductDiscounts + $serviceFeeAmount, 2);
             $customerDiscount = $this->customerDiscount($customer?->discountGroup, $customerDiscountBase);
             $customerDiscountAmount = round($customerDiscount['amount'], 2);
-            $discountAmount = round(min($subtotalAmount + $serviceFeeAmount, $productDiscountAmount + $customerDiscountAmount), 2);
-            $tax = $this->taxSummary($taxLines, $customerDiscountAmount);
-            $taxAmount = $tax['amount'];
-            $taxBaseAmount = $tax['base'];
-            $totalAmount = round(max($subtotalAmount + $serviceFeeAmount - $discountAmount, 0) + $taxAmount, 2);
+            $qualifyingSpend = round($subtotalAmount + $serviceFeeAmount, 2);
             $cardSelection = $isEstimate
-                ? ['gift' => null, 'reward' => null, 'details' => null]
+                ? ['discount' => null, 'gift' => null, 'reward' => null, 'details' => null]
                 : $this->selectedCards(
                     $data['selected_cards'] ?? [],
                     $requestedProductIds,
-                    round($subtotalAmount + $serviceFeeAmount, 2)
+                    $qualifyingSpend
                 );
+            $discountCardAmount = $this->discountCardAmount(
+                $cardSelection['discount'],
+                round(max($customerDiscountBase - $customerDiscountAmount, 0), 2)
+            );
+            $discountAmount = round(min(
+                $subtotalAmount + $serviceFeeAmount,
+                $productDiscountAmount + $customerDiscountAmount + $discountCardAmount
+            ), 2);
+            $tax = $this->taxSummary(
+                $taxLines,
+                round($customerDiscountAmount + $discountCardAmount, 2)
+            );
+            $taxAmount = $tax['amount'];
+            $taxBaseAmount = $tax['base'];
+            $totalAmount = round(max($subtotalAmount + $serviceFeeAmount - $discountAmount, 0) + $taxAmount, 2);
             $giftCardAmount = $cardSelection['gift']
                 ? round(min((float) $cardSelection['gift']->value, $totalAmount), 2)
                 : 0.0;
@@ -372,8 +384,10 @@ class OrdersRepository implements OrderRepositoryInterface
                 'customer_discount_amount' => $customerDiscount['amount'],
                 'customer_discount_eligible' => $customerDiscount['eligible'],
                 'customer_discount_reason' => $customerDiscount['reason'],
+                'card_discount_amount' => $discountCardAmount,
                 'product_discounts' => $productDiscountDetails,
                 'customer_discount' => $customerDiscount['group'],
+                'card_discount' => data_get($cardSelection, 'details.discount'),
                 'tax' => [
                     'base_amount' => $taxBaseAmount,
                     'amount' => $taxAmount,
@@ -474,12 +488,13 @@ class OrdersRepository implements OrderRepositoryInterface
     private function selectedCards(array $selection, Collection $productIds, float $qualifyingSpend): array
     {
         $requested = collect([
+            Card::TYPE_DISCOUNT => data_get($selection, 'discount_card_id'),
             Card::TYPE_GIFT => data_get($selection, 'gift_card_id'),
             Card::TYPE_REWARD => data_get($selection, 'reward_card_id'),
         ])->filter()->map(fn ($id) => (int) $id);
 
         if ($requested->isEmpty()) {
-            return ['gift' => null, 'reward' => null, 'details' => null];
+            return ['discount' => null, 'gift' => null, 'reward' => null, 'details' => null];
         }
 
         $cards = Card::query()
@@ -488,10 +503,15 @@ class OrdersRepository implements OrderRepositoryInterface
             ->keyBy('id');
         $resolved = [];
         $details = [];
+        $labels = [
+            Card::TYPE_DISCOUNT => 'discount card',
+            Card::TYPE_GIFT => 'gift card',
+            Card::TYPE_REWARD => 'reward card',
+        ];
 
         foreach ($requested as $type => $cardId) {
             $card = $cards->get($cardId);
-            $label = $type === Card::TYPE_GIFT ? 'gift card' : 'reward card';
+            $label = $labels[$type] ?? 'card';
 
             if (! $card || $card->card_type !== $type) {
                 throw ValidationException::withMessages([
@@ -523,6 +543,7 @@ class OrdersRepository implements OrderRepositoryInterface
             $details[$type] = [
                 'id' => $card->id,
                 'name' => $card->name,
+                'discount_type' => $card->discount_type,
                 'value' => (float) $card->value,
                 'minimum_spend' => (float) $card->minimum_spend,
                 'product_id' => $card->product_id,
@@ -532,10 +553,32 @@ class OrdersRepository implements OrderRepositoryInterface
         }
 
         return [
+            'discount' => $resolved[Card::TYPE_DISCOUNT] ?? null,
             'gift' => $resolved[Card::TYPE_GIFT] ?? null,
             'reward' => $resolved[Card::TYPE_REWARD] ?? null,
             'details' => $details ?: null,
         ];
+    }
+
+    private function discountCardAmount(?Card $card, float $baseAmount): float
+    {
+        if (! $card || $baseAmount <= 0) {
+            return 0.0;
+        }
+
+        $value = (float) $card->value;
+
+        if ($value <= 0) {
+            return 0.0;
+        }
+
+        $amount = match ($card->discount_type) {
+            'percentage' => round($baseAmount * (min($value, 100) / 100), 2),
+            'fixed' => round($value, 2),
+            default => round($baseAmount * (min($value, 100) / 100), 2),
+        };
+
+        return round(min($amount, $baseAmount), 2);
     }
 
     private function awardSelectedRewardPoints(Order $order, ?Customer $customer): void
@@ -1154,6 +1197,12 @@ class OrdersRepository implements OrderRepositoryInterface
             'customer_name' => trim((string) ($order->customer?->name ?? '')) ?: 'Walk-In Customer',
             'customer_credit_balance' => (float) ($order->customer?->credit_balance ?? 0),
             'customer_credit_balance_label' => $this->moneyLabel((float) ($order->customer?->credit_balance ?? 0)),
+            'credit_min_redeem_balance' => $order->tenant?->creditMinRedeemBalance()
+                ?? app(\App\Support\Tenancy\TenantContext::class)->current()?->creditMinRedeemBalance()
+                ?? 50.0,
+            'credit_can_redeem' => $order->customer
+                ? app(\App\Services\CreditService::class)->canRedeem($order->customer)
+                : false,
             'payment_method_label' => filled($order->payment_method)
                 ? str((string) $order->payment_method)->replace('_', ' ')->title()->toString()
                 : 'N/A',

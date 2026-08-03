@@ -3,11 +3,19 @@
 @section('title', 'Service History')
 
 @section('content')
-    <div class="card border-0 shadow-sm">
-        <div class="card-header"><h6 class="mb-0 fw-bold">Service History</h6></div>
-        <div class="list-group list-group-flush">
+    <div class="cp-page-heading">
+        <div class="cp-page-heading-main">
+            <div>
+                <h1 class="cp-page-title">Service History</h1>
+                <p class="cp-page-subtitle">Past visits and invoices</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="cp-panel">
+        <div class="cp-list">
             @forelse ($orders as $order)
-                <a href="{{ route('customer.orders.show', $order->id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <a href="{{ route('customer.orders.show', $order->id) }}" class="cp-list-item">
                     <div>
                         <div class="fw-semibold">{{ $order->order_number }}</div>
                         <div class="small text-muted">{{ $order->created_at?->format('M j, Y h:i A') }} · {{ $order->items_count }} item(s)</div>
@@ -21,11 +29,14 @@
                     </div>
                 </a>
             @empty
-                <div class="list-group-item text-muted text-center py-4">No visits yet.</div>
+                <div class="cp-list-empty">
+                    <i class="ti tabler-clipboard-list"></i>
+                    <p class="mb-0">No visits yet.</p>
+                </div>
             @endforelse
         </div>
         @if ($orders->hasPages())
-            <div class="card-footer">{{ $orders->links('pagination::bootstrap-5') }}</div>
+            <div class="cp-panel-footer">{{ $orders->links('pagination::bootstrap-5') }}</div>
         @endif
     </div>
 @endsection

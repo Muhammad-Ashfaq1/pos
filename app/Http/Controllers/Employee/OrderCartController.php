@@ -121,9 +121,11 @@ class OrderCartController extends Controller
             'vehicle' => $this->sanitizeSelection(Arr::get($order, 'vehicle')),
             'serviceFees' => $serviceFees,
             'appliedCards' => [
+                'discount' => $this->sanitizeDraftValue(Arr::get($order, 'appliedCards.discount')),
                 'gift' => $this->sanitizeDraftValue(Arr::get($order, 'appliedCards.gift')),
                 'reward' => $this->sanitizeDraftValue(Arr::get($order, 'appliedCards.reward')),
             ],
+            'creditsApplied' => $this->money(Arr::get($order, 'creditsApplied', 0)),
             'notes' => $this->limitedString(Arr::get($order, 'notes'), 2000),
         ];
     }

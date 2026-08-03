@@ -186,6 +186,7 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
         $settings['orders'] = [
             'vehicle_required' => (bool) ($data['vehicle_required'] ?? false),
             'return_days_after_purchase' => (int) $data['return_days_after_purchase'],
+            'credit_min_redeem_balance' => round((float) $data['credit_min_redeem_balance'], 2),
         ];
 
         $tenant->forceFill([
@@ -300,6 +301,7 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
             'loyalty_points_per_currency' => data_get($settings, 'loyalty.points_per_currency', '1.00'),
             'vehicle_required' => data_get($settings, 'orders.vehicle_required', true),
             'return_days_after_purchase' => data_get($settings, 'orders.return_days_after_purchase', 30),
+            'credit_min_redeem_balance' => data_get($settings, 'orders.credit_min_redeem_balance', 50),
             'business_hours' => data_get($settings, 'business_hours', Tenant::defaultSettings()['business_hours']),
         ];
     }
