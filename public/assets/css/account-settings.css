@@ -1,0 +1,224 @@
+/* Account settings — exact Profile / Password card UI */
+
+.account-settings-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    padding: 1.75rem 2rem 2rem;
+}
+
+.account-settings-tabs {
+    display: flex;
+    gap: 1.75rem;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.75rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.account-settings-tabs a {
+    display: inline-block;
+    padding: 0 0 0.9rem;
+    color: #6b7280;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+}
+
+.account-settings-tabs a.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+    font-weight: 600;
+}
+
+.account-settings-panel[hidden] {
+    display: none !important;
+}
+
+.account-settings-header {
+    display: flex;
+    align-items: center;
+    gap: 1.15rem;
+    margin-bottom: 1.75rem;
+}
+
+.account-settings-avatar {
+    width: 84px;
+    height: 84px;
+    border-radius: 999px;
+    background: #eef2ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    margin: 0;
+    border: 0;
+    flex-shrink: 0;
+}
+
+.account-settings-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.account-settings-avatar span#account-avatar-initial {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: #2563eb;
+}
+
+.account-settings-header-text {
+    min-width: 0;
+}
+
+.account-settings-title {
+    font-size: 1.45rem;
+    font-weight: 700;
+    margin: 0 0 0.2rem;
+    color: #1f2937;
+    line-height: 1.25;
+}
+
+.account-settings-subtitle {
+    margin: 0;
+    color: #9ca3af;
+    font-size: 0.92rem;
+}
+
+.account-settings-form .form-label {
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+}
+
+.account-settings-form .required-mark {
+    color: #ef4444;
+}
+
+.account-settings-form .form-control {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    min-height: 44px;
+    box-shadow: none !important;
+    color: #111827;
+}
+
+.account-settings-form .form-control:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 0.15rem rgba(37, 99, 235, 0.12) !important;
+}
+
+.account-settings-form .form-control:disabled {
+    background: #f9fafb;
+    color: #6b7280;
+}
+
+.account-settings-form .form-control::placeholder {
+    color: #9ca3af;
+}
+
+/* Password fields (input-group-merge) — same border/focus as Profile */
+.account-settings-form .input-group {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    min-height: 44px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.account-settings-form .input-group:focus-within {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 0.15rem rgba(37, 99, 235, 0.12);
+}
+
+.account-settings-form .input-group .form-control,
+.account-settings-form .input-group .input-group-text {
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent;
+    min-height: 42px;
+}
+
+.account-settings-form .input-group .form-control:focus {
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.account-settings-form .input-group .input-group-text {
+    color: #6b7280;
+    padding-left: 0.75rem;
+    padding-right: 0.85rem;
+}
+
+.account-settings-form .form-password-toggle .input-group-text {
+    cursor: pointer;
+}
+
+.account-settings-fields {
+    margin-top: 0.25rem;
+}
+
+.account-settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.75rem;
+}
+
+.account-settings-actions .btn-primary,
+.account-settings-save-btn,
+.customer-portal-page .account-settings-actions .btn-primary {
+    --bs-btn-bg: #2563eb;
+    --bs-btn-border-color: #2563eb;
+    --bs-btn-hover-bg: #1d4ed8;
+    --bs-btn-hover-border-color: #1d4ed8;
+    background-color: #2563eb !important;
+    border-color: #2563eb !important;
+    color: #fff !important;
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 0.6rem 1.35rem;
+    min-height: 42px;
+    box-shadow: none;
+}
+
+.account-settings-actions .btn-primary:hover,
+.customer-portal-page .account-settings-actions .btn-primary:hover {
+    background-color: #1d4ed8 !important;
+    border-color: #1d4ed8 !important;
+    color: #fff !important;
+}
+
+.account-settings-password-title {
+    font-size: 1.45rem;
+    font-weight: 700;
+    margin: 0 0 1.5rem;
+    color: #1f2937;
+}
+
+@media (max-width: 767.98px) {
+    .account-settings-card {
+        padding: 1.25rem;
+    }
+
+    .account-settings-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .account-settings-actions {
+        justify-content: stretch;
+    }
+
+    .account-settings-actions .btn {
+        width: 100%;
+    }
+}

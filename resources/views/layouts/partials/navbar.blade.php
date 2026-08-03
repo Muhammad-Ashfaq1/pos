@@ -68,9 +68,14 @@
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">
-                        <span class="avatar-initial rounded-circle bg-label-primary">
-                            {{ strtoupper(substr($user?->name ?? 'U', 0, 1)) }}
-                        </span>
+                        @php $navAvatarUrl = \App\Support\AccountSettings::avatarUrl($user); @endphp
+                        @if ($navAvatarUrl)
+                            <img src="{{ $navAvatarUrl }}" alt="{{ $user?->name }}" class="rounded-circle">
+                        @else
+                            <span class="avatar-initial rounded-circle bg-label-primary">
+                                {{ strtoupper(substr($user?->name ?? 'U', 0, 1)) }}
+                            </span>
+                        @endif
                     </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
@@ -88,6 +93,16 @@
                             <small
                                 class="text-muted text-uppercase">{{ str_replace('_', ' ', $user?->primaryRoleName() ?? 'user') }}</small>
                         </div>
+                    </li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li>
+                        <a href="{{ route('account.profile') }}"
+                           class="dropdown-item {{ request()->routeIs('account.*') ? 'active' : '' }}">
+                            <i class="icon-base ti tabler-user me-2"></i>
+                            Profile
+                        </a>
                     </li>
                     <li>
                         <hr class="dropdown-divider">

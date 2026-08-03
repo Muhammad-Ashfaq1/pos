@@ -25,12 +25,6 @@
                 ['label' => 'Vehicles', 'route' => 'tenant.ecommerce.vehicles.index', 'pattern' => 'tenant.ecommerce.vehicles.*', 'icon' => 'tabler-car', 'visible' => $user?->can('vehicle.view') || $user?->can('vehicles.view')],
             ],
         ],
-        [
-            'label' => 'Account',
-            'items' => [
-                ['label' => 'Profile', 'route' => 'employee.account', 'pattern' => 'employee.account|employee.profile', 'icon' => 'tabler-user-circle', 'visible' => true],
-            ],
-        ],
     ])->map(function (array $group): array {
         $group['items'] = collect($group['items'])
             ->filter(fn (array $item): bool => (bool) $item['visible'])

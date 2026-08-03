@@ -1,8 +1,33 @@
 <!doctype html>
-<html lang="en" data-bs-theme="light" data-assets-path="{{ asset('assets') }}/">
+<html
+    lang="en"
+    class="layout-navbar-fixed layout-menu-fixed layout-compact"
+    dir="ltr"
+    data-skin="default"
+    data-bs-theme="light"
+    data-assets-path="{{ asset('assets') }}/"
+    data-template="vertical-menu-template">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+        (function () {
+            const theme = localStorage.getItem('templateCustomizer-vertical-menu-template--Theme') || 'light';
+            const themeToApply = theme === 'system'
+                ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                : theme;
+            document.documentElement.setAttribute('data-bs-theme', themeToApply);
+
+            const collapsed = localStorage.getItem('templateCustomizer-vertical-menu-template--LayoutCollapsed');
+            if (collapsed !== null) {
+                if (collapsed === 'true') {
+                    document.documentElement.classList.add('layout-menu-collapsed');
+                } else {
+                    document.documentElement.classList.remove('layout-menu-collapsed');
+                }
+            }
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <meta name="robots" content="noindex, nofollow" />
     <title>@yield('title', 'My Account')</title>
@@ -11,65 +36,73 @@
     <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon/favicon.png') }}" />
     <link rel="apple-touch-icon" href="{{ asset('assets/img/favicon/apple-touch-icon.png') }}" />
     @include('layouts.partials.pwa-head')
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
+
     <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/iconify-icons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/node-waves/node-waves.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/core.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/app-loader.css') }}?v={{ filemtime(public_path('assets/css/app-loader.css')) }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/customer-portal.css') }}?v={{ filemtime(public_path('assets/css/customer-portal.css')) }}" />
 
-    <style>
-        :root, [data-bs-theme=light] { --bs-primary: #312e81; --bs-primary-rgb: 49, 46, 129; }
-        body { font-family: 'Public Sans', sans-serif; background: linear-gradient(180deg, #fafafd 0%, #f3f4fb 100%); min-height: 100vh; }
-        .btn-primary { --bs-btn-bg:#312e81; --bs-btn-border-color:#312e81; --bs-btn-hover-bg:#28256a; --bs-btn-hover-border-color:#262363; }
-        .text-primary { color:#312e81 !important; }
-        .portal-navbar { background:#fff; border-bottom:1px solid #e7e9f5; }
-        .portal-brand { font-weight:900; letter-spacing:.04em; color:#262363; font-size:1.5rem; }
-        .portal-brand span { color:#fbbf24; }
-        .credit-hero { background:linear-gradient(135deg,#312e81,#4338ca); color:#fff; border-radius:1.25rem; }
-        .nav-pills .nav-link.active { background:#312e81; }
-    </style>
+    <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
+    <script src="{{ asset('assets/js/config.js') }}"></script>
     @stack('styles')
 </head>
-<body>
+<body class="customer-portal-page">
     @hasSection('portal-nav')
-        @yield('portal-nav')
+        <div class="cp-shell cp-shell--plain">
+            @yield('portal-nav')
+            <main class="cp-main">
+                <div class="cp-container">
+                    @yield('content')
+                </div>
+            </main>
+        </div>
     @else
         @auth('customer')
-            <nav class="portal-navbar py-3 mb-4">
-                <div class="container d-flex align-items-center justify-content-between">
-                    <a href="{{ route('customer.dashboard') }}" class="text-decoration-none portal-brand d-inline-flex align-items-center gap-2">
-                        @include('layouts.partials.brand-logo', ['size' => 34])
-                        Auto<span>Serve</span>
-                    </a>
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="text-muted small d-none d-sm-inline">{{ auth('customer')->user()->name }}</span>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button class="btn btn-sm btn-outline-secondary"><i class="ti tabler-logout me-1"></i>Sign out</button>
-                        </form>
+            <div class="layout-wrapper layout-content-navbar">
+                <div class="layout-container">
+                    @include('customer.partials.sidebar')
+
+                    <div class="layout-page">
+                        @include('customer.partials.navbar')
+
+                        <div class="content-wrapper">
+                            <div class="container-xxl flex-grow-1 container-p-y">
+                                @yield('content')
+                            </div>
+                            <div class="content-backdrop fade"></div>
+                        </div>
                     </div>
                 </div>
-            </nav>
 
-            <div class="container mb-3">
-                <ul class="nav nav-pills gap-2">
-                    <li class="nav-item"><a class="nav-link @if(request()->routeIs('customer.dashboard')) active @endif" href="{{ route('customer.dashboard') }}">Overview</a></li>
-                    <li class="nav-item"><a class="nav-link @if(request()->routeIs('customer.orders*')) active @endif" href="{{ route('customer.orders') }}">Service History</a></li>
-                    <li class="nav-item"><a class="nav-link @if(request()->routeIs('customer.credits')) active @endif" href="{{ route('customer.credits') }}">Store Credit</a></li>
-                    <li class="nav-item"><a class="nav-link @if(request()->routeIs('customer.profile')) active @endif" href="{{ route('customer.profile') }}">Profile</a></li>
-                </ul>
+                <div class="layout-overlay layout-menu-toggle"></div>
+                <div class="drag-target"></div>
+            </div>
+        @else
+            <div class="cp-shell cp-shell--plain">
+                <main class="cp-main">
+                    <div class="cp-container">
+                        @yield('content')
+                    </div>
+                </main>
             </div>
         @endauth
     @endif
 
-    <div class="container pb-5">
-        @yield('content')
-    </div>
-
     <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>
     <script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/node-waves/node-waves.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/hammer/hammer.js') }}"></script>
+    <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
+    <script src="{{ asset('assets/js/main.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-aio-3.2.8.min.js"></script>
     <script src="{{ asset('assets/js/app-loader.js') }}?v={{ filemtime(public_path('assets/js/app-loader.js')) }}"></script>
     <script>

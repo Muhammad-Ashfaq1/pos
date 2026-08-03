@@ -25,8 +25,10 @@ Route::prefix('portal')->name('customer.')->controller(PortalController::class)-
         Route::get('/', 'dashboard')->name('dashboard');
         Route::get('/orders', 'orders')->name('orders');
         Route::get('/orders/{order}', 'showOrder')->whereNumber('order')->name('orders.show');
+        Route::get('/orders/{order}/pdf', 'downloadOrderPdf')->whereNumber('order')->name('orders.pdf');
         Route::get('/credits', 'credits')->name('credits');
-        Route::get('/profile', 'profile')->name('profile');
-        Route::post('/profile', 'updateProfile')->name('profile.update');
+        Route::get('/vehicles', 'vehicles')->name('vehicles');
+        Route::redirect('/profile', '/account/profile')->name('profile');
+        Route::redirect('/password', '/account/password')->name('password');
     });
 });

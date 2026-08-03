@@ -4,6 +4,8 @@ namespace App\Http\Requests\Employee\Orders;
 
 use App\Models\Customer;
 use App\Models\Vehicle;
+use App\Services\CreditService;
+use App\Support\Currency;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -39,6 +41,9 @@ class SaveOrderRequest extends FormRequest
             'vehicle_id' => $this->filled('vehicle_id') ? (int) $this->input('vehicle_id') : null,
             'service_fees' => $serviceFees,
             'selected_cards' => [
+                'discount_card_id' => $this->filled('selected_cards.discount_card_id')
+                    ? (int) $this->input('selected_cards.discount_card_id')
+                    : null,
                 'gift_card_id' => $this->filled('selected_cards.gift_card_id')
                     ? (int) $this->input('selected_cards.gift_card_id')
                     : null,
@@ -53,7 +58,6 @@ class SaveOrderRequest extends FormRequest
     public function rules(): array
     {
         $tenantId = app(TenantContext::class)->id();
-        $vehicleRequired = app(TenantContext::class)->current()?->isVehicleRequired() ?? true;
 
         return [
             'customer_id' => [
@@ -64,7 +68,7 @@ class SaveOrderRequest extends FormRequest
                 ),
             ],
             'vehicle_id' => [
-                ...($vehicleRequired ? ['required'] : ['nullable']),
+                'nullable',
                 'integer',
                 Rule::exists('vehicles', 'id')->where(
                     fn ($query) => $query->where('tenant_id', $tenantId)
@@ -95,6 +99,15 @@ class SaveOrderRequest extends FormRequest
             'service_fees.*.name' => ['nullable', 'string', 'max:150'],
             'service_fees.*.amount' => ['nullable', 'numeric', 'min:0', 'max:999999.99'],
             'selected_cards' => ['nullable', 'array'],
+            'selected_cards.discount_card_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('cards', 'id')->where(
+                    fn ($query) => $query
+                        ->where('tenant_id', $tenantId)
+                        ->where('card_type', 'discount')
+                ),
+            ],
             'selected_cards.gift_card_id' => [
                 'nullable',
                 'integer',
@@ -138,19 +151,29 @@ class SaveOrderRequest extends FormRequest
     {
         $validator->after(function (Validator $validator): void {
             $this->validateServiceFees($validator);
+            $this->validateStoreCredit($validator);
 
             if (! $this->filled('customer_id')) {
                 return;
+            }
+
+            $customer = Customer::query()->find($this->integer('customer_id'));
+
+            if (! $customer) {
+                return;
+            }
+
+            if (! $this->hasCustomerDetails($customer)) {
+                $validator->errors()->add('customer_id', 'Please add customer details before saving the order.');
             }
 
             if (! $this->filled('vehicle_id')) {
                 return;
             }
 
-            $customer = Customer::query()->find($this->integer('customer_id'));
             $vehicle = Vehicle::query()->find($this->integer('vehicle_id'));
 
-            if (! $customer || ! $vehicle) {
+            if (! $vehicle) {
                 return;
             }
 
@@ -158,20 +181,40 @@ class SaveOrderRequest extends FormRequest
                 $validator->errors()->add('vehicle_id', 'The selected vehicle does not belong to the selected customer.');
             }
 
-            if (! $this->hasCustomerDetails($customer)) {
-                $validator->errors()->add('customer_id', 'Please add customer details before saving the order.');
-            }
-
             if (! $this->hasVehicleDetails($vehicle)) {
                 $validator->errors()->add('vehicle_id', 'Please add vehicle details before saving the order.');
             }
-
-            $creditsApplied = (float) $this->input('payment.credits_applied', 0);
-
-            if ($creditsApplied > 0 && $creditsApplied > (float) $customer->credit_balance + 0.001) {
-                $validator->errors()->add('payment.credits_applied', 'The customer does not have enough store credit.');
-            }
         });
+    }
+
+    private function validateStoreCredit(Validator $validator): void
+    {
+        $creditsApplied = (float) $this->input('payment.credits_applied', 0);
+
+        if ($creditsApplied <= 0 || ! $this->filled('customer_id')) {
+            return;
+        }
+
+        $customer = Customer::query()->find($this->integer('customer_id'));
+
+        if (! $customer) {
+            return;
+        }
+
+        if ($creditsApplied > (float) $customer->credit_balance + 0.001) {
+            $validator->errors()->add('payment.credits_applied', 'The customer does not have enough store credit.');
+
+            return;
+        }
+
+        $creditService = app(CreditService::class);
+
+        if (! $creditService->canRedeem($customer)) {
+            $validator->errors()->add(
+                'payment.credits_applied',
+                'Store credit can be used when the balance is at least '.Currency::format($creditService->minRedeemBalance()).'.'
+            );
+        }
     }
 
     public function messages(): array
@@ -179,7 +222,6 @@ class SaveOrderRequest extends FormRequest
         return [
             'customer_id.required' => 'Please select a customer before saving the order.',
             'customer_id.exists' => 'The selected customer is no longer available.',
-            'vehicle_id.required' => 'Please select a vehicle before saving the order.',
             'vehicle_id.exists' => 'The selected vehicle is no longer available.',
             'items.required' => 'Please add at least one item before saving the order.',
             'items.min' => 'Please add at least one item before saving the order.',

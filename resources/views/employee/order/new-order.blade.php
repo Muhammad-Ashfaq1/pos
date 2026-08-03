@@ -49,12 +49,12 @@
                             @if($vehicleRequired)
                             <div class="mb-3" id="vehicleFieldWrapper">
                                 <div class="d-flex justify-content-between">
-                                    <label for="add_vehicle_filter" class="form-label">Add Vehicle <span class="text-danger">*</span></label>
+                                    <label for="add_vehicle_filter" class="form-label">Add Vehicle</label>
                                     <a class="text-primary add-vehicle-btn" href="javascript:void(0);"
                                         data-bs-toggle="modal" data-bs-target="#vehicleModal">+ Add Vehicle</a>
                                 </div>
                                 <select id="add_vehicle_filter" class="form-select filter-control select2"
-                                    data-placeholder="Select a vehicle" data-allow-clear="false"
+                                    data-placeholder="Select a vehicle (optional)" data-allow-clear="false"
                                     data-ajax-url="{{ route('tenant.ecommerce.dropdowns.vehicles') }}">
                                     <option value=""></option>
                                 </select>
@@ -383,6 +383,12 @@
                                         <span class="fw-bold text-primary payment-reward-card-points">0 points</span>
                                     </div>
                                 </div>
+                                <div class="payment-store-credit-section d-none border-bottom pb-3 mb-3">
+                                    @include('employee.order.partials.store-credit-card', [
+                                        'balanceLabel' => \App\Support\Currency::format(0),
+                                        'balanceClass' => 'psc-balance payment-store-credit-balance',
+                                    ])
+                                </div>
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <h5 class="fw-bold mb-0">Balance Due:</h5>
                                     <h3 class="fw-bold text-primary mb-0 payment-balance-due">@money(0)</h3>
@@ -392,6 +398,10 @@
                             <div class="payment-items-list flex-grow-1"></div>
 
                             <div class="payment-actions-grid mt-4">
+                                <button type="button" class="payment-utility-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDiscountCards">
+                                    <i class="ti tabler-ticket"></i>
+                                    <span>Discount Cards</span>
+                                </button>
                                 <button type="button" class="payment-utility-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasGiftCards">
                                     <i class="ti tabler-gift"></i>
                                     <span>Gift Cards</span>
@@ -513,6 +523,7 @@
         window.orderSettings = {
             vehicleRequired: @json($vehicleRequired),
             returnDaysAfterPurchase: @json($returnDaysAfterPurchase),
+            creditMinRedeemBalance: @json((float) ($creditMinRedeemBalance ?? 50)),
         };
         window.editOrder = @json($editOrder ?? null);
     </script>

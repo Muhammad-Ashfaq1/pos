@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountSettingsController;
 use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +21,15 @@ Route::middleware('guest')->controller(AuthController::class)->group(function ()
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
+
+Route::middleware(['auth:web,customer', 'account.context'])
+    ->controller(AccountSettingsController::class)
+    ->group(function () {
+        Route::get('/account/profile', 'profile')->name('account.profile');
+        Route::post('/account/profile', 'updateProfile')->name('account.profile.update');
+        Route::get('/account/password', 'password')->name('account.password');
+        Route::post('/account/password', 'updatePassword')->name('account.password.update');
+    });
 
 Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
     ->middleware('signed')

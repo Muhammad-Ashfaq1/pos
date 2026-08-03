@@ -5,10 +5,14 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\CustomerCreditTransaction;
 use App\Models\Order;
+use App\Models\Vehicle;
 use App\Repositories\Interface\OrderRepositoryInterface;
+use App\Services\CreditService;
 use App\Services\CustomerPortalService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -28,16 +32,25 @@ class PortalController extends Controller
     public function dashboard(Request $request): View
     {
         $customer = $this->customer($request);
+        $credits = app(CreditService::class);
+        $creditMinRedeemBalance = $credits->minRedeemBalance();
+        $creditCanRedeem = $credits->canRedeem($customer, $creditMinRedeemBalance);
 
         $recentOrders = Order::query()
             ->where('customer_id', $customer->getKey())
             ->where('status', '!=', Order::STATUS_ESTIMATE)
+            ->with('vehicle:id,year,make,model,plate_number')
             ->withCount('items')
             ->latest()
             ->limit(5)
             ->get();
 
-        return view('customer.dashboard', compact('customer', 'recentOrders'));
+        return view('customer.dashboard', compact(
+            'customer',
+            'recentOrders',
+            'creditMinRedeemBalance',
+            'creditCanRedeem',
+        ));
     }
 
     public function orders(Request $request): View
@@ -68,37 +81,74 @@ class PortalController extends Controller
         ]);
     }
 
+    public function downloadOrderPdf(Request $request, int $order, OrderRepositoryInterface $orders): Response
+    {
+        $customer = $this->customer($request);
+
+        $model = Order::query()
+            ->where('customer_id', $customer->getKey())
+            ->where('status', '!=', Order::STATUS_ESTIMATE)
+            ->with('tenant')
+            ->findOrFail($order);
+
+        $details = $orders->details($model);
+        $vehicleRequired = $model->tenant?->isVehicleRequired() ?? true;
+
+        $pdf = Pdf::loadView('employee.order.pdf', [
+            'order' => $model,
+            'details' => $details,
+            'vehicleRequired' => $vehicleRequired,
+        ]);
+
+        return $pdf->download("invoice-{$model->order_number}.pdf");
+    }
+
     public function credits(Request $request): View
     {
         $customer = $this->customer($request);
+        $type = trim((string) $request->query('type', ''));
+        $allowedTypes = [
+            CustomerCreditTransaction::TYPE_EARN,
+            CustomerCreditTransaction::TYPE_REDEEM,
+            CustomerCreditTransaction::TYPE_ADJUST,
+            CustomerCreditTransaction::TYPE_EXPIRE,
+        ];
 
         $transactions = CustomerCreditTransaction::query()
             ->where('customer_id', $customer->getKey())
+            ->when(
+                in_array($type, $allowedTypes, true),
+                fn ($query) => $query->where('type', $type)
+            )
             ->with('order:id,order_number')
             ->latest()
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
-        return view('customer.credits', compact('customer', 'transactions'));
+        $credits = app(CreditService::class);
+        $creditMinRedeemBalance = $credits->minRedeemBalance();
+        $creditCanRedeem = $credits->canRedeem($customer, $creditMinRedeemBalance);
+
+        return view('customer.credits', compact(
+            'customer',
+            'transactions',
+            'type',
+            'creditMinRedeemBalance',
+            'creditCanRedeem',
+        ));
     }
 
-    public function profile(Request $request): View
-    {
-        return view('customer.profile', ['customer' => $this->customer($request)]);
-    }
-
-    public function updateProfile(Request $request): RedirectResponse
+    public function vehicles(Request $request): View
     {
         $customer = $this->customer($request);
 
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:150'],
-            'phone' => ['nullable', 'string', 'max:30'],
-            'address' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $vehicles = Vehicle::query()
+            ->where('customer_id', $customer->getKey())
+            ->orderByDesc('is_default')
+            ->orderBy('id')
+            ->get();
 
-        $customer->fill($data)->save();
-
-        return back()->with('success', 'Profile updated.');
+        return view('customer.vehicles', compact('customer', 'vehicles'));
     }
 
     // ── Public set-password (invite / forgot links) ───────────────────────────

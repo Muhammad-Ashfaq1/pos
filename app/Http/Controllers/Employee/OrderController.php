@@ -8,6 +8,7 @@ use App\Mail\ShareOrderMail;
 use App\Models\Card;
 use App\Models\Order;
 use App\Repositories\Interface\OrderRepositoryInterface;
+use App\Services\CreditService;
 use App\Support\Tenancy\TenantContext;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
@@ -50,12 +51,23 @@ class OrderController extends Controller
         return view('employee.order.new-order', [
             'vehicleRequired' => $tenant?->isVehicleRequired() ?? true,
             'returnDaysAfterPurchase' => $tenant?->returnDaysAfterPurchase() ?? 30,
+            'creditMinRedeemBalance' => $tenant?->creditMinRedeemBalance() ?? 50.0,
             'editOrder' => $editOrder,
             'orderCards' => Card::query()
                 ->currentlyValid()
-                ->whereIn('card_type', [Card::TYPE_GIFT, Card::TYPE_REWARD])
+                ->whereIn('card_type', [Card::TYPE_DISCOUNT, Card::TYPE_GIFT, Card::TYPE_REWARD])
                 ->orderBy('name')
-                ->get(['id', 'product_id', 'card_type', 'name', 'value', 'minimum_spend', 'valid_until', 'details'])
+                ->get([
+                    'id',
+                    'product_id',
+                    'card_type',
+                    'discount_type',
+                    'name',
+                    'value',
+                    'minimum_spend',
+                    'valid_until',
+                    'details',
+                ])
                 ->groupBy('card_type'),
         ]);
     }
@@ -132,6 +144,20 @@ class OrderController extends Controller
         ], [
             'payment_amount.min' => 'Payment amount cannot be negative.',
         ]);
+
+        $creditsApplied = round((float) ($data['credits_applied'] ?? 0), 2);
+
+        if ($creditsApplied > 0) {
+            $order->loadMissing('customer');
+
+            if (! $order->customer) {
+                throw ValidationException::withMessages([
+                    'credits_applied' => 'A customer is required to apply store credit.',
+                ]);
+            }
+
+            app(CreditService::class)->assertCanRedeem($order->customer);
+        }
 
         $result = $this->orderRepository->addPayment($order, $data, $request->user());
 

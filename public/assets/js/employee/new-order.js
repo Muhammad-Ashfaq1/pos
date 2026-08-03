@@ -126,8 +126,13 @@
             vehicle: order.vehicle || null,
             serviceFees: Array.isArray(order.serviceFees) ? order.serviceFees : [],
             appliedCards: order.appliedCards && typeof order.appliedCards === 'object'
-                ? order.appliedCards
-                : { gift: null, reward: null },
+                ? {
+                    discount: order.appliedCards.discount || null,
+                    gift: order.appliedCards.gift || null,
+                    reward: order.appliedCards.reward || null
+                }
+                : { discount: null, gift: null, reward: null },
+            creditsApplied: roundMoney(order.creditsApplied || 0),
             notes: order.notes || null
         };
     }
@@ -145,7 +150,8 @@
                     customer: order.customer || null,
                     vehicle: order.vehicle || null,
                     serviceFees: orderServiceFees(order),
-                    appliedCards: order.appliedCards || { gift: null, reward: null },
+                    appliedCards: order.appliedCards || { discount: null, gift: null, reward: null },
+                    creditsApplied: roundMoney(order.creditsApplied || 0),
                     notes: order.notes || null
                 };
             }),
@@ -338,6 +344,7 @@
                 'customer_type',
                 'phone',
                 'email',
+                'credit_balance',
                 'discount_id',
                 'discount',
                 'discount_group_id',
@@ -432,17 +439,80 @@
     function customerSelectionFromData(customer) {
         if (!customer || !customer.id) return null;
 
+        const balance = customer.credit_balance;
+        const hasBalance = balance !== undefined && balance !== null && balance !== '';
+
         return {
             id: customer.id,
             text: customer.text || customer.name || customer.id,
             customer_type: customer.customer_type,
             phone: customer.phone,
             email: customer.email,
+            credit_balance: hasBalance ? Number(balance) : null,
             discount_id: customer.discount_id || null,
             discount: customer.discount || null,
             discount_group_id: customer.discount_group_id || null,
             discount_group: customer.discount_group || null
         };
+    }
+
+    function syncCustomerSelectionFromSelect() {
+        const order = getActiveOrder();
+        const $customerSelect = $('#customer_type_filter');
+        if (!order || !$customerSelect.length) return null;
+
+        let raw = null;
+        if ($customerSelect.data('select2')) {
+            raw = ($customerSelect.select2('data') || [])[0] || null;
+        }
+        if (!raw || !raw.id) {
+            raw = readSelectSelection($customerSelect);
+        }
+        if (!raw || !raw.id) {
+            order.customer = null;
+            return null;
+        }
+
+        const previous = order.customer || {};
+        const merged = Object.assign({}, previous, raw);
+        if (
+            (merged.credit_balance === undefined || merged.credit_balance === null || merged.credit_balance === '')
+            && previous.credit_balance !== undefined
+            && previous.credit_balance !== null
+        ) {
+            merged.credit_balance = previous.credit_balance;
+        }
+
+        order.customer = customerSelectionFromData(merged);
+        setSelectSelection($customerSelect, order.customer);
+        return order.customer;
+    }
+
+    function ensureCustomerCreditBalance(order) {
+        if (!order || !order.customer || !order.customer.id) {
+            return $.Deferred().resolve(order).promise();
+        }
+
+        const url = (window.catalogRoutes || {}).dropdownCustomers;
+        if (!url) {
+            return $.Deferred().resolve(order).promise();
+        }
+
+        return $.ajax({
+            url: url,
+            method: 'GET',
+            data: { id: order.customer.id, per_page: 1 }
+        }).then(function (response) {
+            const row = (response && response.results && response.results[0]) || null;
+            if (row && String(row.id) === String(order.customer.id)) {
+                order.customer = customerSelectionFromData(Object.assign({}, order.customer, row));
+                setSelectSelection($('#customer_type_filter'), order.customer);
+            }
+
+            return order;
+        }, function () {
+            return order;
+        });
     }
 
     function restoreActiveOrderMeta() {
@@ -514,7 +584,8 @@
             customer: carryCurrentSelection ? readSelectSelection($('#customer_type_filter')) : null,
             vehicle: carryCurrentSelection ? readSelectSelection($('#add_vehicle_filter')) : null,
             serviceFees: [],
-            appliedCards: { gift: null, reward: null },
+            appliedCards: { discount: null, gift: null, reward: null },
+            creditsApplied: 0,
             notes: null
         };
 
@@ -1256,11 +1327,38 @@
         return roundMoney(Math.min(Number(card.value) || 0, totals.total));
     }
 
+    function creditMinRedeemBalance() {
+        return roundMoney(window.orderSettings?.creditMinRedeemBalance ?? 50);
+    }
+
+    function customerCreditBalance(order) {
+        if (!order || !order.customer) return 0;
+
+        const balance = order.customer.credit_balance;
+        if (balance === undefined || balance === null || balance === '') return 0;
+
+        return roundMoney(balance);
+    }
+
+    function storeCreditIsUnlocked(order) {
+        return customerCreditBalance(order) + 0.001 >= creditMinRedeemBalance();
+    }
+
+    function storeCreditAppliedForOrder(order, totals) {
+        if (!order || !storeCreditIsUnlocked(order)) return 0;
+
+        const giftAmount = giftCardAmountForOrder(order, totals);
+        const maxCredit = roundMoney(Math.max(totals.total - giftAmount, 0));
+        const requested = roundMoney(order.creditsApplied || 0);
+
+        return roundMoney(Math.min(requested, customerCreditBalance(order), maxCredit));
+    }
+
     function syncOrderCardDrawers() {
         const order = getActiveOrder();
         const totals = totalsForOrder(order);
 
-        ['gift', 'reward'].forEach(function (type) {
+        ['discount', 'gift', 'reward'].forEach(function (type) {
             const applied = orderAppliedCard(order, type);
             const $list = $('.order-card-list[data-card-type="' + type + '"]');
 
@@ -1274,7 +1372,8 @@
                         ? productIdsAttr.split(',').map(function (id) { return id.trim(); }).filter(Boolean)
                         : [],
                     minimum_spend: $option.data('minimum-spend'),
-                    value: $option.data('card-value')
+                    value: $option.data('card-value'),
+                    discount_type: $option.data('discount-type') || null
                 };
                 const eligible = cardIsEligible(card, order, totals);
 
@@ -1568,7 +1667,7 @@
         };
     }
 
-    function totalsForCart(cart, customer, serviceFees) {
+    function totalsForCart(cart, customer, serviceFees, order) {
         const totals = {
             quantity: 0,
             productSubtotal: 0,
@@ -1578,6 +1677,7 @@
             itemDiscount: 0,
             customerDiscount: 0,
             customerGroupDiscount: 0,
+            discountCard: 0,
             discount: 0,
             servicePrice: 0,
             serviceFee: 0,
@@ -1663,13 +1763,32 @@
             }
         }
 
+        const amountAfterGroupDiscount = roundMoney(Math.max(
+            amountAfterCustomerDiscount - totals.customerGroupDiscount,
+            0
+        ));
+        const discountCard = orderAppliedCard(order, 'discount');
+
+        if (discountCard && cardIsEligible(discountCard, order, totals) && amountAfterGroupDiscount > 0) {
+            totals.discountCard = calculateDiscountAmount(
+                (discountCard.discount_type || 'percentage') === 'fixed' ? 'fixed' : 'percentage',
+                discountCard.value,
+                amountAfterGroupDiscount,
+                1,
+                false,
+                null
+            );
+        }
+
         totals.discount = roundMoney(Math.min(
             totals.orderSubtotal,
-            totals.itemDiscount + totals.customerDiscount + totals.customerGroupDiscount
+            totals.itemDiscount + totals.customerDiscount + totals.customerGroupDiscount + totals.discountCard
         ));
 
-        const customerDiscountTotal = roundMoney(totals.customerDiscount + totals.customerGroupDiscount);
-        const taxSummary = taxSummaryForLines(taxLines, customerDiscountTotal);
+        const orderLevelDiscount = roundMoney(
+            totals.customerDiscount + totals.customerGroupDiscount + totals.discountCard
+        );
+        const taxSummary = taxSummaryForLines(taxLines, orderLevelDiscount);
 
         totals.taxBase = taxSummary.base;
         totals.tax = taxSummary.tax;
@@ -1683,7 +1802,8 @@
         return totalsForCart(
             order ? order.items : [],
             order ? order.customer : null,
-            order ? orderServiceFees(order) : []
+            order ? orderServiceFees(order) : [],
+            order
         );
     }
 
@@ -1810,6 +1930,14 @@
                 discountItems.push({
                     label: discountGroupLabel(customer.discount_group) || 'Discount Group',
                     amount: totals.customerGroupDiscount
+                });
+            }
+
+            if ((totals.discountCard || 0) > 0) {
+                const appliedDiscountCard = orderAppliedCard(order, 'discount');
+                discountItems.push({
+                    label: (appliedDiscountCard && appliedDiscountCard.name) || 'Discount Card',
+                    amount: totals.discountCard
                 });
             }
 
@@ -1945,11 +2073,22 @@
         const amount = paymentAmountValue();
         const giftCard = orderAppliedCard(order, 'gift');
         const rewardCard = orderAppliedCard(order, 'reward');
+        const discountCard = orderAppliedCard(order, 'discount');
         const giftCardAmount = giftCardAmountForOrder(order, totals);
+        const discountCardAmount = roundMoney(totals.discountCard || 0);
+        const discountCardEligible = discountCardAmount > 0 && cardIsEligible(discountCard, order, totals);
+        const storeCreditBalance = customerCreditBalance(order);
+        const storeCreditUnlocked = storeCreditIsUnlocked(order);
+        const storeCreditApplied = storeCreditAppliedForOrder(order, totals);
         const amountDueAfterGiftCard = roundMoney(Math.max(totals.total - giftCardAmount, 0));
-        const remaining = Math.max(amountDueAfterGiftCard - amount, 0);
-        const changeDue = Math.max(amount - amountDueAfterGiftCard, 0);
+        const amountDue = roundMoney(Math.max(amountDueAfterGiftCard - storeCreditApplied, 0));
+        const remaining = Math.max(amountDue - amount, 0);
+        const changeDue = Math.max(amount - amountDue, 0);
         const canCheckout = order && order.items.length > 0 && totals.orderSubtotal > 0 && !isSavingOrder;
+
+        if (order && roundMoney(order.creditsApplied || 0) !== storeCreditApplied) {
+            order.creditsApplied = storeCreditApplied;
+        }
 
         $('.payment-order-number').text(paymentOrderNumber());
         $('.payment-total').text(formatMoney(totals.total));
@@ -1961,6 +2100,24 @@
             $('.payment-gift-card-amount').text('-' + formatMoney(giftCardAmount));
         }
 
+        const $creditSection = $('.payment-store-credit-section');
+        const $creditInput = $('.payment-store-credit-input');
+        const $creditActions = $('.payment-store-credit-max, .payment-store-credit-clear');
+        $creditSection.toggleClass('d-none', !storeCreditUnlocked);
+        if (storeCreditUnlocked) {
+            $('.payment-store-credit-balance').text(formatMoney(storeCreditBalance));
+
+            if (!$creditInput.is(':focus')) {
+                $creditInput.val(storeCreditApplied ? storeCreditApplied.toFixed(2) : '0.00');
+            }
+            $creditInput.prop('disabled', false).attr('max', Math.min(storeCreditBalance, amountDueAfterGiftCard));
+            $creditActions.prop('disabled', false);
+        } else {
+            if (order) order.creditsApplied = 0;
+            $creditInput.val('0.00').prop('disabled', true);
+            $creditActions.prop('disabled', true);
+        }
+
         const rewardIsEligible = cardIsEligible(rewardCard, order, totals);
         $('.payment-reward-card-section').toggleClass('d-none', !rewardIsEligible);
         if (rewardIsEligible) {
@@ -1970,6 +2127,9 @@
 
         $('.payment-utility-btn[data-bs-target="#offcanvasGiftCards"]').toggleClass('active', giftCardAmount > 0);
         $('.payment-utility-btn[data-bs-target="#offcanvasRewardCards"]').toggleClass('active', rewardIsEligible);
+        $('[data-cart-utility="discount"]').toggleClass('is-active', discountCardEligible);
+        $('[data-cart-utility="gift"]').toggleClass('is-active', giftCardAmount > 0);
+        $('[data-cart-utility="reward"]').toggleClass('is-active', rewardIsEligible);
 
         // Service Fee & Breakdowns
         const $serviceFeeSection = $('.payment-service-fee-section');
@@ -2033,6 +2193,14 @@
                 discountItems.push({
                     label: discountGroupLabel(customer.discount_group) || 'Discount Group',
                     amount: totals.customerGroupDiscount
+                });
+            }
+
+            if ((totals.discountCard || 0) > 0) {
+                const appliedDiscountCard = orderAppliedCard(order, 'discount');
+                discountItems.push({
+                    label: (appliedDiscountCard && appliedDiscountCard.name) || 'Discount Card',
+                    amount: totals.discountCard
                 });
             }
 
@@ -2102,11 +2270,17 @@
     }
 
     function openPaymentScreen() {
-        paymentAmountInput = '';
-        paymentMethod = '';
-        renderPaymentScreen();
-        $('.order-entry-screen').addClass('d-none');
-        $('.order-payment-screen').removeClass('d-none');
+        saveActiveOrderMeta();
+        syncCustomerSelectionFromSelect();
+
+        const order = getActiveOrder();
+        ensureCustomerCreditBalance(order).always(function () {
+            paymentAmountInput = '';
+            paymentMethod = '';
+            renderPaymentScreen();
+            $('.order-entry-screen').addClass('d-none');
+            $('.order-payment-screen').removeClass('d-none');
+        });
     }
 
     function closePaymentScreen() {
@@ -2156,7 +2330,9 @@
     function validatePaymentForCheckout() {
         const totals = cartTotals();
         const order = getActiveOrder();
-        const amountDue = roundMoney(Math.max(totals.total - giftCardAmountForOrder(order, totals), 0));
+        const giftAmount = giftCardAmountForOrder(order, totals);
+        const creditAmount = storeCreditAppliedForOrder(order, totals);
+        const amountDue = roundMoney(Math.max(totals.total - giftAmount - creditAmount, 0));
         const amount = paymentAmountValue();
 
         if (!paymentMethod) {
@@ -2222,12 +2398,6 @@
             return false;
         }
 
-        if (orderSettings.vehicleRequired && !$vehicleSelect.val()) {
-            markSelectInvalid($vehicleSelect, true);
-            notifyOrder('error', 'Please select a vehicle before saving the order.');
-            return false;
-        }
-
         const totals = cartTotals();
         const invalidFee = normalizedServiceFees(orderServiceFees(order)).find(function (fee) {
             return !fee.service || !fee.service.id;
@@ -2265,6 +2435,7 @@
         const serviceFeeDetails = serviceFeeDetailsPayload(orderServiceFees(order), totals);
         const giftCard = orderAppliedCard(order, 'gift');
         const rewardCard = orderAppliedCard(order, 'reward');
+        const discountCard = orderAppliedCard(order, 'discount');
 
         return {
             order_id: order.saved_order_id || null,
@@ -2273,12 +2444,14 @@
             payment: {
                 method: paymentMethod,
                 amount: paymentAmountValue(),
+                credits_applied: storeCreditAppliedForOrder(order, totals),
             },
             service_id: serviceFeeServiceId(serviceFees, totals),
             service_fees: serviceFeeDetails ? serviceFeeDetails.fees : [],
             service_fee_amount: roundMoney((totals.servicePrice || 0) + (totals.serviceFee || 0)),
             service_fee_details: serviceFeeDetails,
             selected_cards: {
+                discount_card_id: cardIsEligible(discountCard, order, totals) ? discountCard.id : null,
                 gift_card_id: cardIsEligible(giftCard, order, totals) ? giftCard.id : null,
                 reward_card_id: cardIsEligible(rewardCard, order, totals) ? rewardCard.id : null
             },
@@ -2547,12 +2720,54 @@
         $('.payment-methods').removeClass('is-invalid');
 
         if (paymentMethod && paymentMethod !== 'cash' && paymentAmountInput === '') {
+            const order = getActiveOrder();
             const totals = cartTotals();
-            const amountDue = Math.max(totals.total - giftCardAmountForOrder(getActiveOrder(), totals), 0);
+            const amountDue = Math.max(
+                totals.total
+                    - giftCardAmountForOrder(order, totals)
+                    - storeCreditAppliedForOrder(order, totals),
+                0
+            );
             setPaymentAmount(amountDue.toFixed(2));
             return;
         }
 
+        renderPaymentScreen();
+    });
+
+    $(document).on('input change', '.payment-store-credit-input', function () {
+        const order = getActiveOrder();
+        if (!order || !storeCreditIsUnlocked(order)) {
+            if (order) order.creditsApplied = 0;
+            renderPaymentScreen();
+            return;
+        }
+
+        order.creditsApplied = roundMoney($(this).val());
+        scheduleDraftCartSave();
+        renderPaymentScreen();
+    });
+
+    $(document).on('click', '.payment-store-credit-max', function () {
+        const order = getActiveOrder();
+        if (!order || !storeCreditIsUnlocked(order)) return;
+
+        const totals = cartTotals();
+        const giftAmount = giftCardAmountForOrder(order, totals);
+        order.creditsApplied = roundMoney(Math.min(
+            customerCreditBalance(order),
+            Math.max(totals.total - giftAmount, 0)
+        ));
+        scheduleDraftCartSave();
+        renderPaymentScreen();
+    });
+
+    $(document).on('click', '.payment-store-credit-clear', function () {
+        const order = getActiveOrder();
+        if (!order) return;
+
+        order.creditsApplied = 0;
+        scheduleDraftCartSave();
         renderPaymentScreen();
     });
 
@@ -2571,13 +2786,18 @@
             return;
         }
 
+        const productIdsAttr = String($selected.attr('data-product-ids') || '').trim();
         const card = {
             id: Number($selected.data('card-id')),
             type: type,
             name: String($selected.data('card-name') || ''),
             value: Number($selected.data('card-value')) || 0,
+            discount_type: $selected.data('discount-type') || null,
             minimum_spend: Number($selected.data('minimum-spend')) || 0,
-            product_id: $selected.data('product-id') || null
+            product_id: $selected.data('product-id') || null,
+            product_ids: productIdsAttr
+                ? productIdsAttr.split(',').map(function (id) { return id.trim(); }).filter(Boolean)
+                : []
         };
         const totals = totalsForOrder(order);
 
@@ -2586,7 +2806,7 @@
             return;
         }
 
-        order.appliedCards = order.appliedCards || { gift: null, reward: null };
+        order.appliedCards = order.appliedCards || { discount: null, gift: null, reward: null };
         order.appliedCards[type] = card;
 
         if (type === 'gift' && giftCardAmountForOrder(order, totals) >= totals.total && !paymentMethod) {
@@ -2605,7 +2825,7 @@
 
         if (!order) return;
 
-        order.appliedCards = order.appliedCards || { gift: null, reward: null };
+        order.appliedCards = order.appliedCards || { discount: null, gift: null, reward: null };
         order.appliedCards[type] = null;
         $('.order-card-list[data-card-type="' + type + '"] .order-card-radio').prop('checked', false);
         scheduleDraftCartSave();
@@ -2779,6 +2999,16 @@
         });
 
         // Dependency: customer and vehicle selections belong to the active draft order.
+        $('#customer_type_filter').on('select2:select', function (event) {
+            const order = getActiveOrder();
+            if (!order || isRestoringOrderMeta) return;
+
+            order.customer = customerSelectionFromData(event.params.data || {});
+            order.vehicle = null;
+            order.creditsApplied = 0;
+            setSelectSelection($(this), order.customer);
+        });
+
         $('#customer_type_filter').on('change', function () {
             markSelectInvalid($(this), false);
 
@@ -2786,13 +3016,22 @@
 
             const order = getActiveOrder();
             if (order) {
-                order.customer = readSelectSelection($(this));
+                // Prefer the payload captured on select2:select; fall back to select read.
+                if (!order.customer || !order.customer.id || String(order.customer.id) !== String($(this).val())) {
+                    order.customer = readSelectSelection($(this));
+                } else {
+                    syncCustomerSelectionFromSelect();
+                }
                 order.vehicle = null;
+                order.creditsApplied = 0;
             }
 
             const $vehicleSelect = $('#add_vehicle_filter');
             $vehicleSelect.val(null).trigger('change');
             updateSummary();
+            if (!$('.order-payment-screen').hasClass('d-none')) {
+                renderPaymentScreen();
+            }
             scheduleDraftCartSave();
         });
 
