@@ -9,6 +9,7 @@ use App\Models\Card;
 use App\Models\Order;
 use App\Repositories\Interface\OrderRepositoryInterface;
 use App\Services\CreditService;
+use App\Support\Currency;
 use App\Support\Tenancy\TenantContext;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
@@ -184,11 +185,11 @@ class OrderController extends Controller
         $tenant = $order->tenant;
         $vehicleRequired = $tenant?->isVehicleRequired() ?? true;
 
-        $pdf = Pdf::loadView('employee.order.pdf', [
+        $pdf = Currency::using($tenant, fn () => Pdf::loadView('employee.order.pdf', [
             'order' => $order,
             'details' => $details,
             'vehicleRequired' => $vehicleRequired,
-        ]);
+        ]));
 
         $filename = $order->status === Order::STATUS_ESTIMATE
             ? "estimate-{$order->order_number}.pdf"
@@ -216,11 +217,11 @@ class OrderController extends Controller
         $tenant = $order->tenant;
         $vehicleRequired = $tenant?->isVehicleRequired() ?? true;
 
-        $pdf = Pdf::loadView('employee.order.pdf', [
+        $pdf = Currency::using($tenant, fn () => Pdf::loadView('employee.order.pdf', [
             'order' => $order,
             'details' => $details,
             'vehicleRequired' => $vehicleRequired,
-        ]);
+        ]));
 
         $filename = $order->status === Order::STATUS_ESTIMATE
             ? "estimate-{$order->order_number}.pdf"

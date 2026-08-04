@@ -49,7 +49,9 @@
 
   const money = function (value) {
     const amount = Number(value || 0);
-    return ((window.appCurrency && window.appCurrency.symbol) || '$') + amount.toFixed(2);
+    return ((window.appCurrencySymbol && window.appCurrencySymbol()) ||
+        (window.appCurrency && window.appCurrency.symbol) ||
+        '$') + amount.toFixed(2);
   };
 
   const tooltipAttrs = function (title) {

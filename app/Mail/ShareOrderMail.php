@@ -58,9 +58,9 @@ class ShareOrderMail extends Mailable
                 'statusLabel' => $isEstimate
                     ? 'Estimate'
                     : str((string) $this->order->status)->replace('_', ' ')->title()->toString(),
-                'totalAmountLabel' => Currency::format($totalAmount),
+                'totalAmountLabel' => Currency::format($totalAmount, true, $tenant),
                 'balanceDue' => $balanceDue,
-                'balanceDueLabel' => Currency::format($balanceDue),
+                'balanceDueLabel' => Currency::format($balanceDue, true, $tenant),
                 'title' => $this->documentLabel().' #'.$this->order->order_number,
                 'footerLines' => array_values(array_filter([
                     $shopName,

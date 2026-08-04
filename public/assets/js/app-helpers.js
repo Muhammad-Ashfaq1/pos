@@ -204,6 +204,39 @@
   helpers.initToolTip = initToolTip;
   helpers.getTooltipAttributes = getTooltipAttributes;
 
+  /**
+   * Active shop currency symbol from layouts (window.appCurrency).
+   * Defaults to `$` when regional currency is unset.
+   */
+  const currencySymbol = function () {
+    return (window.appCurrency && window.appCurrency.symbol) || '$';
+  };
+
+  const formatMoney = function (amount, decimals) {
+    const places = typeof decimals === 'number' ? decimals : 2;
+    const value = Number(amount);
+    const safe = Number.isFinite(value) ? value : 0;
+
+    return currencySymbol() + safe.toFixed(places);
+  };
+
+  const stripCurrency = function (text) {
+    const symbol = currencySymbol();
+    let raw = String(text == null ? '' : text);
+    if (symbol) {
+      raw = raw.split(symbol).join('');
+    }
+    // Also strip a bare `$` in case older markup still used it.
+    return raw.replace(/\$/g, '').replace(/,/g, '').trim();
+  };
+
+  helpers.currencySymbol = currencySymbol;
+  helpers.formatMoney = formatMoney;
+  helpers.stripCurrency = stripCurrency;
+  window.appCurrencySymbol = currencySymbol;
+  window.appFormatMoney = formatMoney;
+  window.appStripCurrency = stripCurrency;
+
   document.addEventListener('DOMContentLoaded', function () {
     makeModalsStatic(document);
 

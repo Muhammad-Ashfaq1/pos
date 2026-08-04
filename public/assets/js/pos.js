@@ -1,4 +1,24 @@
 $(document).ready(function() {
+    var currencySymbol = function () {
+        return (window.appCurrencySymbol && window.appCurrencySymbol()) ||
+            (window.appCurrency && window.appCurrency.symbol) ||
+            '$';
+    };
+    var formatMoney = function (amount, decimals) {
+        var places = typeof decimals === 'number' ? decimals : 3;
+        var value = Number(amount);
+        if (!isFinite(value)) {
+            value = 0;
+        }
+        return currencySymbol() + value.toFixed(places);
+    };
+    var stripCurrency = function (text) {
+        if (window.appStripCurrency) {
+            return window.appStripCurrency(text);
+        }
+        return String(text == null ? '' : text).replace(/[^0-9.\-]/g, '');
+    };
+
     // Click on category card
     $('.category-card').on('click', function() {
         var categoryName = $(this).find('h4').text();
@@ -26,7 +46,7 @@ $(document).ready(function() {
         var currentQty = parseFloat($qtySpan.text());
         var unitPrice = parseFloat($row.attr('data-unit-price')) || 5.208333;
         var newPrice = (currentQty * unitPrice);
-        $priceSpan.text('$' + newPrice);
+        $priceSpan.text(formatMoney(newPrice));
         updateSummary();
     }
 
@@ -37,7 +57,7 @@ $(document).ready(function() {
 
         $('#cart-items-tbody tr:not(.empty-cart-message)').each(function() {
             var qty = parseFloat($(this).find('.qty-value').text());
-            var priceText = $(this).find('.item-price').text().replace('$', '');
+            var priceText = stripCurrency($(this).find('.item-price').text());
             var price = parseFloat(priceText);
 
             if (!isNaN(qty)) totalQty += qty;
@@ -45,11 +65,11 @@ $(document).ready(function() {
         });
 
         $('.summary-qty').text(totalQty.toFixed(0)); // Show whole number for items count
-        $('.summary-subtotal').text('$' + totalAmount.toFixed(3));
-        $('.summary-total').text('$' + totalAmount.toFixed(3));
+        $('.summary-subtotal').text(formatMoney(totalAmount));
+        $('.summary-total').text(formatMoney(totalAmount));
 
         // Update Pay button text
-        $('.btn-pay .text-warning:first').text('$' + totalAmount.toFixed(3));
+        $('.btn-pay .text-warning:first').text(formatMoney(totalAmount));
         if (totalAmount > 0) {
             $('.btn-pay').removeAttr('disabled');
         } else {
@@ -79,7 +99,7 @@ $(document).ready(function() {
     $('.btn-add-to-cart').on('click', function() {
         var productName = $('.product-name').text();
         var qty = parseFloat($('.product-qty-input').val());
-        var unitPriceText = $('.product-price').text().replace('$', '');
+        var unitPriceText = stripCurrency($('.product-price').text());
         var unitPrice = parseFloat(unitPriceText);
         var totalPrice = (qty * unitPrice);
 
@@ -110,7 +130,7 @@ $(document).ready(function() {
                             <button class="btn btn-sm p-0 border-0 text-secondary fw-light btn-qty-plus">+</button>
                         </div>
                         <div class="col-3 text-end">
-                            <span class="fw-bold text-primary small item-price">$${totalPrice}</span>
+                            <span class="fw-bold text-primary small item-price">${formatMoney(totalPrice)}</span>
                         </div>
                     </div>
                 </td>

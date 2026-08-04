@@ -471,7 +471,7 @@
                         <div class="card-body d-flex flex-column">
                             <h5 class="fw-bold border-bottom pb-3 mb-4">Payment Amount</h5>
 
-                            <div class="payment-amount-display mb-3">$</div>
+                            <div class="payment-amount-display mb-3">@currency</div>
                             <div class="d-flex justify-content-between small mb-4">
                                 <span>Remaining: <strong class="payment-remaining">@money(0)</strong></span>
                                 <span>Change: <strong class="payment-change-due">@money(0)</strong></span>

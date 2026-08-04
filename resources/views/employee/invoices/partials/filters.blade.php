@@ -38,12 +38,12 @@
                 <label class="form-label fw-semibold">Amount Range</label>
                 <div class="d-flex align-items-center gap-2">
                     <div class="input-group">
-                        <span class="input-group-text">$</span>
+                        <span class="input-group-text">@currency</span>
                         <input type="number" min="0" step="0.01" class="form-control" placeholder="Min" data-invoice-amount-min>
                     </div>
                     <span class="text-muted">to</span>
                     <div class="input-group">
-                        <span class="input-group-text">$</span>
+                        <span class="input-group-text">@currency</span>
                         <input type="number" min="0" step="0.01" class="form-control" placeholder="Max" data-invoice-amount-max>
                     </div>
                 </div>

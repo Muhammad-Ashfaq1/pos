@@ -106,10 +106,12 @@
     <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-aio-3.2.8.min.js"></script>
     <script src="{{ asset('assets/js/app-loader.js') }}?v={{ filemtime(public_path('assets/js/app-loader.js')) }}"></script>
     <script>
+        window.appCurrency = { symbol: @json(\App\Support\Currency::symbol()), code: @json(\App\Support\Currency::code()) };
         @if (session('success')) Notiflix.Notify.success(@json(session('success'))); @endif
         @if (session('error')) Notiflix.Notify.failure(@json(session('error'))); @endif
         @if ($errors->any()) Notiflix.Notify.failure(@json($errors->first())); @endif
     </script>
+    <script src="{{ asset('assets/js/app-helpers.js') }}?v={{ filemtime(public_path('assets/js/app-helpers.js')) }}"></script>
     @stack('page-script')
 </body>
 </html>

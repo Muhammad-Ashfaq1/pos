@@ -9,6 +9,7 @@ use App\Models\Vehicle;
 use App\Repositories\Interface\OrderRepositoryInterface;
 use App\Services\CreditService;
 use App\Services\CustomerPortalService;
+use App\Support\Currency;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -94,11 +95,11 @@ class PortalController extends Controller
         $details = $orders->details($model);
         $vehicleRequired = $model->tenant?->isVehicleRequired() ?? true;
 
-        $pdf = Pdf::loadView('employee.order.pdf', [
+        $pdf = Currency::using($model->tenant, fn () => Pdf::loadView('employee.order.pdf', [
             'order' => $model,
             'details' => $details,
             'vehicleRequired' => $vehicleRequired,
-        ]);
+        ]));
 
         return $pdf->download("invoice-{$model->order_number}.pdf");
     }

@@ -2009,7 +2009,9 @@
     }
 
     function currencySymbol() {
-        return (window.appCurrency && window.appCurrency.symbol) || '$';
+        return (window.appCurrencySymbol && window.appCurrencySymbol()) ||
+            (window.appCurrency && window.appCurrency.symbol) ||
+            '$';
     }
 
     function formatMoney(amount) {
