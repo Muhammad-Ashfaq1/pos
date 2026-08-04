@@ -5,6 +5,8 @@ namespace App\Repositories;
 use App\Models\Tenant;
 use App\Repositories\Interface\ShopSettingsRepositoryInterface;
 use App\Support\Currency;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 class ShopSettingsRepository implements ShopSettingsRepositoryInterface
 {
@@ -19,17 +21,6 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
         'de'    => 'German',
         'es'    => 'Spanish',
         'fr'    => 'French',
-    ];
-
-    private const CURRENCY_OPTIONS = [
-        'USD' => 'US Dollar (USD)  $',
-        'GBP' => 'British Pound (GBP)  £',
-        'PKR' => 'Pakistani Rupee (PKR)  ₨',
-        'AED' => 'UAE Dirham (AED)  د.إ',
-        'SAR' => 'Saudi Riyal (SAR)  ﷼',
-        'CAD' => 'Canadian Dollar (CAD)  C$',
-        'AUD' => 'Australian Dollar (AUD)  A$',
-        'EUR' => 'Euro (EUR)  €',
     ];
 
     private const WEEKDAYS = [
@@ -47,7 +38,7 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
         return [
             'tenant' => $tenant,
             'form' => $this->buildFormData($tenant),
-            'currencyOptions' => self::CURRENCY_OPTIONS,
+            'currencyOptions' => Currency::options(),
             'localeOptions' => self::LOCALE_OPTIONS,
             'timezoneOptions' => array_combine(
                 \DateTimeZone::listIdentifiers(),
@@ -66,6 +57,15 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
         $businessEmail = $this->normalizeNullableString($data['business_email'] ?? null);
         $businessPhone = $this->normalizeNullableString($data['business_phone'] ?? null);
 
+        $settings = $tenant->mergedSettings();
+        $settings['branding'] = array_merge(
+            (array) ($settings['branding'] ?? []),
+            [
+                'primary_color' => $settings['branding']['primary_color'] ?? Tenant::DEFAULT_BRAND_COLOR,
+                'tagline' => $this->normalizeNullableString($data['tagline'] ?? null),
+            ]
+        );
+
         $tenant->forceFill([
             'name' => $shopName !== '' ? $shopName : $businessName,
             'shop_name' => $shopName,
@@ -80,6 +80,7 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
             'city' => $this->normalizeNullableString($data['city'] ?? null),
             'state' => $this->normalizeNullableString($data['state'] ?? null),
             'country' => $this->normalizeNullableString($data['country'] ?? null),
+            'settings' => $settings,
         ]);
 
         $this->persistTenant($tenant);
@@ -87,6 +88,39 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
         return [
             'success' => true,
             'message' => 'Shop profile updated successfully.',
+        ];
+    }
+
+    public function saveBrandingSettings(Tenant $tenant, array $data): array
+    {
+        $settings = $tenant->mergedSettings();
+        $settings['branding'] = array_merge(
+            (array) ($settings['branding'] ?? []),
+            [
+                'primary_color' => strtoupper((string) ($data['primary_color'] ?? Tenant::DEFAULT_BRAND_COLOR)),
+            ]
+        );
+
+        $tenant->forceFill([
+            'settings' => $settings,
+        ]);
+
+        if (! empty($data['remove_logo'])) {
+            $this->deleteLogoFile($tenant->logo);
+            $tenant->logo = null;
+        }
+
+        if (($data['logo'] ?? null) instanceof UploadedFile) {
+            $this->storeLogo($tenant, $data['logo']);
+        }
+
+        $this->persistTenant($tenant);
+
+        return [
+            'success' => true,
+            'message' => 'Branding saved successfully.',
+            'logo_url' => $tenant->logoUrl(),
+            'primary_color' => $tenant->brandPrimaryColor(),
         ];
     }
 
@@ -217,7 +251,14 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
                 'route' => 'tenant.settings.shop-profile.general',
                 'pattern' => 'tenant.settings.shop-profile.general',
                 'icon' => 'tabler-building-store',
-                'description' => 'Business identity, contact details, and address.',
+                'description' => 'Business identity, contact details, address, and tagline.',
+            ],
+            [
+                'label' => 'Branding',
+                'route' => 'tenant.settings.shop-profile.branding',
+                'pattern' => 'tenant.settings.shop-profile.branding',
+                'icon' => 'tabler-palette',
+                'description' => 'Company logo and primary color.',
             ],
             [
                 'label' => 'Regional & Billing',
@@ -306,7 +347,29 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
             'return_days_after_purchase' => data_get($settings, 'orders.return_days_after_purchase', 30),
             'credit_min_redeem_balance' => data_get($settings, 'orders.credit_min_redeem_balance', 50),
             'business_hours' => data_get($settings, 'business_hours', Tenant::defaultSettings()['business_hours']),
+            'logo_url' => $tenant->logoUrl(),
+            'primary_color' => $tenant->brandPrimaryColor(),
+            'tagline' => $tenant->brandTagline(),
         ];
+    }
+
+    private function storeLogo(Tenant $tenant, UploadedFile $file): void
+    {
+        $this->deleteLogoFile($tenant->logo);
+
+        $path = $file->store('tenants/'.$tenant->getKey().'/logo', 'public');
+        $tenant->logo = $path;
+    }
+
+    private function deleteLogoFile(mixed $path): void
+    {
+        if (! is_string($path) || $path === '') {
+            return;
+        }
+
+        if (Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
     }
 
     private function buildReadinessChecklist(Tenant $tenant): array

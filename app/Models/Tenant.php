@@ -22,6 +22,10 @@ class Tenant extends Model implements TenantContract
             'timezone' => 'UTC',
             'locale' => 'en',
         ],
+        'branding' => [
+            'primary_color' => '#312e81',
+            'tagline' => null,
+        ],
         'tax' => [
             'name' => 'Sales Tax',
             'percentage' => '0.00',
@@ -57,6 +61,8 @@ class Tenant extends Model implements TenantContract
         ],
     ];
 
+    public const DEFAULT_BRAND_COLOR = '#312e81';
+
     protected $table = 'tenants';
 
     protected $guarded = [];
@@ -86,6 +92,7 @@ class Tenant extends Model implements TenantContract
         'phone',
         'business_type',
         'website_url',
+        'logo',
         'rejected_reason',
         'onboarding_status',
     ];
@@ -237,5 +244,59 @@ class Tenant extends Model implements TenantContract
     public function creditMinRedeemBalance(): float
     {
         return round((float) $this->setting('orders.credit_min_redeem_balance', 50), 2);
+    }
+
+    public function logoUrl(): ?string
+    {
+        $path = $this->logo;
+
+        if (! is_string($path) || $path === '') {
+            return null;
+        }
+
+        $relative = \Illuminate\Support\Facades\Storage::disk('public')->url($path);
+
+        return url($relative);
+    }
+
+    /**
+     * Base64 data URI for DomPDF (remote URLs are unreliable).
+     */
+    public function logoDataUri(): ?string
+    {
+        $path = $this->logo;
+
+        if (! is_string($path) || $path === '') {
+            return null;
+        }
+
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+
+        if (! $disk->exists($path)) {
+            return null;
+        }
+
+        $contents = $disk->get($path);
+        $mime = $disk->mimeType($path) ?: 'image/png';
+
+        return 'data:'.$mime.';base64,'.base64_encode($contents);
+    }
+
+    public function brandPrimaryColor(): string
+    {
+        $color = trim((string) $this->setting('branding.primary_color', self::DEFAULT_BRAND_COLOR));
+
+        if (! preg_match('/^#[0-9A-Fa-f]{6}$/', $color)) {
+            return self::DEFAULT_BRAND_COLOR;
+        }
+
+        return strtoupper($color);
+    }
+
+    public function brandTagline(): ?string
+    {
+        $tagline = trim((string) $this->setting('branding.tagline', ''));
+
+        return $tagline !== '' ? $tagline : null;
     }
 }

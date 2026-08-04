@@ -50,6 +50,12 @@
     <link rel="stylesheet" href="{{ asset('assets/css/app-datepicker.css') }}?v={{ filemtime(public_path('assets/css/app-datepicker.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/app-loader.css') }}?v={{ filemtime(public_path('assets/css/app-loader.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/customer-portal.css') }}?v={{ filemtime(public_path('assets/css/customer-portal.css')) }}" />
+    <style>
+        :root {
+            --shop-brand-primary: {{ auth('customer')->user()?->tenant?->brandPrimaryColor() ?? \App\Models\Tenant::DEFAULT_BRAND_COLOR }};
+        }
+        .shop-brand-logo img { display: block; }
+    </style>
 
     <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
     <script src="{{ asset('assets/js/config.js') }}"></script>

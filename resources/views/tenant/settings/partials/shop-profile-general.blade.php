@@ -21,6 +21,21 @@
         </div>
     </div>
 
+    <div class="row mt-3">
+        <div class="col-12">
+            <label for="tagline" class="form-label">Tagline</label>
+            <input
+                type="text"
+                class="form-control"
+                id="tagline"
+                name="tagline"
+                maxlength="120"
+                value="{{ old('tagline', $form['tagline'] ?? '') }}"
+                placeholder="e.g. Fast oil changes done right">
+            <div class="form-text">Shown under your shop name in the app and on invoices.</div>
+        </div>
+    </div>
+
     <hr class="my-4">
 
     <h6 class="mb-3">Contact Details</h6>

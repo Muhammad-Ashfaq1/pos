@@ -50,6 +50,9 @@ class ShareOrderMail extends Mailable
                 'customerName' => trim((string) ($this->order->customer?->name ?? '')) ?: null,
                 'shopName' => $shopName = $this->shopName(),
                 'brandName' => $shopName,
+                'brandLogoUrl' => $tenant?->logoUrl(),
+                'brandPrimaryColor' => $tenant?->brandPrimaryColor() ?? \App\Models\Tenant::DEFAULT_BRAND_COLOR,
+                'brandTagline' => $tenant?->brandTagline(),
                 'shopEmail' => $shopEmail = ($tenant?->business_email ?: $tenant?->email ?: $tenant?->owner_email),
                 'shopPhone' => $shopPhone = ($tenant?->business_phone ?: $tenant?->phone ?: $tenant?->owner_phone),
                 'shopAddress' => $shopAddress = $tenant?->address,
@@ -58,9 +61,9 @@ class ShareOrderMail extends Mailable
                 'statusLabel' => $isEstimate
                     ? 'Estimate'
                     : str((string) $this->order->status)->replace('_', ' ')->title()->toString(),
-                'totalAmountLabel' => Currency::format($totalAmount, true, $tenant),
+                'totalAmountLabel' => Currency::formatPdf($totalAmount, $tenant),
                 'balanceDue' => $balanceDue,
-                'balanceDueLabel' => Currency::format($balanceDue, true, $tenant),
+                'balanceDueLabel' => Currency::formatPdf($balanceDue, $tenant),
                 'title' => $this->documentLabel().' #'.$this->order->order_number,
                 'footerLines' => array_values(array_filter([
                     $shopName,

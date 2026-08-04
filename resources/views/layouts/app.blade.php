@@ -110,6 +110,10 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/cards-advance.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/app-loader.css') }}?v={{ filemtime(public_path('assets/css/app-loader.css')) }}" />
     <style>
+      :root {
+        --shop-brand-primary: {{ app(\App\Support\Tenancy\TenantContext::class)->current()?->brandPrimaryColor() ?? \App\Models\Tenant::DEFAULT_BRAND_COLOR }};
+      }
+
       html[data-display-customizer='true'] #template-customizer .template-customizer-open-btn {
         z-index: 2 !important;
       }
@@ -125,6 +129,10 @@
           display: flex !important;
           visibility: visible !important;
         }
+      }
+
+      .shop-brand-logo img {
+        display: block;
       }
     </style>
 

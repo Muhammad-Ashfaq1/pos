@@ -48,6 +48,10 @@
     <link rel="stylesheet" href="{{ asset('assets/css/app-datepicker.css') }}?v={{ filemtime(public_path('assets/css/app-datepicker.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/app-loader.css') }}?v={{ filemtime(public_path('assets/css/app-loader.css')) }}" />
     <style>
+        :root {
+            --shop-brand-primary: {{ app(\App\Support\Tenancy\TenantContext::class)->current()?->brandPrimaryColor() ?? \App\Models\Tenant::DEFAULT_BRAND_COLOR }};
+        }
+
         html[data-display-customizer='true'] #template-customizer {
             display: flex !important;
             visibility: visible !important;
@@ -63,6 +67,10 @@
                 display: flex !important;
                 visibility: visible !important;
             }
+        }
+
+        .shop-brand-logo img {
+            display: block;
         }
     </style>
 
@@ -149,18 +157,24 @@
             align-items: center;
             gap: 0.6rem;
             text-decoration: none;
+            min-width: 0;
+        }
+
+        .employee-admin-preview .preview-brand .shop-brand-logo img {
+            width: 40px;
+            height: 40px;
         }
 
         .employee-admin-preview .preview-brand-text {
-            font-size: 2.25rem;
-            font-weight: 900;
-            line-height: 1;
-            letter-spacing: 0.04em;
-            color: var(--preview-indigo-dark);
-        }
-
-        .employee-admin-preview .preview-brand-text span {
-            color: var(--preview-amber);
+            font-size: 1.65rem;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: 0.01em;
+            color: var(--shop-brand-primary, var(--preview-indigo-dark));
+            max-width: min(42vw, 18rem);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .employee-admin-preview .preview-header-actions {
@@ -651,8 +665,10 @@
             <div class="preview-container py-0">
                 <div class="preview-header-inner">
                     <a href="{{ route('employee.dashboard') }}" class="preview-brand">
-                        @include('layouts.partials.brand-logo', ['size' => 40])
-                        <span class="preview-brand-text">Auto<span>Serve</span></span>
+                        @include('layouts.partials.shop-brand', [
+                            'size' => 40,
+                            'textClass' => 'preview-brand-text',
+                        ])
                     </a>
 
                     <div class="preview-header-actions">

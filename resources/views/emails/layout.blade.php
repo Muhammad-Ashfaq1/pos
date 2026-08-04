@@ -52,7 +52,14 @@
             font-weight: 700;
             letter-spacing: -0.02em;
             vertical-align: middle;
-            color: #0b1220;
+            color: {{ $brandPrimaryColor ?? '#0b1220' }};
+        }
+        .brand-tagline {
+            display: block;
+            margin-top: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #64748b;
         }
         .email-content {
             padding: 8px 32px 32px;
@@ -74,14 +81,14 @@
         .btn-wrap { margin: 28px 0; text-align: center; }
         .btn-primary {
             display: inline-block;
-            background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+            background: {{ $brandPrimaryColor ?? '#2563eb' }};
             color: #ffffff !important;
             text-decoration: none;
             font-size: 15px;
             font-weight: 600;
             padding: 14px 28px;
             border-radius: 10px;
-            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
         }
         .email-footer {
             padding: 0 32px 28px;
@@ -95,7 +102,8 @@
         }
         .divider {
             height: 1px;
-            background: rgba(15, 23, 42, 0.08);
+            background: {{ $brandPrimaryColor ?? 'rgba(15, 23, 42, 0.08)' }};
+            opacity: 0.35;
             margin: 8px 32px 20px;
         }
         @media only screen and (max-width: 620px) {
@@ -112,13 +120,25 @@
                     <tr>
                         <td class="email-header">
                             <a href="{{ url('/') }}" class="brand-link">
-                                <img
-                                    src="{{ asset('assets/img/logo/occ.png') }}"
-                                    alt="{{ $brandName ?? config('app.name') }}"
-                                    width="36"
-                                    height="36"
-                                    style="vertical-align: middle; margin-right: 10px; border-radius: 8px;" />
+                                @if(! empty($brandLogoUrl))
+                                    <img
+                                        src="{{ $brandLogoUrl }}"
+                                        alt="{{ $brandName ?? config('app.name') }}"
+                                        width="36"
+                                        height="36"
+                                        style="vertical-align: middle; margin-right: 10px; border-radius: 8px; object-fit: contain;" />
+                                @else
+                                    <img
+                                        src="{{ asset('assets/img/logo/occ.png') }}"
+                                        alt="{{ $brandName ?? config('app.name') }}"
+                                        width="36"
+                                        height="36"
+                                        style="vertical-align: middle; margin-right: 10px; border-radius: 8px;" />
+                                @endif
                                 <span class="brand-name">{{ $brandName ?? config('app.name') }}</span>
+                                @if(! empty($brandTagline))
+                                    <span class="brand-tagline">{{ $brandTagline }}</span>
+                                @endif
                             </a>
                         </td>
                     </tr>

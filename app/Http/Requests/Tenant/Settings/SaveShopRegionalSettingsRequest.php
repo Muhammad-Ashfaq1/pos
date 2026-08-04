@@ -2,18 +2,11 @@
 
 namespace App\Http\Requests\Tenant\Settings;
 
+use App\Support\Currency;
 use Illuminate\Validation\Rule;
 
 class SaveShopRegionalSettingsRequest extends BaseShopSettingsRequest
 {
-    /** Supported currency codes — matches Currency::SYMBOLS keys. */
-    private const ALLOWED_CURRENCIES = [
-        'USD', 'GBP', 'PKR', 'AED', 'SAR', 'CAD', 'AUD',
-        'EUR', 'NZD', 'JPY', 'CNY', 'BDT', 'NGN', 'ZAR',
-        'BRL', 'TRY', 'RUB', 'KRW', 'CHF', 'MYR', 'SGD', 'HKD',
-        'THB', 'IDR', 'PHP', 'EGP', 'QAR', 'KWD', 'OMR',
-    ];
-
     protected function prepareForValidation(): void
     {
         $this->merge([
@@ -28,7 +21,7 @@ class SaveShopRegionalSettingsRequest extends BaseShopSettingsRequest
     public function rules(): array
     {
         return [
-            'currency'            => ['required', 'string', Rule::in(self::ALLOWED_CURRENCIES)],
+            'currency'            => ['required', 'string', Rule::in(Currency::allowedCodes())],
             'timezone'            => ['required', Rule::in(\DateTimeZone::listIdentifiers())],
             'locale'              => ['required', 'string', 'max:10'],
             'tax_name'            => ['required', 'string', 'max:100'],

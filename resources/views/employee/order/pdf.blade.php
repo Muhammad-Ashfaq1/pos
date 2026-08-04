@@ -1,11 +1,31 @@
 <!doctype html>
 <html>
+@php
+    $tenant = $order->tenant;
+    $shopName = trim((string) (
+        $tenant?->shop_name
+        ?: $tenant?->business_name
+        ?: $tenant?->name
+        ?: $tenant?->display_name
+        ?: ''
+    ));
+    $brandName = $shopName !== '' ? $shopName : (string) config('app.name');
+    $brandColor = $tenant?->brandPrimaryColor() ?? \App\Models\Tenant::DEFAULT_BRAND_COLOR;
+    $brandTagline = $tenant?->brandTagline();
+    $logoDataUri = $tenant?->logoDataUri();
+    $hasShopContact = $tenant && (
+        filled($tenant->address)
+        || filled($tenant->city)
+        || filled($tenant->business_phone ?? $tenant->phone)
+        || filled($tenant->business_email ?? $tenant->email)
+    );
+@endphp
 <head>
     <meta charset="utf-8">
     <title>{{ $order->status === 'estimate' ? 'Estimate' : 'Invoice' }} #{{ $order->order_number }}</title>
     <style>
         body {
-            font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+            font-family: DejaVu Sans, 'Helvetica Neue', Helvetica, Arial, sans-serif;
             color: #333;
             margin: 0;
             padding: 0;
@@ -37,13 +57,13 @@
             font-weight: bold;
         }
         .header {
-            border-bottom: 2px solid #312e81;
+            border-bottom: 2px solid {{ $brandColor }};
             padding-bottom: 20px;
             margin-bottom: 20px;
         }
         .title {
             font-size: 28px;
-            color: #312e81;
+            color: {{ $brandColor }};
             font-weight: bold;
             text-transform: uppercase;
         }
@@ -57,7 +77,7 @@
         .section-title {
             font-size: 14px;
             font-weight: bold;
-            color: #312e81;
+            color: {{ $brandColor }};
             border-bottom: 1px solid #c7d2fe;
             padding-bottom: 5px;
             margin-top: 20px;
@@ -90,11 +110,11 @@
             border-bottom: 1px solid #f1f5f9;
         }
         .totals-table tr.grand-total td {
-            border-top: 2px solid #312e81;
-            border-bottom: 2px double #312e81;
+            border-top: 2px solid {{ $brandColor }};
+            border-bottom: 2px double {{ $brandColor }};
             font-size: 16px;
             font-weight: bold;
-            color: #312e81;
+            color: {{ $brandColor }};
             padding: 8px;
         }
         .badge {
@@ -117,6 +137,17 @@
             border-top: 1px solid #e2e8f0;
             padding-top: 15px;
         }
+        .brand-logo {
+            max-height: 56px;
+            max-width: 160px;
+            margin-bottom: 8px;
+        }
+        .brand-tagline {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: normal;
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
@@ -124,13 +155,15 @@
         <table class="header">
             <tr>
                 <td>
-                    <!-- Logo / Brand Header -->
-                    <div style="margin-bottom: 12px;">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#312e81" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px; display: inline-block;">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                        </svg>
-                        <span style="font-size: 22px; font-weight: 800; color: #312e81; vertical-align: middle; letter-spacing: 0.5px; display: inline-block;">OIL<span style="color: #6366f1;">POS</span></span>
+                    @if($logoDataUri)
+                        <img src="{{ $logoDataUri }}" alt="{{ $brandName }}" class="brand-logo"><br>
+                    @endif
+                    <div style="margin-bottom: 4px; font-size: 22px; font-weight: 800; color: {{ $brandColor }}; letter-spacing: 0.5px;">
+                        {{ $brandName }}
                     </div>
+                    @if($brandTagline)
+                        <div class="brand-tagline" style="margin-bottom: 10px;">{{ $brandTagline }}</div>
+                    @endif
                     <div class="title">{{ $order->status === 'estimate' ? 'Estimate' : 'Invoice' }}</div>
                     <div class="meta-info">
                         <strong>Number:</strong> {{ $order->order_number }}<br>
@@ -145,29 +178,33 @@
                         </span>
                     </div>
                 </td>
+                @if($hasShopContact)
                 <td class="text-right shop-info">
-                    <div style="font-size: 16px; font-weight: bold; color: #312e81; margin-bottom: 5px;">
-                        {{ $order->tenant->shop_name ?? $order->tenant->business_name ?? $order->tenant->name ?? 'Our POS Shop' }}
-                    </div>
-                    @if(!empty($order->tenant->address))
-                        {{ $order->tenant->address }}<br>
-                        @if(!empty($order->tenant->city))
-                            {{ $order->tenant->city }}, {{ $order->tenant->state ?? '' }} {{ $order->tenant->country ?? '' }}<br>
+                    @if($shopName !== '')
+                        <div style="font-size: 16px; font-weight: bold; color: {{ $brandColor }}; margin-bottom: 5px;">
+                            {{ $shopName }}
+                        </div>
+                    @endif
+                    @if(!empty($tenant->address))
+                        {{ $tenant->address }}<br>
+                        @if(!empty($tenant->city))
+                            {{ $tenant->city }}, {{ $tenant->state ?? '' }} {{ $tenant->country ?? '' }}<br>
                         @endif
                     @endif
-                    @if(!empty($order->tenant->business_phone ?? $order->tenant->phone))
-                        <strong>Phone:</strong> {{ $order->tenant->business_phone ?? $order->tenant->phone }}<br>
+                    @if(!empty($tenant->business_phone ?? $tenant->phone))
+                        <strong>Phone:</strong> {{ $tenant->business_phone ?? $tenant->phone }}<br>
                     @endif
-                    @if(!empty($order->tenant->business_email ?? $order->tenant->email))
-                        <strong>Email:</strong> {{ $order->tenant->business_email ?? $order->tenant->email }}
+                    @if(!empty($tenant->business_email ?? $tenant->email))
+                        <strong>Email:</strong> {{ $tenant->business_email ?? $tenant->email }}
                     @endif
                 </td>
+                @endif
             </tr>
         </table>
 
         <table>
             <tr>
-                <td style="width: 50%;">
+                <td style="width: {{ $order->vehicle ? '50%' : '100%' }};">
                     <div class="section-title">Customer</div>
                     <strong>Name:</strong> {{ $details['customer_name'] }}<br>
                     @if(!empty($order->customer?->phone))
@@ -180,20 +217,16 @@
                         <strong>Address:</strong> {{ $order->customer->address }}
                     @endif
                 </td>
-                @if($vehicleRequired ?? true)
+                @if($order->vehicle)
                 <td style="width: 50%;">
                     <div class="section-title">Vehicle</div>
-                    @if($order->vehicle)
-                        <strong>Plate:</strong> {{ $order->vehicle->plate_number }}<br>
-                        <strong>Description:</strong> {{ trim(implode(' ', array_filter([$order->vehicle->year, $order->vehicle->make, $order->vehicle->model]))) ?: '—' }}<br>
-                        @if(!empty($order->vehicle->registration_number))
-                            <strong>Registration:</strong> {{ $order->vehicle->registration_number }}<br>
-                        @endif
-                        @if(!empty($order->vehicle->odometer))
-                            <strong>Odometer:</strong> {{ number_format($order->vehicle->odometer, 1) }} miles
-                        @endif
-                    @else
-                        No vehicle details.
+                    <strong>Plate:</strong> {{ $order->vehicle->plate_number }}<br>
+                    <strong>Description:</strong> {{ trim(implode(' ', array_filter([$order->vehicle->year, $order->vehicle->make, $order->vehicle->model]))) ?: '—' }}<br>
+                    @if(!empty($order->vehicle->registration_number))
+                        <strong>Registration:</strong> {{ $order->vehicle->registration_number }}<br>
+                    @endif
+                    @if(!empty($order->vehicle->odometer))
+                        <strong>Odometer:</strong> {{ number_format($order->vehicle->odometer, 1) }} miles
                     @endif
                 </td>
                 @endif
@@ -225,8 +258,8 @@
                                 <span style="font-size: 10px; color: #64748b;">{{ $item->unit }}</span>
                             @endif
                         </td>
-                        <td class="text-right">{{ App\Support\Currency::format((float) $item->unit_price) }}</td>
-                        <td class="text-right">{{ App\Support\Currency::format((float) $item->line_total) }}</td>
+                        <td class="text-right">{{ App\Support\Currency::formatPdf((float) $item->unit_price) }}</td>
+                        <td class="text-right">{{ App\Support\Currency::formatPdf((float) $item->line_total) }}</td>
                     </tr>
                 @endforeach
 
@@ -241,8 +274,8 @@
                                 </span>
                             </td>
                             <td class="text-center">1</td>
-                            <td class="text-right">{{ App\Support\Currency::format((float) ($fee['amount'] ?? 0)) }}</td>
-                            <td class="text-right">{{ App\Support\Currency::format((float) ($fee['amount'] ?? 0)) }}</td>
+                            <td class="text-right">{{ App\Support\Currency::formatPdf((float) ($fee['amount'] ?? 0)) }}</td>
+                            <td class="text-right">{{ App\Support\Currency::formatPdf((float) ($fee['amount'] ?? 0)) }}</td>
                         </tr>
                     @endforeach
                 @elseif(($order->service_fee_amount ?? 0) > 0)
@@ -251,8 +284,8 @@
                             <div class="fw-bold">Service Fees</div>
                         </td>
                         <td class="text-center">1</td>
-                        <td class="text-right">{{ App\Support\Currency::format((float) $order->service_fee_amount) }}</td>
-                        <td class="text-right">{{ App\Support\Currency::format((float) $order->service_fee_amount) }}</td>
+                        <td class="text-right">{{ App\Support\Currency::formatPdf((float) $order->service_fee_amount) }}</td>
+                        <td class="text-right">{{ App\Support\Currency::formatPdf((float) $order->service_fee_amount) }}</td>
                     </tr>
                 @endif
             </tbody>
@@ -261,44 +294,44 @@
         <table class="totals-table">
             <tr>
                 <td>Subtotal:</td>
-                <td class="text-right">{{ $details['subtotal_amount_label'] }}</td>
+                <td class="text-right">{{ App\Support\Currency::formatPdf((float) ($details['subtotal_amount'] ?? $order->subtotal_amount)) }}</td>
             </tr>
             @if(($order->service_fee_amount ?? 0) > 0)
                 <tr>
                     <td>Service Fees:</td>
-                    <td class="text-right">+{{ $details['service_fee_amount_label'] }}</td>
+                    <td class="text-right">+{{ App\Support\Currency::formatPdf((float) $order->service_fee_amount) }}</td>
                 </tr>
             @endif
             @if(($order->discount_amount ?? 0) > 0)
                 <tr style="color: #16a34a;">
                     <td>Discount:</td>
-                    <td class="text-right">-{{ $details['discount_amount_label'] }}</td>
+                    <td class="text-right">-{{ App\Support\Currency::formatPdf((float) $order->discount_amount) }}</td>
                 </tr>
             @endif
             @if(($order->tax_amount ?? 0) > 0)
                 <tr>
                     <td>Tax:</td>
-                    <td class="text-right">+{{ $details['tax_amount_label'] }}</td>
+                    <td class="text-right">+{{ App\Support\Currency::formatPdf((float) $order->tax_amount) }}</td>
                 </tr>
             @endif
             <tr class="grand-total">
                 <td>Total:</td>
-                <td class="text-right">{{ $details['total_amount_label'] }}</td>
+                <td class="text-right">{{ App\Support\Currency::formatPdf((float) ($details['total_amount'] ?? $order->total_amount)) }}</td>
             </tr>
             @if($order->status !== 'estimate')
                 @if(($order->gift_card_amount ?? 0) > 0)
                     <tr style="color: #16a34a;">
                         <td>{{ data_get($order->card_details, 'gift.name', 'Gift Card') }}:</td>
-                        <td class="text-right">-{{ $details['gift_card_amount_label'] }}</td>
+                        <td class="text-right">-{{ App\Support\Currency::formatPdf((float) $order->gift_card_amount) }}</td>
                     </tr>
                 @endif
                 <tr>
                     <td>Paid Amount:</td>
-                    <td class="text-right">{{ $details['payment_amount_label'] }}</td>
+                    <td class="text-right">{{ App\Support\Currency::formatPdf((float) ($details['payment_amount'] ?? $order->payment_amount)) }}</td>
                 </tr>
                 <tr style="font-weight: bold;">
                     <td>Balance Due:</td>
-                    <td class="text-right">{{ $details['balance_due_label'] }}</td>
+                    <td class="text-right">{{ App\Support\Currency::formatPdf((float) ($details['balance_due'] ?? 0)) }}</td>
                 </tr>
             @endif
         </table>
@@ -348,7 +381,7 @@
                             </tr>
                             <tr>
                                 <td style="font-weight: bold; background-color: #f8fafc;">Refund Amount</td>
-                                <td style="font-weight: bold; color: #dc2626;">{{ App\Support\Currency::format((float) ($return['refund_amount'] ?? 0)) }}</td>
+                                <td style="font-weight: bold; color: #dc2626;">{{ App\Support\Currency::formatPdf((float) ($return['refund_amount'] ?? 0)) }}</td>
                             </tr>
                             @if(!empty($return['returned_items']) && is_array($return['returned_items']))
                                 <tr>
@@ -363,7 +396,7 @@
                                     @endphp
                                     <tr>
                                         <td style="padding-left: 20px;">{{ e($itemName) }}</td>
-                                        <td>Qty: {{ $qty }} × {{ App\Support\Currency::format($itemPrice) }} = {{ App\Support\Currency::format($itemTotal) }}</td>
+                                        <td>Qty: {{ $qty }} × {{ App\Support\Currency::formatPdf($itemPrice) }} = {{ App\Support\Currency::formatPdf($itemTotal) }}</td>
                                     </tr>
                                 @endforeach
                             @endif
@@ -397,7 +430,7 @@
 
         <div class="footer">
             Thank you for your business!<br>
-            Powered by OilPOS
+            Powered by {{ config('app.name') }}
         </div>
     </div>
 </body>
