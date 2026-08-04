@@ -238,6 +238,7 @@ class OrdersRepository implements OrderRepositoryInterface
                 ->map(fn (Collection $items) => $items->sum(fn ($item) => (int) $item['quantity']));
 
             $isEstimate = ! empty($data['is_estimate']);
+            $isInvoice = ! $isEstimate && ! empty($data['is_invoice']);
 
             $products = Product::query()
                 ->with('discount:id,name,code,discount_type,applies_to,value,max_discount_amount,is_active,starts_at,ends_at')
@@ -361,6 +362,19 @@ class OrdersRepository implements OrderRepositoryInterface
                 $status = Order::STATUS_ESTIMATE;
                 $changeAmount = 0.0;
                 $isPaid = false;
+            } elseif ($isInvoice) {
+                // Unpaid invoice: commit stock now, collect payment later via Pay Balance.
+                $cashPayment = 0.0;
+                $paymentMethod = null;
+                $creditsApplied = 0.0;
+                $paymentAmount = round($giftCardAmount, 2);
+                $status = match (true) {
+                    $paymentAmount >= $totalAmount => Order::STATUS_PAID,
+                    $paymentAmount > 0 => Order::STATUS_PARTIALLY_PAID,
+                    default => Order::STATUS_PENDING,
+                };
+                $isPaid = $status === Order::STATUS_PAID;
+                $changeAmount = 0.0;
             } else {
                 $cashPayment = round((float) data_get($data, 'payment.amount', 0), 2);
                 $paymentMethod = data_get($data, 'payment.method');
@@ -401,6 +415,10 @@ class OrdersRepository implements OrderRepositoryInterface
                 'discount_group_id' => $customerDiscount['group']['id'] ?? null,
                 'discount_details' => $discountDetails,
                 'status' => $status,
+                'is_invoice' => $isInvoice,
+                'invoice_date' => $isInvoice
+                    ? Carbon::parse((string) ($data['invoice_date'] ?? now()->toDateString()))->toDateString()
+                    : null,
                 'total_quantity' => $totalQuantity,
                 'subtotal_amount' => $subtotalAmount,
                 'discount_amount' => $discountAmount,
@@ -422,7 +440,7 @@ class OrdersRepository implements OrderRepositoryInterface
 
             if ($existingOrder) {
                 if (! $isEstimate) {
-                    $orderAttributes['order_number'] = $this->makeOrderNumber('ORD');
+                    $orderAttributes['order_number'] = $this->makeOrderNumber($isInvoice ? 'INV' : 'ORD');
                 }
 
                 $existingOrder->forceFill($orderAttributes)->save();
@@ -430,8 +448,14 @@ class OrdersRepository implements OrderRepositoryInterface
                 $existingOrder->items()->createMany($orderItems);
                 $order = $existingOrder;
             } else {
+                $numberPrefix = match (true) {
+                    $isEstimate => 'EST',
+                    $isInvoice => 'INV',
+                    default => 'ORD',
+                };
+
                 $order = Order::query()->create(array_merge($orderAttributes, [
-                    'order_number' => $this->makeOrderNumber($isEstimate ? 'EST' : 'ORD'),
+                    'order_number' => $this->makeOrderNumber($numberPrefix),
                     'created_by' => $userId,
                 ]));
 
@@ -478,10 +502,136 @@ class OrdersRepository implements OrderRepositoryInterface
             return $order->load('items');
         });
 
+        $isInvoiceSave = ! empty($data['is_invoice']) && empty($data['is_estimate']);
+
         return [
             'success' => true,
-            'message' => "Order {$order->order_number} saved successfully.",
+            'message' => $isInvoiceSave
+                ? "Invoice {$order->order_number} saved successfully."
+                : "Order {$order->order_number} saved successfully.",
             'data' => $this->transformOrder($order),
+        ];
+    }
+
+    public function invoiceListing(array $filters = []): array
+    {
+        $page = (int) ($filters['page'] ?? 1);
+        $perPage = (int) ($filters['per_page'] ?? 20);
+        $dueDays = max(1, (int) ($filters['due_days'] ?? 30));
+
+        $query = Order::query()
+            ->where('is_invoice', true)
+            ->where('status', '!=', Order::STATUS_ESTIMATE)
+            ->with([
+                'customer:id,name,phone,email',
+                'items' => fn ($q) => $q->orderBy('id'),
+            ])
+            ->withCount('items');
+
+        $search = trim((string) ($filters['q'] ?? ''));
+        if ($search !== '') {
+            $query->where(function (Builder $builder) use ($search): void {
+                $this->applyDefaultListingSearch($builder, $search);
+            });
+        }
+
+        if (! empty($filters['date_from'])) {
+            $query->whereDate('invoice_date', '>=', Carbon::parse($filters['date_from'])->toDateString());
+        }
+
+        if (! empty($filters['date_to'])) {
+            $query->whereDate('invoice_date', '<=', Carbon::parse($filters['date_to'])->toDateString());
+        }
+
+        if (isset($filters['amount_min']) && $filters['amount_min'] !== '' && $filters['amount_min'] !== null) {
+            $query->where('total_amount', '>=', (float) $filters['amount_min']);
+        }
+
+        if (isset($filters['amount_max']) && $filters['amount_max'] !== '' && $filters['amount_max'] !== null) {
+            $query->where('total_amount', '<=', (float) $filters['amount_max']);
+        }
+
+        $status = $filters['status'] ?? null;
+        if (in_array($status, [Order::STATUS_PAID, Order::STATUS_PARTIALLY_PAID, Order::STATUS_PENDING], true)) {
+            $query->where('status', $status);
+        } else {
+            $query->whereIn('status', [
+                Order::STATUS_PAID,
+                Order::STATUS_PARTIALLY_PAID,
+                Order::STATUS_PENDING,
+                Order::STATUS_RETURNED,
+            ]);
+        }
+
+        $this->applyListingSort($query, $filters['sort'] ?? 'latest');
+
+        $total = $query->count();
+        $orders = $query
+            ->offset(($page - 1) * $perPage)
+            ->limit($perPage)
+            ->get();
+
+        return [
+            'invoices' => $orders->map(fn (Order $order) => $this->transformInvoiceListingOrder($order, $dueDays))->values(),
+            'pagination' => [
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total' => $total,
+                'last_page' => max(1, (int) ceil($total / $perPage)),
+                'has_more' => $page * $perPage < $total,
+            ],
+        ];
+    }
+
+    private function transformInvoiceListingOrder(Order $order, int $dueDays = 30): array
+    {
+        $status = $this->paymentAwareStatus($order);
+        $totalAmount = (float) $order->total_amount;
+        $paymentAmount = (float) $order->payment_amount;
+        $balanceDue = $status === Order::STATUS_PAID
+            ? 0.0
+            : max($totalAmount - $paymentAmount, 0);
+        $firstItem = $order->items->first();
+        $itemsCount = (int) ($order->items_count ?? $order->items->count());
+        $itemDescription = $firstItem
+            ? ($firstItem->product_name.($itemsCount > 1 ? ' (+'.($itemsCount - 1).' more)' : ''))
+            : '—';
+        $invoiceDate = $order->invoice_date
+            ? Carbon::parse($order->invoice_date)->startOfDay()
+            : $order->created_at;
+        $dueDate = $invoiceDate?->copy()->addDays($dueDays);
+
+        return [
+            'id' => $order->id,
+            'order_number' => $order->order_number,
+            'invoice_date' => $invoiceDate?->toDateString(),
+            'invoice_date_label' => $invoiceDate?->format('Y M d') ?? '—',
+            'due_date' => $dueDate?->toDateString(),
+            'due_date_label' => $dueDate?->format('Y M d') ?? '—',
+            'customer_name' => trim((string) ($order->customer?->name ?? '')) ?: 'Walk-In Customer',
+            'customer_email' => $order->customer?->email,
+            'item_description' => $itemDescription,
+            'unit_price' => (float) ($firstItem?->unit_price ?? 0),
+            'unit_price_label' => $this->moneyLabel((float) ($firstItem?->unit_price ?? 0)),
+            'quantity' => (float) ($firstItem?->quantity ?? 0),
+            'quantity_label' => number_format((float) ($firstItem?->quantity ?? 0), 3),
+            'tax_amount' => (float) $order->tax_amount,
+            'tax_amount_label' => $this->moneyLabel((float) $order->tax_amount),
+            'total_amount' => $totalAmount,
+            'total_amount_label' => $this->moneyLabel($totalAmount),
+            'service_fee_amount' => (float) $order->service_fee_amount,
+            'service_fee_amount_label' => $this->moneyLabel((float) $order->service_fee_amount),
+            'subtotal_amount' => (float) $order->subtotal_amount,
+            'subtotal_amount_label' => $this->moneyLabel((float) $order->subtotal_amount),
+            'balance_due' => $balanceDue,
+            'balance_due_label' => $this->moneyLabel($balanceDue),
+            'status' => $status,
+            'status_label' => $this->statusLabel($status),
+            'status_class' => $this->listingStatusClass($status),
+            'show_url' => route('employee.order.show', $order),
+            'print_url' => route('employee.order.print', $order),
+            'pdf_url' => route('employee.order.pdf', $order),
+            'share_url' => route('employee.order.share', $order),
         ];
     }
 

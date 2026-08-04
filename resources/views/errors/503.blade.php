@@ -1,0 +1,10 @@
+@extends('errors.layout')
+
+@section('title', 'Service Unavailable')
+@section('heading', 'Under Maintenance')
+@section('message', "Sorry for the inconvenience — we're performing maintenance right now. Please check back shortly.")
+@section('illustration', asset('assets/img/illustrations/page-misc-under-maintenance.png'))
+@section('illustration_width', '550')
+@section('illustration_class', 'mt-12')
+@section('button_class', '')
+@section('bg_wrapper_class', 'misc-under-maintenance-bg-wrapper')

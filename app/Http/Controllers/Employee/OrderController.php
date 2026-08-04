@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Repositories\Interface\OrderRepositoryInterface;
 use App\Services\CreditService;
+use App\Support\Currency;
 use App\Support\Tenancy\TenantContext;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
@@ -54,6 +55,7 @@ class OrderController extends Controller
             'returnDaysAfterPurchase' => $tenant?->returnDaysAfterPurchase() ?? 30,
             'creditMinRedeemBalance' => $tenant?->creditMinRedeemBalance() ?? 50.0,
             'editOrder' => $editOrder,
+            'invoiceMode' => false,
             'orderCards' => Card::query()
                 ->currentlyValid()
                 ->whereIn('card_type', [Card::TYPE_DISCOUNT, Card::TYPE_GIFT, Card::TYPE_REWARD])
@@ -189,11 +191,11 @@ class OrderController extends Controller
         $tenant = $order->tenant;
         $vehicleRequired = $tenant?->isVehicleRequired() ?? true;
 
-        $pdf = Pdf::loadView('employee.order.pdf', [
+        $pdf = Currency::using($tenant, fn () => Pdf::loadView('employee.order.pdf', [
             'order' => $order,
             'details' => $details,
             'vehicleRequired' => $vehicleRequired,
-        ]);
+        ]));
 
         $filename = $order->status === Order::STATUS_ESTIMATE
             ? "estimate-{$order->order_number}.pdf"
@@ -211,21 +213,21 @@ class OrderController extends Controller
         $email = $data['email'];
         $customer = $order->customer;
 
-        if ($customer) {
-            if ($customer->email !== $email) {
-                $customer->update(['email' => $email]);
-            }
+        // Prefill-only: save recipient onto customer when they have no email yet.
+        // Do not overwrite an existing customer email when sending to an alternate address.
+        if ($customer && blank($customer->email)) {
+            $customer->update(['email' => $email]);
         }
 
         $details = $this->orderRepository->details($order);
         $tenant = $order->tenant;
         $vehicleRequired = $tenant?->isVehicleRequired() ?? true;
 
-        $pdf = Pdf::loadView('employee.order.pdf', [
+        $pdf = Currency::using($tenant, fn () => Pdf::loadView('employee.order.pdf', [
             'order' => $order,
             'details' => $details,
             'vehicleRequired' => $vehicleRequired,
-        ]);
+        ]));
 
         $filename = $order->status === Order::STATUS_ESTIMATE
             ? "estimate-{$order->order_number}.pdf"

@@ -19,6 +19,8 @@
 
     const csrfToken = $('meta[name="csrf-token"]').attr('content');
     const orderSettings = window.orderSettings || { vehicleRequired: true, returnDaysAfterPurchase: 30 };
+    const invoiceMode = !!orderSettings.invoiceMode;
+    const invoicesIndexUrl = orderSettings.invoicesIndexUrl || '';
     $.ajaxSetup({
         headers: { 'X-CSRF-TOKEN': csrfToken, 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' },
     });
@@ -1322,6 +1324,67 @@
         return true;
     }
 
+    function cardIneligibleMessage(card, order, totals) {
+        if (!card || !order) {
+            return 'Start or select an order before applying a card.';
+        }
+
+        const minimumSpend = roundMoney(card.minimum_spend || 0);
+        if (totals.orderSubtotal + 0.001 < minimumSpend) {
+            return 'This card requires a minimum spend of ' + formatMoney(minimumSpend) + '.';
+        }
+
+        const linkedProductIds = Array.isArray(card.product_ids) && card.product_ids.length
+            ? card.product_ids
+            : (card.product_id ? [card.product_id] : []);
+
+        if (linkedProductIds.length) {
+            return 'Add at least one linked product to the cart before applying this card.';
+        }
+
+        return 'This card is not eligible for the current order.';
+    }
+
+    function cardPayloadFromOption($option) {
+        const productIdsAttr = String($option.attr('data-product-ids') || '').trim();
+
+        return {
+            id: Number($option.attr('data-card-id') || $option.data('card-id')) || 0,
+            product_id: $option.attr('data-product-id') || $option.data('product-id') || null,
+            product_ids: productIdsAttr
+                ? productIdsAttr.split(',').map(function (id) { return id.trim(); }).filter(Boolean)
+                : [],
+            minimum_spend: Number($option.attr('data-minimum-spend') || $option.data('minimum-spend')) || 0,
+            value: Number($option.attr('data-card-value') || $option.data('card-value')) || 0,
+            discount_type: $option.attr('data-discount-type') || $option.data('discount-type') || null,
+            name: String($option.attr('data-card-name') || $option.data('card-name') || ''),
+            type: String($option.attr('data-card-type') || $option.data('card-type') || '')
+        };
+    }
+
+    function syncOrderCardDrawers() {
+        const order = getActiveOrder();
+        const totals = totalsForOrder(order);
+
+        ['discount', 'gift', 'reward'].forEach(function (type) {
+            const applied = orderAppliedCard(order, type);
+            const $list = $('.order-card-list[data-card-type="' + type + '"]');
+
+            $list.find('.order-card-option').each(function () {
+                const $option = $(this);
+                const card = cardPayloadFromOption($option);
+                const eligible = cardIsEligible(card, order, totals);
+
+                $option.toggleClass('is-ineligible', !eligible);
+                // Keep radios enabled so newly added / product-linked cards stay clickable.
+                // Apply still validates eligibility and shows a clear reason.
+                $option.find('.order-card-radio')
+                    .prop('disabled', false)
+                    .prop('checked', !!applied && String(applied.id) === String(card.id));
+            });
+        });
+    }
+
     function giftCardAmountForOrder(order, totals) {
         const card = orderAppliedCard(order, 'gift');
 
@@ -1355,37 +1418,6 @@
         const requested = roundMoney(order.creditsApplied || 0);
 
         return roundMoney(Math.min(requested, customerCreditBalance(order), maxCredit));
-    }
-
-    function syncOrderCardDrawers() {
-        const order = getActiveOrder();
-        const totals = totalsForOrder(order);
-
-        ['discount', 'gift', 'reward'].forEach(function (type) {
-            const applied = orderAppliedCard(order, type);
-            const $list = $('.order-card-list[data-card-type="' + type + '"]');
-
-            $list.find('.order-card-option').each(function () {
-                const $option = $(this);
-                const productIdsAttr = String($option.attr('data-product-ids') || '').trim();
-                const card = {
-                    id: $option.data('card-id'),
-                    product_id: $option.data('product-id') || null,
-                    product_ids: productIdsAttr
-                        ? productIdsAttr.split(',').map(function (id) { return id.trim(); }).filter(Boolean)
-                        : [],
-                    minimum_spend: $option.data('minimum-spend'),
-                    value: $option.data('card-value'),
-                    discount_type: $option.data('discount-type') || null
-                };
-                const eligible = cardIsEligible(card, order, totals);
-
-                $option.toggleClass('is-ineligible', !eligible);
-                $option.find('.order-card-radio')
-                    .prop('disabled', !eligible)
-                    .prop('checked', !!applied && String(applied.id) === String(card.id));
-            });
-        });
     }
 
     function serviceFeeLabel(serviceFee) {
@@ -1849,6 +1881,7 @@
 
         updateSummary();
         syncVisibleProductCardCartCounts();
+        syncOrderCardDrawers();
     }
 
     function renderBreakdownHtml(label, amount, prefix, isDiscount) {
@@ -1996,6 +2029,10 @@
         $('.btn-pay .small').text(isSavingOrder ? 'Saving...' : 'Pay');
         $('.btn-save-estimate').prop('disabled', !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder);
         $('.btn-draft-print, .btn-draft-pdf, .btn-draft-share').prop('disabled', !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder);
+        $('.btn-save-invoice, .btn-save-send-invoice').prop(
+            'disabled',
+            !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder
+        );
         renderCustomerDiscountBanner(totals);
         renderDiscountDrawer();
         refreshOrderDropdown();
@@ -2006,7 +2043,9 @@
     }
 
     function currencySymbol() {
-        return (window.appCurrency && window.appCurrency.symbol) || '$';
+        return (window.appCurrencySymbol && window.appCurrencySymbol()) ||
+            (window.appCurrency && window.appCurrency.symbol) ||
+            '$';
     }
 
     function formatMoney(amount) {
@@ -2508,6 +2547,13 @@
     });
 
     $(document).on('click', '.btn-cancel-order', function () {
+        if (invoiceMode) {
+            if (invoicesIndexUrl) {
+                window.location.href = invoicesIndexUrl;
+            }
+            return;
+        }
+
         const order = getActiveOrder();
 
         if (!order) return;
@@ -2518,6 +2564,159 @@
         renderServiceFeeLines();
         renderCart();
         scheduleDraftCartSave();
+    });
+
+    function redirectToInvoicesListing() {
+        if (invoicesIndexUrl) {
+            window.location.href = invoicesIndexUrl;
+        }
+    }
+
+    function saveCurrentInvoice(options) {
+        options = options || {};
+        const saveUrl = (window.catalogRoutes || {}).save;
+
+        if (isSavingOrder || !validateOrderForSave()) {
+            return $.Deferred().reject().promise();
+        }
+
+        if (!saveUrl) {
+            notifyOrder('error', 'Order save route is missing.');
+            return $.Deferred().reject().promise();
+        }
+
+        const payload = currentOrderPayload();
+        if (!payload) {
+            return $.Deferred().reject().promise();
+        }
+
+        payload.is_invoice = true;
+        delete payload.is_estimate;
+        delete payload.payment;
+
+        const invoiceDate = ($('#invoice_date').val() || '').trim();
+        payload.invoice_date = invoiceDate || new Date().toISOString().slice(0, 10);
+
+        if (!payload.invoice_date) {
+            notifyOrder('error', 'Please select an invoice date.');
+            return $.Deferred().reject().promise();
+        }
+
+        isSavingOrder = true;
+        updateSummary();
+
+        return $.ajax({
+            url: saveUrl,
+            method: 'POST',
+            data: JSON.stringify(payload),
+            contentType: 'application/json',
+        }).done(function (response) {
+            notifyOrder('success', response.message || 'Invoice saved successfully.');
+
+            const afterClear = function () {
+                if (typeof options.onSaved === 'function') {
+                    options.onSaved(response);
+                }
+            };
+
+            resetSavedOrder().always(afterClear);
+        }).fail(function (xhr) {
+            notifyOrder('error', orderErrorMessage(xhr));
+        }).always(function () {
+            isSavingOrder = false;
+            updateSummary();
+        });
+    }
+
+    function emailSavedInvoice(orderId, email) {
+        const shareUrl = routeForSavedEstimate('share', orderId);
+
+        if (!shareUrl) {
+            return $.Deferred().reject({ message: 'Invoice share route is missing.' }).promise();
+        }
+
+        return $.ajax({
+            url: shareUrl,
+            method: 'POST',
+            data: { email: email },
+        });
+    }
+
+    $(document).on('click', '.btn-save-invoice', function () {
+        if (!invoiceMode) return;
+
+        saveCurrentInvoice({
+            onSaved: function () {
+                setTimeout(redirectToInvoicesListing, 700);
+            },
+        });
+    });
+
+    function openInvoiceSaveSendModal() {
+        const order = getActiveOrder();
+        const email = (order && order.customer && order.customer.email) ? String(order.customer.email).trim() : '';
+        const $input = $('#invoice_save_send_email');
+
+        $input.val(email);
+        const modalEl = document.getElementById('invoiceSaveSendModal');
+        if (modalEl && window.bootstrap) {
+            window.bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            setTimeout(function () {
+                $input.trigger('focus').select();
+            }, 200);
+        }
+    }
+
+    $(document).on('click', '.btn-save-send-invoice', function () {
+        if (!invoiceMode) return;
+        if (isSavingOrder || !validateOrderForSave()) return;
+
+        openInvoiceSaveSendModal();
+    });
+
+    $(document).on('submit', '#invoice-save-send-form', function (event) {
+        event.preventDefault();
+        if (!invoiceMode) return;
+
+        const email = ($('#invoice_save_send_email').val() || '').trim();
+        const $submit = $('.btn-submit-invoice-save-send');
+
+        if (!email) {
+            notifyOrder('error', 'An email address is required to send the invoice.');
+            return;
+        }
+
+        $submit.prop('disabled', true);
+
+        saveCurrentInvoice({
+            onSaved: function (response) {
+                const orderId = response.data && response.data.id;
+                if (!orderId) {
+                    $submit.prop('disabled', false);
+                    redirectToInvoicesListing();
+                    return;
+                }
+
+                emailSavedInvoice(orderId, email)
+                    .done(function (shareResponse) {
+                        notifyOrder('success', shareResponse.message || 'Invoice emailed successfully.');
+                        const modalEl = document.getElementById('invoiceSaveSendModal');
+                        if (modalEl && window.bootstrap) {
+                            const instance = window.bootstrap.Modal.getInstance(modalEl);
+                            if (instance) instance.hide();
+                        }
+                    })
+                    .fail(function (xhr) {
+                        notifyOrder('error', orderErrorMessage(xhr) || 'Invoice saved but email failed.');
+                    })
+                    .always(function () {
+                        $submit.prop('disabled', false);
+                        setTimeout(redirectToInvoicesListing, 800);
+                    });
+            },
+        }).fail(function () {
+            $submit.prop('disabled', false);
+        });
     });
 
     $(document).on('click', '.add-order-btn', function (event) {
@@ -2785,6 +2984,21 @@
         syncOrderCardDrawers();
     });
 
+    // Dynamically prepended cards: force radio selection on card click.
+    $(document).on('click', '.order-card-option', function (event) {
+        if ($(event.target).closest('a, button').length) {
+            return;
+        }
+
+        const $option = $(this);
+        const $radio = $option.find('.order-card-radio').first();
+        if (!$radio.length) {
+            return;
+        }
+
+        $radio.prop('checked', true).trigger('change');
+    });
+
     $(document).on('click', '.apply-order-card', function () {
         const type = String($(this).data('card-type') || '');
         const order = getActiveOrder();
@@ -2796,23 +3010,12 @@
             return;
         }
 
-        const productIdsAttr = String($selected.attr('data-product-ids') || '').trim();
-        const card = {
-            id: Number($selected.data('card-id')),
-            type: type,
-            name: String($selected.data('card-name') || ''),
-            value: Number($selected.data('card-value')) || 0,
-            discount_type: $selected.data('discount-type') || null,
-            minimum_spend: Number($selected.data('minimum-spend')) || 0,
-            product_id: $selected.data('product-id') || null,
-            product_ids: productIdsAttr
-                ? productIdsAttr.split(',').map(function (id) { return id.trim(); }).filter(Boolean)
-                : []
-        };
+        const card = cardPayloadFromOption($selected);
+        card.type = type;
         const totals = totalsForOrder(order);
 
         if (!cardIsEligible(card, order, totals)) {
-            notifyOrder('warning', 'This card is not eligible for the current order.');
+            notifyOrder('warning', cardIneligibleMessage(card, order, totals));
             return;
         }
 

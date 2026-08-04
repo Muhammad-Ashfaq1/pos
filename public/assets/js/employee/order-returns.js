@@ -41,7 +41,9 @@ $(function () {
     }
 
     function formatMoney(amount) {
-        const symbol = (window.appCurrency && window.appCurrency.symbol) || '$';
+        const symbol = (window.appCurrencySymbol && window.appCurrencySymbol()) ||
+            (window.appCurrency && window.appCurrency.symbol) ||
+            '$';
         return symbol + parseFloat(amount || 0).toFixed(2);
     }
 

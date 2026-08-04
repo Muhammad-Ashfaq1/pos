@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Tenant;
 use App\Repositories\Interface\ShopSettingsRepositoryInterface;
+use App\Support\Currency;
 
 class ShopSettingsRepository implements ShopSettingsRepositoryInterface
 {
@@ -114,6 +115,8 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
         ]);
 
         $this->persistTenant($tenant);
+
+        Currency::flushCache();
 
         return [
             'success' => true,

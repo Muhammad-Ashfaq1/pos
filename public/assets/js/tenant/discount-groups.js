@@ -75,14 +75,17 @@ $(function () {
                 const isUpdate = id !== '';
                 $form[0].reset();
 
+                const currencySymbol = (window.appCurrencySymbol && window.appCurrencySymbol()) ||
+                    (window.appCurrency && window.appCurrency.symbol) ||
+                    '$';
                 const rowHtml = `
                     <td>${response.data.name}</td>
                     <td>${response.data.slug}</td>
-                    <td>${response.data.type === 'percentage' ? response.data.value + '%' : '$' + response.data.value}</td>
+                    <td>${response.data.type === 'percentage' ? response.data.value + '%' : currencySymbol + response.data.value}</td>
                     <td>${response.data.type}</td>
-                    <td>${response.data.type === 'fixed' ? '$' + response.data.min_limit : '-'}</td>
+                    <td>${response.data.type === 'fixed' ? currencySymbol + response.data.min_limit : '-'}</td>
                     <td>${response.data.earns_credit
-                        ? `<span class="badge bg-label-info">${response.data.credit_earn_type === 'percentage' ? response.data.credit_earn_rate + '%' : '$' + response.data.credit_earn_rate}</span>`
+                        ? `<span class="badge bg-label-info">${response.data.credit_earn_type === 'percentage' ? response.data.credit_earn_rate + '%' : currencySymbol + response.data.credit_earn_rate}</span>`
                         : '<span class="text-muted">-</span>'}</td>
                     <td class="text-center">
                         <span class="badge bg-label-${response.data.is_active ? 'success' : 'danger'}">${response.data.is_active
@@ -180,7 +183,9 @@ $(function () {
     $('#earns_credit').on('change', toggleCreditFields);
 
     // Switch earn-rate label between % and currency symbol
-    const currencySymbol = (window.appCurrency && window.appCurrency.symbol) ? window.appCurrency.symbol : '$';
+    const currencySymbol = (window.appCurrencySymbol && window.appCurrencySymbol()) ||
+        (window.appCurrency && window.appCurrency.symbol) ||
+        '$';
     $('#credit_earn_type').on('change', function () {
         $('#credit_earn_rate_label').text(
             $(this).val() === 'fixed' ? `Earn Amount (${currencySymbol})` : 'Earn Rate (%)'

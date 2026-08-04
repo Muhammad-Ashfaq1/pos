@@ -35,7 +35,9 @@
   function renderCharts(data) {
     if (typeof ApexCharts === 'undefined' || !data) return;
 
-    var sym = data.currencySymbol || '$';
+    var sym = data.currencySymbol || (window.appCurrencySymbol && window.appCurrencySymbol()) ||
+        (window.appCurrency && window.appCurrency.symbol) ||
+        '$';
     function money(n) {
       return sym + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }

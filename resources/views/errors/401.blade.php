@@ -1,0 +1,11 @@
+@extends('errors.layout')
+
+@section('title', 'Unauthorized')
+@section('code', '401')
+@section('heading', 'You are not authorized')
+@section('message', 'Please sign in with an account that has access to this page.')
+@section('illustration', asset('assets/img/illustrations/page-misc-you-are-not-authorized.png'))
+@section('illustration_width', '170')
+@section('illustration_class', 'mt-12')
+@section('action_label', 'Go to login')
+@section('action_url', route('login'))

@@ -1,6 +1,6 @@
 @extends('layouts.employee-portal')
 
-@section('title', 'Create New Order')
+@section('title', !empty($invoiceMode) ? 'Create Invoice' : 'Create New Order')
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}" />
@@ -8,8 +8,14 @@
 @endpush
 
 @section('content')
-    <div class="employee-orders-page">
-        <x-employee.page-header title="New Order" :back-url="route('employee.dashboard')" back-title="Back to dashboard" />
+    @php
+        $invoiceMode = ! empty($invoiceMode);
+        $pageBackUrl = $invoiceMode ? route('employee.invoices.index') : route('employee.dashboard');
+        $pageBackTitle = $invoiceMode ? 'Back to invoices' : 'Back to dashboard';
+        $pageTitle = $invoiceMode ? 'Invoices' : 'New Order';
+    @endphp
+    <div class="employee-orders-page" @if($invoiceMode) data-invoice-mode="1" @endif>
+        <x-employee.page-header :title="$pageTitle" :back-url="$pageBackUrl" :back-title="$pageBackTitle" />
 
         <div class="order-entry-screen">
 
@@ -34,7 +40,20 @@
                                 <div class="customer-discount-banner d-none mt-2"></div>
                             </div>
 
+                            @if($invoiceMode)
                             <div class="mb-3">
+                                <label for="invoice_date" class="form-label">Invoice Date <span class="text-danger">*</span></label>
+                                <input
+                                    type="date"
+                                    id="invoice_date"
+                                    name="invoice_date"
+                                    class="form-control"
+                                    value="{{ now()->toDateString() }}"
+                                    required />
+                            </div>
+                            @endif
+
+                            <div class="mb-3 @if($invoiceMode) d-none @endif">
                                 <div class="d-flex justify-content-between">
                                     <label for="order_type_filter" class="form-label">Orders</label>
                                     <a class="text-primary add-order-btn" href="javascript:void(0);">+ Add Order</a>
@@ -123,6 +142,33 @@
                                     <h5 class="fw-bold text-primary summary-total">@money(0)</h5>
                                 </div>
 
+                                @if($invoiceMode)
+                                <div class="row g-2 mb-3 align-items-stretch">
+                                    <div class="col-4">
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-danger w-100 h-100 fw-bold btn-cancel-order d-flex flex-column align-items-center cursor-pointer justify-content-center py-2">
+                                            <span class="fs-6">Cancel</span>
+                                        </button>
+                                    </div>
+                                    <div class="col-4">
+                                        <button
+                                            type="button"
+                                            class="btn btn-primary w-100 h-100 fw-bold btn-save-invoice d-flex flex-column align-items-center cursor-pointer justify-content-center py-2"
+                                            disabled>
+                                            <span class="fs-6">Save</span>
+                                        </button>
+                                    </div>
+                                    <div class="col-4">
+                                        <button
+                                            type="button"
+                                            class="btn btn-primary w-100 h-100 fw-bold btn-save-send-invoice d-flex flex-column align-items-center cursor-pointer justify-content-center py-2 px-1"
+                                            disabled>
+                                            <span class="fs-6 lh-sm text-center">Save &amp; Send Email</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                @else
                                 <div class="row g-2 mb-3 align-items-stretch">
                                     <div class="col-6">
                                         <button
@@ -166,6 +212,7 @@
                                         </button>
                                     </div>
                                 </div>
+                                @endif
 
                                 <div class="d-flex justify-content-between mt-3">
                                     <div class="text-primary cursor-pointer d-flex flex-column align-items-center"
@@ -424,7 +471,7 @@
                         <div class="card-body d-flex flex-column">
                             <h5 class="fw-bold border-bottom pb-3 mb-4">Payment Amount</h5>
 
-                            <div class="payment-amount-display mb-3">$</div>
+                            <div class="payment-amount-display mb-3">@currency</div>
                             <div class="d-flex justify-content-between small mb-4">
                                 <span>Remaining: <strong class="payment-remaining">@money(0)</strong></span>
                                 <span>Change: <strong class="payment-change-due">@money(0)</strong></span>
@@ -529,6 +576,42 @@
             </div>
         </div>
     </div>
+
+    @if(! empty($invoiceMode))
+    <div class="modal fade" id="invoiceSaveSendModal" tabindex="-1" aria-labelledby="invoiceSaveSendModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-start">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold" id="invoiceSaveSendModalLabel">Save &amp; Send Invoice</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="invoice-save-send-form">
+                    <div class="modal-body">
+                        <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" role="alert">
+                            <i class="ti tabler-info-circle me-2 fs-5"></i>
+                            <span>This saves the invoice, then emails the PDF. You can edit the recipient address before sending.</span>
+                        </div>
+                        <label for="invoice_save_send_email" class="form-label fw-bold">
+                            Recipient Email <span class="text-danger">*</span>
+                        </label>
+                        <input
+                            type="email"
+                            id="invoice_save_send_email"
+                            name="email"
+                            class="form-control"
+                            required
+                            placeholder="name@example.com"
+                            autocomplete="email">
+                    </div>
+                    <div class="modal-footer border-top">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary fw-bold btn-submit-invoice-save-send">Save &amp; Send</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
 @endsection
 
 @push('page-script')
@@ -554,6 +637,8 @@
             vehicleRequired: @json($vehicleRequired),
             returnDaysAfterPurchase: @json($returnDaysAfterPurchase),
             creditMinRedeemBalance: @json((float) ($creditMinRedeemBalance ?? 50)),
+            invoiceMode: @json(!empty($invoiceMode)),
+            invoicesIndexUrl: @json(route('employee.invoices.index')),
         };
         window.editOrder = @json($editOrder ?? null);
         window.employeeCards = {

@@ -3,6 +3,8 @@
 namespace App\Support;
 
 use App\Models\Tenant;
+use App\Support\Tenancy\TenantContext;
+use Closure;
 
 /**
  * Central currency resolver/formatter. The active currency is read from the
@@ -58,6 +60,9 @@ class Currency
     /** @var array<int|string, string> per-tenant resolved symbols for the current request. */
     private static array $symbolCache = [];
 
+    /** Temporary tenant override (PDF/mail/jobs that render outside request tenancy). */
+    private static ?Tenant $overrideTenant = null;
+
     /**
      * The active ISO currency code for the given (or current) tenant.
      */
@@ -66,19 +71,22 @@ class Currency
         $tenant ??= self::currentTenant();
         $code = $tenant?->setting('regional.currency', self::DEFAULT_CODE);
 
-        return is_string($code) && $code !== '' ? $code : self::DEFAULT_CODE;
+        return is_string($code) && $code !== '' ? strtoupper($code) : self::DEFAULT_CODE;
     }
 
     /**
      * The display symbol. Pass an explicit code, or omit to use the current tenant.
+     * When regional currency is unset / unknown, defaults to `$`.
      */
-    public static function symbol(?string $code = null): string
+    public static function symbol(?string $code = null, ?Tenant $tenant = null): string
     {
         if ($code !== null) {
-            return self::SYMBOLS[$code] ?? self::DEFAULT_SYMBOL;
+            $normalized = strtoupper($code);
+
+            return self::SYMBOLS[$normalized] ?? self::DEFAULT_SYMBOL;
         }
 
-        $tenant = self::currentTenant();
+        $tenant ??= self::currentTenant();
         $key = $tenant?->getKey() ?? 'central';
 
         return self::$symbolCache[$key] ??= self::symbol(self::code($tenant));
@@ -86,13 +94,41 @@ class Currency
 
     /**
      * Format an amount as currency, e.g. "$1,234.50". Pass $withSymbol = false
-     * for the number only.
+     * for the number only. Optionally pass a tenant when tenancy is not active
+     * (queued mail, PDF for a specific shop, etc.).
      */
-    public static function format(int|float|string|null $amount, bool $withSymbol = true): string
+    public static function format(int|float|string|null $amount, bool $withSymbol = true, ?Tenant $tenant = null): string
     {
         $value = number_format((float) $amount, 2);
 
-        return $withSymbol ? self::symbol().$value : $value;
+        if (! $withSymbol) {
+            return $value;
+        }
+
+        return self::symbol(null, $tenant).$value;
+    }
+
+    /**
+     * Run a callback with an explicit tenant for currency resolution.
+     * Useful when rendering PDFs/emails for an order's shop.
+     *
+     * @template TReturn
+     *
+     * @param  Closure(): TReturn  $callback
+     * @return TReturn
+     */
+    public static function using(?Tenant $tenant, Closure $callback): mixed
+    {
+        $previous = self::$overrideTenant;
+        self::$overrideTenant = $tenant;
+        self::flushCache();
+
+        try {
+            return $callback();
+        } finally {
+            self::$overrideTenant = $previous;
+            self::flushCache();
+        }
     }
 
     /**
@@ -105,8 +141,22 @@ class Currency
 
     private static function currentTenant(): ?Tenant
     {
-        $tenant = function_exists('tenant') ? tenant() : null;
+        if (self::$overrideTenant instanceof Tenant) {
+            return self::$overrideTenant;
+        }
 
-        return $tenant instanceof Tenant ? $tenant : null;
+        $tenant = function_exists('tenant') ? tenant() : null;
+        if ($tenant instanceof Tenant) {
+            return $tenant;
+        }
+
+        if (app()->bound(TenantContext::class)) {
+            $fromContext = app(TenantContext::class)->current();
+            if ($fromContext instanceof Tenant) {
+                return $fromContext;
+            }
+        }
+
+        return null;
     }
 }
