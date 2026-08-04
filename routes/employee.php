@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Employee\OrderCartController;
 use App\Http\Controllers\Employee\OrderController;
+use App\Http\Controllers\Employee\InvoiceController;
 use App\Http\Controllers\Employee\PanelController;
 use App\Http\Controllers\Employee\CardController;
 use App\Http\Controllers\ReportController;
@@ -31,6 +32,20 @@ Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.
         Route::post('/cards', [CardController::class, 'store'])
             ->middleware('permission:cards.create|cards.manage')
             ->name('cards.store');
+
+        Route::prefix('invoices')
+            ->name('invoices.')
+            ->group(function () {
+                Route::get('/', [InvoiceController::class, 'index'])
+                    ->middleware('permission:orders.view')
+                    ->name('index');
+                Route::get('/listing', [InvoiceController::class, 'listing'])
+                    ->middleware('permission:orders.view')
+                    ->name('listing');
+                Route::get('/create', [InvoiceController::class, 'create'])
+                    ->middleware('permission:orders.create|pos.bill')
+                    ->name('create');
+            });
 
         Route::prefix('order')
             ->name('order.')

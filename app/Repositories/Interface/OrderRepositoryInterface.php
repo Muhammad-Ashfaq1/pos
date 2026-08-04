@@ -9,6 +9,8 @@ interface OrderRepositoryInterface
 {
     public function listing(array $filters = []): array;
 
+    public function invoiceListing(array $filters = []): array;
+
     public function details(Order $order): array;
 
     public function editDraft(Order $order): array;

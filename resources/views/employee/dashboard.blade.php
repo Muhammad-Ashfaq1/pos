@@ -17,7 +17,7 @@
         ['label' => 'Orders', 'icon' => 'tabler-clipboard-data', 'url' => route('employee.order.index'), 'permission' => 'orders.view'],
         ['label' => 'Returns', 'icon' => 'tabler-arrow-back-up', 'url' => route('employee.order.returns'), 'permission' => 'orders.view'],
         ['label' => 'Product Setup', 'icon' => 'tabler-package-import', 'url' => route('employee.products.index'), 'permission' => 'product.create'],
-        ['label' => 'Invoices', 'icon' => 'tabler-file-invoice'],
+        ['label' => 'Invoices', 'icon' => 'tabler-file-invoice', 'url' => route('employee.invoices.index'), 'permission' => 'orders.view'],
         ['label' => 'Discounts', 'icon' => 'tabler-ticket', 'url' => route('employee.cards.type', 'discount'), 'permission' => ['cards.view', 'cards.manage']],
     ];
 

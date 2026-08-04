@@ -20,7 +20,7 @@ class SaveOrderRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if ($this->boolean('is_estimate')) {
+        if ($this->boolean('is_estimate') || $this->boolean('is_invoice')) {
             $this->offsetUnset('payment');
         }
 
@@ -136,9 +136,15 @@ class SaveOrderRequest extends FormRequest
                 ),
             ],
             'is_estimate' => ['nullable', 'boolean'],
-            'payment' => [Rule::requiredIf(! $this->boolean('is_estimate')), 'array'],
-            'payment.method' => [Rule::requiredIf(! $this->boolean('is_estimate')), 'sometimes', 'string', Rule::in(['cash', 'card', 'check'])],
-            'payment.amount' => [Rule::requiredIf(! $this->boolean('is_estimate')), 'sometimes', 'numeric', 'min:0'],
+            'is_invoice' => ['nullable', 'boolean'],
+            'invoice_date' => [
+                Rule::requiredIf($this->boolean('is_invoice')),
+                'nullable',
+                'date',
+            ],
+            'payment' => [Rule::requiredIf($this->requiresPayment()), 'array'],
+            'payment.method' => [Rule::requiredIf($this->requiresPayment()), 'sometimes', 'string', Rule::in(['cash', 'card', 'check'])],
+            'payment.amount' => [Rule::requiredIf($this->requiresPayment()), 'sometimes', 'numeric', 'min:0'],
             'payment.credits_applied' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'tenant_id' => ['prohibited'],
@@ -241,6 +247,11 @@ class SaveOrderRequest extends FormRequest
             'payment.amount.required' => 'Please enter the payment amount.',
             'payment.amount.min' => 'Payment amount cannot be negative.',
         ];
+    }
+
+    private function requiresPayment(): bool
+    {
+        return ! $this->boolean('is_estimate') && ! $this->boolean('is_invoice');
     }
 
     private function normalizeNullableString(mixed $value): ?string

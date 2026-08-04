@@ -114,11 +114,11 @@
                             <a href="{{ url('/') }}" class="brand-link">
                                 <img
                                     src="{{ asset('assets/img/logo/occ.png') }}"
-                                    alt="{{ config('app.name') }}"
+                                    alt="{{ $brandName ?? config('app.name') }}"
                                     width="36"
                                     height="36"
                                     style="vertical-align: middle; margin-right: 10px; border-radius: 8px;" />
-                                <span class="brand-name">{{ config('app.name') }}</span>
+                                <span class="brand-name">{{ $brandName ?? config('app.name') }}</span>
                             </a>
                         </td>
                     </tr>
@@ -133,8 +133,12 @@
                     <tr>
                         <td class="email-footer">
                             <p class="email-footer-text">
-                                {{ config('app.name') }} &mdash; Automotive POS &amp; operations<br />
-                                If you did not expect this email, you can safely ignore it.
+                                @if(! empty($footerLines) && is_array($footerLines))
+                                    {!! implode('<br />', array_map('e', $footerLines)) !!}
+                                @else
+                                    {{ config('app.name') }} &mdash; Automotive POS &amp; operations<br />
+                                    If you did not expect this email, you can safely ignore it.
+                                @endif
                             </p>
                         </td>
                     </tr>

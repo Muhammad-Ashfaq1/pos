@@ -53,6 +53,7 @@ class OrderController extends Controller
             'returnDaysAfterPurchase' => $tenant?->returnDaysAfterPurchase() ?? 30,
             'creditMinRedeemBalance' => $tenant?->creditMinRedeemBalance() ?? 50.0,
             'editOrder' => $editOrder,
+            'invoiceMode' => false,
             'orderCards' => Card::query()
                 ->currentlyValid()
                 ->whereIn('card_type', [Card::TYPE_DISCOUNT, Card::TYPE_GIFT, Card::TYPE_REWARD])
@@ -205,10 +206,10 @@ class OrderController extends Controller
         $email = $data['email'];
         $customer = $order->customer;
 
-        if ($customer) {
-            if ($customer->email !== $email) {
-                $customer->update(['email' => $email]);
-            }
+        // Prefill-only: save recipient onto customer when they have no email yet.
+        // Do not overwrite an existing customer email when sending to an alternate address.
+        if ($customer && blank($customer->email)) {
+            $customer->update(['email' => $email]);
         }
 
         $details = $this->orderRepository->details($order);

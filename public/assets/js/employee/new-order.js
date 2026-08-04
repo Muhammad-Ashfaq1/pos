@@ -19,6 +19,8 @@
 
     const csrfToken = $('meta[name="csrf-token"]').attr('content');
     const orderSettings = window.orderSettings || { vehicleRequired: true, returnDaysAfterPurchase: 30 };
+    const invoiceMode = !!orderSettings.invoiceMode;
+    const invoicesIndexUrl = orderSettings.invoicesIndexUrl || '';
     $.ajaxSetup({
         headers: { 'X-CSRF-TOKEN': csrfToken, 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' },
     });
@@ -1993,6 +1995,10 @@
         $('.btn-pay .small').text(isSavingOrder ? 'Saving...' : 'Pay');
         $('.btn-save-estimate').prop('disabled', !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder);
         $('.btn-draft-print, .btn-draft-pdf, .btn-draft-share').prop('disabled', !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder);
+        $('.btn-save-invoice, .btn-save-send-invoice').prop(
+            'disabled',
+            !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder
+        );
         renderCustomerDiscountBanner(totals);
         renderDiscountDrawer();
         refreshOrderDropdown();
@@ -2502,6 +2508,13 @@
     });
 
     $(document).on('click', '.btn-cancel-order', function () {
+        if (invoiceMode) {
+            if (invoicesIndexUrl) {
+                window.location.href = invoicesIndexUrl;
+            }
+            return;
+        }
+
         const order = getActiveOrder();
 
         if (!order) return;
@@ -2512,6 +2525,159 @@
         renderServiceFeeLines();
         renderCart();
         scheduleDraftCartSave();
+    });
+
+    function redirectToInvoicesListing() {
+        if (invoicesIndexUrl) {
+            window.location.href = invoicesIndexUrl;
+        }
+    }
+
+    function saveCurrentInvoice(options) {
+        options = options || {};
+        const saveUrl = (window.catalogRoutes || {}).save;
+
+        if (isSavingOrder || !validateOrderForSave()) {
+            return $.Deferred().reject().promise();
+        }
+
+        if (!saveUrl) {
+            notifyOrder('error', 'Order save route is missing.');
+            return $.Deferred().reject().promise();
+        }
+
+        const payload = currentOrderPayload();
+        if (!payload) {
+            return $.Deferred().reject().promise();
+        }
+
+        payload.is_invoice = true;
+        delete payload.is_estimate;
+        delete payload.payment;
+
+        const invoiceDate = ($('#invoice_date').val() || '').trim();
+        payload.invoice_date = invoiceDate || new Date().toISOString().slice(0, 10);
+
+        if (!payload.invoice_date) {
+            notifyOrder('error', 'Please select an invoice date.');
+            return $.Deferred().reject().promise();
+        }
+
+        isSavingOrder = true;
+        updateSummary();
+
+        return $.ajax({
+            url: saveUrl,
+            method: 'POST',
+            data: JSON.stringify(payload),
+            contentType: 'application/json',
+        }).done(function (response) {
+            notifyOrder('success', response.message || 'Invoice saved successfully.');
+
+            const afterClear = function () {
+                if (typeof options.onSaved === 'function') {
+                    options.onSaved(response);
+                }
+            };
+
+            resetSavedOrder().always(afterClear);
+        }).fail(function (xhr) {
+            notifyOrder('error', orderErrorMessage(xhr));
+        }).always(function () {
+            isSavingOrder = false;
+            updateSummary();
+        });
+    }
+
+    function emailSavedInvoice(orderId, email) {
+        const shareUrl = routeForSavedEstimate('share', orderId);
+
+        if (!shareUrl) {
+            return $.Deferred().reject({ message: 'Invoice share route is missing.' }).promise();
+        }
+
+        return $.ajax({
+            url: shareUrl,
+            method: 'POST',
+            data: { email: email },
+        });
+    }
+
+    $(document).on('click', '.btn-save-invoice', function () {
+        if (!invoiceMode) return;
+
+        saveCurrentInvoice({
+            onSaved: function () {
+                setTimeout(redirectToInvoicesListing, 700);
+            },
+        });
+    });
+
+    function openInvoiceSaveSendModal() {
+        const order = getActiveOrder();
+        const email = (order && order.customer && order.customer.email) ? String(order.customer.email).trim() : '';
+        const $input = $('#invoice_save_send_email');
+
+        $input.val(email);
+        const modalEl = document.getElementById('invoiceSaveSendModal');
+        if (modalEl && window.bootstrap) {
+            window.bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            setTimeout(function () {
+                $input.trigger('focus').select();
+            }, 200);
+        }
+    }
+
+    $(document).on('click', '.btn-save-send-invoice', function () {
+        if (!invoiceMode) return;
+        if (isSavingOrder || !validateOrderForSave()) return;
+
+        openInvoiceSaveSendModal();
+    });
+
+    $(document).on('submit', '#invoice-save-send-form', function (event) {
+        event.preventDefault();
+        if (!invoiceMode) return;
+
+        const email = ($('#invoice_save_send_email').val() || '').trim();
+        const $submit = $('.btn-submit-invoice-save-send');
+
+        if (!email) {
+            notifyOrder('error', 'An email address is required to send the invoice.');
+            return;
+        }
+
+        $submit.prop('disabled', true);
+
+        saveCurrentInvoice({
+            onSaved: function (response) {
+                const orderId = response.data && response.data.id;
+                if (!orderId) {
+                    $submit.prop('disabled', false);
+                    redirectToInvoicesListing();
+                    return;
+                }
+
+                emailSavedInvoice(orderId, email)
+                    .done(function (shareResponse) {
+                        notifyOrder('success', shareResponse.message || 'Invoice emailed successfully.');
+                        const modalEl = document.getElementById('invoiceSaveSendModal');
+                        if (modalEl && window.bootstrap) {
+                            const instance = window.bootstrap.Modal.getInstance(modalEl);
+                            if (instance) instance.hide();
+                        }
+                    })
+                    .fail(function (xhr) {
+                        notifyOrder('error', orderErrorMessage(xhr) || 'Invoice saved but email failed.');
+                    })
+                    .always(function () {
+                        $submit.prop('disabled', false);
+                        setTimeout(redirectToInvoicesListing, 800);
+                    });
+            },
+        }).fail(function () {
+            $submit.prop('disabled', false);
+        });
     });
 
     $(document).on('click', '.add-order-btn', function (event) {

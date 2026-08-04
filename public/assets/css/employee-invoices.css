@@ -1,0 +1,119 @@
+.employee-invoices-page {
+    margin: 0 auto;
+    padding: 0.35rem 0 2rem;
+    color: #111827;
+}
+
+.employee-invoices-card {
+    border-radius: 0.85rem;
+}
+
+.employee-invoices-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+}
+
+.employee-invoices-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.employee-invoices-link-btn {
+    text-decoration: none;
+    color: #312e81;
+    font-weight: 600;
+    padding: 0.35rem 0.5rem;
+}
+
+.employee-invoices-link-btn:hover {
+    color: #262363;
+}
+
+.employee-invoices-search {
+    max-width: 28rem;
+}
+
+.employee-invoices-table-wrap {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.75rem;
+}
+
+.employee-invoices-table {
+    min-width: 1100px;
+    margin-bottom: 0;
+}
+
+.employee-invoices-table thead th {
+    white-space: nowrap;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: #64748b;
+    background: #f8fafc;
+    border-bottom-width: 1px;
+    padding: 0.85rem 0.75rem;
+}
+
+.employee-invoices-table tbody td {
+    white-space: nowrap;
+    font-size: 0.9rem;
+    padding: 0.85rem 0.75rem;
+    vertical-align: middle;
+}
+
+.employee-invoices-table tbody tr {
+    cursor: pointer;
+}
+
+.employee-invoices-table tbody tr:hover {
+    background: rgba(115, 103, 240, 0.04);
+}
+
+.employee-invoices-id {
+    font-weight: 700;
+    color: #312e81;
+}
+
+.employee-invoices-action-btn {
+    width: 2.1rem;
+    height: 2.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 0.5rem;
+    background: #eef2ff;
+    color: #4338ca;
+    text-decoration: none;
+}
+
+.employee-invoices-action-btn:hover {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.employee-invoices-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.employee-invoice-filters-drawer {
+    width: min(22rem, 100vw);
+}
+
+.employee-invoice-filters-drawer .offcanvas-body {
+    min-height: 100%;
+}
+
+@media (max-width: 767.98px) {
+    .employee-invoices-search {
+        max-width: none;
+    }
+}
