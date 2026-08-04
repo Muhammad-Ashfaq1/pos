@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\Auth\QueuedResetPassword;
 use App\Notifications\Auth\QueuedVerifyEmail;
 use App\Support\Permissions\PermissionTeamScope;
 use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
@@ -126,6 +127,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function sendEmailVerificationNotification(): void
     {
         $this->notify(new QueuedVerifyEmail);
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new QueuedResetPassword($token));
     }
 
     public function assignPrimaryRole(string $role, ?int $tenantId = null): void

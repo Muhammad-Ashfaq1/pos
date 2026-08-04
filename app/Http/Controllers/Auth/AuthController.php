@@ -105,15 +105,18 @@ class AuthController extends Controller
             : back()->withInput($request->only('email'))->with('error', __($status));
     }
 
-    public function resetForm(string $token): View
+    public function resetForm(Request $request, string $token): View
     {
-        return view('auth.reset', ['token' => $token]);
+        return view('auth.reset', [
+            'token' => $token,
+            'email' => $request->string('email')->toString(),
+        ]);
     }
 
     public function resetPassword(ResetPasswordRequest $request): RedirectResponse
     {
         $status = Password::reset(
-            $request->validated(),
+            $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user, string $password): void {
                 $user->forceFill([
                     'password' => $password,
