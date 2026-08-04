@@ -15,23 +15,23 @@
 @endphp
 
 @if($isEmployee)
-    @push('extra-css')
+    @push('styles')
         <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css') }}" />
+        <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}" />
     @endpush
 @endif
 
 @section('content')
+@if($isEmployee)
+    <div class="employee-orders-page">
+        <x-employee.page-header
+            title="Reports"
+            :back-url="route($dashboardRoute)"
+            back-title="Back to dashboard"
+        />
+@else
 <div class="container-fluid flex-grow-1 container-p-y">
-    {{-- <div class="mb-4">
-        <h4 class="mb-1">Reports</h4>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route($dashboardRoute) }}">Dashboard</a></li>
-                <li class="breadcrumb-item">Reports</li>
-                <li class="breadcrumb-item active" aria-current="page">{{ $reportLabel }}</li>
-            </ol>
-        </nav>
-    </div> --}}
+@endif
 
     {{-- Report picker (tabs) --}}
     <ul class="nav nav-tabs mb-3">
@@ -60,10 +60,10 @@
         </div>
 
         <div class="report-custom-range d-none" style="width: 150px;">
-            <input type="date" id="report-start" class="form-control report-filter" aria-label="From date">
+            <input type="text" id="report-start" class="form-control report-filter app-datepicker" placeholder="YYYY-MM-DD" aria-label="From date" autocomplete="off">
         </div>
         <div class="report-custom-range d-none" style="width: 150px;">
-            <input type="date" id="report-end" class="form-control report-filter" aria-label="To date">
+            <input type="text" id="report-end" class="form-control report-filter app-datepicker" placeholder="YYYY-MM-DD" aria-label="To date" autocomplete="off">
         </div>
 
         @if(count($dateColumns) > 1)
@@ -124,7 +124,11 @@
             </table>
         </div>
     </div>
+@if($isEmployee)
+    </div>
+@else
 </div>
+@endif
 @endsection
 
 @section('scripts')

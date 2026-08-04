@@ -70,7 +70,7 @@
                     <div class="avatar avatar-online">
                         @php $navAvatarUrl = \App\Support\AccountSettings::avatarUrl($user); @endphp
                         @if ($navAvatarUrl)
-                            <img src="{{ $navAvatarUrl }}" alt="{{ $user?->name }}" class="rounded-circle">
+                            <img src="{{ $navAvatarUrl }}" alt="{{ $user?->name }}" class="rounded-circle" style="width:100%;height:100%;object-fit:cover;">
                         @else
                             <span class="avatar-initial rounded-circle bg-label-primary">
                                 {{ strtoupper(substr($user?->name ?? 'U', 0, 1)) }}
@@ -97,25 +97,10 @@
                     <li>
                         <hr class="dropdown-divider">
                     </li>
-                    <li>
-                        <a href="{{ route('account.profile') }}"
-                           class="dropdown-item {{ request()->routeIs('account.*') ? 'active' : '' }}">
-                            <i class="icon-base ti tabler-user me-2"></i>
-                            Profile
-                        </a>
-                    </li>
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
-                    <li>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="dropdown-item">
-                                <i class="icon-base ti tabler-logout me-2"></i>
-                                Sign out
-                            </button>
-                        </form>
-                    </li>
+                    @include('layouts.partials.account-menu-items', [
+                        'logoutLabel' => 'Sign out',
+                        'iconClass' => 'icon-base ti',
+                    ])
                 </ul>
             </li>
         </ul>

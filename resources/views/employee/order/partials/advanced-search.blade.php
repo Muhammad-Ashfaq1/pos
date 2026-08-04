@@ -56,11 +56,11 @@
         <div class="employee-orders-custom-range d-none" data-order-custom-range>
             <label class="employee-orders-field">
                 <span>From</span>
-                <input type="date" class="form-control" data-order-date-from>
+                <input type="text" class="form-control app-datepicker" placeholder="YYYY-MM-DD" autocomplete="off" data-order-date-from>
             </label>
             <label class="employee-orders-field">
                 <span>To</span>
-                <input type="date" class="form-control" data-order-date-to>
+                <input type="text" class="form-control app-datepicker" placeholder="YYYY-MM-DD" autocomplete="off" data-order-date-to>
             </label>
         </div>
 

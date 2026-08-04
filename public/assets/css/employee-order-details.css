@@ -1,47 +1,11 @@
 .employee-order-details-page {
-  max-width: 92rem;
   margin: 0 auto;
-  padding: 0.35rem 0 2rem;
+  padding: 0;
   color: #111827;
 }
 
-.employee-order-details-heading {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+.employee-order-details-page .employee-orders-heading {
   margin-bottom: 1rem;
-}
-
-.employee-order-details-back-btn {
-  width: 2.35rem;
-  height: 2.35rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: 0.55rem;
-  background: #e7e9f5;
-  color: #312e81;
-  text-decoration: none;
-  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
-}
-
-.employee-order-details-back-btn:hover {
-  background: #d9ddf0;
-  color: #262363;
-  transform: translateY(-1px);
-}
-
-.employee-order-details-back-btn i {
-  font-size: 1.2rem;
-}
-
-.employee-order-details-title {
-  margin: 0;
-  color: #111827;
-  font-size: 1.15rem;
-  font-weight: 800;
-  line-height: 1.2;
 }
 
 .employee-order-details-layout {
@@ -298,10 +262,6 @@
 }
 
 @media (max-width: 575px) {
-  .employee-order-details-page {
-    padding-bottom: 1rem;
-  }
-
   .employee-order-details-items-panel,
   .employee-order-details-payment-panel {
     padding: 0.85rem;
@@ -316,6 +276,129 @@
   .employee-order-details-balance strong {
     font-size: 1.1rem;
   }
+}
+
+/* ── Dark mode ───────────────────────────────────────────────────────── */
+
+[data-bs-theme="dark"] .employee-order-details-page {
+  color: #cfd3ec;
+}
+
+[data-bs-theme="dark"] .employee-order-details-panel {
+  background: #2f3349;
+  border-color: #434968;
+  box-shadow: 0 8px 24px rgba(15, 20, 34, 0.35);
+}
+
+[data-bs-theme="dark"] .employee-order-details-panel-header,
+[data-bs-theme="dark"] .employee-order-details-order-title {
+  border-bottom-color: #434968;
+}
+
+[data-bs-theme="dark"] .employee-order-details-panel-header h5,
+[data-bs-theme="dark"] .employee-order-details-order-title h5,
+[data-bs-theme="dark"] .employee-order-details-table-head,
+[data-bs-theme="dark"] .employee-order-details-summary-row,
+[data-bs-theme="dark"] .employee-order-details-total-row,
+[data-bs-theme="dark"] .employee-order-details-payment-line,
+[data-bs-theme="dark"] .employee-order-details-tax-line,
+[data-bs-theme="dark"] .employee-order-details-balance,
+[data-bs-theme="dark"] .employee-order-details-tax h6 {
+  color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .employee-order-details-item {
+  background: #353a52;
+  color: #cfd3ec;
+}
+
+[data-bs-theme="dark"] .employee-order-details-item-price,
+[data-bs-theme="dark"] .employee-order-details-order-title h5 span:last-child,
+[data-bs-theme="dark"] .employee-order-details-total-row strong,
+[data-bs-theme="dark"] .employee-order-details-balance strong,
+[data-bs-theme="dark"] .employee-order-details-service-fee-row strong {
+  color: #b6bee3;
+}
+
+[data-bs-theme="dark"] .employee-order-details-payment-line strong,
+[data-bs-theme="dark"] .employee-order-details-summary-row strong {
+  color: #cfd3ec;
+}
+
+[data-bs-theme="dark"] .employee-order-details-discount-row strong {
+  color: #28c76f;
+}
+
+[data-bs-theme="dark"] .employee-order-details-summary {
+  border-top-color: #434968;
+}
+
+[data-bs-theme="dark"] .employee-order-details-empty {
+  color: #a1acb8;
+}
+
+[data-bs-theme="dark"] .employee-order-details-status.success {
+  background: rgba(40, 199, 111, 0.16);
+  color: #28c76f;
+}
+
+[data-bs-theme="dark"] .employee-order-details-status.warning {
+  background: rgba(255, 159, 67, 0.16);
+  color: #ff9f43;
+}
+
+[data-bs-theme="dark"] .employee-order-details-status.secondary {
+  background: #353a52;
+  color: #a1acb8;
+}
+
+[data-bs-theme="dark"] .employee-order-details-tax-line strong {
+  color: #a1acb8;
+}
+
+[data-bs-theme="dark"] .employee-order-details-page .btn-outline-secondary {
+  background: #25293c;
+  border-color: #434968;
+  color: #a1acb8;
+}
+
+[data-bs-theme="dark"] .employee-order-details-page .btn-outline-secondary:hover {
+  background: #353a52;
+  border-color: #434968;
+  color: #cfd3ec;
+}
+
+[data-bs-theme="dark"] .employee-order-details-page .btn-outline-primary {
+  border-color: #7367f0;
+  color: #b6bee3;
+}
+
+[data-bs-theme="dark"] .employee-order-details-page .btn-outline-primary:hover {
+  background: rgba(115, 103, 240, 0.12);
+  border-color: #7367f0;
+  color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .employee-order-details-page .btn-primary {
+  background-color: #7367f0;
+  border-color: #7367f0;
+}
+
+[data-bs-theme="dark"] .employee-order-details-page .btn-primary:hover {
+  background-color: #685dd8;
+  border-color: #685dd8;
+}
+
+[data-bs-theme="dark"] .employee-order-details-page .alert-success {
+  background: rgba(40, 199, 111, 0.12);
+  border-color: rgba(40, 199, 111, 0.28);
+  color: #28c76f;
+}
+
+[data-bs-theme="dark"] .employee-order-details-page .alert-info {
+  background: rgba(3, 195, 236, 0.12);
+  border-color: rgba(3, 195, 236, 0.28);
+  color: #03c3ec;
 }
 
 /* ── Product Detail Cards for Search Results ─────────────────────────── */

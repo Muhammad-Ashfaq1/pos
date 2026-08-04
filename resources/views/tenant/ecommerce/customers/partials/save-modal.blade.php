@@ -65,7 +65,7 @@
 
                         <div class="col-md-4">
                             <label for="customer_date_of_birth" class="form-label">Date Of Birth</label>
-                            <input type="date" class="form-control" id="customer_date_of_birth" name="date_of_birth">
+                            <input type="text" class="form-control app-datepicker" id="customer_date_of_birth" name="date_of_birth" placeholder="YYYY-MM-DD" autocomplete="off">
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-4">

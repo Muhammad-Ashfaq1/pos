@@ -36,7 +36,18 @@ final class AccountSettings
             return null;
         }
 
-        return Storage::disk('public')->url($path);
+        // Use asset() so the URL follows the current app host/path (not only APP_URL).
+        $url = asset('storage/'.$path);
+
+        try {
+            if (Storage::disk('public')->exists($path)) {
+                $url .= '?v='.Storage::disk('public')->lastModified($path);
+            }
+        } catch (\Throwable) {
+            // Ignore filesystem errors; still return the base URL.
+        }
+
+        return $url;
     }
 
     public static function storeAvatar(object $account, UploadedFile $file): string

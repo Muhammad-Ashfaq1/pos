@@ -12,8 +12,10 @@
     <meta charset="utf-8" />
     <script>
         (function () {
-            const theme = localStorage.getItem('templateCustomizer-vertical-menu-template--Theme') || 'light';
-            const themeToApply = theme === 'system'
+            // Inherit admin/shared theme so impersonated Create Order matches admin dark/light.
+            // Do not write localStorage here — never overwrite the admin preference.
+            var theme = localStorage.getItem('templateCustomizer-vertical-menu-template--Theme') || 'light';
+            var themeToApply = theme === 'system'
                 ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
                 : theme;
             document.documentElement.setAttribute('data-bs-theme', themeToApply);
@@ -42,6 +44,8 @@
     <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/app-datepicker.css') }}?v={{ filemtime(public_path('assets/css/app-datepicker.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/app-loader.css') }}?v={{ filemtime(public_path('assets/css/app-loader.css')) }}" />
     <style>
         html[data-display-customizer='true'] #template-customizer {
@@ -174,6 +178,7 @@
             border-radius: 999px;
             border: 0;
             font-size: 1.2rem;
+            text-decoration: none;
         }
 
         .employee-admin-preview .preview-circle-btn--indigo {
@@ -366,8 +371,7 @@
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .employee-admin-preview .preview-chip:hover,
-        .employee-admin-preview .preview-tile:hover {
+        .employee-admin-preview .preview-chip:hover {
             transform: translateY(-2px);
             box-shadow: 0 18px 36px rgba(67, 56, 202, 0.08);
         }
@@ -470,7 +474,8 @@
             justify-content: center;
             padding: 2rem 1.5rem 1.5rem;
             text-align: center;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
         }
 
         .employee-admin-preview .preview-tile-content {
@@ -500,6 +505,19 @@
             font-size: 1.15rem;
             font-weight: 700;
             color: var(--preview-indigo);
+        }
+
+        /* Same lavender hover on every tile — icon/title styles unchanged */
+        .employee-admin-preview .preview-tile:hover {
+            background: #d2d1e1;
+            border-color: #d2d1e1;
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px rgba(67, 56, 202, 0.12);
+        }
+
+        .employee-admin-preview .preview-tile:focus-visible {
+            outline: 2px solid var(--preview-indigo);
+            outline-offset: 2px;
         }
 
         .employee-admin-preview .preview-bottom-nav {
@@ -581,6 +599,48 @@
                 padding-top: 2.25rem;
             }
         }
+
+        /* Dark mode — keep header light, darken main workspace (POS screens) */
+        [data-bs-theme="dark"] body.employee-admin-preview {
+            background: #25293c;
+        }
+
+        [data-bs-theme="dark"] .employee-admin-preview .preview-main {
+            background: #25293c;
+        }
+
+        [data-bs-theme="dark"] .employee-admin-preview .preview-header {
+            background: rgba(255, 255, 255, 0.96);
+            border-bottom-color: rgba(199, 210, 254, 0.9);
+        }
+
+        [data-bs-theme="dark"] .employee-admin-preview .preview-brand-text {
+            color: var(--preview-indigo-dark);
+        }
+
+        .employee-admin-preview .preview-user-toggle {
+            padding: 0;
+            overflow: hidden;
+            border: 0 !important;
+            box-shadow: none !important;
+            outline: none !important;
+        }
+
+        .employee-admin-preview .preview-user-toggle:focus,
+        .employee-admin-preview .preview-user-toggle:active {
+            border: 0 !important;
+            box-shadow: none !important;
+            outline: none !important;
+        }
+
+        .employee-admin-preview .preview-user-toggle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 999px;
+            border: 0;
+            display: block;
+        }
     </style>
 
     @stack('styles')
@@ -616,15 +676,25 @@
                         <button type="button" class="preview-circle-btn preview-circle-btn--indigo">
                             <i class="ti tabler-bell"></i>
                         </button>
-                        <button type="button" class="preview-circle-btn preview-circle-btn--slate">
-                            <i class="ti tabler-user"></i>
-                        </button>
+                        @php
+                            $navUser = auth()->user();
+                            $navAvatarUrl = $navUser ? \App\Support\AccountSettings::avatarUrl($navUser) : null;
+                        @endphp
                         <form method="POST" action="{{ route('logout') }}" class="d-inline">
                             @csrf
                             <button type="submit" class="preview-circle-btn preview-circle-btn--red" title="Logout">
                                 <i class="ti tabler-logout"></i>
                             </button>
                         </form>
+                        <a href="{{ route('account.profile') }}"
+                           class="preview-circle-btn preview-circle-btn--slate preview-user-toggle"
+                           title="Profile">
+                            @if ($navAvatarUrl)
+                                <img src="{{ $navAvatarUrl }}" alt="{{ $navUser?->name }}">
+                            @else
+                                <i class="ti tabler-user"></i>
+                            @endif
+                        </a>
                     </div>
                 </div>
             </div>
@@ -646,6 +716,8 @@
     <script src="{{ asset('assets/vendor/libs/hammer/hammer.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
+    <script src="{{ asset('assets/js/app-datepicker.js') }}?v={{ filemtime(public_path('assets/js/app-datepicker.js')) }}"></script>
     <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
     <script src="{{ asset('assets/js/main.js') }}"></script>
     <script>

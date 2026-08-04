@@ -123,7 +123,10 @@
     });
 
     if (window.CardForm) {
-      window.CardForm.initProductSelects();
+      // Init after the modal is visible so Select2 can read the <option> list.
+      $modal.on('shown.bs.modal', function () {
+        window.CardForm.initProductSelects({ $root: $modal });
+      });
     }
   };
 
@@ -154,7 +157,12 @@
   };
 
   const setValidUntilMin = function (minDate) {
-    $('#card_valid_until').attr('min', minDate || todayDateString());
+    const min = minDate || todayDateString();
+    if (window.AppDatepicker && typeof window.AppDatepicker.setMin === 'function') {
+      window.AppDatepicker.setMin('#card_valid_until', min);
+      return;
+    }
+    $('#card_valid_until').attr('min', min);
   };
 
   const resetForm = function () {

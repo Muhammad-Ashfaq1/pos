@@ -6,7 +6,7 @@
 
 <div {{ $attributes->class(['employee-orders-heading', 'employee-orders-heading--with-actions' => isset($actions)]) }}>
     <div class="employee-orders-heading-main">
-        <a href="{{ $backUrl }}" class="employee-orders-back-btn" data-bs-toggle="tooltip" title="{{ $backTitle }}">
+        <a href="{{ $backUrl }}" class="employee-orders-back-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $backTitle }}">
             <i class="ti tabler-arrow-left"></i>
         </a>
         <h4 class="employee-orders-title">{{ $title }}</h4>

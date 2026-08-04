@@ -93,6 +93,8 @@
 
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/app-datepicker.css') }}?v={{ filemtime(public_path('assets/css/app-datepicker.css')) }}" />
 
     <!-- endbuild -->
 
@@ -205,6 +207,8 @@
 
     <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
+    <script src="{{ asset('assets/js/app-datepicker.js') }}?v={{ filemtime(public_path('assets/js/app-datepicker.js')) }}"></script>
 
     <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
 

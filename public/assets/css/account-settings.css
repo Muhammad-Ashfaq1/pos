@@ -1,11 +1,62 @@
-/* Account settings — exact Profile / Password card UI */
+/* ==========================================================================
+   Account Settings — Profile & Password Card UI
+   ========================================================================== */
+
+:root {
+    --as-card-bg: #ffffff;
+    --as-card-border: #e5e7eb;
+    --as-card-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    --as-tab-border: #e5e7eb;
+    --as-tab-color: #6b7280;
+    --as-tab-active-color: #2563eb;
+    --as-avatar-bg: #eef2ff;
+    --as-avatar-initial: #2563eb;
+    --as-title-color: #1f2937;
+    --as-subtitle-color: #9ca3af;
+    --as-label-color: #374151;
+    --as-control-bg: #ffffff;
+    --as-control-border: #e5e7eb;
+    --as-control-color: #111827;
+    --as-control-placeholder: #9ca3af;
+    --as-control-focus-border: #2563eb;
+    --as-control-focus-ring: rgba(37, 99, 235, 0.12);
+    --as-control-disabled-bg: #f9fafb;
+    --as-control-disabled-color: #6b7280;
+    --as-btn-bg: #2563eb;
+    --as-btn-hover-bg: #1d4ed8;
+}
+
+[data-bs-theme="dark"] {
+    --as-card-bg: #2f3349;
+    --as-card-border: #434968;
+    --as-card-shadow: 0 8px 24px rgba(15, 20, 34, 0.35);
+    --as-tab-border: #434968;
+    --as-tab-color: #a1acb8;
+    --as-tab-active-color: #7367f0;
+    --as-avatar-bg: #25293c;
+    --as-avatar-initial: #7367f0;
+    --as-title-color: #cfd3ec;
+    --as-subtitle-color: #7983a5;
+    --as-label-color: #b6bee3;
+    --as-control-bg: #25293c;
+    --as-control-border: #434968;
+    --as-control-color: #cfd3ec;
+    --as-control-placeholder: #7983a5;
+    --as-control-focus-border: #7367f0;
+    --as-control-focus-ring: rgba(115, 103, 240, 0.2);
+    --as-control-disabled-bg: #2f3349;
+    --as-control-disabled-color: #7983a5;
+    --as-btn-bg: #7367f0;
+    --as-btn-hover-bg: #675dd8;
+}
 
 .account-settings-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
+    background: var(--as-card-bg);
+    border: 1px solid var(--as-card-border);
     border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    box-shadow: var(--as-card-shadow);
     padding: 1.75rem 2rem 2rem;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .account-settings-tabs {
@@ -14,23 +65,28 @@
     list-style: none;
     padding: 0;
     margin: 0 0 1.75rem;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--as-tab-border);
 }
 
 .account-settings-tabs a {
     display: inline-block;
     padding: 0 0 0.9rem;
-    color: #6b7280;
+    color: var(--as-tab-color);
     font-size: 0.95rem;
     font-weight: 500;
     text-decoration: none;
     border-bottom: 3px solid transparent;
     margin-bottom: -1px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.account-settings-tabs a:hover {
+    color: var(--as-title-color);
 }
 
 .account-settings-tabs a.active {
-    color: #2563eb;
-    border-bottom-color: #2563eb;
+    color: var(--as-tab-active-color);
+    border-bottom-color: var(--as-tab-active-color);
     font-weight: 600;
 }
 
@@ -49,14 +105,14 @@
     width: 120px;
     height: 120px;
     border-radius: 999px;
-    background: #eef2ff;
+    background: var(--as-avatar-bg);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
     cursor: pointer;
     margin: 0;
-    border: 0;
+    border: 1px solid var(--as-card-border);
     flex-shrink: 0;
 }
 
@@ -70,30 +126,35 @@
 .account-settings-avatar span#account-avatar-initial {
     font-size: 2.75rem;
     font-weight: 700;
-    color: #2563eb;
+    color: var(--as-avatar-initial);
 }
 
 .account-settings-header-text {
     min-width: 0;
 }
 
-.account-settings-title {
+.account-settings-title,
+.account-settings-password-title {
     font-size: 1.45rem;
     font-weight: 700;
     margin: 0 0 0.2rem;
-    color: #1f2937;
+    color: var(--as-title-color);
     line-height: 1.25;
+}
+
+.account-settings-password-title {
+    margin-bottom: 1.5rem;
 }
 
 .account-settings-subtitle {
     margin: 0;
-    color: #9ca3af;
+    color: var(--as-subtitle-color);
     font-size: 0.92rem;
 }
 
 .account-settings-form .form-label {
     font-weight: 500;
-    color: #374151;
+    color: var(--as-label-color);
     margin-bottom: 0.4rem;
     font-size: 0.9rem;
 }
@@ -103,40 +164,42 @@
 }
 
 .account-settings-form .form-control {
-    border: 1px solid #e5e7eb;
+    background-color: var(--as-control-bg);
+    border: 1px solid var(--as-control-border);
     border-radius: 8px;
     min-height: 44px;
     box-shadow: none !important;
-    color: #111827;
+    color: var(--as-control-color);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .account-settings-form .form-control:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 0.15rem rgba(37, 99, 235, 0.12) !important;
+    border-color: var(--as-control-focus-border);
+    box-shadow: 0 0 0 0.15rem var(--as-control-focus-ring) !important;
 }
 
 .account-settings-form .form-control:disabled {
-    background: #f9fafb;
-    color: #6b7280;
+    background-color: var(--as-control-disabled-bg);
+    color: var(--as-control-disabled-color);
 }
 
 .account-settings-form .form-control::placeholder {
-    color: #9ca3af;
+    color: var(--as-control-placeholder);
 }
 
-/* Password fields (input-group-merge) — same border/focus as Profile */
+/* Password fields (input-group-merge) */
 .account-settings-form .input-group {
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--as-control-border);
     border-radius: 8px;
     overflow: hidden;
-    background: #fff;
+    background-color: var(--as-control-bg);
     min-height: 44px;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .account-settings-form .input-group:focus-within {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 0.15rem rgba(37, 99, 235, 0.12);
+    border-color: var(--as-control-focus-border);
+    box-shadow: 0 0 0 0.15rem var(--as-control-focus-ring);
 }
 
 .account-settings-form .input-group .form-control,
@@ -146,21 +209,49 @@
     box-shadow: none !important;
     background: transparent;
     min-height: 42px;
-}
-
-.account-settings-form .input-group .form-control:focus {
-    border-color: transparent !important;
-    box-shadow: none !important;
+    color: var(--as-control-color);
 }
 
 .account-settings-form .input-group .input-group-text {
-    color: #6b7280;
+    color: var(--as-subtitle-color);
     padding-left: 0.75rem;
     padding-right: 0.85rem;
 }
 
 .account-settings-form .form-password-toggle .input-group-text {
     cursor: pointer;
+}
+
+/* Invalid state */
+.account-settings-form .input-group.is-invalid,
+.account-settings-form .input-group:has(.form-control.is-invalid) {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 0.15rem rgba(239, 68, 68, 0.12);
+}
+
+.account-settings-form .input-group.is-invalid .form-control,
+.account-settings-form .input-group:has(.form-control.is-invalid) .form-control,
+.account-settings-form .input-group.is-invalid .input-group-text,
+.account-settings-form .input-group:has(.form-control.is-invalid) .input-group-text {
+    border: 0 !important;
+    box-shadow: none !important;
+    background-image: none !important;
+    background-color: transparent !important;
+}
+
+.account-settings-form .form-control.is-invalid:not(.input-group .form-control) {
+    border-color: #ef4444;
+}
+
+.account-settings-form .account-field-error {
+    display: none;
+    margin-top: 0.35rem;
+    font-size: 0.8125rem;
+    color: #ef4444;
+}
+
+.account-settings-form .account-field-error.is-visible {
+    display: block;
 }
 
 .account-settings-fields {
@@ -176,32 +267,26 @@
 .account-settings-actions .btn-primary,
 .account-settings-save-btn,
 .customer-portal-page .account-settings-actions .btn-primary {
-    --bs-btn-bg: #2563eb;
-    --bs-btn-border-color: #2563eb;
-    --bs-btn-hover-bg: #1d4ed8;
-    --bs-btn-hover-border-color: #1d4ed8;
-    background-color: #2563eb !important;
-    border-color: #2563eb !important;
+    --bs-btn-bg: var(--as-btn-bg);
+    --bs-btn-border-color: var(--as-btn-bg);
+    --bs-btn-hover-bg: var(--as-btn-hover-bg);
+    --bs-btn-hover-border-color: var(--as-btn-hover-bg);
+    background-color: var(--as-btn-bg) !important;
+    border-color: var(--as-btn-bg) !important;
     color: #fff !important;
     border-radius: 8px;
     font-weight: 600;
     padding: 0.6rem 1.35rem;
     min-height: 42px;
     box-shadow: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .account-settings-actions .btn-primary:hover,
 .customer-portal-page .account-settings-actions .btn-primary:hover {
-    background-color: #1d4ed8 !important;
-    border-color: #1d4ed8 !important;
+    background-color: var(--as-btn-hover-bg) !important;
+    border-color: var(--as-btn-hover-bg) !important;
     color: #fff !important;
-}
-
-.account-settings-password-title {
-    font-size: 1.45rem;
-    font-weight: 700;
-    margin: 0 0 1.5rem;
-    color: #1f2937;
 }
 
 @media (max-width: 767.98px) {

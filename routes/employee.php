@@ -17,6 +17,9 @@ Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.
             ->middleware('permission:dashboard.view')
             ->name('dashboard');
 
+        Route::get('/pos', fn() => redirect()->route('employee.order.new-order'))
+            ->name('pos');
+
         Route::get('/dashboard/product-mix', [PanelController::class, 'productMix'])
             ->middleware('permission:dashboard.view')
             ->name('dashboard.product-mix');

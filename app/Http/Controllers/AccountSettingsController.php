@@ -43,6 +43,13 @@ class AccountSettingsController extends Controller
 
         if ($request->hasFile('avatar')) {
             AccountSettings::storeAvatar($account, $request->file('avatar'));
+            $account->refresh();
+
+            if ($account instanceof Customer) {
+                auth('customer')->setUser($account);
+            } else {
+                auth()->setUser($account);
+            }
         }
 
         return redirect()->route('account.profile')->with('success', 'Profile updated.');
@@ -96,8 +103,11 @@ class AccountSettingsController extends Controller
      */
     private function viewData(Request $request, string $active): array
     {
+        $account = $this->account($request);
+        $account->refresh();
+
         return AccountSettings::viewData(
-            account: $this->account($request),
+            account: $account,
             layout: $this->layout(),
             active: $active,
         );

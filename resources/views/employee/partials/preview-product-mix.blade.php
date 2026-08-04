@@ -1,3 +1,16 @@
+@php
+    $periodOptions = [
+        'today' => 'Today (Default)',
+        'yesterday' => 'Yesterday',
+        'week' => 'This Week',
+        'last_week' => 'Last Week',
+        'month' => 'This Month',
+        'last_month' => 'Last Month',
+        'year' => 'This Year',
+    ];
+    $selectedPeriod = $productMixPeriod ?? 'today';
+@endphp
+
 <div class="preview-card" id="employee-product-mix">
     <div class="preview-card-header">
         <div>
@@ -5,10 +18,10 @@
         </div>
 
         <div class="preview-card-tools">
-            <select class="preview-select" aria-label="Employee dashboard filter">
-                <option selected>Today (Default)</option>
-                <option>This Week</option>
-                <option>This Month</option>
+            <select class="preview-select" data-product-mix-period aria-label="Product mix period filter">
+                @foreach ($periodOptions as $value => $label)
+                    <option value="{{ $value }}" @selected($selectedPeriod === $value)>{{ $label }}</option>
+                @endforeach
             </select>
 
             <div class="preview-updated">
@@ -33,7 +46,7 @@
                             <span class="preview-chip-value" data-product-mix-value="{{ $card['key'] }}">{{ $card['value'] }}</span>
                             <span class="preview-chip-label">{{ $card['label'] }}</span>
                         </div>
-                        <div class="preview-chip-meta">{{ $card['meta'] }}</div>
+                        <div class="preview-chip-meta" data-product-mix-meta="{{ $card['key'] }}">{{ $card['meta'] }}</div>
                     </div>
                     <i class="ti {{ $card['icon'] }} preview-chip-icon"></i>
                 </div>

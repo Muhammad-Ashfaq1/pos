@@ -1066,3 +1066,249 @@
         max-width: none !important;
     }
 }
+
+/* POS System — Dark Theme (impersonation / inherited admin theme) */
+[data-bs-theme="dark"] .psc-title,
+[data-bs-theme="dark"] .selected-service-fee-name,
+[data-bs-theme="dark"] .service-fee-item-name {
+    color: #cfd3ec !important;
+}
+
+/* Order entry screen — page shell & contrast fixes */
+[data-bs-theme="dark"] .employee-orders-page {
+    color: #cfd3ec;
+}
+
+[data-bs-theme="dark"] .employee-orders-title {
+    color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .employee-orders-back-btn,
+[data-bs-theme="dark"] .employee-orders-icon-btn {
+    background: #353a52;
+    color: #b6bee3;
+}
+
+[data-bs-theme="dark"] .employee-orders-back-btn:hover,
+[data-bs-theme="dark"] .employee-orders-icon-btn:hover {
+    background: #434968;
+    color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .order-entry-screen .pos-sidebar-card,
+[data-bs-theme="dark"] .order-entry-screen .order-management {
+    box-shadow: none !important;
+}
+
+[data-bs-theme="dark"] .order-entry-screen .pos-sidebar-card .card-body,
+[data-bs-theme="dark"] .order-entry-screen .order-management {
+    background-color: #2f3349 !important;
+}
+
+/* Override employee-portal .text-primary on catalog tiles */
+[data-bs-theme="dark"] .order-entry-screen .category-card,
+[data-bs-theme="dark"] .order-entry-screen .category-card.bg-label-primary {
+    background-color: #25293c !important;
+}
+
+[data-bs-theme="dark"] .order-entry-screen .category-card .catalog-card-title,
+[data-bs-theme="dark"] .order-entry-screen .category-card .text-primary,
+[data-bs-theme="dark"] .order-entry-screen .catalog-card .catalog-card-title {
+    color: #cfd3ec !important;
+}
+
+[data-bs-theme="dark"] .order-entry-screen .pos-sidebar-card .form-label,
+[data-bs-theme="dark"] .order-entry-screen .pos-sidebar-card h5 {
+    color: #e2e8f0 !important;
+}
+
+[data-bs-theme="dark"] .order-entry-screen .pos-sidebar-card .text-danger {
+    color: #ff4c51 !important;
+}
+
+[data-bs-theme="dark"] .order-entry-screen .btn-pay {
+    background-color: #312e81 !important;
+    border-color: #312e81 !important;
+}
+
+[data-bs-theme="dark"] .order-entry-screen .btn-pay:disabled {
+    opacity: 0.55;
+}
+
+[data-bs-theme="dark"] .order-entry-screen .btn-pay .text-warning {
+    color: #fbbf24 !important;
+}
+
+[data-bs-theme="dark"] .order-entry-screen .pos-item-list::-webkit-scrollbar-track {
+    background: #25293c;
+}
+
+[data-bs-theme="dark"] .order-entry-screen .pos-item-list::-webkit-scrollbar-thumb {
+    background: #434968;
+}
+
+[data-bs-theme="dark"] .order-entry-screen .catalog-header .input-group {
+    border-color: #434968;
+    background: #25293c;
+}
+
+[data-bs-theme="dark"] .order-entry-screen .catalog-header .input-group:focus-within {
+    border-color: #7367f0;
+    box-shadow: 0 0 0 0.15rem rgba(115, 103, 240, 0.15);
+}
+
+[data-bs-theme="dark"] .order-entry-screen .catalog-header .input-group .form-control,
+[data-bs-theme="dark"] .order-entry-screen .catalog-header .input-group .input-group-text {
+    background: transparent !important;
+    border: 0 !important;
+    color: #cfd3ec !important;
+}
+
+[data-bs-theme="dark"] .order-entry-screen .pos-tool-label,
+[data-bs-theme="dark"] .order-entry-screen .pos-sidebar-card small.fw-bold {
+    color: #a1acb8 !important;
+}
+
+[data-bs-theme="dark"] .order-entry-screen .customer-discount-banner {
+    background: rgba(115, 103, 240, 0.12) !important;
+    border-color: #434968 !important;
+    color: #cfd3ec !important;
+}
+
+[data-bs-theme="dark"] .product-details-view .bg-light {
+    background-color: #25293c !important;
+    border-color: #7367f0 !important;
+}
+
+[data-bs-theme="dark"] .product-details-view .product-image-container,
+[data-bs-theme="dark"] .product-details-view .avatar-initial {
+    background-color: rgba(115, 103, 240, 0.16) !important;
+    color: #7367f0 !important;
+}
+
+[data-bs-theme="dark"] .product-qty-control {
+    border-color: #7367f0 !important;
+}
+
+[data-bs-theme="dark"] .product-qty-minus-btn,
+[data-bs-theme="dark"] .product-qty-plus-btn {
+    background-color: #25293c !important;
+    color: #7367f0 !important;
+}
+
+[data-bs-theme="dark"] .product-qty-input,
+[data-bs-theme="dark"] .product-qty-input.bg-white {
+    background-color: #25293c !important;
+    color: #cfd3ec !important;
+}
+
+[data-bs-theme="dark"] .product-clear-btn,
+[data-bs-theme="dark"] .pos-product-clear-btn {
+    color: #b6bee3 !important;
+}
+
+/* Product detail cards (pos-product-card) — dark mode */
+[data-bs-theme="dark"] .pos-product-card {
+    background-color: #2f3349 !important;
+    border: 1px solid #434968 !important;
+    box-shadow: 0 10px 26px rgba(15, 20, 34, 0.35);
+    color: #cfd3ec;
+}
+
+[data-bs-theme="dark"] .pos-product-image {
+    background: #25293c;
+    border-color: #434968;
+}
+
+[data-bs-theme="dark"] .pos-product-image .product-default-icon {
+    color: #b6bee3;
+}
+
+[data-bs-theme="dark"] .pos-product-title {
+    color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .pos-product-sku {
+    background: #353a52;
+    color: #a1acb8;
+}
+
+[data-bs-theme="dark"] .pos-product-barcode {
+    background: rgba(3, 195, 236, 0.16);
+    color: #03c3ec;
+}
+
+[data-bs-theme="dark"] .pos-product-price-row {
+    background: #25293c;
+    border-left-color: #7367f0;
+    color: #a1acb8;
+}
+
+[data-bs-theme="dark"] .pos-product-price-row strong {
+    color: #b6bee3;
+}
+
+[data-bs-theme="dark"] .pos-product-stat-cart {
+    background: rgba(115, 103, 240, 0.16);
+    border-color: rgba(115, 103, 240, 0.28);
+    color: #b6bee3;
+}
+
+[data-bs-theme="dark"] .pos-product-stat-stock {
+    background: rgba(40, 199, 111, 0.14);
+    border-color: rgba(40, 199, 111, 0.28);
+    color: #28c76f;
+}
+
+[data-bs-theme="dark"] .pos-product-qty-label {
+    color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .pos-product-qty-control {
+    border-color: #7367f0;
+    background: #25293c;
+}
+
+[data-bs-theme="dark"] .pos-product-qty-control button {
+    background: #25293c;
+    color: #b6bee3;
+}
+
+[data-bs-theme="dark"] .pos-product-qty-control button:hover,
+[data-bs-theme="dark"] .pos-product-qty-control button:focus-visible {
+    background: #353a52;
+}
+
+[data-bs-theme="dark"] .pos-product-qty-input {
+    background: #25293c;
+    color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .pos-product-add-btn {
+    background: #7367f0;
+    box-shadow: 0 8px 16px rgba(115, 103, 240, 0.28);
+}
+
+[data-bs-theme="dark"] .pos-product-add-btn:hover,
+[data-bs-theme="dark"] .pos-product-add-btn:focus-visible {
+    background: #685dd8;
+}
+
+[data-bs-theme="dark"] .pos-product-clear-btn:hover,
+[data-bs-theme="dark"] .pos-product-clear-btn:focus-visible {
+    color: #e2e8f0 !important;
+}
+
+[data-bs-theme="dark"] .product-details-view .btn-back-from-product {
+    background-color: #353a52 !important;
+    color: #b6bee3 !important;
+}
+
+[data-bs-theme="dark"] .product-details-view .product-detail-title {
+    color: #e2e8f0 !important;
+}
+
+[data-bs-theme="dark"] .product-details-view .product-discount-banner,
+[data-bs-theme="dark"] .pos-product-discount {
+    color: #28c76f !important;
+}

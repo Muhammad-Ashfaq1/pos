@@ -19,20 +19,73 @@
                 border-color: #ea5455;
             }
 
+            .card-product-select + .select2-container .select2-selection--multiple {
+                position: relative;
+                padding: 0.35rem 1.75rem 0.35rem 0.5rem;
+            }
+
             .modal .card-product-select + .select2-container .select2-selection--multiple {
                 min-height: calc(1.5em + 0.875rem + 2px);
-                padding: 0.25rem 0.5rem;
+            }
+
+            .card-product-select + .select2-container .select2-selection--multiple .select2-selection__rendered {
+                display: flex !important;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 0.35rem;
+                margin: 0 !important;
+                padding: 0 !important;
+                list-style: none;
+            }
+
+            .card-product-select + .select2-container .select2-selection--multiple .select2-selection__choice {
+                float: none !important;
+                display: inline-flex;
+                align-items: center;
+                margin: 0 !important;
+                max-width: 100%;
+            }
+
+            .card-product-select + .select2-container .select2-selection--multiple .select2-selection__clear {
+                position: absolute !important;
+                top: 0.45rem;
+                right: 0.5rem;
+                left: auto !important;
+                float: none !important;
+                margin: 0 !important;
+                z-index: 2;
+                line-height: 1;
+                order: 99;
+            }
+
+            .card-product-select + .select2-container .select2-selection__choice[title=""],
+            .card-product-select + .select2-container .select2-selection__choice:not([title]) {
+                display: none !important;
+            }
+
+            .card-product-select + .select2-container .select2-selection--multiple .select2-search--inline {
+                float: none !important;
+                flex: 1 1 5rem;
+                min-width: 5rem;
+                margin: 0 !important;
+                line-height: 1.4;
+            }
+
+            .card-product-select + .select2-container .select2-selection--multiple .select2-search--inline .select2-search__field {
+                width: 100% !important;
+                min-width: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
 
             .card-product-select + .select2-container .select2-selection--multiple .select2-selection__rendered:not(:has(.select2-selection__choice)) .select2-search--inline {
-                float: none;
-                display: block;
+                flex: 1 1 100%;
                 width: 100%;
+                min-width: 100%;
             }
 
             .card-product-select + .select2-container .select2-selection--multiple .select2-selection__rendered:not(:has(.select2-selection__choice)) .select2-search__field {
                 width: 100% !important;
-                margin-top: 0;
             }
 
             .card-product-select + .select2-container .select2-selection--multiple .select2-search__field::placeholder {

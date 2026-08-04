@@ -51,6 +51,7 @@ class CardController extends Controller
             'message' => $result['message'],
             'card_type' => $validated['card_type'],
             'html' => $this->repo->renderEmployeeCardHtml($result['card'], $organizationName),
+            'picker_html' => $this->repo->renderOrderPickerHtml($result['card']),
         ], 201);
     }
 }

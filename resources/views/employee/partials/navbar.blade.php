@@ -49,7 +49,7 @@
                 </li>
             @endforeach
             <li class="nav-item">
-                <a href="{{ route('employee.pos') }}" class="btn btn-primary btn-sm">
+                <a href="{{ route('employee.order.new-order') }}" class="btn btn-primary btn-sm">
                     <i class="icon-base ti tabler-cash-register me-1"></i>
                     POS / Workspace
                 </a>
@@ -106,17 +106,12 @@
                                 Stop Impersonation
                             </a>
                         </li>
+                        <li><hr class="dropdown-divider"></li>
                     @endif
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="dropdown-item">
-                                <i class="icon-base ti tabler-logout me-2"></i>
-                                Sign out
-                            </button>
-                        </form>
-                    </li>
+                    @include('layouts.partials.account-menu-items', [
+                        'logoutLabel' => 'Sign out',
+                        'iconClass' => 'icon-base ti',
+                    ])
                 </ul>
             </li>
         </ul>

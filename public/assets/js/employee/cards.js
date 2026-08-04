@@ -85,8 +85,37 @@
       bumpTabCount(cardType);
     };
 
+    const prependOrderPickerCard = function (cardType, pickerHtml) {
+      if (!pickerHtml) {
+        return;
+      }
+
+      const $list = $('.order-card-list[data-card-type="' + cardType + '"]');
+      if (!$list.length) {
+        return;
+      }
+
+      $list.find('[data-order-card-empty="' + cardType + '"]').remove();
+      $list.prepend(pickerHtml);
+      $('.order-card-actions[data-card-type="' + cardType + '"]').removeClass('d-none');
+    };
+
     activateModule(initialModule);
-    window.CardForm.initProductSelects();
+
+    // Init after the modal is visible — Select2 initialized while display:none
+    // often shows "No results found" even when <option> nodes exist.
+    $forms.each(function () {
+      const $form = $(this);
+      const $modal = $form.closest('.modal');
+
+      if ($modal.length) {
+        $modal.on('shown.bs.modal', function () {
+          window.CardForm.initProductSelects({ $root: $modal });
+        });
+      } else {
+        window.CardForm.initProductSelects({ $root: $form });
+      }
+    });
 
     $forms.each(function () {
       const $form = $(this);
@@ -131,6 +160,13 @@
           .done(function (response) {
             const cardType = response.card_type || $form.data('cardType');
             prependCreatedCard(cardType, response.html);
+            prependOrderPickerCard(cardType, response.picker_html);
+
+            $(document).trigger('employee:card-created', {
+              cardType: cardType,
+              html: response.html,
+              pickerHtml: response.picker_html || ''
+            });
 
             const modalInstance = window.bootstrap?.Modal?.getInstance($modal[0]);
             if (modalInstance) {

@@ -133,7 +133,8 @@
                 }
                 : { discount: null, gift: null, reward: null },
             creditsApplied: roundMoney(order.creditsApplied || 0),
-            notes: order.notes || null
+            notes: order.notes || null,
+            receiptEmail: order.receiptEmail || null
         };
     }
 
@@ -152,7 +153,8 @@
                     serviceFees: orderServiceFees(order),
                     appliedCards: order.appliedCards || { discount: null, gift: null, reward: null },
                     creditsApplied: roundMoney(order.creditsApplied || 0),
-                    notes: order.notes || null
+                    notes: order.notes || null,
+                    receiptEmail: order.receiptEmail || null
                 };
             }),
             active_order_id: activeOrderId,
@@ -586,7 +588,8 @@
             serviceFees: [],
             appliedCards: { discount: null, gift: null, reward: null },
             creditsApplied: 0,
-            notes: null
+            notes: null,
+            receiptEmail: null
         };
 
         nextOrderNumber += 1;
@@ -726,7 +729,7 @@
         const inCartQty = inCartQuantity(productId);
 
         return ''
-            + '<div class="col-md-6">'
+            + '<div class="col-md-4">'
             + '  <div class="card border-0 pos-product-card product-detail-card"'
             + '       data-type="product" data-id="' + productId + '" data-name="' + escape(item.name || 'Product') + '"'
             + '       data-price="' + unitPrice.toFixed(2) + '"'
@@ -2265,6 +2268,9 @@
             .prop('disabled', !canCheckout)
             .text(isSavingOrder ? 'Processing...' : 'Checkout');
 
+        const receiptEmail = order && order.receiptEmail ? String(order.receiptEmail).trim() : '';
+        $('.btn-email-receipt').toggleClass('active', !!receiptEmail);
+
         renderPaymentItems();
         syncOrderCardDrawers();
     }
@@ -2775,6 +2781,10 @@
         syncOrderCardDrawers();
     });
 
+    $(document).on('employee:card-created', function () {
+        syncOrderCardDrawers();
+    });
+
     $(document).on('click', '.apply-order-card', function () {
         const type = String($(this).data('card-type') || '');
         const order = getActiveOrder();
@@ -2842,6 +2852,8 @@
             return;
         }
 
+        const order = getActiveOrder();
+        const receiptEmail = order && order.receiptEmail ? String(order.receiptEmail).trim() : '';
         const payload = currentOrderPayload();
         if (!payload) return;
 
@@ -2849,22 +2861,114 @@
         updateSummary();
         renderPaymentScreen();
 
+        function releaseCheckoutLock() {
+            isSavingOrder = false;
+            updateSummary();
+            renderPaymentScreen();
+        }
+
+        function finishCheckout(extraMessage) {
+            notifyOrder('success', extraMessage || 'Order saved successfully.');
+            resetSavedOrder();
+            closePaymentScreen();
+            releaseCheckoutLock();
+        }
+
         $.ajax({
             url: saveUrl,
             method: 'POST',
             data: JSON.stringify(payload),
             contentType: 'application/json',
         }).done(function (response) {
-            notifyOrder('success', response.message || 'Order saved successfully.');
-            resetSavedOrder();
-            closePaymentScreen();
+            const savedOrderId = response.data && response.data.id ? response.data.id : null;
+            const successMessage = response.message || 'Order saved successfully.';
+
+            if (receiptEmail && savedOrderId) {
+                const shareUrl = routeForSavedEstimate('share', savedOrderId);
+                if (!shareUrl) {
+                    finishCheckout(successMessage + ' Receipt email could not be sent.');
+                    return;
+                }
+
+                $.ajax({
+                    url: shareUrl,
+                    method: 'POST',
+                    data: { email: receiptEmail },
+                    dataType: 'json',
+                }).done(function (shareResponse) {
+                    finishCheckout(shareResponse.message || ('Order saved. Receipt emailed to ' + receiptEmail + '.'));
+                }).fail(function (xhr) {
+                    finishCheckout(successMessage + ' ' + (orderErrorMessage(xhr) || 'Receipt email failed.'));
+                });
+                return;
+            }
+
+            finishCheckout(successMessage);
         }).fail(function (xhr) {
             notifyOrder('error', orderErrorMessage(xhr));
-        }).always(function () {
-            isSavingOrder = false;
-            updateSummary();
-            renderPaymentScreen();
+            releaseCheckoutLock();
         });
+    });
+
+    function isValidReceiptEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
+    }
+
+    function hideEmailReceiptModal() {
+        const modalEl = document.getElementById('emailReceiptModal');
+        if (modalEl && window.bootstrap && window.bootstrap.Modal) {
+            window.bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+        }
+    }
+
+    $(document).on('show.bs.modal', '#emailReceiptModal', function () {
+        const order = getActiveOrder();
+        const $input = $('#email_receipt_email');
+        const existing = order && order.receiptEmail
+            ? String(order.receiptEmail).trim()
+            : '';
+        const customerEmail = order && order.customer && order.customer.email
+            ? String(order.customer.email).trim()
+            : '';
+
+        $input.val(existing || customerEmail).removeClass('is-invalid');
+    });
+
+    $('#email-receipt-form').on('submit', function (event) {
+        event.preventDefault();
+
+        const order = getActiveOrder();
+        if (!order) {
+            notifyOrder('warning', 'No active order found.');
+            return;
+        }
+
+        const $input = $('#email_receipt_email');
+        const email = String($input.val() || '').trim();
+
+        if (!isValidReceiptEmail(email)) {
+            $input.addClass('is-invalid').focus();
+            return;
+        }
+
+        $input.removeClass('is-invalid');
+        order.receiptEmail = email;
+        scheduleDraftCartSave();
+        renderPaymentScreen();
+        hideEmailReceiptModal();
+        notifyOrder('success', 'Receipt will be emailed to ' + email + ' after checkout.');
+    });
+
+    $(document).on('click', '.btn-clear-email-receipt', function () {
+        const order = getActiveOrder();
+        if (order) {
+            order.receiptEmail = null;
+            scheduleDraftCartSave();
+            renderPaymentScreen();
+        }
+        $('#email_receipt_email').val('').removeClass('is-invalid');
+        hideEmailReceiptModal();
+        notifyOrder('warning', 'Email receipt cancelled.');
     });
 
     // ─── Search (unified across categories + sub-cats + products) ──────
@@ -2935,6 +3039,8 @@
         $selects.each(function () {
             const $this = $(this);
             if ($this.data('select2')) return;
+            // Card create modals are initialized by cards-form.js (CardForm.initProductSelects).
+            if ($this.hasClass('card-product-select')) return;
 
             const dropdownParentSelector = $this.data('dropdown-parent');
             if (!dropdownParentSelector && !$this.parent().hasClass('position-relative')) {

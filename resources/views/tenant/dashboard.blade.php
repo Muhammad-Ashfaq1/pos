@@ -38,10 +38,10 @@
                         <input type="hidden" name="period" value="custom">
                         <label class="form-label small mb-1 fw-semibold"><i class="ti tabler-calendar-event me-1"></i>Custom range</label>
                         <div class="mb-2">
-                            <input type="date" name="start" class="form-control form-control-sm" value="{{ $range['period'] === 'custom' ? $range['start'] : '' }}" required>
+                            <input type="text" name="start" class="form-control form-control-sm app-datepicker" placeholder="YYYY-MM-DD" value="{{ $range['period'] === 'custom' ? $range['start'] : '' }}" autocomplete="off" required>
                         </div>
                         <div class="mb-2">
-                            <input type="date" name="end" class="form-control form-control-sm" value="{{ $range['period'] === 'custom' ? $range['end'] : '' }}" required>
+                            <input type="text" name="end" class="form-control form-control-sm app-datepicker" placeholder="YYYY-MM-DD" value="{{ $range['period'] === 'custom' ? $range['end'] : '' }}" autocomplete="off" required>
                         </div>
                         <button type="submit" class="btn btn-sm btn-primary w-100">Apply custom range</button>
                     </form>

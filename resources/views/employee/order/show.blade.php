@@ -3,18 +3,18 @@
 @section('title', 'Order Details')
 
 @push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/employee-order-details.css') }}?v={{ filemtime(public_path('assets/css/employee-order-details.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/pos.css') }}?v={{ filemtime(public_path('assets/css/pos.css')) }}">
 @endpush
 
 @section('content')
-    <div class="employee-order-details-page">
-        <div class="employee-order-details-heading">
-            <a href="{{ route('employee.order.index') }}" class="employee-order-details-back-btn" data-bs-toggle="tooltip" title="Back to orders">
-                <i class="ti tabler-arrow-left"></i>
-            </a>
-            <h4 class="employee-order-details-title">Order Details</h4>
-        </div>
+    <div class="employee-orders-page employee-order-details-page">
+        <x-employee.page-header
+            title="Order Details"
+            :back-url="route('employee.order.index')"
+            back-title="Back to orders"
+        />
 
         <div class="employee-order-details-layout">
             <section class="employee-order-details-panel employee-order-details-items-panel">

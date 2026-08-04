@@ -26,4 +26,6 @@ interface CardRepositoryInterface
     public function getCardFormData(Card $card, ?Authenticatable $user = null): array;
 
     public function renderEmployeeCardHtml(Card $card, string $organizationName = 'Shop'): string;
+
+    public function renderOrderPickerHtml(Card $card): string;
 }

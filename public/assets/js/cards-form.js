@@ -84,17 +84,15 @@
 
     const Utils = $.fn.select2.amd.require('select2/utils');
     const Dropdown = $.fn.select2.amd.require('select2/dropdown');
-    const DropdownSearch = $.fn.select2.amd.require('select2/dropdown/search');
     const AttachBody = $.fn.select2.amd.require('select2/dropdown/attachBody');
 
     function AttachBodyForceBelow() {}
 
     AttachBodyForceBelow.prototype._positionDropdown = function () {
       const offset = this.$container.offset();
-      const containerBottom = offset.top + this.$container.outerHeight(false);
       const css = {
         left: offset.left,
-        top: containerBottom
+        top: offset.top + this.$container.outerHeight(false)
       };
 
       let $offsetParent = this.$dropdownParent;
@@ -120,10 +118,8 @@
       this.$dropdownContainer.css(css);
     };
 
-    return Utils.Decorate(
-      Utils.Decorate(Utils.Decorate(Dropdown, DropdownSearch), AttachBody),
-      AttachBodyForceBelow
-    );
+    // AttachBody only — do NOT decorate DropdownSearch (breaks multi-select results).
+    return Utils.Decorate(Utils.Decorate(Dropdown, AttachBody), AttachBodyForceBelow);
   };
 
   /**
@@ -149,25 +145,31 @@
       }
 
       const dropdownParentSelector = $select.data('dropdown-parent');
+      const $dropdownParent = dropdownParentSelector
+        ? $(dropdownParentSelector)
+        : $select.parent();
+
       const selectOptions = {
         width: '100%',
         placeholder: $select.data('placeholder') || 'Select a product',
         allowClear: true,
         closeOnSelect: false,
-        minimumResultsForSearch: 0,
-        dropdownParent: dropdownParentSelector ? $(dropdownParentSelector) : $select.parent()
+        dropdownParent: $dropdownParent.length ? $dropdownParent : $(document.body)
       };
 
       if (dropdownAdapter) {
         selectOptions.dropdownAdapter = dropdownAdapter;
       }
 
-      $select.select2(selectOptions).on('change', function () {
-        clearFieldError($select);
-        if (onChange) {
-          onChange($select);
-        }
-      });
+      $select
+        .select2(selectOptions)
+        .on('change select2:select select2:unselect', function () {
+          $select.next('.select2').find('.select2-search__field').css('width', '100%');
+          clearFieldError($select);
+          if (onChange) {
+            onChange($select);
+          }
+        });
     });
   };
 

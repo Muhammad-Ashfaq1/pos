@@ -4,10 +4,11 @@
 
 @php
     $user = auth()->user();
+    $productMixPeriod = $product_mix_period ?? 'today';
     $summaryCards = [
-        ['key' => 'orders_completed_today', 'value' => number_format($orders_completed_today), 'label' => 'Orders', 'meta' => 'Completed Today', 'icon' => 'tabler-calendar-event', 'chip' => 'preview-chip--blue'],
-        ['key' => 'orders_incomplete_today', 'value' => number_format($orders_incomplete_today), 'label' => 'Orders', 'meta' => 'Incompleted Today', 'icon' => 'tabler-map-pin-share', 'chip' => 'preview-chip--purple'],
-        ['key' => 'products_available', 'value' => number_format($products_available), 'label' => 'Products', 'meta' => 'Available Today', 'icon' => 'tabler-search', 'chip' => 'preview-chip--violet'],
+        ['key' => 'orders_completed_today', 'value' => number_format($orders_completed_today), 'label' => 'Orders', 'meta' => $meta['orders_completed_today'] ?? 'Completed Today', 'icon' => 'tabler-calendar-event', 'chip' => 'preview-chip--blue'],
+        ['key' => 'orders_incomplete_today', 'value' => number_format($orders_incomplete_today), 'label' => 'Orders', 'meta' => $meta['orders_incomplete_today'] ?? 'Incomplete Today', 'icon' => 'tabler-map-pin-share', 'chip' => 'preview-chip--purple'],
+        ['key' => 'products_available', 'value' => number_format($products_available), 'label' => 'Products', 'meta' => $meta['products_available'] ?? 'In orders Today', 'icon' => 'tabler-search', 'chip' => 'preview-chip--violet'],
     ];
 
     $tiles = [
@@ -40,17 +41,20 @@
     ];
 
     $bottomNav = [
-        ['label' => 'POS', 'icon' => 'tabler-device-desktop'],
-        ['label' => 'Customers', 'icon' => 'tabler-users'],
-        ['label' => 'Inventory', 'icon' => 'tabler-package'],
-        ['label' => 'Settings', 'icon' => 'tabler-settings'],
+        ['label' => 'POS', 'icon' => 'tabler-device-desktop', 'url' => route('employee.order.new-order')],
+        ['label' => 'Customers', 'icon' => 'tabler-users', 'url' => route('tenant.ecommerce.customers.index')],
+        ['label' => 'Inventory', 'icon' => 'tabler-package', 'url' => route('tenant.ecommerce.products.index')],
+        ['label' => 'Settings', 'icon' => 'tabler-settings', 'url' => route('account.profile')],
     ];
 @endphp
 
 @section('content')
     <div class="preview-grid">
         <section class="preview-left-column">
-            @include('employee.partials.preview-product-mix', ['summaryCards' => $summaryCards])
+            @include('employee.partials.preview-product-mix', [
+                'summaryCards' => $summaryCards,
+                'productMixPeriod' => $productMixPeriod,
+            ])
 
             <div class="preview-card mt-4 mb-4">
                 <div class="preview-card-header">

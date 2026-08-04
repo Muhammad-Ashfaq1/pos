@@ -1,4 +1,4 @@
-<form method="POST" action="{{ route('account.profile.update') }}" enctype="multipart/form-data" class="account-settings-form" id="account-profile-form">
+<form method="POST" action="{{ route('account.profile.update') }}" enctype="multipart/form-data" class="account-settings-form" id="account-profile-form" novalidate>
     @csrf
     <input
         type="file"
@@ -18,7 +18,9 @@
         <div class="account-settings-header-text">
             <h4 class="account-settings-title">{{ $account->name }}</h4>
             <p class="account-settings-subtitle">Update your profile information and settings.</p>
-            @error('avatar')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+            <div class="invalid-feedback account-field-error @error('avatar') is-visible @enderror" data-error-for="avatar" @error('avatar') style="display:block" @enderror>
+                @error('avatar'){{ $message }}@enderror
+            </div>
         </div>
     </div>
 
@@ -34,8 +36,11 @@
                 class="form-control @error('first_name') is-invalid @enderror"
                 value="{{ $accountFirstName }}"
                 required
+                maxlength="75"
                 autofocus>
-            @error('first_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            <div class="invalid-feedback account-field-error @error('first_name') is-visible @enderror" data-error-for="first_name" @error('first_name') style="display:block" @enderror>
+                @error('first_name'){{ $message }}@enderror
+            </div>
         </div>
         <div class="col-md-6">
             <label class="form-label" for="last_name">
@@ -47,8 +52,11 @@
                 name="last_name"
                 class="form-control @error('last_name') is-invalid @enderror"
                 value="{{ $accountLastName }}"
-                required>
-            @error('last_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                required
+                maxlength="75">
+            <div class="invalid-feedback account-field-error @error('last_name') is-visible @enderror" data-error-for="last_name" @error('last_name') style="display:block" @enderror>
+                @error('last_name'){{ $message }}@enderror
+            </div>
         </div>
         <div class="col-md-6">
             <label class="form-label" for="account_email">
@@ -64,8 +72,11 @@
                 name="phone"
                 class="form-control @error('phone') is-invalid @enderror"
                 value="{{ old('phone', $account->phone) }}"
-                placeholder="Enter phone number">
-            @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                placeholder="Enter phone number"
+                maxlength="30">
+            <div class="invalid-feedback account-field-error @error('phone') is-visible @enderror" data-error-for="phone" @error('phone') style="display:block" @enderror>
+                @error('phone'){{ $message }}@enderror
+            </div>
         </div>
     </div>
 

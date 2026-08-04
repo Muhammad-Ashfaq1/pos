@@ -410,7 +410,7 @@
                                     <i class="ti tabler-trophy"></i>
                                     <span>Reward Cards</span>
                                 </button>
-                                <button type="button" class="payment-utility-btn">
+                                <button type="button" class="payment-utility-btn btn-email-receipt" data-bs-toggle="modal" data-bs-target="#emailReceiptModal">
                                     <i class="ti tabler-mail"></i>
                                     <span>Email Receipt</span>
                                 </button>
@@ -470,6 +470,10 @@
         </div>
     </div>
     @include('employee.order.sidebar-modal')
+    @include('employee.cards.partials.create-modals', [
+        'products' => $cardFormProducts ?? collect(),
+        'currencySymbol' => $currencySymbol ?? \App\Support\Currency::symbol(),
+    ])
     @include('tenant.ecommerce.customers.partials.save-modal')
     @if($vehicleRequired)
         @include('tenant.ecommerce.vehicles.partials.save-modal')
@@ -494,6 +498,32 @@
                     <div class="modal-footer border-top">
                         <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary fw-bold btn-submit-draft-share">Send PDF</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="emailReceiptModal" tabindex="-1" aria-labelledby="emailReceiptModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-start border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="emailReceiptModalLabel">Email Receipt</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="email-receipt-form">
+                    <div class="modal-body pt-3">
+                        <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" role="alert">
+                            <i class="ti tabler-info-circle me-2 fs-5"></i>
+                            <span>After checkout, the invoice PDF will be emailed to this address.</span>
+                        </div>
+                        <label for="email_receipt_email" class="form-label fw-bold">Recipient Email <span class="text-danger">*</span></label>
+                        <input type="email" id="email_receipt_email" name="email" class="form-control" required placeholder="name@example.com" autocomplete="email">
+                        <div class="invalid-feedback">Please enter a valid email address.</div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-label-secondary btn-clear-email-receipt">Don't Email</button>
+                        <button type="submit" class="btn btn-primary fw-bold btn-save-email-receipt">Save Email</button>
                     </div>
                 </form>
             </div>
@@ -526,6 +556,10 @@
             creditMinRedeemBalance: @json((float) ($creditMinRedeemBalance ?? 50)),
         };
         window.editOrder = @json($editOrder ?? null);
+        window.employeeCards = {
+            currencySymbol: @json($currencySymbol ?? \App\Support\Currency::symbol()),
+            context: 'pos',
+        };
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"></script>
     <script src="{{ asset('assets/js/tenant/e-com/customer-manager.js') }}?v={{ filemtime(public_path('assets/js/tenant/e-com/customer-manager.js')) }}"></script>
@@ -534,6 +568,11 @@
             src="{{ asset('assets/js/tenant/e-com/vehicle-manager.js') }}?v={{ filemtime(public_path('assets/js/tenant/e-com/vehicle-manager.js')) }}">
         </script>
     @endif
+
+    @can('create', \App\Models\Card::class)
+        <script src="{{ asset('assets/js/cards-form.js') }}?v={{ filemtime(public_path('assets/js/cards-form.js')) }}"></script>
+        <script src="{{ asset('assets/js/employee/cards.js') }}?v={{ filemtime(public_path('assets/js/employee/cards.js')) }}"></script>
+    @endcan
 
     <script src="{{ asset('assets/js/employee/catalog-api.js') }}"></script>
     <script

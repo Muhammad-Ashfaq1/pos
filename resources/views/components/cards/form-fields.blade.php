@@ -110,23 +110,45 @@
         @endif
     </div>
 
-    <div class="col-md-6" data-card-field="minimum_spend">
-        <label class="form-label" for="{{ $idPrefix }}_minimum_spend">
-            Minimum Spend Amount <span class="text-danger">*</span>
-        </label>
-        <div class="input-group has-validation">
-            <span class="input-group-text">{{ $currencySymbol }}</span>
+    <div class="col-md-6 d-flex flex-column gap-3">
+        <div data-card-field="minimum_spend">
+            <label class="form-label" for="{{ $idPrefix }}_minimum_spend">
+                Minimum Spend Amount <span class="text-danger">*</span>
+            </label>
+            <div class="input-group has-validation">
+                <span class="input-group-text">{{ $currencySymbol }}</span>
+                <input
+                    type="number"
+                    class="form-control"
+                    id="{{ $idPrefix }}_minimum_spend"
+                    name="minimum_spend"
+                    value="0"
+                    min="0"
+                    step="0.01"
+                    required
+                >
+                <div class="invalid-feedback" data-card-error="minimum_spend"></div>
+            </div>
+        </div>
+
+        <div data-card-field="valid_until">
+            <label class="form-label" for="{{ $idPrefix }}_valid_until">
+                Valid Until
+                @if ($validUntilRequired)
+                    <span class="text-danger">*</span>
+                @endif
+            </label>
             <input
-                type="number"
-                class="form-control"
-                id="{{ $idPrefix }}_minimum_spend"
-                name="minimum_spend"
-                value="0"
-                min="0"
-                step="0.01"
-                required
+                type="text"
+                class="form-control app-datepicker"
+                id="{{ $idPrefix }}_valid_until"
+                name="valid_until"
+                placeholder="YYYY-MM-DD"
+                autocomplete="off"
+                @if ($resolvedValidUntilMin) min="{{ $resolvedValidUntilMin }}" @endif
+                @if ($validUntilRequired) required @endif
             >
-            <div class="invalid-feedback" data-card-error="minimum_spend"></div>
+            <div class="invalid-feedback" data-card-error="valid_until"></div>
         </div>
     </div>
 
@@ -147,24 +169,6 @@
             </select>
             <div class="invalid-feedback" data-card-error="product_ids"></div>
         </div>
-    </div>
-
-    <div class="col-md-6" data-card-field="valid_until">
-        <label class="form-label" for="{{ $idPrefix }}_valid_until">
-            Valid Until
-            @if ($validUntilRequired)
-                <span class="text-danger">*</span>
-            @endif
-        </label>
-        <input
-            type="date"
-            class="form-control"
-            id="{{ $idPrefix }}_valid_until"
-            name="valid_until"
-            min="{{ $resolvedValidUntilMin }}"
-            @if ($validUntilRequired) required @endif
-        >
-        <div class="invalid-feedback" data-card-error="valid_until"></div>
     </div>
 
     @if ($showStatus)

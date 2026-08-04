@@ -40,7 +40,7 @@
                 </div>
                 <div class="mb-4">
                     <label class="form-label fw-bold small">Valid Until</label>
-                    <input type="date" class="form-control py-2">
+                    <input type="text" class="form-control py-2 app-datepicker" placeholder="YYYY-MM-DD" autocomplete="off">
                     <small class="text-muted mt-2 d-block fs-tiny">Please choose an expiry date for
                         the discount.</small>
                 </div>
@@ -67,55 +67,44 @@
                         data-bs-dismiss="offcanvas">
                         <i class="ti tabler-arrow-left fs-4"></i>
                     </button>
-                    <h4 class="offcanvas-title fw-bold" id="offcanvas{{ ucfirst($cardType) }}CardsLabel">{{ $config['title'] }}</h4>
+                    <h4 class="offcanvas-title fw-bold mb-0" id="offcanvas{{ ucfirst($cardType) }}CardsLabel">{{ $config['title'] }}</h4>
                 </div>
                 <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
             <div class="offcanvas-body p-4">
+                @can('create', \App\Models\Card::class)
+                    <div class="d-flex justify-content-end mb-3">
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-primary btn-add-order-card"
+                            data-card-type="{{ $cardType }}"
+                            data-bs-toggle="modal"
+                            data-bs-target="#{{ \App\Models\Card::metaFor($cardType)['modal'] }}"
+                        >
+                            <i class="ti tabler-plus me-1"></i>
+                            Add
+                        </button>
+                    </div>
+                @endcan
                 <p class="text-muted mb-4">Choose a valid {{ $cardType }} card to apply to this order.</p>
 
                 <div class="order-card-list" data-card-type="{{ $cardType }}">
                     @forelse($orderCards->get($cardType, collect()) as $card)
-                        <label class="order-card-option" data-card-id="{{ $card->id }}"
-                            data-card-type="{{ $cardType }}" data-card-name="{{ $card->name }}"
-                            data-card-value="{{ (float) $card->value }}"
-                            data-discount-type="{{ $card->discount_type }}"
-                            data-minimum-spend="{{ (float) $card->minimum_spend }}"
-                            data-product-id="{{ $card->product_id }}"
-                            data-product-ids="{{ implode(',', $card->productIds()) }}">
-                            <input class="form-check-input order-card-radio" type="radio"
-                                name="selected_{{ $cardType }}_card" value="{{ $card->id }}">
-                            <span class="order-card-option-icon"><i class="ti {{ $config['icon'] }}"></i></span>
-                            <span class="min-w-0 flex-grow-1">
-                                <span class="d-block fw-bold">{{ $card->name }}</span>
-                                <span class="d-block text-primary fw-bold">
-                                    @if($cardType === 'discount')
-                                        {{ $card->discount_type === 'fixed'
-                                            ? \App\Support\Currency::format((float) $card->value)
-                                            : rtrim(rtrim(number_format((float) $card->value, 2, '.', ''), '0'), '.').'%' }}
-                                    @elseif($cardType === 'gift')
-                                        {{ \App\Support\Currency::format((float) $card->value) }}
-                                    @else
-                                        {{ number_format((float) $card->value) }}{{ $config['valueSuffix'] }}
-                                    @endif
-                                </span>
-                                <small class="text-muted d-block">
-                                    Min. spend {{ \App\Support\Currency::format((float) $card->minimum_spend) }}
-                                    @if($card->valid_until)
-                                        &middot; Valid through {{ $card->valid_until->format('M d, Y') }}
-                                    @endif
-                                </small>
-                            </span>
-                        </label>
+                        @include('employee.order.partials.order-card-option', ['card' => $card])
                     @empty
-                        <div class="text-center py-5 border rounded-3 bg-light bg-opacity-50">
+                        <div class="text-center py-5 border rounded-3 bg-light bg-opacity-50" data-order-card-empty="{{ $cardType }}">
                             <i class="ti {{ $config['icon'] }} fs-1 text-muted"></i>
                             <p class="text-muted mb-0 mt-2">No valid {{ strtolower($config['title']) }} available.</p>
                         </div>
                     @endforelse
                 </div>
 
-                <div class="d-flex justify-content-between gap-2 mt-4">
+                @php $hasOrderCards = $orderCards->get($cardType, collect())->isNotEmpty(); @endphp
+
+                <div
+                    class="d-flex justify-content-between gap-2 mt-4 order-card-actions {{ $hasOrderCards ? '' : 'd-none' }}"
+                    data-card-type="{{ $cardType }}"
+                >
                     <button type="button" class="btn btn-outline-danger clear-order-card" data-card-type="{{ $cardType }}">Remove</button>
                     <button type="button" class="btn btn-primary apply-order-card" data-card-type="{{ $cardType }}">Apply Card</button>
                 </div>

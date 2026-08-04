@@ -7,6 +7,7 @@ use App\Http\Requests\Employee\Orders\SaveOrderRequest;
 use App\Mail\ShareOrderMail;
 use App\Models\Card;
 use App\Models\Order;
+use App\Models\Product;
 use App\Repositories\Interface\OrderRepositoryInterface;
 use App\Services\CreditService;
 use App\Support\Tenancy\TenantContext;
@@ -69,6 +70,11 @@ class OrderController extends Controller
                     'details',
                 ])
                 ->groupBy('card_type'),
+            'cardFormProducts' => Product::query()
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name']),
+            'currencySymbol' => \App\Support\Currency::symbol(),
         ]);
     }
 

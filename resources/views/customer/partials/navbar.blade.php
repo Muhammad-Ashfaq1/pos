@@ -24,7 +24,7 @@
                     <div class="avatar avatar-online">
                         @php $navAvatarUrl = \App\Support\AccountSettings::avatarUrl($portalCustomer); @endphp
                         @if ($navAvatarUrl)
-                            <img src="{{ $navAvatarUrl }}" alt="{{ $portalCustomer->name }}" class="rounded-circle">
+                            <img src="{{ $navAvatarUrl }}" alt="{{ $portalCustomer->name }}" class="rounded-circle" style="width:100%;height:100%;object-fit:cover;">
                         @else
                             <span class="avatar-initial rounded-circle bg-label-primary">
                                 {{ strtoupper(substr($portalCustomer->name ?? 'C', 0, 1)) }}

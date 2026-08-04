@@ -6,7 +6,7 @@
             'label' => 'Workspace',
             'items' => [
                 ['label' => 'Dashboard', 'route' => 'employee.dashboard', 'pattern' => 'employee.dashboard', 'icon' => 'tabler-layout-dashboard', 'visible' => true],
-                ['label' => 'POS / Workspace', 'route' => 'employee.pos', 'pattern' => 'employee.workspace|employee.pos', 'icon' => 'tabler-cash-register', 'visible' => true],
+                ['label' => 'POS / Workspace', 'route' => 'employee.order.new-order', 'pattern' => 'employee.order.*', 'icon' => 'tabler-cash-register', 'visible' => true],
                 ['label' => 'Discounts', 'route' => 'employee.cards.type', 'routeParams' => ['type' => 'discount'], 'pattern' => 'employee.cards.*', 'icon' => 'tabler-ticket', 'visible' => $user?->can('cards.view') || $user?->can('cards.manage')],
             ],
         ],

@@ -33,7 +33,7 @@ class CardStoreTest extends TestCase
         $response->assertCreated()
             ->assertJsonPath('message', 'Discount Card created successfully.')
             ->assertJsonPath('card_type', Card::TYPE_DISCOUNT)
-            ->assertJsonStructure(['html']);
+            ->assertJsonStructure(['html', 'picker_html']);
 
         $this->assertDatabaseHas('cards', [
             'tenant_id' => $employee->tenant_id,

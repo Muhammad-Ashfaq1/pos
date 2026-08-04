@@ -133,6 +133,13 @@ class CardsRepository implements CardRepositoryInterface
         ])->render();
     }
 
+    public function renderOrderPickerHtml(Card $card): string
+    {
+        return view('employee.order.partials.order-card-option', [
+            'card' => $card,
+        ])->render();
+    }
+
     public function destroy(Card $card): array
     {
         $label = Card::typeOptions()[$card->card_type] ?? 'Card';

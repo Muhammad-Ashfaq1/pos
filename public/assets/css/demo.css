@@ -106,3 +106,82 @@
 th {
   color: var(--bs-primary) !important;
 }
+
+/*
+* SweetAlert2 Dark Mode Overrides
+******************************************************************************/
+[data-bs-theme="dark"] .swal2-container .swal2-popup {
+  background-color: #2f3349 !important;
+  color: #cfd3ec !important;
+  border: 1px solid #434968;
+  box-shadow: 0 12px 32px rgba(15, 20, 34, 0.45);
+}
+
+[data-bs-theme="dark"] .swal2-container .swal2-title {
+  color: #cfd3ec !important;
+}
+
+[data-bs-theme="dark"] .swal2-container .swal2-html-container,
+[data-bs-theme="dark"] .swal2-container .swal2-content {
+  color: #a1acb8 !important;
+}
+
+[data-bs-theme="dark"] .swal2-container .swal2-icon.swal2-question {
+  border-color: #7367f0;
+  color: #7367f0;
+}
+
+[data-bs-theme="dark"] .swal2-container .swal2-icon.swal2-info {
+  border-color: #00cfdd;
+  color: #00cfdd;
+}
+
+[data-bs-theme="dark"] .swal2-container .swal2-icon.swal2-warning {
+  border-color: #ff9f43;
+  color: #ff9f43;
+}
+
+[data-bs-theme="dark"] .swal2-container .swal2-icon.swal2-error {
+  border-color: #ea5455;
+  color: #ea5455;
+}
+
+[data-bs-theme="dark"] .swal2-container .swal2-icon.swal2-success {
+  border-color: #28c76f;
+  color: #28c76f;
+}
+
+[data-bs-theme="dark"] .swal2-container .swal2-input,
+[data-bs-theme="dark"] .swal2-container .swal2-textarea,
+[data-bs-theme="dark"] .swal2-container .swal2-select {
+  background-color: #25293c !important;
+  border-color: #434968 !important;
+  color: #cfd3ec !important;
+}
+
+[data-bs-theme="dark"] .swal2-container .swal2-footer {
+  border-top-color: #434968;
+  color: #a1acb8;
+}
+
+[data-bs-theme="dark"] .swal2-container .swal2-close {
+  color: #a1acb8;
+}
+
+[data-bs-theme="dark"] .swal2-container .swal2-cancel {
+  background-color: #444c63 !important;
+  color: #ffffff !important;
+}
+
+/*
+* Navbar Dark Mode Overrides
+******************************************************************************/
+[data-bs-theme="dark"] .layout-navbar,
+[data-bs-theme="dark"] .layout-navbar.bg-navbar-theme,
+[data-bs-theme="dark"] .bg-navbar-theme {
+  background-color: #2f3349 !important;
+  border-color: #434968 !important;
+  color: #cfd3ec !important;
+}
+
+
