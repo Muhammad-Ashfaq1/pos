@@ -296,6 +296,9 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                         Route::get('/general', 'general')->name('general');
                         Route::post('/general/save', 'saveGeneral')->name('general.save');
 
+                        Route::get('/branding', 'branding')->name('branding');
+                        Route::post('/branding/save', 'saveBranding')->name('branding.save');
+
                         Route::get('/regional', 'regional')->name('regional');
                         Route::post('/regional/save', 'saveRegional')->name('regional.save');
 

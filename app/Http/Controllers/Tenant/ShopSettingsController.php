@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Tenant\Settings\SaveShopBrandingSettingsRequest;
 use App\Http\Requests\Tenant\Settings\SaveShopGeneralSettingsRequest;
 use App\Http\Requests\Tenant\Settings\SaveShopNotificationsSettingsRequest;
 use App\Http\Requests\Tenant\Settings\SaveShopOrderInvoiceSettingsRequest;
@@ -47,6 +48,29 @@ class ShopSettingsController extends Controller
         $this->authorize('manageSettings', $tenant);
 
         $result = $this->repo->saveGeneralSettings($tenant, $request->validated());
+
+        return response()->json($result);
+    }
+
+    public function branding(): View
+    {
+        $tenant = $this->currentTenant();
+
+        $this->authorize('manageSettings', $tenant);
+
+        return view('tenant.settings.shop-profile.branding', $this->repo->sharedViewData($tenant));
+    }
+
+    public function saveBranding(SaveShopBrandingSettingsRequest $request): JsonResponse
+    {
+        $tenant = $this->currentTenant();
+
+        $this->authorize('manageSettings', $tenant);
+
+        $result = $this->repo->saveBrandingSettings($tenant, [
+            ...$request->validated(),
+            'logo' => $request->file('logo'),
+        ]);
 
         return response()->json($result);
     }

@@ -1,6 +1,7 @@
 {{-- Customer portal authenticated chrome — same Vuexy layout-menu collapse as admin --}}
 @php
     $portalCustomer = auth('customer')->user();
+    $portalCustomer?->loadMissing('tenant');
     $portalNav = [
         ['label' => 'Overview', 'route' => 'customer.dashboard', 'pattern' => 'customer.dashboard', 'icon' => 'tabler-layout-dashboard'],
         ['label' => 'Service History', 'route' => 'customer.orders', 'pattern' => 'customer.orders*', 'icon' => 'tabler-history'],
@@ -12,10 +13,10 @@
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
     <div class="app-brand demo">
         <a href="{{ route('customer.dashboard') }}" class="app-brand-link">
-            <span class="app-brand-logo demo">
-                @include('layouts.partials.brand-logo')
-            </span>
-            <span class="app-brand-text demo menu-text fw-bold ms-3">Auto<span class="text-warning">Serve</span></span>
+            @include('layouts.partials.shop-brand', [
+                'shopTenant' => $portalCustomer?->tenant,
+                'showTagline' => true,
+            ])
         </a>
 
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">

@@ -69,10 +69,9 @@
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme employee-menu">
     <div class="app-brand demo">
         <a href="{{ route('employee.dashboard') }}" class="app-brand-link">
-            <span class="app-brand-logo demo">
-                @include('layouts.partials.brand-logo')
-            </span>
-            <span class="app-brand-text demo menu-text fw-bold ms-3">{{ config('app.name', 'Oil Change POS') }}</span>
+            @include('layouts.partials.shop-brand', [
+                'shopTenant' => $user?->tenant,
+            ])
         </a>
 
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
@@ -86,7 +85,7 @@
             <div class="card-body py-3">
                 <span class="badge bg-primary employee-panel-badge">EMPLOYEE PANEL</span>
                 <div class="fw-semibold mt-2">{{ $user?->tenant?->display_name ?? 'Workspace' }}</div>
-                <small class="text-muted">Daily operations and catalog access</small>
+                <small class="text-muted">{{ $user?->tenant?->brandTagline() ?: 'Daily operations and catalog access' }}</small>
                 <div class="employee-mini-stat d-flex justify-content-between align-items-center px-3 py-2 mt-3">
                     <small class="text-muted">Signed in as</small>
                     <small class="fw-semibold text-body">{{ str($user?->primaryRoleName() ?? 'employee')->replace('_', ' ')->title() }}</small>

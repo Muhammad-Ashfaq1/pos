@@ -17,6 +17,7 @@ class SaveShopGeneralSettingsRequest extends BaseShopSettingsRequest
             'city' => $this->normalizeNullableString($this->input('city')),
             'state' => $this->normalizeNullableString($this->input('state')),
             'country' => $this->normalizeNullableString($this->input('country')),
+            'tagline' => $this->normalizeNullableString($this->input('tagline')),
         ]);
     }
 
@@ -33,6 +34,7 @@ class SaveShopGeneralSettingsRequest extends BaseShopSettingsRequest
             'city' => ['nullable', 'string', 'max:150'],
             'state' => ['nullable', 'string', 'max:150'],
             'country' => ['nullable', 'string', 'max:150'],
+            'tagline' => ['nullable', 'string', 'max:120'],
             'settings' => ['prohibited'],
             'onboarding_status' => ['prohibited'],
             'onboarding_completed_at' => ['prohibited'],
@@ -50,6 +52,7 @@ class SaveShopGeneralSettingsRequest extends BaseShopSettingsRequest
             'owner_name.required' => 'Please enter the primary contact name.',
             'business_email.email' => 'Please enter a valid business email address.',
             'website_url.url' => 'Please enter a valid website URL.',
+            'tagline.max' => 'Tagline may not be longer than 120 characters.',
         ];
     }
 }

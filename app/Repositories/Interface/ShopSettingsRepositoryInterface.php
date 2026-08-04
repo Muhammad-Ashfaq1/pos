@@ -10,6 +10,8 @@ interface ShopSettingsRepositoryInterface
 
     public function saveGeneralSettings(Tenant $tenant, array $data): array;
 
+    public function saveBrandingSettings(Tenant $tenant, array $data): array;
+
     public function saveRegionalSettings(Tenant $tenant, array $data): array;
 
     public function saveOperationsSettings(Tenant $tenant, array $data): array;
