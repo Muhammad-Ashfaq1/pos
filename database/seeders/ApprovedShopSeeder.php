@@ -28,12 +28,15 @@ class ApprovedShopSeeder extends Seeder
     public function run(): void
     {
         $superAdminId = User::query()->where('role', User::SUPER_ADMIN)->value('id');
+        $emailDomain = trim((string) env('SEED_EMAIL_DOMAIN', 'obtainsolutions.com'), '@');
+        $password = (string) env('TENANT_DEMO_PASSWORD', 'password');
+        $websiteBase = rtrim((string) env('DEMO_SHOP_WEBSITE_BASE_URL', 'https://shops.obtainsolutions.com'), '/');
 
         for ($shopNumber = 1; $shopNumber <= self::SHOP_COUNT; $shopNumber++) {
             $template = self::SHOP_TEMPLATES[($shopNumber - 1) % count(self::SHOP_TEMPLATES)];
 
             $shopName = sprintf('%s %d', $template['name'], $shopNumber);
-            $adminEmail = sprintf('admin%d@pos.com', $shopNumber);
+            $adminEmail = sprintf('admin%d@%s', $shopNumber, $emailDomain);
             $ownerPhone = sprintf('+1 555 010 %04d', 2200 + $shopNumber);
             $ownerName = sprintf('Shop %d Admin', $shopNumber);
 
@@ -52,7 +55,7 @@ class ApprovedShopSeeder extends Seeder
                     'owner_name' => $ownerName,
                     'email' => $adminEmail,
                     'phone' => $ownerPhone,
-                    'website_url' => sprintf('https://shops.demo.test/shop-%d', $shopNumber),
+                    'website_url' => sprintf('%s/shop-%d', $websiteBase, $shopNumber),
                     'address' => sprintf('%d Service Bay Road', 1450 + $shopNumber),
                     'city' => $template['city'],
                     'state' => $template['state'],
@@ -72,7 +75,7 @@ class ApprovedShopSeeder extends Seeder
                 ['email' => $adminEmail],
                 [
                     'name' => $ownerName,
-                    'password' => 'password',
+                    'password' => $password,
                     'tenant_id' => $tenant->id,
                     'role' => User::TENANT_ADMIN,
                     'phone' => $ownerPhone,

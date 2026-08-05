@@ -15,19 +15,22 @@ class TenantEmployeeSeeder extends Seeder
     {
         app(PermissionSyncService::class)->sync(syncTenantAdmins: false);
 
+        $emailDomain = trim((string) env('SEED_EMAIL_DOMAIN', 'obtainsolutions.com'), '@');
+        $password = (string) env('TENANT_DEMO_PASSWORD', 'password');
+
         Tenant::query()
             ->orderBy('id')
             ->get()
-            ->each(function (Tenant $tenant): void {
+            ->each(function (Tenant $tenant) use ($emailDomain, $password): void {
                 for ($employeeNumber = 1; $employeeNumber <= self::EMPLOYEES_PER_SHOP; $employeeNumber++) {
-                    $email = sprintf('employee%d%d@pos.com', $tenant->id, $employeeNumber);
+                    $email = sprintf('employee%d%d@%s', $tenant->id, $employeeNumber, $emailDomain);
 
                     $user = User::query()->firstOrNew(['email' => $email]);
 
                     $user->fill([
                         'name' => $user->name ?: sprintf('Shop %d Employee %d', $tenant->id, $employeeNumber),
                         'email' => $email,
-                        'password' => 'password',
+                        'password' => $password,
                         'tenant_id' => $tenant->id,
                         'role' => User::EMPLOYEE,
                         'is_active' => true,

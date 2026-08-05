@@ -90,7 +90,8 @@ class DashboardDemoSeeder extends Seeder
 
         // Vary the outcome so the status + payment-method breakdowns are realistic.
         $roll = random_int(1, 100);
-        $isEstimate = $roll > 92;          // ~8% estimates
+        $isEstimate = $roll > 90;                 // ~10% estimates
+        $isInvoice = ! $isEstimate && $roll > 70; // ~20% invoices
         $method = ['cash', 'card', 'check'][random_int(0, 2)];
 
         $payload = [
@@ -102,10 +103,17 @@ class DashboardDemoSeeder extends Seeder
         if ($isEstimate) {
             $payload['is_estimate'] = true;
         } else {
+            if ($isInvoice) {
+                $payload['is_invoice'] = true;
+                $payload['invoice_date'] = $day->toDateString();
+            }
+
+            $paymentRoll = random_int(1, 100);
+
             // 70% paid in full, 18% partial, 12% pending.
             $payload['payment'] = match (true) {
-                $roll <= 70 => ['method' => $method, 'amount' => 100000],
-                $roll <= 88 => ['method' => $method, 'amount' => 1],   // tiny → partially paid
+                $paymentRoll <= 70 => ['method' => $method, 'amount' => 100000],
+                $paymentRoll <= 88 => ['method' => $method, 'amount' => 1],   // tiny → partially paid
                 default => ['method' => $method, 'amount' => 0],       // pending
             };
         }
@@ -116,11 +124,11 @@ class DashboardDemoSeeder extends Seeder
             return; // Skip any order that fails validation rather than aborting the seed.
         }
 
-        $this->backdate((int) $result['data']['id'], $day);
+        $this->backdate((int) $result['data']['id'], $day, $isInvoice);
     }
 
     /** Move an order (and its non-estimate paid_at) to a random time on the given day. */
-    private function backdate(int $orderId, Carbon $day): void
+    private function backdate(int $orderId, Carbon $day, bool $isInvoice = false): void
     {
         $when = $day->copy()->setTime(random_int(8, 19), random_int(0, 59), random_int(0, 59));
 
@@ -133,6 +141,7 @@ class DashboardDemoSeeder extends Seeder
             'created_at' => $when,
             'updated_at' => $when,
             'paid_at' => $order->paid_at ? $when : null,
+            'invoice_date' => $isInvoice ? $day->toDateString() : $order->invoice_date,
         ])->saveQuietly();
 
         $order->payments()->update(['created_at' => $when, 'updated_at' => $when]);

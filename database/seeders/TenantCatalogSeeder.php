@@ -99,13 +99,13 @@ class TenantCatalogSeeder extends Seeder
     ];
 
     private const CUSTOMERS = [
-        ['name' => 'John Smith',         'phone' => '+1 555 100 0001', 'email' => 'john.smith@example.com',     'type' => Customer::TYPE_REGISTERED, 'group' => 'silver-tier'],
-        ['name' => 'Sarah Johnson',      'phone' => '+1 555 100 0002', 'email' => 'sarah.j@example.com',        'type' => Customer::TYPE_REGISTERED, 'group' => 'gold-tier'],
-        ['name' => 'Michael Williams',   'phone' => '+1 555 100 0003', 'email' => 'mwilliams@example.com',      'type' => Customer::TYPE_REGISTERED, 'group' => null],
-        ['name' => 'Emily Davis',        'phone' => '+1 555 100 0004', 'email' => 'emily.davis@example.com',    'type' => Customer::TYPE_REGISTERED, 'group' => 'silver-tier'],
-        ['name' => 'Robert Brown',       'phone' => '+1 555 100 0005', 'email' => 'rbrown@example.com',         'type' => Customer::TYPE_REGISTERED, 'group' => 'platinum-tier'],
-        ['name' => 'Acme Logistics Inc', 'phone' => '+1 555 100 0006', 'email' => 'fleet@acme-logistics.com',   'type' => Customer::TYPE_CORPORATE,  'group' => 'fleet-account'],
-        ['name' => 'Sunrise Cab Co',     'phone' => '+1 555 100 0007', 'email' => 'ops@sunrisecab.com',         'type' => Customer::TYPE_CORPORATE,  'group' => 'platinum-tier'],
+        ['name' => 'John Smith',         'phone' => '+1 555 100 0001', 'email' => 'john.smith@obtainsolutions.com',     'type' => Customer::TYPE_REGISTERED, 'group' => 'silver-tier'],
+        ['name' => 'Sarah Johnson',      'phone' => '+1 555 100 0002', 'email' => 'sarah.j@obtainsolutions.com',        'type' => Customer::TYPE_REGISTERED, 'group' => 'gold-tier'],
+        ['name' => 'Michael Williams',   'phone' => '+1 555 100 0003', 'email' => 'mwilliams@obtainsolutions.com',      'type' => Customer::TYPE_REGISTERED, 'group' => null],
+        ['name' => 'Emily Davis',        'phone' => '+1 555 100 0004', 'email' => 'emily.davis@obtainsolutions.com',    'type' => Customer::TYPE_REGISTERED, 'group' => 'silver-tier'],
+        ['name' => 'Robert Brown',       'phone' => '+1 555 100 0005', 'email' => 'rbrown@obtainsolutions.com',         'type' => Customer::TYPE_REGISTERED, 'group' => 'platinum-tier'],
+        ['name' => 'Acme Logistics Inc', 'phone' => '+1 555 100 0006', 'email' => 'fleet@obtainsolutions.com',          'type' => Customer::TYPE_CORPORATE,  'group' => 'fleet-account'],
+        ['name' => 'Sunrise Cab Co',     'phone' => '+1 555 100 0007', 'email' => 'ops@obtainsolutions.com',            'type' => Customer::TYPE_CORPORATE,  'group' => 'platinum-tier'],
         ['name' => Customer::DEFAULT_WALK_IN_NAME, 'phone' => null,    'email' => null,                         'type' => Customer::TYPE_WALK_IN,    'group' => null],
     ];
 
@@ -711,6 +711,7 @@ class TenantCatalogSeeder extends Seeder
             'customer_id' => $customer->id,
             'vehicle_id' => $vehicle?->id,
             'status' => Order::STATUS_ESTIMATE,
+            'is_invoice' => false,
             'total_quantity' => $estQty,
             'subtotal_amount' => $estSubtotal,
             'discount_amount' => $estDiscount,
@@ -800,6 +801,7 @@ class TenantCatalogSeeder extends Seeder
             'customer_id' => $customer->id,
             'vehicle_id' => $vehicle?->id,
             'status' => Order::STATUS_PENDING,
+            'is_invoice' => false,
             'total_quantity' => $pendQty,
             'subtotal_amount' => $pendSubtotal,
             'discount_amount' => 0.00,
@@ -928,6 +930,7 @@ class TenantCatalogSeeder extends Seeder
             'customer_id' => $customer->id,
             'vehicle_id' => $vehicle?->id,
             'status' => Order::STATUS_PARTIALLY_PAID,
+            'is_invoice' => false,
             'total_quantity' => 3,
             'subtotal_amount' => $partSubtotal,
             'discount_amount' => $partDiscount,
@@ -1064,10 +1067,12 @@ class TenantCatalogSeeder extends Seeder
 
         $paidOrder = Order::create([
             'tenant_id' => $tenant->id,
-            'order_number' => $makeOrderNumber('ORD'),
+            'order_number' => $makeOrderNumber('INV'),
             'customer_id' => $customer->id,
             'vehicle_id' => $vehicle?->id,
             'status' => Order::STATUS_PAID,
+            'is_invoice' => true,
+            'invoice_date' => now()->subDays(1)->toDateString(),
             'total_quantity' => 3,
             'subtotal_amount' => $paidSubtotal,
             'discount_amount' => $paidDiscount,

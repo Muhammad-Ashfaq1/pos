@@ -30,11 +30,11 @@ class CustomerPortalDemoSeeder extends Seeder
     private const ORDERS_PER_CUSTOMER = 3;
 
     private const CUSTOMERS = [
-        ['name' => 'Olivia Bennett', 'email' => 'olivia@portal.test', 'phone' => '+1 555 880 0101',
+        ['name' => 'Olivia Bennett', 'email' => 'olivia@obtainsolutions.com', 'phone' => '+1 555 880 0101',
             'vehicle' => ['make' => 'Toyota', 'model' => 'Corolla', 'year' => 2019, 'plate' => 'OLV-2019', 'color' => 'Silver']],
-        ['name' => 'Marcus Lee', 'email' => 'marcus@portal.test', 'phone' => '+1 555 880 0202',
+        ['name' => 'Marcus Lee', 'email' => 'marcus@obtainsolutions.com', 'phone' => '+1 555 880 0202',
             'vehicle' => ['make' => 'Honda', 'model' => 'Civic', 'year' => 2021, 'plate' => 'MAR-2021', 'color' => 'Blue']],
-        ['name' => 'Priya Nair', 'email' => 'priya@portal.test', 'phone' => '+1 555 880 0303',
+        ['name' => 'Priya Nair', 'email' => 'priya@obtainsolutions.com', 'phone' => '+1 555 880 0303',
             'vehicle' => ['make' => 'Ford', 'model' => 'Focus', 'year' => 2018, 'plate' => 'PRI-2018', 'color' => 'Red']],
     ];
 
@@ -86,9 +86,24 @@ class CustomerPortalDemoSeeder extends Seeder
             // ledger shows every transaction type in the portal.
             if ($index === array_key_last(self::CUSTOMERS)) {
                 $fresh = $customer->fresh();
-                if ((float) $fresh->credit_balance >= 2) {
+                $minRedeem = $credits->minRedeemBalance();
+                $balance = round((float) $fresh->credit_balance, 2);
+
+                // Unlock wallet if earned credit is still below the tenant minimum.
+                if ($balance > 0 && $balance < $minRedeem) {
+                    $credits->adjust(
+                        $fresh,
+                        round(($minRedeem - $balance) + 10, 2),
+                        'Demo unlock top-up',
+                        $staff?->id
+                    );
+                    $fresh = $customer->fresh();
+                }
+
+                if ($credits->canRedeem($fresh) && (float) $fresh->credit_balance >= 2) {
                     $credits->redeem($fresh, 2.0, null, $staff?->id);
                 }
+
                 $credits->adjust($customer->fresh(), 5.0, 'Goodwill bonus', $staff?->id);
             }
 
