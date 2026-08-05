@@ -552,7 +552,17 @@ class OrdersRepository implements OrderRepositoryInterface
         }
 
         $status = $filters['status'] ?? null;
-        if (in_array($status, [Order::STATUS_PAID, Order::STATUS_PARTIALLY_PAID, Order::STATUS_PENDING], true)) {
+        if ($status === Order::STATUS_PAID) {
+            // Match paymentAwareStatus(): DB paid, or amounts fully covered while still open.
+            $query->where(function (Builder $builder): void {
+                $builder->where('status', Order::STATUS_PAID)
+                    ->orWhere(function (Builder $inner): void {
+                        $inner->whereIn('status', [Order::STATUS_PENDING, Order::STATUS_PARTIALLY_PAID])
+                            ->where('total_amount', '>', 0)
+                            ->whereColumn('payment_amount', '>=', 'total_amount');
+                    });
+            });
+        } elseif (in_array($status, [Order::STATUS_PARTIALLY_PAID, Order::STATUS_PENDING], true)) {
             $query->where('status', $status);
         } else {
             $query->whereIn('status', [
@@ -1102,7 +1112,8 @@ class OrdersRepository implements OrderRepositoryInterface
         return [
             'id' => $order->id,
             'order_number' => $order->order_number,
-            'status' => $order->status,
+            'status' => $this->paymentAwareStatus($order),
+            'is_invoice' => (bool) $order->is_invoice,
             'total_quantity' => $order->total_quantity,
             'subtotal_amount' => (float) $order->subtotal_amount,
             'discount_amount' => (float) $order->discount_amount,
@@ -1342,6 +1353,7 @@ class OrdersRepository implements OrderRepositoryInterface
             'status' => $status,
             'status_label' => $this->statusLabel($status),
             'status_class' => $this->listingStatusClass($status),
+            'is_invoice' => (bool) $order->is_invoice,
             'customer_id' => $order->customer_id,
             'customer_email' => $order->customer?->email,
             'customer_name' => trim((string) ($order->customer?->name ?? '')) ?: 'Walk-In Customer',
@@ -1536,6 +1548,10 @@ class OrdersRepository implements OrderRepositoryInterface
         $status = (string) $order->status;
         $totalAmount = (float) $order->total_amount;
         $paymentAmount = (float) $order->payment_amount;
+
+        if (in_array($status, [Order::STATUS_RETURNED, Order::STATUS_ESTIMATE], true)) {
+            return $status;
+        }
 
         if ($status === Order::STATUS_PAID) {
             return Order::STATUS_PAID;

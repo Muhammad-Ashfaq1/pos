@@ -1,6 +1,6 @@
 @extends('layouts.employee-portal')
 
-@section('title', 'Order Details')
+@section('title', ! empty($order['is_invoice'] ?? false) ? 'Invoice Details' : 'Order Details')
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}">
@@ -9,11 +9,19 @@
 @endpush
 
 @section('content')
+    @php
+        $isInvoiceOrder = ! empty($order['is_invoice']);
+        $orderBackUrl = $isInvoiceOrder
+            ? route('employee.invoices.index')
+            : route('employee.order.index');
+        $orderBackTitle = $isInvoiceOrder ? 'Back to invoices' : 'Back to orders';
+        $orderDetailsTitle = $isInvoiceOrder ? 'Invoice Details' : 'Order Details';
+    @endphp
     <div class="employee-orders-page employee-order-details-page">
         <x-employee.page-header
-            title="Order Details"
-            :back-url="route('employee.order.index')"
-            back-title="Back to orders"
+            :title="$orderDetailsTitle"
+            :back-url="$orderBackUrl"
+            :back-title="$orderBackTitle"
         />
 
         <div class="employee-order-details-layout">
@@ -434,6 +442,10 @@
                     }
                     paymentModal.modal('hide');
                     setTimeout(function() {
+                        if (response.redirect_url) {
+                            window.location.href = response.redirect_url;
+                            return;
+                        }
                         window.location.reload();
                     }, 1000);
                 }).fail(function(xhr) {

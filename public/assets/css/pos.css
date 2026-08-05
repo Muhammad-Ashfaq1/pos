@@ -730,12 +730,13 @@
 }
 
 .order-card-option.is-ineligible {
-    opacity: .55;
-    cursor: pointer;
+    opacity: .45;
+    cursor: not-allowed !important;
+    pointer-events: none;
 }
 
-.order-card-option.is-ineligible .order-card-radio {
-    cursor: pointer;
+.order-card-option.is-ineligible * {
+    cursor: not-allowed !important;
 }
 
 .order-card-option-icon {

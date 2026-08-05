@@ -261,9 +261,10 @@ class Tenant extends Model implements TenantContract
             return null;
         }
 
-        $relative = \Illuminate\Support\Facades\Storage::disk('public')->url($path);
-
-        return url($relative);
+        // Root-relative so the logo loads on whatever host/scheme the user
+        // is browsing (http://pos.test, https://pos.test, localhost, etc.).
+        // Absolute APP_URL-based URLs break when APP_URL doesn't match the request.
+        return '/storage/'.ltrim(str_replace('\\', '/', $path), '/');
     }
 
     /**

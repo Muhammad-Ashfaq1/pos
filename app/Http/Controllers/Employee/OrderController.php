@@ -169,6 +169,12 @@ class OrderController extends Controller
 
         $result = $this->orderRepository->addPayment($order, $data, $request->user());
 
+        $order->refresh();
+
+        if ($order->is_invoice && ($result['data']['status'] ?? null) === Order::STATUS_PAID) {
+            $result['redirect_url'] = route('employee.invoices.index');
+        }
+
         return response()->json($result);
     }
 

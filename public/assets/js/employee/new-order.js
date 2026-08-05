@@ -1376,11 +1376,9 @@
                 const eligible = cardIsEligible(card, order, totals);
 
                 $option.toggleClass('is-ineligible', !eligible);
-                // Keep radios enabled so newly added / product-linked cards stay clickable.
-                // Apply still validates eligibility and shows a clear reason.
                 $option.find('.order-card-radio')
-                    .prop('disabled', false)
-                    .prop('checked', !!applied && String(applied.id) === String(card.id));
+                    .prop('disabled', !eligible)
+                    .prop('checked', eligible && !!applied && String(applied.id) === String(card.id));
             });
         });
     }
@@ -2991,9 +2989,15 @@
         }
 
         const $option = $(this);
+        if ($option.hasClass('is-ineligible')) {
+            event.preventDefault();
+            return false;
+        }
+
         const $radio = $option.find('.order-card-radio').first();
-        if (!$radio.length) {
-            return;
+        if (!$radio.length || $radio.prop('disabled')) {
+            event.preventDefault();
+            return false;
         }
 
         $radio.prop('checked', true).trigger('change');
