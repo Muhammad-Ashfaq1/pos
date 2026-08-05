@@ -43,61 +43,25 @@ window.config = {
 
 window.assetsPath = document.documentElement.getAttribute('data-assets-path');
 window.templateName = document.documentElement.getAttribute('data-template');
-const displayCustomizerOverride = document.documentElement.getAttribute('data-display-customizer');
 
 /**
  * TemplateCustomizer
  * ! You must use(include) template-customizer.js to use TemplateCustomizer settings
  * -----------------------------------------------------------------------------------------------
- */
-
-/**
- * TemplateCustomizer settings
- * -------------------------------------------------------------------------------------
- * displayCustomizer: true(Show customizer), false(Hide customizer)
- * lang: To set default language, Add more languages and set default. Fallback language is 'en'
- * defaultPrimaryColor: '#7367F0' | Set default primary color
- * defaultSkin: 0(Default), 1(Bordered)
- * defaultTheme: 'light', 'dark', 'system'
- * defaultSemiDark: true, false (For dark menu only)
- * defaultContentLayout: 'compact', 'wide' (compact=container-xxl, wide=container-fluid)
- * defaultHeaderType: 'static', 'fixed' (for horizontal layout only)
- * defaultMenuCollapsed: true, false (For vertical layout only)
- * defaultNavbarType: 'sticky', 'static', 'hidden' (For vertical layout only)
- * defaultTextDir: 'ltr', 'rtl' (Direction)
- * defaultFooterFixed: true, false (For vertical layout only)
- * defaultShowDropdownOnHover : true, false (for horizontal layout only)
- * controls: [ 'color', 'theme', 'skins', 'semiDark', 'layoutCollapsed', 'layoutNavbarOptions', 'headerType', 'contentLayout', 'rtl' ] | Show/Hide customizer controls
+ * Gear / panel customizer UI is permanently disabled. Theme mode (light/dark/system) is
+ * controlled from the navbar dropdown only.
  */
 
 if (typeof TemplateCustomizer !== 'undefined') {
   window.templateCustomizer = new TemplateCustomizer({
-    displayCustomizer:
-      displayCustomizerOverride !== null
-        ? displayCustomizerOverride === 'true'
-        : false,
-    lang: localStorage.getItem('templateCustomizer-' + templateName + '--Lang') || 'en', // Set default language here
-    // defaultPrimaryColor: '#D11BB4',
-    // defaultSkin: 1,
-    // defaultTheme: 'system',
-    // defaultSemiDark: true,
-    // defaultContentLayout: 'wide',
-    // defaultHeaderType: 'static',
-    // defaultMenuCollapsed: true,
-    // defaultNavbarType: 'static',
-    // defaultTextDir: 'rtl',
-    // defaultFooterFixed: false,
-    // defaultShowDropdownOnHover: false,
+    displayCustomizer: false,
+    lang: localStorage.getItem('templateCustomizer-' + templateName + '--Lang') || 'en',
     controls: [
-      'color',
       'theme',
-      'skins',
-      'semiDark',
       'layoutCollapsed',
       'layoutNavbarOptions',
       'headerType',
-      'contentLayout',
-      'rtl'
+      'contentLayout'
     ]
   });
 }

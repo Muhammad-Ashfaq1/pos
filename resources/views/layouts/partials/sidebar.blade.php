@@ -257,6 +257,23 @@
         #layout-menu .menu-item-settings-bottom {
             margin-top: auto;
         }
+
+        #layout-menu .menu-copyright {
+            pointer-events: none;
+        }
+
+        #layout-menu .menu-copyright .menu-link {
+            cursor: default;
+            padding-top: 0.25rem;
+            padding-bottom: 1rem;
+            color: var(--bs-secondary-color);
+            font-size: 0.8125rem;
+        }
+
+        #layout-menu .menu-copyright .menu-link:hover {
+            background: transparent !important;
+            color: var(--bs-secondary-color) !important;
+        }
     </style>
 @endonce
 
@@ -332,13 +349,19 @@
         @endif
 
         @if (session()->has('impersonator_id'))
-            <li class="menu-item">
+            <li class="menu-item {{ $settingsMenuItem ? '' : 'menu-item-settings-bottom' }}">
                 <a href="{{ route('admin.impersonate.stop') }}" class="menu-link text-warning">
                     <i class="menu-icon icon-base ti tabler-user-x"></i>
                     <div>Stop Impersonation</div>
                 </a>
             </li>
         @endif
+
+        <li class="menu-item menu-copyright {{ ($settingsMenuItem || session()->has('impersonator_id')) ? '' : 'menu-item-settings-bottom' }}">
+            <div class="menu-link">
+                <div>&copy; {{ now()->year }} {{ config('app.name', 'AutoServe') }}</div>
+            </div>
+        </li>
     </ul>
 </aside>
 <div class="menu-mobile-toggler d-xl-none rounded-1">
