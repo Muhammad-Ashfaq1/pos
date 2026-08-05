@@ -18,6 +18,7 @@
         </div>
 
         <ul class="navbar-nav flex-row align-items-center gap-3 ms-auto">
+            @include('layouts.partials.theme-switcher')
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown"
                    aria-expanded="false" aria-label="Account menu">

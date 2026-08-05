@@ -36,35 +36,7 @@
                     </div>
                 </li>
             @endif
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle hide-arrow" id="nav-theme" href="javascript:void(0);"
-                    data-bs-toggle="dropdown" aria-label="Theme: light" aria-expanded="false">
-                    <i class="tabler-sun icon-base ti icon-md theme-icon-active"></i>
-                </a>
-                <span class="d-none" id="nav-theme-text">Theme</span>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-theme-text">
-                    <li>
-                        <button type="button" class="dropdown-item align-items-center waves-effect active"
-                            data-bs-theme-value="light" aria-pressed="true">
-                            <span><i class="icon-base ti tabler-sun icon-22px me-3" data-icon="sun"></i>Light</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button type="button" class="dropdown-item align-items-center waves-effect"
-                            data-bs-theme-value="dark" aria-pressed="false">
-                            <span><i class="icon-base ti tabler-moon-stars icon-22px me-3"
-                                    data-icon="moon-stars"></i>Dark</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button type="button" class="dropdown-item align-items-center waves-effect"
-                            data-bs-theme-value="system" aria-pressed="false">
-                            <span><i class="icon-base ti tabler-device-desktop-analytics icon-22px me-3"
-                                    data-icon="device-desktop-analytics"></i>System</span>
-                        </button>
-                    </li>
-                </ul>
-            </li>
+            @include('layouts.partials.theme-switcher')
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">

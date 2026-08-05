@@ -5,7 +5,6 @@
     dir="ltr"
     data-skin="default"
     data-bs-theme="light"
-    data-display-customizer="true"
     data-assets-path="{{ asset('assets') }}/"
     data-template="vertical-menu-template">
 <head>
@@ -57,21 +56,9 @@
             @endif
         }
 
-        html[data-display-customizer='true'] #template-customizer {
-            display: flex !important;
-            visibility: visible !important;
-            z-index: 2147483647 !important;
-        }
-
-        html[data-display-customizer='true'] #template-customizer .template-customizer-open-btn {
-            z-index: 2 !important;
-        }
-
-        @media (max-width: 1200px) {
-            html[data-display-customizer='true'] #template-customizer {
-                display: flex !important;
-                visibility: visible !important;
-            }
+        /* Theme customizer panel (gear) disabled — use header Light/Dark/System only */
+        #template-customizer {
+            display: none !important;
         }
 
         .shop-brand-logo img {
@@ -724,6 +711,14 @@
                                 <i class="ti tabler-chart-histogram"></i>
                             </a>
                         @endcan
+                        {{-- Theme switcher disabled for employee panel for now
+                        @include('layouts.partials.theme-switcher', [
+                            'wrapperTag' => 'div',
+                            'wrapperClass' => 'dropdown',
+                            'themeTriggerClass' => 'preview-circle-btn preview-circle-btn--indigo dropdown-toggle hide-arrow',
+                            'themeIconClass' => 'ti tabler-sun theme-icon-active',
+                        ])
+                        --}}
                         <button type="button" class="preview-circle-btn preview-circle-btn--indigo">
                             <i class="ti tabler-bell"></i>
                         </button>
@@ -798,21 +793,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-aio-3.2.8.min.js"></script>
     <script src="{{ asset('assets/js/app-helpers.js') }}?v={{ filemtime(public_path('assets/js/app-helpers.js')) }}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            if (document.documentElement.getAttribute('data-display-customizer') !== 'true') {
-                return;
-            }
-
-            var customizer = document.getElementById('template-customizer');
-            if (!customizer) {
-                return;
-            }
-
-            customizer.style.visibility = 'visible';
-            customizer.classList.add('template-customizer-open');
-        });
-    </script>
     <script src="{{ asset('assets/js/app-loader.js') }}?v={{ filemtime(public_path('assets/js/app-loader.js')) }}"></script>
     <script src="{{ asset('assets/js/session-notifications.js') }}"></script>
 
