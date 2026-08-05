@@ -9,11 +9,34 @@
 <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('assets/img/pwa/icon-192.png') }}" />
 <link rel="icon" type="image/png" sizes="512x512" href="{{ asset('assets/img/pwa/icon-512.png') }}" />
 <script>
-  if ('serviceWorker' in navigator) {
+  (function () {
+    if (!('serviceWorker' in navigator)) {
+      return;
+    }
+
+    var pwaEnabled = @json((bool) config('app.pwa_enabled'));
+
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('{{ asset('sw.js') }}', { scope: '/' }).catch(function (err) {
+      if (!pwaEnabled) {
+        // Remove any previously registered worker so offline.html cannot trap users.
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          return Promise.all(regs.map(function (reg) { return reg.unregister(); }));
+        }).then(function () {
+          if (!('caches' in window)) {
+            return;
+          }
+
+          return caches.keys().then(function (keys) {
+            return Promise.all(keys.map(function (key) { return caches.delete(key); }));
+          });
+        }).catch(function () {});
+
+        return;
+      }
+
+      navigator.serviceWorker.register(@json(asset('sw.js')), { scope: '/' }).catch(function (err) {
         console.warn('Service worker registration failed:', err);
       });
     });
-  }
+  })();
 </script>

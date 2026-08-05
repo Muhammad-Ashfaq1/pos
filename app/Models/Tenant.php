@@ -23,7 +23,7 @@ class Tenant extends Model implements TenantContract
             'locale' => 'en',
         ],
         'branding' => [
-            'primary_color' => '#312e81',
+            'primary_color' => null,
             'tagline' => null,
         ],
         'tax' => [
@@ -61,7 +61,14 @@ class Tenant extends Model implements TenantContract
         ],
     ];
 
-    public const DEFAULT_BRAND_COLOR = '#312e81';
+    /** Vuexy / app theme default — used when a shop has not set a custom brand color. */
+    public const DEFAULT_BRAND_COLOR = '#7367F0';
+
+    /** Colors that mean "use application theme" (current + previous baked-in defaults). */
+    private const THEME_DEFAULT_BRAND_COLORS = [
+        '#7367F0',
+        '#312E81',
+    ];
 
     protected $table = 'tenants';
 
@@ -282,15 +289,42 @@ class Tenant extends Model implements TenantContract
         return 'data:'.$mime.';base64,'.base64_encode($contents);
     }
 
-    public function brandPrimaryColor(): string
+    /**
+     * Custom brand primary color when the shop has set one.
+     * Returns null so callers can keep the application theme default.
+     */
+    public function brandPrimaryColor(): ?string
     {
-        $color = trim((string) $this->setting('branding.primary_color', self::DEFAULT_BRAND_COLOR));
+        $color = trim((string) data_get($this->settings ?? [], 'branding.primary_color', ''));
 
-        if (! preg_match('/^#[0-9A-Fa-f]{6}$/', $color)) {
-            return self::DEFAULT_BRAND_COLOR;
+        if ($color === '' || ! preg_match('/^#[0-9A-Fa-f]{6}$/', $color)) {
+            return null;
         }
 
-        return strtoupper($color);
+        $normalized = strtoupper($color);
+
+        if (self::isThemeDefaultBrandColor($normalized)) {
+            return null;
+        }
+
+        return $normalized;
+    }
+
+    public static function isThemeDefaultBrandColor(?string $color): bool
+    {
+        if ($color === null || $color === '') {
+            return true;
+        }
+
+        return in_array(strtoupper($color), self::THEME_DEFAULT_BRAND_COLORS, true);
+    }
+
+    /**
+     * Color for PDFs/emails that always need a hex value.
+     */
+    public function brandPrimaryColorOrDefault(): string
+    {
+        return $this->brandPrimaryColor() ?? self::DEFAULT_BRAND_COLOR;
     }
 
     public function brandTagline(): ?string

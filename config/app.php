@@ -123,4 +123,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Progressive Web App
+    |--------------------------------------------------------------------------
+    |
+    | When disabled, the service worker is not registered and any existing
+    | registration is removed on page load. Keep disabled until hosting is
+    | stable — a broken/unreachable origin makes the SW show offline.html.
+    |
+    */
+
+    'pwa_enabled' => (bool) env('PWA_ENABLED', false),
+
 ];

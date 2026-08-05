@@ -21,18 +21,21 @@ class TenantRoleUserSeeder extends Seeder
     {
         app(PermissionSyncService::class)->sync(syncTenantAdmins: false);
 
+        $emailDomain = trim((string) env('SEED_EMAIL_DOMAIN', 'obtainsolutions.com'), '@');
+        $password = (string) env('TENANT_DEMO_PASSWORD', 'password');
+
         Tenant::query()
             ->orderBy('id')
             ->get()
-            ->each(function (Tenant $tenant): void {
+            ->each(function (Tenant $tenant) use ($emailDomain, $password): void {
                 foreach (self::ROLE_EMAIL_PREFIXES as $role => $emailPrefix) {
-                    $email = sprintf('%s%d@pos.com', $emailPrefix, $tenant->id);
+                    $email = sprintf('%s%d@%s', $emailPrefix, $tenant->id, $emailDomain);
                     $user = User::query()->firstOrNew(['email' => $email]);
 
                     $user->fill([
                         'name' => $user->name ?: $this->defaultName($tenant, $role),
                         'email' => $email,
-                        'password' => 'password',
+                        'password' => $password,
                         'tenant_id' => $tenant->id,
                         'role' => $role,
                         'is_active' => true,

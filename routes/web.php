@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MailTestController;
 use App\Http\Controllers\Public\DemoRequestController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -42,3 +43,12 @@ Route::get('/', function () {
 Route::post('/demo-request', [DemoRequestController::class, 'store'])
     ->middleware('throttle:5,1')
     ->name('demo.request.store');
+
+# Mail smoke tests. Examples:
+#   /test-email/noreply?to=you@example.com
+#   /test-email/info?to=you@example.com
+#   /test-email/admin?to=you@example.com
+Route::get('/test-email/{channel}', MailTestController::class)
+    ->middleware('throttle:10,1')
+    ->where('channel', 'noreply|info|admin|support')
+    ->name('mail.test');

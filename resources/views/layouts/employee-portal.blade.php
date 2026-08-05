@@ -48,8 +48,13 @@
     <link rel="stylesheet" href="{{ asset('assets/css/app-datepicker.css') }}?v={{ filemtime(public_path('assets/css/app-datepicker.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/app-loader.css') }}?v={{ filemtime(public_path('assets/css/app-loader.css')) }}" />
     <style>
+        @php
+            $shopBrandPrimary = app(\App\Support\Tenancy\TenantContext::class)->current()?->brandPrimaryColor();
+        @endphp
         :root {
-            --shop-brand-primary: {{ app(\App\Support\Tenancy\TenantContext::class)->current()?->brandPrimaryColor() ?? \App\Models\Tenant::DEFAULT_BRAND_COLOR }};
+            @if ($shopBrandPrimary)
+                --shop-brand-primary: {{ $shopBrandPrimary }};
+            @endif
         }
 
         html[data-display-customizer='true'] #template-customizer {
@@ -123,6 +128,36 @@
         .text-primary {
             color: #312e81 !important;
         }
+
+        @if ($shopBrandPrimary)
+            @php
+                $brandRgb = sscanf($shopBrandPrimary, '#%02x%02x%02x');
+            @endphp
+            :root, [data-bs-theme=light] {
+                --bs-primary: {{ $shopBrandPrimary }};
+                --bs-primary-rgb: {{ $brandRgb[0] }}, {{ $brandRgb[1] }}, {{ $brandRgb[2] }};
+                --bs-link-color: {{ $shopBrandPrimary }};
+                --bs-link-hover-color: {{ $shopBrandPrimary }};
+            }
+
+            .btn-primary {
+                --bs-btn-bg: {{ $shopBrandPrimary }};
+                --bs-btn-border-color: {{ $shopBrandPrimary }};
+                --bs-btn-hover-bg: {{ $shopBrandPrimary }};
+                --bs-btn-hover-border-color: {{ $shopBrandPrimary }};
+                --bs-btn-active-bg: {{ $shopBrandPrimary }};
+                --bs-btn-active-border-color: {{ $shopBrandPrimary }};
+            }
+
+            .text-primary {
+                color: {{ $shopBrandPrimary }} !important;
+            }
+
+            body.employee-admin-preview {
+                --preview-indigo: {{ $shopBrandPrimary }};
+                --preview-indigo-dark: {{ $shopBrandPrimary }};
+            }
+        @endif
 
         .employee-admin-preview .preview-shell {
             min-height: 100vh;

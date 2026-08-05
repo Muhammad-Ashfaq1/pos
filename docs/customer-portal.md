@@ -73,9 +73,9 @@ After `CustomerPortalDemoSeeder`, password for every demo customer is `password`
 
 | Email | Notes |
 |-------|--------|
-| `olivia@portal.test` | Credit usually unlocked (≥ $50) |
-| `marcus@portal.test` | Often below unlock threshold |
-| `priya@portal.test` | Often below unlock threshold |
+| `olivia@obtainsolutions.com` | Credit usually unlocked (≥ $50) |
+| `marcus@obtainsolutions.com` | Often below unlock threshold |
+| `priya@obtainsolutions.com` | Often below unlock threshold |
 
 ## QA checklist (E2)
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Offline — Oil Change POS</title>
+  <title>Offline — AutoServe</title>
   <link rel="icon" type="image/png" href="/assets/img/pwa/icon-192.png" />
   <style>
     :root { color-scheme: light dark; }
@@ -30,14 +30,40 @@
       color: #fff; background: #4f46e5; border-radius: 10px; padding: 11px 22px;
     }
     button:hover { background: #4338ca; }
+    button:disabled { opacity: 0.7; cursor: wait; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="logo">POS</div>
     <h1>You're offline</h1>
-    <p>We couldn't reach the server. Check your connection and try again — the page will load as soon as you're back online.</p>
-    <button onclick="location.reload()">Retry</button>
+    <p>We couldn't reach the server. Check your connection and try again — Retry also clears the app cache if an old offline page is stuck.</p>
+    <button id="retry-btn" type="button">Retry</button>
   </div>
+  <script>
+    document.getElementById('retry-btn').addEventListener('click', function () {
+      var btn = this;
+      btn.disabled = true;
+      btn.textContent = 'Retrying…';
+
+      var clearSw = ('serviceWorker' in navigator)
+        ? navigator.serviceWorker.getRegistrations().then(function (regs) {
+            return Promise.all(regs.map(function (reg) { return reg.unregister(); }));
+          })
+        : Promise.resolve();
+
+      var clearCaches = ('caches' in window)
+        ? caches.keys().then(function (keys) {
+            return Promise.all(keys.map(function (key) { return caches.delete(key); }));
+          })
+        : Promise.resolve();
+
+      Promise.all([clearSw, clearCaches])
+        .catch(function () {})
+        .then(function () {
+          window.location.replace('/');
+        });
+    });
+  </script>
 </body>
 </html>

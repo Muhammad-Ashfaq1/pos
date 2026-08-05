@@ -43,6 +43,7 @@
                             <i class="icon-base ti tabler-pencil"></i>
                         </button>
                     </div>
+                    <div class="form-text mt-2">Leave the app default to keep the normal theme colors.</div>
                 </div>
             </div>
         </div>

@@ -32,6 +32,11 @@ class CustomerPortalLinkNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $message = (new MailMessage)
+            ->mailer('smtp')
+            ->from(
+                (string) config('mail.addresses.noreply'),
+                (string) config('mail.from.name')
+            )
             ->subject($this->isInvite
                 ? "Activate your {$this->shopName} customer account"
                 : "Reset your {$this->shopName} customer password");

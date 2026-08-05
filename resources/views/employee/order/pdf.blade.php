@@ -10,7 +10,7 @@
         ?: ''
     ));
     $brandName = $shopName !== '' ? $shopName : (string) config('app.name');
-    $brandColor = $tenant?->brandPrimaryColor() ?? \App\Models\Tenant::DEFAULT_BRAND_COLOR;
+    $brandColor = $tenant?->brandPrimaryColorOrDefault();
     $brandTagline = $tenant?->brandTagline();
     $logoDataUri = $tenant?->logoDataUri();
     $hasShopContact = $tenant && (

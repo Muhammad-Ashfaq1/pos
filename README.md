@@ -96,9 +96,10 @@ Created by the seeders:
 
 | Role | Email | Password |
 |------|-------|----------|
-| Super admin | `superadmin@pos.com` | `password` |
-| Demo tenant admin | `owner@rapidlube.test` | `password123` |
-| Demo employees | seeded per shop | `password123` |
+| Super admin | `superadmin@obtainsolutions.com` | `password` |
+| Demo tenant admin | `admin1@obtainsolutions.com` | `password` |
+| Demo employees | `employee{shopId}{n}@obtainsolutions.com` | `password` |
+| Demo role users | `manager1@…`, `cashier1@…`, etc. | `password` |
 
 Super admin lands on `/admin/dashboard`; tenant admin lands on `/tenant/dashboard`; employees land on `/employee/dashboard`. The full sign-up → email-verify → super-admin-approval flow is documented in [docs/auth-and-onboarding.md](docs/auth-and-onboarding.md).
 
