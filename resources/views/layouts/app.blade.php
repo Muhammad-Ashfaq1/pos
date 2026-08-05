@@ -33,7 +33,6 @@
   dir="ltr"
   data-skin="default"
   data-bs-theme="light"
-  data-display-customizer="true"
   data-assets-path="{{ asset('assets') }}/"
   data-template="vertical-menu-template">
   <head>
@@ -117,21 +116,9 @@
         @endif
       }
 
-      html[data-display-customizer='true'] #template-customizer .template-customizer-open-btn {
-        z-index: 2 !important;
-      }
-
-      html[data-display-customizer='true'] #template-customizer {
-        display: flex !important;
-        visibility: visible !important;
-        z-index: 2147483647 !important;
-      }
-
-      @media (max-width: 1200px) {
-        html[data-display-customizer='true'] #template-customizer {
-          display: flex !important;
-          visibility: visible !important;
-        }
+      /* Theme customizer panel (gear) disabled — use navbar Light/Dark/System only */
+      #template-customizer {
+        display: none !important;
       }
 
       .shop-brand-logo img {
@@ -141,13 +128,8 @@
 
     <!-- Helpers -->
     <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
-    <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
-
-    <!--? Template customizer: To hide customizer set displayCustomizer value false in config.js.  -->
+    {{-- template-customizer.js kept for theme/layout localStorage sync; gear UI is hidden via config + CSS --}}
     <script src="{{ asset('assets/vendor/js/template-customizer.js') }}"></script>
-
-    <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
-
     <script src="{{ asset('assets/js/config.js') }}"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @stack('styles')
@@ -261,21 +243,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-aio-3.2.8.min.js"></script>
     <script src="{{ asset('assets/js/app-helpers.js') }}?v={{ filemtime(public_path('assets/js/app-helpers.js')) }}"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        if (document.documentElement.getAttribute('data-display-customizer') !== 'true') {
-          return;
-        }
-
-        var customizer = document.getElementById('template-customizer');
-        if (!customizer) {
-          return;
-        }
-
-        customizer.style.visibility = 'visible';
-        customizer.classList.add('template-customizer-open');
-      });
-    </script>
     <script src="{{ asset('assets/js/app-loader.js') }}?v={{ filemtime(public_path('assets/js/app-loader.js')) }}"></script>
     <script src="{{ asset('assets/js/session-notifications.js') }}"></script>
     @stack('page-script')
