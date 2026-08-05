@@ -9,7 +9,7 @@
  *                       the network is unreachable. Authenticated HTML is
  *                       never written to the cache.
  */
-const VERSION = 'v1';
+const VERSION = 'v2';
 const STATIC_CACHE = `pos-static-${VERSION}`;
 const OFFLINE_URL = '/offline.html';
 
