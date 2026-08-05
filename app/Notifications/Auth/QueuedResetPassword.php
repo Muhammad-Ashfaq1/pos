@@ -20,6 +20,11 @@ class QueuedResetPassword extends ResetPassword implements ShouldQueue
         );
 
         return (new MailMessage)
+            ->mailer('smtp')
+            ->from(
+                (string) config('mail.addresses.noreply'),
+                (string) config('mail.from.name')
+            )
             ->subject('Reset your password — '.config('app.name'))
             ->view('emails.auth.reset-password', [
                 'url' => $this->resetUrl($notifiable),

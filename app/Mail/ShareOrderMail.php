@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Support\Currency;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -20,6 +21,7 @@ class ShareOrderMail extends Mailable
         protected string $pdfContent,
         protected string $filename
     ) {
+        $this->mailer('support');
         $this->order->loadMissing(['customer:id,name,email', 'tenant', 'creator:id,name']);
     }
 
@@ -29,6 +31,10 @@ class ShareOrderMail extends Mailable
         $documentLabel = $this->documentLabel();
 
         return new Envelope(
+            from: new Address(
+                (string) config('mail.addresses.info'),
+                (string) config('mail.from.name')
+            ),
             subject: "{$documentLabel} #{$this->order->order_number} from {$shopName}",
         );
     }

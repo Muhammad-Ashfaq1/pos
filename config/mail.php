@@ -21,17 +21,9 @@ return [
     | Mailer Configurations
     |--------------------------------------------------------------------------
     |
-    | Here you may configure all of the mailers used by your application plus
-    | their respective settings. Several examples have been configured for
-    | you and you are free to add your own as your application requires.
-    |
-    | Laravel supports a variety of mail "transport" drivers that can be used
-    | when delivering an email. You may specify which one you're using for
-    | your mailers below. You may also add additional mailers if needed.
-    |
-    | Supported: "smtp", "sendmail", "mailgun", "ses", "ses-v2",
-    |            "postmark", "resend", "log", "array",
-    |            "failover", "roundrobin"
+    | "smtp" (default) → noreply mailbox — auth, signup, forgot/reset password.
+    | "support" → support mailbox — used to send as info@ / admin@ aliases
+    |             and other non-auth flows (invoices, shop status, etc.).
     |
     */
 
@@ -49,16 +41,23 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
+        'support' => [
+            'transport' => 'smtp',
+            'scheme' => env('MAIL_SUPPORT_SCHEME', env('MAIL_SCHEME')),
+            'host' => env('MAIL_SUPPORT_HOST', env('MAIL_HOST', '127.0.0.1')),
+            'port' => env('MAIL_SUPPORT_PORT', env('MAIL_PORT', 2525)),
+            'username' => env('MAIL_SUPPORT_USERNAME', env('MAIL_USERNAME')),
+            'password' => env('MAIL_SUPPORT_PASSWORD', env('MAIL_PASSWORD')),
+            'timeout' => null,
+            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],
 
         'postmark' => [
             'transport' => 'postmark',
-            // 'message_stream_id' => env('POSTMARK_MESSAGE_STREAM_ID'),
-            // 'client' => [
-            //     'timeout' => 5,
-            // ],
         ],
 
         'resend' => [
@@ -101,18 +100,32 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Global "From" Address
+    | Global "From" Address (auth / default = noreply)
     |--------------------------------------------------------------------------
-    |
-    | You may wish for all emails sent by your application to be sent from
-    | the same address. Here you may specify a name and address that is
-    | used globally for all emails that are sent by your application.
-    |
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+        'address' => env('MAIL_FROM_ADDRESS', 'noreply@obtainsolutions.com'),
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Named From Addresses
+    |--------------------------------------------------------------------------
+    |
+    | noreply  → real mailbox (auth mailer "smtp")
+    | support  → real mailbox (mailer "support")
+    | info     → alias of support (send via mailer "support")
+    | admin    → alias of support (send via mailer "support")
+    |
+    */
+
+    'addresses' => [
+        'noreply' => env('MAIL_FROM_ADDRESS', 'noreply@obtainsolutions.com'),
+        'support' => env('MAIL_SUPPORT_ADDRESS', 'support@obtainsolutions.com'),
+        'info' => env('MAIL_INFO_ADDRESS', 'info@obtainsolutions.com'),
+        'admin' => env('MAIL_ADMIN_ADDRESS', 'admin@obtainsolutions.com'),
     ],
 
 ];
