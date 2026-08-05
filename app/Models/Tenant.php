@@ -253,6 +253,12 @@ class Tenant extends Model implements TenantContract
         return round((float) $this->setting('orders.credit_min_redeem_balance', 50), 2);
     }
 
+    /**
+     * Public URL for the tenant-uploaded shop logo (settings.branding / tenants.logo).
+     * Used in UI chrome, settings API, and share emails — always absolute so email
+     * clients can load it. Prefers the current request host when APP_URL differs
+     * (local http vs https, pos.test vs localhost).
+     */
     public function logoUrl(): ?string
     {
         $path = $this->logo;
@@ -261,10 +267,16 @@ class Tenant extends Model implements TenantContract
             return null;
         }
 
-        // Root-relative so the logo loads on whatever host/scheme the user
-        // is browsing (http://pos.test, https://pos.test, localhost, etc.).
-        // Absolute APP_URL-based URLs break when APP_URL doesn't match the request.
-        return '/storage/'.ltrim(str_replace('\\', '/', $path), '/');
+        $relative = '/storage/'.ltrim(str_replace('\\', '/', $path), '/');
+
+        $request = app()->bound('request') ? request() : null;
+        $root = $request?->getSchemeAndHttpHost();
+
+        if (is_string($root) && $root !== '') {
+            return $root.$relative;
+        }
+
+        return rtrim((string) config('app.url'), '/').$relative;
     }
 
     /**
