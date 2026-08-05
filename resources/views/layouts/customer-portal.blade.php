@@ -49,8 +49,13 @@
     <link rel="stylesheet" href="{{ asset('assets/css/app-loader.css') }}?v={{ filemtime(public_path('assets/css/app-loader.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/customer-portal.css') }}?v={{ filemtime(public_path('assets/css/customer-portal.css')) }}" />
     <style>
+        @php
+            $shopBrandPrimary = auth('customer')->user()?->tenant?->brandPrimaryColor();
+        @endphp
         :root {
-            --shop-brand-primary: {{ auth('customer')->user()?->tenant?->brandPrimaryColor() ?? \App\Models\Tenant::DEFAULT_BRAND_COLOR }};
+            @if ($shopBrandPrimary)
+                --shop-brand-primary: {{ $shopBrandPrimary }};
+            @endif
         }
         .shop-brand-logo img { display: block; }
     </style>

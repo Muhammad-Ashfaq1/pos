@@ -51,7 +51,7 @@ class ShareOrderMail extends Mailable
                 'shopName' => $shopName = $this->shopName(),
                 'brandName' => $shopName,
                 'brandLogoUrl' => $tenant?->logoUrl(),
-                'brandPrimaryColor' => $tenant?->brandPrimaryColor() ?? \App\Models\Tenant::DEFAULT_BRAND_COLOR,
+                'brandPrimaryColor' => $tenant?->brandPrimaryColorOrDefault(),
                 'brandTagline' => $tenant?->brandTagline(),
                 'shopEmail' => $shopEmail = ($tenant?->business_email ?: $tenant?->email ?: $tenant?->owner_email),
                 'shopPhone' => $shopPhone = ($tenant?->business_phone ?: $tenant?->phone ?: $tenant?->owner_phone),

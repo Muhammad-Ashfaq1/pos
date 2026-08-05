@@ -58,13 +58,16 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
         $businessPhone = $this->normalizeNullableString($data['business_phone'] ?? null);
 
         $settings = $tenant->mergedSettings();
-        $settings['branding'] = array_merge(
-            (array) ($settings['branding'] ?? []),
-            [
-                'primary_color' => $settings['branding']['primary_color'] ?? Tenant::DEFAULT_BRAND_COLOR,
-                'tagline' => $this->normalizeNullableString($data['tagline'] ?? null),
-            ]
-        );
+        $rawBranding = (array) data_get($tenant->settings ?? [], 'branding', []);
+        $existingColor = trim((string) ($rawBranding['primary_color'] ?? ''));
+        $normalizedColor = preg_match('/^#[0-9A-Fa-f]{6}$/', $existingColor) ? strtoupper($existingColor) : null;
+        if (Tenant::isThemeDefaultBrandColor($normalizedColor)) {
+            $normalizedColor = null;
+        }
+        $settings['branding'] = [
+            'primary_color' => $normalizedColor,
+            'tagline' => $this->normalizeNullableString($data['tagline'] ?? null),
+        ];
 
         $tenant->forceFill([
             'name' => $shopName !== '' ? $shopName : $businessName,
@@ -94,10 +97,16 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
     public function saveBrandingSettings(Tenant $tenant, array $data): array
     {
         $settings = $tenant->mergedSettings();
+        $color = strtoupper(trim((string) ($data['primary_color'] ?? '')));
+
+        if ($color === '' || ! preg_match('/^#[0-9A-F]{6}$/', $color) || Tenant::isThemeDefaultBrandColor($color)) {
+            $color = null;
+        }
+
         $settings['branding'] = array_merge(
             (array) ($settings['branding'] ?? []),
             [
-                'primary_color' => strtoupper((string) ($data['primary_color'] ?? Tenant::DEFAULT_BRAND_COLOR)),
+                'primary_color' => $color,
             ]
         );
 
@@ -120,7 +129,7 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
             'success' => true,
             'message' => 'Branding saved successfully.',
             'logo_url' => $tenant->logoUrl(),
-            'primary_color' => $tenant->brandPrimaryColor(),
+            'primary_color' => $tenant->brandPrimaryColorOrDefault(),
         ];
     }
 
@@ -348,7 +357,7 @@ class ShopSettingsRepository implements ShopSettingsRepositoryInterface
             'credit_min_redeem_balance' => data_get($settings, 'orders.credit_min_redeem_balance', 50),
             'business_hours' => data_get($settings, 'business_hours', Tenant::defaultSettings()['business_hours']),
             'logo_url' => $tenant->logoUrl(),
-            'primary_color' => $tenant->brandPrimaryColor(),
+            'primary_color' => $tenant->brandPrimaryColorOrDefault(),
             'tagline' => $tenant->brandTagline(),
         ];
     }

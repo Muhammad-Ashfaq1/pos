@@ -16,7 +16,7 @@
 
     $logoUrl = $shopTenant?->logoUrl();
     $tagline = $shopTenant?->brandTagline();
-    $brandColor = $shopTenant?->brandPrimaryColor() ?? \App\Models\Tenant::DEFAULT_BRAND_COLOR;
+    $brandColor = $shopTenant?->brandPrimaryColor();
     $size = $size ?? 30;
     $showTagline = $showTagline ?? false;
     $textClass = $textClass ?? 'app-brand-text demo menu-text fw-bold ms-3';
@@ -34,7 +34,7 @@
         @include('layouts.partials.brand-logo', ['size' => $size])
     @endif
 </span>
-<span class="{{ $textClass }}" @if($shopTenant) style="color: {{ $brandColor }};" @endif>
+<span class="{{ $textClass }}" @if($brandColor) style="color: {{ $brandColor }};" @endif>
     {{ $brandName }}
     @if ($showTagline && $tagline)
         <span class="d-block small fw-normal text-muted text-truncate" style="max-width: 11rem; line-height: 1.2;">{{ $tagline }}</span>

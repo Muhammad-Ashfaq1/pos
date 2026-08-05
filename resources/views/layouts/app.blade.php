@@ -108,8 +108,13 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/cards-advance.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/app-loader.css') }}?v={{ filemtime(public_path('assets/css/app-loader.css')) }}" />
     <style>
+      @php
+        $shopBrandPrimary = app(\App\Support\Tenancy\TenantContext::class)->current()?->brandPrimaryColor();
+      @endphp
       :root {
-        --shop-brand-primary: {{ app(\App\Support\Tenancy\TenantContext::class)->current()?->brandPrimaryColor() ?? \App\Models\Tenant::DEFAULT_BRAND_COLOR }};
+        @if ($shopBrandPrimary)
+          --shop-brand-primary: {{ $shopBrandPrimary }};
+        @endif
       }
 
       html[data-display-customizer='true'] #template-customizer .template-customizer-open-btn {
