@@ -27,19 +27,62 @@ $W = 600 * $GLOBALS['S'];
 $H = 600 * $GLOBALS['S'];
 
 $PRODUCTS = [
-    ['file' => 'mobil-1-5w30',      'brand' => 'Mobil 1',     'name' => '5W-30 Full Synthetic',    'shape' => 'oil_bottle',      'accent' => '#1565C0', 'spec' => '5W-30'],
-    ['file' => 'castrol-gtx-10w40', 'brand' => 'Castrol',     'name' => 'GTX 10W-40',              'shape' => 'oil_bottle',      'accent' => '#2E7D32', 'spec' => '10W-40'],
-    ['file' => 'shell-helix-hx7',   'brand' => 'Shell',       'name' => 'Helix HX7 5W-40',         'shape' => 'oil_bottle',      'accent' => '#F9A825', 'spec' => '5W-40'],
-    ['file' => 'valvoline-daily',   'brand' => 'Valvoline',   'name' => 'Daily Protection',        'shape' => 'oil_bottle',      'accent' => '#C62828', 'spec' => 'SAE'],
-    ['file' => 'kn-oil-filter',     'brand' => 'K&N',         'name' => 'Oil Filter HP-1004',      'shape' => 'filter_cylinder', 'accent' => '#B71C1C', 'spec' => 'OIL'],
-    ['file' => 'bosch-air-filter',  'brand' => 'Bosch',       'name' => 'Premium Air Filter',      'shape' => 'filter_panel',    'accent' => '#1565C0', 'spec' => 'AIR'],
-    ['file' => 'mann-cabin-filter', 'brand' => 'Mann',        'name' => 'Cabin Filter CU 26 009',  'shape' => 'filter_panel',    'accent' => '#00897B', 'spec' => 'CABIN'],
-    ['file' => 'brembo-brake-pads', 'brand' => 'Brembo',      'name' => 'Front Brake Pads',        'shape' => 'brake_disc',      'accent' => '#D32F2F', 'spec' => 'BRAKE'],
-    ['file' => 'dot4-brake-fluid',  'brand' => 'Bosch',       'name' => 'DOT 4 Brake Fluid 1L',    'shape' => 'fluid_bottle',    'accent' => '#FF8F00', 'spec' => 'DOT 4'],
-    ['file' => 'exide-battery',     'brand' => 'Exide',       'name' => '12V 60Ah Premium',        'shape' => 'battery',         'accent' => '#1A237E', 'spec' => '12V'],
-    ['file' => 'acdelco-battery',   'brand' => 'AC Delco',    'name' => '12V 70Ah',                'shape' => 'battery',         'accent' => '#EF6C00', 'spec' => '12V'],
-    ['file' => 'michelin-primacy4', 'brand' => 'Michelin',    'name' => 'Primacy 4 195/65R15',     'shape' => 'tyre',            'accent' => '#263238', 'spec' => 'R15'],
-    ['file' => 'bridgestone-dueler', 'brand' => 'Bridgestone', 'name' => 'Dueler H/T',             'shape' => 'tyre',            'accent' => '#263238', 'spec' => 'H/T'],
+    // Engine oils — Synthetic
+    ['file' => 'mobil-1-5w30',           'brand' => 'Mobil 1',      'name' => '5W-30 Full Synthetic',     'shape' => 'oil_bottle',      'accent' => '#1565C0', 'spec' => '5W-30'],
+    ['file' => 'pennzoil-ultra-5w30',    'brand' => 'Pennzoil',     'name' => 'Ultra Platinum 5W-30',     'shape' => 'oil_bottle',      'accent' => '#F9A825', 'spec' => '5W-30'],
+    ['file' => 'amsoil-signature-0w20',  'brand' => 'Amsoil',       'name' => 'Signature 0W-20',          'shape' => 'oil_bottle',      'accent' => '#C62828', 'spec' => '0W-20'],
+    // Engine oils — Semi-Synthetic
+    ['file' => 'castrol-gtx-10w40',      'brand' => 'Castrol',      'name' => 'GTX 10W-40',               'shape' => 'oil_bottle',      'accent' => '#2E7D32', 'spec' => '10W-40'],
+    ['file' => 'shell-helix-hx7',        'brand' => 'Shell',        'name' => 'Helix HX7 5W-40',          'shape' => 'oil_bottle',      'accent' => '#F9A825', 'spec' => '5W-40'],
+    ['file' => 'total-quartz-7000',      'brand' => 'Total',        'name' => 'Quartz 7000 10W-40',       'shape' => 'oil_bottle',      'accent' => '#EF6C00', 'spec' => '10W-40'],
+    // Engine oils — Mineral
+    ['file' => 'valvoline-daily',        'brand' => 'Valvoline',    'name' => 'Daily Protection',         'shape' => 'oil_bottle',      'accent' => '#C62828', 'spec' => 'SAE'],
+    ['file' => 'havoline-20w50',         'brand' => 'Havoline',     'name' => 'Conventional 20W-50',      'shape' => 'oil_bottle',      'accent' => '#1565C0', 'spec' => '20W-50'],
+    ['file' => 'petronas-syntium-800',   'brand' => 'Petronas',     'name' => 'Syntium 800 15W-40',       'shape' => 'oil_bottle',      'accent' => '#00897B', 'spec' => '15W-40'],
+    // Filters — Oil
+    ['file' => 'kn-oil-filter',          'brand' => 'K&N',          'name' => 'Oil Filter HP-1004',       'shape' => 'filter_cylinder', 'accent' => '#B71C1C', 'spec' => 'OIL'],
+    ['file' => 'fram-oil-filter',        'brand' => 'Fram',         'name' => 'Extra Guard PH3614',       'shape' => 'filter_cylinder', 'accent' => '#F9A825', 'spec' => 'OIL'],
+    ['file' => 'wix-oil-filter',         'brand' => 'Wix',          'name' => '51515 Oil Filter',         'shape' => 'filter_cylinder', 'accent' => '#1565C0', 'spec' => 'OIL'],
+    // Filters — Air
+    ['file' => 'bosch-air-filter',       'brand' => 'Bosch',        'name' => 'Premium Air Filter',       'shape' => 'filter_panel',    'accent' => '#1565C0', 'spec' => 'AIR'],
+    ['file' => 'kn-air-filter',          'brand' => 'K&N',          'name' => 'Drop-In Air Filter',       'shape' => 'filter_panel',    'accent' => '#B71C1C', 'spec' => 'AIR'],
+    ['file' => 'mann-air-filter',        'brand' => 'Mann',         'name' => 'C 27 130 Air Filter',      'shape' => 'filter_panel',    'accent' => '#00897B', 'spec' => 'AIR'],
+    // Filters — Cabin
+    ['file' => 'mann-cabin-filter',      'brand' => 'Mann',         'name' => 'Cabin Filter CU 26 009',   'shape' => 'filter_panel',    'accent' => '#00897B', 'spec' => 'CABIN'],
+    ['file' => 'bosch-cabin-filter',     'brand' => 'Bosch',        'name' => 'Cabin Filter Activated',   'shape' => 'filter_panel',    'accent' => '#1565C0', 'spec' => 'CABIN'],
+    ['file' => 'fram-cabin-filter',      'brand' => 'Fram',         'name' => 'Fresh Breeze Cabin',       'shape' => 'filter_panel',    'accent' => '#F9A825', 'spec' => 'CABIN'],
+    // Brakes — Pads
+    ['file' => 'brembo-brake-pads',      'brand' => 'Brembo',       'name' => 'Front Brake Pads',         'shape' => 'brake_disc',      'accent' => '#D32F2F', 'spec' => 'BRAKE'],
+    ['file' => 'akebono-brake-pads',     'brand' => 'Akebono',      'name' => 'ProACT Ceramic Pads',      'shape' => 'brake_disc',      'accent' => '#455A64', 'spec' => 'PAD'],
+    ['file' => 'wagner-brake-pads',      'brand' => 'Wagner',       'name' => 'ThermoQuiet Pads',         'shape' => 'brake_disc',      'accent' => '#6A1B9A', 'spec' => 'PAD'],
+    // Brakes — Rotors
+    ['file' => 'brembo-brake-rotor',     'brand' => 'Brembo',       'name' => 'Coated Brake Rotor',       'shape' => 'brake_disc',      'accent' => '#D32F2F', 'spec' => 'ROTOR'],
+    ['file' => 'raybestos-brake-rotor',  'brand' => 'Raybestos',    'name' => 'Element3 Rotor',           'shape' => 'brake_disc',      'accent' => '#37474F', 'spec' => 'ROTOR'],
+    ['file' => 'centric-brake-rotor',    'brand' => 'Centric',      'name' => 'Premium Brake Rotor',      'shape' => 'brake_disc',      'accent' => '#0277BD', 'spec' => 'ROTOR'],
+    // Brakes — Fluid
+    ['file' => 'dot4-brake-fluid',       'brand' => 'Bosch',        'name' => 'DOT 4 Brake Fluid 1L',     'shape' => 'fluid_bottle',    'accent' => '#FF8F00', 'spec' => 'DOT 4'],
+    ['file' => 'motul-rbf-600',          'brand' => 'Motul',        'name' => 'RBF 600 DOT 4',            'shape' => 'fluid_bottle',    'accent' => '#C62828', 'spec' => 'DOT 4'],
+    ['file' => 'castrol-react-dot4',     'brand' => 'Castrol',      'name' => 'React DOT 4 Low Temp',     'shape' => 'fluid_bottle',    'accent' => '#2E7D32', 'spec' => 'DOT 4'],
+    // Batteries — Standard
+    ['file' => 'acdelco-battery',        'brand' => 'AC Delco',     'name' => '12V 70Ah',                 'shape' => 'battery',         'accent' => '#EF6C00', 'spec' => '12V'],
+    ['file' => 'interstate-battery',     'brand' => 'Interstate',   'name' => 'MT-65 12V',                'shape' => 'battery',         'accent' => '#1565C0', 'spec' => '12V'],
+    ['file' => 'diehard-battery',        'brand' => 'DieHard',      'name' => 'Gold 12V 65Ah',            'shape' => 'battery',         'accent' => '#F9A825', 'spec' => '12V'],
+    // Batteries — Premium
+    ['file' => 'exide-battery',          'brand' => 'Exide',        'name' => '12V 60Ah Premium',         'shape' => 'battery',         'accent' => '#1A237E', 'spec' => '12V'],
+    ['file' => 'optima-redtop-battery',  'brand' => 'Optima',       'name' => 'RedTop 12V AGM',           'shape' => 'battery',         'accent' => '#C62828', 'spec' => 'AGM'],
+    ['file' => 'odyssey-battery',        'brand' => 'Odyssey',      'name' => 'Extreme 12V AGM',          'shape' => 'battery',         'accent' => '#37474F', 'spec' => 'AGM'],
+    // Tires — Passenger
+    ['file' => 'michelin-primacy4',      'brand' => 'Michelin',     'name' => 'Primacy 4 195/65R15',      'shape' => 'tyre',            'accent' => '#263238', 'spec' => 'R15'],
+    ['file' => 'goodyear-assurance',     'brand' => 'Goodyear',     'name' => 'Assurance 205/55R16',      'shape' => 'tyre',            'accent' => '#F9A825', 'spec' => 'R16'],
+    ['file' => 'continental-purecontact','brand' => 'Continental',  'name' => 'PureContact 215/60R16',    'shape' => 'tyre',            'accent' => '#F57C00', 'spec' => 'R16'],
+    // Tires — SUV
+    ['file' => 'bridgestone-dueler',     'brand' => 'Bridgestone',  'name' => 'Dueler H/T',               'shape' => 'tyre',            'accent' => '#263238', 'spec' => 'H/T'],
+    ['file' => 'michelin-defender-ltx',  'brand' => 'Michelin',     'name' => 'Defender LTX 265/70R17',   'shape' => 'tyre',            'accent' => '#37474F', 'spec' => 'LTX'],
+    ['file' => 'bfgoodrich-ko2',         'brand' => 'BFGoodrich',   'name' => 'All-Terrain T/A KO2',      'shape' => 'tyre',            'accent' => '#C62828', 'spec' => 'KO2'],
+    // Tires — Performance
+    ['file' => 'michelin-pilot-sport',   'brand' => 'Michelin',     'name' => 'Pilot Sport 4S',           'shape' => 'tyre',            'accent' => '#B71C1C', 'spec' => '4S'],
+    ['file' => 'pirelli-p-zero',         'brand' => 'Pirelli',      'name' => 'P Zero 245/40R18',         'shape' => 'tyre',            'accent' => '#FBC02D', 'spec' => 'R18'],
+    ['file' => 'continental-ecs',        'brand' => 'Continental',  'name' => 'ExtremeContact Sport',     'shape' => 'tyre',            'accent' => '#EF6C00', 'spec' => 'ECS'],
 ];
 
 function s($v)
