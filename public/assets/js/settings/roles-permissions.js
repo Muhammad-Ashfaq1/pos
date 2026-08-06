@@ -20,6 +20,12 @@
         const routes = window.rolesPermissionsRoutes || {};
         const csrfToken = $('meta[name="csrf-token"]').attr('content');
 
+        const isReservedRoleName = function (name) {
+            const key = String(name || '').toLowerCase().trim().replace(/[\s_\-]+/g, '');
+
+            return key !== '' && key.indexOf('admin') !== -1;
+        };
+
         // ─── Roles Tab ───────────────────────────────────────────────
 
         $('#addRoleBtn').on('click', function () {
@@ -52,6 +58,11 @@
 
             if (!name) {
                 notyf.failure('Role name is required.');
+                return;
+            }
+
+            if (isReservedRoleName(name)) {
+                notyf.failure('Cannot create or modify protected roles.');
                 return;
             }
 

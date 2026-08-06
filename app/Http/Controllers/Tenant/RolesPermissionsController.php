@@ -21,6 +21,7 @@ class RolesPermissionsController extends Controller
     private const PROTECTED_ROLES = [
         User::SUPER_ADMIN,
         User::TENANT_ADMIN,
+        User::ADMIN,
     ];
 
     private const PERMISSION_GROUPS = [
@@ -105,7 +106,7 @@ class RolesPermissionsController extends Controller
 
         $validator = Validator::make($request->all(), [
             'id' => ['nullable', 'integer'],
-            'name' => ['required', 'string', 'max:50', 'regex:/^[a-z_]+$/'],
+            'name' => ['required', 'string', 'max:50'],
         ]);
 
         if ($validator->fails()) {
@@ -113,26 +114,33 @@ class RolesPermissionsController extends Controller
         }
 
         $validated = $validator->validated();
+        $name = trim((string) $validated['name']);
 
-        if (in_array($validated['name'], self::PROTECTED_ROLES)) {
+        if ($this->isReservedRoleName($name)) {
             return response()->json(['message' => 'Cannot create or modify protected roles.'], 403);
         }
 
-        $role = PermissionTeamScope::for($tenantId, function () use ($validated) {
+        if (! preg_match('/^[a-z_]+$/', $name)) {
+            return response()->json([
+                'message' => 'Role name must be lowercase letters and underscores only.',
+            ], 422);
+        }
+
+        $role = PermissionTeamScope::for($tenantId, function () use ($validated, $name) {
             if (! empty($validated['id'])) {
                 $role = Role::query()->findOrFail($validated['id']);
 
-                if (in_array($role->name, self::PROTECTED_ROLES)) {
+                if ($this->isReservedRoleName($role->name)) {
                     abort(403, 'Cannot modify protected roles.');
                 }
 
-                $role->update(['name' => $validated['name']]);
+                $role->update(['name' => $name]);
 
                 return $role;
             }
 
             return Role::create([
-                'name' => $validated['name'],
+                'name' => $name,
                 'guard_name' => 'web',
             ]);
         });
@@ -145,7 +153,7 @@ class RolesPermissionsController extends Controller
 
     public function deleteRole(Role $role): JsonResponse
     {
-        if (in_array($role->name, self::PROTECTED_ROLES)) {
+        if ($this->isReservedRoleName($role->name)) {
             return response()->json(['message' => 'Cannot delete protected roles.'], 403);
         }
 
@@ -183,9 +191,9 @@ class RolesPermissionsController extends Controller
         PermissionTeamScope::for($tenantId, function () use ($validated, $filtered) {
             $role = Role::query()->findOrFail($validated['role_id']);
 
-            if (in_array($role->name, self::PROTECTED_ROLES)) {
-                abort(403, 'Cannot modify permissions of protected roles.');
-            }
+                if ($this->isReservedRoleName($role->name)) {
+                    abort(403, 'Cannot modify permissions of protected roles.');
+                }
 
             foreach ($filtered as $permName) {
                 Permission::firstOrCreate(
@@ -238,6 +246,10 @@ class RolesPermissionsController extends Controller
             return back()->with('error', 'Cannot impersonate admin users.');
         }
 
+        if (! $user->isEmployee()) {
+            return back()->with('error', 'You can only impersonate employees.');
+        }
+
         session([
             'impersonator_id' => $currentUser->id,
             'impersonator_return_url' => route('tenant.settings.roles-permissions.index'),
@@ -252,6 +264,35 @@ class RolesPermissionsController extends Controller
     {
         return $this->tenantContext->current()
             ?? abort(404, 'Tenant context could not be resolved.');
+    }
+
+    private function normalizeRoleKey(string $name): string
+    {
+        return strtolower((string) preg_replace('/[\s_\-]+/', '', trim($name)));
+    }
+
+    private function isReservedRoleName(string $name): bool
+    {
+        $key = $this->normalizeRoleKey($name);
+
+        if ($key === '') {
+            return false;
+        }
+
+        if (str_contains($key, 'admin')) {
+            return true;
+        }
+
+        foreach (self::PROTECTED_ROLES as $protected) {
+            $reserved = $this->normalizeRoleKey($protected);
+            $len = max(strlen($key), strlen($reserved));
+
+            if ($len > 0 && levenshtein($key, $reserved) <= max(2, intdiv($len, 3))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function buildPermissionGroups(): array

@@ -184,12 +184,14 @@
                                 </td>
                                 <td class="text-muted">{{ $member->last_login_at?->diffForHumans() ?? 'Never' }}</td>
                                 <td class="text-end">
-                                    <a href="{{ route('tenant.settings.roles-permissions.staff.impersonate', $member) }}"
-                                       class="btn btn-sm btn-icon btn-text-warning impersonate-btn"
-                                       title="Impersonate {{ $member->name }}"
-                                       data-name="{{ $member->name }}">
-                                        <i class="ti tabler-user-check"></i>
-                                    </a>
+                                    @if ($member->isEmployee())
+                                        <a href="{{ route('tenant.settings.roles-permissions.staff.impersonate', $member) }}"
+                                           class="btn btn-sm btn-icon btn-text-warning impersonate-btn"
+                                           title="Impersonate {{ $member->name }}"
+                                           data-name="{{ $member->name }}">
+                                            <i class="ti tabler-user-check"></i>
+                                        </a>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
