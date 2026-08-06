@@ -20,6 +20,12 @@
         const routes = window.rolesPermissionsRoutes || {};
         const csrfToken = $('meta[name="csrf-token"]').attr('content');
 
+        const isReservedRoleName = function (name) {
+            const key = String(name || '').toLowerCase().trim().replace(/[\s_\-]+/g, '');
+
+            return key !== '' && key.indexOf('admin') !== -1;
+        };
+
         // ─── Roles Tab ───────────────────────────────────────────────
 
         $('#addRoleBtn').on('click', function () {
@@ -55,14 +61,13 @@
                 return;
             }
 
-            if (!/^[a-z_]+$/.test(name)) {
-                notyf.failure('Role name must be lowercase letters and underscores only.');
+            if (isReservedRoleName(name)) {
+                notyf.failure('Cannot create or modify protected roles.');
                 return;
             }
 
-            const protectedRoles = ['super_admin', 'tenant_admin', 'admin'];
-            if (protectedRoles.includes(name)) {
-                notyf.failure('Cannot create or modify protected roles.');
+            if (!/^[a-z_]+$/.test(name)) {
+                notyf.failure('Role name must be lowercase letters and underscores only.');
                 return;
             }
 

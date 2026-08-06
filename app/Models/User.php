@@ -24,6 +24,8 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public const TENANT_ADMIN = 'tenant_admin';
 
+    public const ADMIN = 'admin';
+
     public const MANAGER = 'manager';
 
     public const CASHIER = 'cashier';
