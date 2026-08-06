@@ -35,68 +35,68 @@ class TenantCatalogSeeder extends Seeder
         'Engine Oils' => [
             // Synthetic (3)
             ['name' => 'Mobil 1 5W-30 Full Synthetic',  'brand' => 'Mobil 1',   'cost' => 28.00, 'price' => 39.99, 'unit' => 'liter', 'type' => Product::TYPE_OIL, 'sub' => 'Synthetic',      'image' => 'mobil-1-5w30.jpg'],
-            ['name' => 'Pennzoil Ultra Platinum 5W-30', 'brand' => 'Pennzoil',  'cost' => 26.50, 'price' => 37.99, 'unit' => 'liter', 'type' => Product::TYPE_OIL, 'sub' => 'Synthetic'],
-            ['name' => 'Amsoil Signature 0W-20',        'brand' => 'Amsoil',    'cost' => 32.00, 'price' => 44.99, 'unit' => 'liter', 'type' => Product::TYPE_OIL, 'sub' => 'Synthetic'],
+            ['name' => 'Pennzoil Ultra Platinum 5W-30', 'brand' => 'Pennzoil',  'cost' => 26.50, 'price' => 37.99, 'unit' => 'liter', 'type' => Product::TYPE_OIL, 'sub' => 'Synthetic',      'image' => 'pennzoil-ultra-5w30.jpg'],
+            ['name' => 'Amsoil Signature 0W-20',        'brand' => 'Amsoil',    'cost' => 32.00, 'price' => 44.99, 'unit' => 'liter', 'type' => Product::TYPE_OIL, 'sub' => 'Synthetic',      'image' => 'amsoil-signature-0w20.jpg'],
             // Semi-Synthetic (3)
             ['name' => 'Castrol GTX 10W-40',            'brand' => 'Castrol',   'cost' => 18.50, 'price' => 27.99, 'unit' => 'liter', 'type' => Product::TYPE_OIL, 'sub' => 'Semi-Synthetic', 'image' => 'castrol-gtx-10w40.jpg'],
             ['name' => 'Shell Helix HX7 5W-40',         'brand' => 'Shell',     'cost' => 22.00, 'price' => 32.50, 'unit' => 'liter', 'type' => Product::TYPE_OIL, 'sub' => 'Semi-Synthetic', 'image' => 'shell-helix-hx7.jpg'],
-            ['name' => 'Total Quartz 7000 10W-40',      'brand' => 'Total',     'cost' => 17.00, 'price' => 25.99, 'unit' => 'liter', 'type' => Product::TYPE_OIL, 'sub' => 'Semi-Synthetic'],
+            ['name' => 'Total Quartz 7000 10W-40',      'brand' => 'Total',     'cost' => 17.00, 'price' => 25.99, 'unit' => 'liter', 'type' => Product::TYPE_OIL, 'sub' => 'Semi-Synthetic', 'image' => 'total-quartz-7000.jpg'],
             // Mineral (3)
             ['name' => 'Valvoline Daily Protection',    'brand' => 'Valvoline', 'cost' => 14.00, 'price' => 22.99, 'unit' => 'liter', 'type' => Product::TYPE_OIL, 'sub' => 'Mineral',        'image' => 'valvoline-daily.jpg'],
-            ['name' => 'Havoline Conventional 20W-50',  'brand' => 'Havoline',  'cost' => 12.50, 'price' => 19.99, 'unit' => 'liter', 'type' => Product::TYPE_OIL, 'sub' => 'Mineral'],
-            ['name' => 'Petronas Syntium 800 15W-40',   'brand' => 'Petronas',  'cost' => 13.00, 'price' => 20.49, 'unit' => 'liter', 'type' => Product::TYPE_OIL, 'sub' => 'Mineral'],
+            ['name' => 'Havoline Conventional 20W-50',  'brand' => 'Havoline',  'cost' => 12.50, 'price' => 19.99, 'unit' => 'liter', 'type' => Product::TYPE_OIL, 'sub' => 'Mineral',        'image' => 'havoline-20w50.jpg'],
+            ['name' => 'Petronas Syntium 800 15W-40',   'brand' => 'Petronas',  'cost' => 13.00, 'price' => 20.49, 'unit' => 'liter', 'type' => Product::TYPE_OIL, 'sub' => 'Mineral',        'image' => 'petronas-syntium-800.jpg'],
         ],
         'Filters' => [
             // Oil Filter (3)
             ['name' => 'K&N Oil Filter HP-1004',        'brand' => 'K&N',       'cost' => 8.50,  'price' => 14.99, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Oil Filter',   'image' => 'kn-oil-filter.jpg'],
-            ['name' => 'Fram Extra Guard PH3614',       'brand' => 'Fram',      'cost' => 5.50,  'price' => 9.99,  'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Oil Filter'],
-            ['name' => 'Wix 51515 Oil Filter',          'brand' => 'Wix',       'cost' => 7.00,  'price' => 12.49, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Oil Filter'],
+            ['name' => 'Fram Extra Guard PH3614',       'brand' => 'Fram',      'cost' => 5.50,  'price' => 9.99,  'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Oil Filter',   'image' => 'fram-oil-filter.jpg'],
+            ['name' => 'Wix 51515 Oil Filter',          'brand' => 'Wix',       'cost' => 7.00,  'price' => 12.49, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Oil Filter',   'image' => 'wix-oil-filter.jpg'],
             // Air Filter (3)
             ['name' => 'Bosch Premium Air Filter',      'brand' => 'Bosch',     'cost' => 12.00, 'price' => 21.99, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Air Filter',   'image' => 'bosch-air-filter.jpg'],
-            ['name' => 'K&N Drop-In Air Filter',        'brand' => 'K&N',       'cost' => 28.00, 'price' => 44.99, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Air Filter'],
-            ['name' => 'Mann C 27 130 Air Filter',      'brand' => 'Mann',      'cost' => 11.00, 'price' => 18.99, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Air Filter'],
+            ['name' => 'K&N Drop-In Air Filter',        'brand' => 'K&N',       'cost' => 28.00, 'price' => 44.99, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Air Filter',   'image' => 'kn-air-filter.jpg'],
+            ['name' => 'Mann C 27 130 Air Filter',      'brand' => 'Mann',      'cost' => 11.00, 'price' => 18.99, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Air Filter',   'image' => 'mann-air-filter.jpg'],
             // Cabin Filter (3)
             ['name' => 'Mann Cabin Filter CU 26 009',   'brand' => 'Mann',      'cost' => 9.50,  'price' => 16.99, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Cabin Filter', 'image' => 'mann-cabin-filter.jpg'],
-            ['name' => 'Bosch Cabin Filter Activated',  'brand' => 'Bosch',     'cost' => 10.50, 'price' => 17.99, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Cabin Filter'],
-            ['name' => 'Fram Fresh Breeze Cabin Filter','brand' => 'Fram',      'cost' => 8.00,  'price' => 14.49, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Cabin Filter'],
+            ['name' => 'Bosch Cabin Filter Activated',  'brand' => 'Bosch',     'cost' => 10.50, 'price' => 17.99, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Cabin Filter', 'image' => 'bosch-cabin-filter.jpg'],
+            ['name' => 'Fram Fresh Breeze Cabin Filter','brand' => 'Fram',      'cost' => 8.00,  'price' => 14.49, 'unit' => 'piece', 'type' => Product::TYPE_FILTER, 'sub' => 'Cabin Filter', 'image' => 'fram-cabin-filter.jpg'],
         ],
         'Brakes' => [
             // Pads (3)
             ['name' => 'Brembo Front Brake Pads',       'brand' => 'Brembo',    'cost' => 45.00, 'price' => 79.99, 'unit' => 'set',   'type' => Product::TYPE_PART, 'sub' => 'Pads',  'image' => 'brembo-brake-pads.jpg'],
-            ['name' => 'Akebono ProACT Ceramic Pads',   'brand' => 'Akebono',   'cost' => 38.00, 'price' => 64.99, 'unit' => 'set',   'type' => Product::TYPE_PART, 'sub' => 'Pads'],
-            ['name' => 'Wagner ThermoQuiet Pads',       'brand' => 'Wagner',    'cost' => 32.00, 'price' => 54.99, 'unit' => 'set',   'type' => Product::TYPE_PART, 'sub' => 'Pads'],
+            ['name' => 'Akebono ProACT Ceramic Pads',   'brand' => 'Akebono',   'cost' => 38.00, 'price' => 64.99, 'unit' => 'set',   'type' => Product::TYPE_PART, 'sub' => 'Pads',  'image' => 'akebono-brake-pads.jpg'],
+            ['name' => 'Wagner ThermoQuiet Pads',       'brand' => 'Wagner',    'cost' => 32.00, 'price' => 54.99, 'unit' => 'set',   'type' => Product::TYPE_PART, 'sub' => 'Pads',  'image' => 'wagner-brake-pads.jpg'],
             // Rotors (3)
-            ['name' => 'Brembo Coated Brake Rotor',     'brand' => 'Brembo',    'cost' => 55.00, 'price' => 89.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'Rotors'],
-            ['name' => 'Raybestos Element3 Rotor',      'brand' => 'Raybestos', 'cost' => 42.00, 'price' => 69.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'Rotors'],
-            ['name' => 'Centric Premium Brake Rotor',   'brand' => 'Centric',   'cost' => 36.00, 'price' => 59.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'Rotors'],
+            ['name' => 'Brembo Coated Brake Rotor',     'brand' => 'Brembo',    'cost' => 55.00, 'price' => 89.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'Rotors', 'image' => 'brembo-brake-rotor.jpg'],
+            ['name' => 'Raybestos Element3 Rotor',      'brand' => 'Raybestos', 'cost' => 42.00, 'price' => 69.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'Rotors', 'image' => 'raybestos-brake-rotor.jpg'],
+            ['name' => 'Centric Premium Brake Rotor',   'brand' => 'Centric',   'cost' => 36.00, 'price' => 59.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'Rotors', 'image' => 'centric-brake-rotor.jpg'],
             // Fluid (3)
             ['name' => 'DOT 4 Brake Fluid 1L',          'brand' => 'Bosch',     'cost' => 7.00,  'price' => 12.99, 'unit' => 'liter', 'type' => Product::TYPE_PART, 'sub' => 'Fluid', 'image' => 'dot4-brake-fluid.jpg'],
-            ['name' => 'Motul RBF 600 DOT 4',           'brand' => 'Motul',     'cost' => 14.00, 'price' => 22.99, 'unit' => 'liter', 'type' => Product::TYPE_PART, 'sub' => 'Fluid'],
-            ['name' => 'Castrol React DOT 4 Low Temp',  'brand' => 'Castrol',   'cost' => 8.50,  'price' => 14.99, 'unit' => 'liter', 'type' => Product::TYPE_PART, 'sub' => 'Fluid'],
+            ['name' => 'Motul RBF 600 DOT 4',           'brand' => 'Motul',     'cost' => 14.00, 'price' => 22.99, 'unit' => 'liter', 'type' => Product::TYPE_PART, 'sub' => 'Fluid', 'image' => 'motul-rbf-600.jpg'],
+            ['name' => 'Castrol React DOT 4 Low Temp',  'brand' => 'Castrol',   'cost' => 8.50,  'price' => 14.99, 'unit' => 'liter', 'type' => Product::TYPE_PART, 'sub' => 'Fluid', 'image' => 'castrol-react-dot4.jpg'],
         ],
         'Batteries' => [
             // 12V Standard (3)
             ['name' => 'AC Delco 12V 70Ah',             'brand' => 'AC Delco',  'cost' => 85.00, 'price' => 134.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => '12V Standard', 'image' => 'acdelco-battery.jpg'],
-            ['name' => 'Interstate MT-65 12V',          'brand' => 'Interstate','cost' => 78.00, 'price' => 124.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => '12V Standard'],
-            ['name' => 'DieHard Gold 12V 65Ah',         'brand' => 'DieHard',   'cost' => 82.00, 'price' => 129.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => '12V Standard'],
+            ['name' => 'Interstate MT-65 12V',          'brand' => 'Interstate','cost' => 78.00, 'price' => 124.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => '12V Standard', 'image' => 'interstate-battery.jpg'],
+            ['name' => 'DieHard Gold 12V 65Ah',         'brand' => 'DieHard',   'cost' => 82.00, 'price' => 129.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => '12V Standard', 'image' => 'diehard-battery.jpg'],
             // 12V Premium (3)
             ['name' => 'Exide 12V 60Ah Premium',        'brand' => 'Exide',     'cost' => 75.00, 'price' => 119.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => '12V Premium',  'image' => 'exide-battery.jpg'],
-            ['name' => 'Optima RedTop 12V AGM',         'brand' => 'Optima',    'cost' => 145.00,'price' => 219.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => '12V Premium'],
-            ['name' => 'Odyssey Extreme 12V AGM',       'brand' => 'Odyssey',   'cost' => 160.00,'price' => 249.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => '12V Premium'],
+            ['name' => 'Optima RedTop 12V AGM',         'brand' => 'Optima',    'cost' => 145.00,'price' => 219.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => '12V Premium',  'image' => 'optima-redtop-battery.jpg'],
+            ['name' => 'Odyssey Extreme 12V AGM',       'brand' => 'Odyssey',   'cost' => 160.00,'price' => 249.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => '12V Premium',  'image' => 'odyssey-battery.jpg'],
         ],
         'Tires' => [
             // Passenger (3)
             ['name' => 'Michelin Primacy 4 195/65R15',  'brand' => 'Michelin',  'cost' => 90.00, 'price' => 139.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'Passenger',   'image' => 'michelin-primacy4.jpg'],
-            ['name' => 'Goodyear Assurance 205/55R16',  'brand' => 'Goodyear',  'cost' => 82.00, 'price' => 124.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'Passenger'],
-            ['name' => 'Continental PureContact 215/60R16', 'brand' => 'Continental', 'cost' => 88.00, 'price' => 134.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'Passenger'],
+            ['name' => 'Goodyear Assurance 205/55R16',  'brand' => 'Goodyear',  'cost' => 82.00, 'price' => 124.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'Passenger',   'image' => 'goodyear-assurance.jpg'],
+            ['name' => 'Continental PureContact 215/60R16', 'brand' => 'Continental', 'cost' => 88.00, 'price' => 134.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'Passenger', 'image' => 'continental-purecontact.jpg'],
             // SUV (3)
             ['name' => 'Bridgestone Dueler H/T',        'brand' => 'Bridgestone', 'cost' => 110.00, 'price' => 169.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'SUV', 'image' => 'bridgestone-dueler.jpg'],
-            ['name' => 'Michelin Defender LTX 265/70R17', 'brand' => 'Michelin', 'cost' => 125.00, 'price' => 189.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'SUV'],
-            ['name' => 'BFGoodrich All-Terrain T/A KO2', 'brand' => 'BFGoodrich', 'cost' => 140.00, 'price' => 209.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'SUV'],
+            ['name' => 'Michelin Defender LTX 265/70R17', 'brand' => 'Michelin', 'cost' => 125.00, 'price' => 189.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'SUV', 'image' => 'michelin-defender-ltx.jpg'],
+            ['name' => 'BFGoodrich All-Terrain T/A KO2', 'brand' => 'BFGoodrich', 'cost' => 140.00, 'price' => 209.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'SUV', 'image' => 'bfgoodrich-ko2.jpg'],
             // Performance (3)
-            ['name' => 'Michelin Pilot Sport 4S',       'brand' => 'Michelin',  'cost' => 155.00, 'price' => 229.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'Performance'],
-            ['name' => 'Pirelli P Zero 245/40R18',      'brand' => 'Pirelli',   'cost' => 148.00, 'price' => 219.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'Performance'],
-            ['name' => 'Continental ExtremeContact Sport', 'brand' => 'Continental', 'cost' => 135.00, 'price' => 199.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'Performance'],
+            ['name' => 'Michelin Pilot Sport 4S',       'brand' => 'Michelin',  'cost' => 155.00, 'price' => 229.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'Performance', 'image' => 'michelin-pilot-sport.jpg'],
+            ['name' => 'Pirelli P Zero 245/40R18',      'brand' => 'Pirelli',   'cost' => 148.00, 'price' => 219.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'Performance', 'image' => 'pirelli-p-zero.jpg'],
+            ['name' => 'Continental ExtremeContact Sport', 'brand' => 'Continental', 'cost' => 135.00, 'price' => 199.99, 'unit' => 'piece', 'type' => Product::TYPE_PART, 'sub' => 'Performance', 'image' => 'continental-ecs.jpg'],
         ],
     ];
 
