@@ -60,6 +60,12 @@
                 return;
             }
 
+            const protectedRoles = ['super_admin', 'tenant_admin', 'admin'];
+            if (protectedRoles.includes(name)) {
+                notyf.failure('Cannot create or modify protected roles.');
+                return;
+            }
+
             if (typeof window.appSetButtonLoading === 'function') {
                 window.appSetButtonLoading($btn, true, 'Saving...', originalHtml);
             } else {

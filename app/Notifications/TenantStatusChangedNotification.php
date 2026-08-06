@@ -24,20 +24,19 @@ class TenantStatusChangedNotification extends Notification implements ShouldQueu
 
     public function toMail(object $notifiable): MailMessage
     {
-        $mail = (new MailMessage)
+        return (new MailMessage)
             ->mailer('support')
             ->from(
                 (string) config('mail.addresses.info'),
                 (string) config('mail.from.name')
             )
             ->subject("{$this->shopName} account {$this->status}")
-            ->greeting("Hello {$notifiable->name},")
-            ->line("Your shop account for {$this->shopName} is now {$this->status}.");
-
-        if ($this->reason) {
-            $mail->line("Reason: {$this->reason}");
-        }
-
-        return $mail->line('If you believe this is a mistake, please contact support.');
+            ->view('emails.tenants.status-changed', [
+                'name' => $notifiable->name ?? null,
+                'shopName' => $this->shopName,
+                'status' => $this->status,
+                'reason' => $this->reason,
+                'title' => "Shop account {$this->status}",
+            ]);
     }
 }

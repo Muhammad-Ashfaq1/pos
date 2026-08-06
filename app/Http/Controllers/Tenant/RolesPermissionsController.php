@@ -21,6 +21,7 @@ class RolesPermissionsController extends Controller
     private const PROTECTED_ROLES = [
         User::SUPER_ADMIN,
         User::TENANT_ADMIN,
+        'admin',
     ];
 
     private const PERMISSION_GROUPS = [
@@ -236,6 +237,10 @@ class RolesPermissionsController extends Controller
 
         if ($user->isTenantAdmin() || $user->isSuperAdmin()) {
             return back()->with('error', 'Cannot impersonate admin users.');
+        }
+
+        if (! $user->isEmployee()) {
+            return back()->with('error', 'You can only impersonate employees.');
         }
 
         session([
