@@ -4,8 +4,13 @@
 
 @php($sym = $currencySymbol)
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/tenant-dashboard.css') }}?v={{ filemtime(public_path('assets/css/tenant-dashboard.css')) }}" />
+@endpush
+
 @section('content')
-<div id="dashboard-content" data-url="{{ route('tenant.dashboard') }}">
+<div id="dashboard-content" class="pos-td" data-url="{{ route('tenant.dashboard') }}">
     {{-- Date-range filter --}}
     @php($periods = [
         'today' => ['Today', 'tabler-calendar'],
@@ -51,50 +56,30 @@
     </div>
 
     <div class="row g-4 mb-4">
-        {{-- Welcome / shop hero --}}
-        <div class="col-xl-8">
-            <div class="card h-100">
-                <div class="card-body d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
-                    <div>
-                        <span class="badge bg-label-primary mb-2">{{ ucfirst($application['status']) }} workspace</span>
-                        <h4 class="mb-1">Welcome back to {{ $application['name'] }} 👋</h4>
-                        <p class="mb-3 text-muted">
-                            Here's how your shop is performing. You've booked
-                            <span class="fw-semibold text-heading">{{ $sym }}{{ number_format($cards['total_sales'], 2) }}</span>
-                            across <span class="fw-semibold text-heading">{{ number_format($cards['orders_total']) }}</span> orders,
-                            and have <span class="fw-semibold text-heading">{{ number_format($cards['estimates_total'] ?? 0) }}</span> estimates active.
+        <div class="col-12">
+            <div class="pos-glass-card pos-tone-primary">
+                <div class="pos-glass-intro">
+                    <div class="pos-glass-intro-copy">
+                        <h4 class="pos-glass-intro-title">Welcome back to {{ $application['name'] }}</h4>
+                        <p class="pos-glass-intro-subtitle">
+                            {{ ucfirst($application['status']) }} workspace ·
+                            {{ $sym }}{{ number_format($cards['total_sales'], 2) }} booked across
+                            {{ number_format($cards['orders_total']) }} orders ·
+                            {{ number_format($cards['estimates_total'] ?? 0) }} estimates active
                         </p>
+                    </div>
+                    <div class="pos-glass-intro-actions d-flex flex-wrap gap-2 align-items-center">
                         <a href="{{ route('employee.order.new-order') }}" class="btn btn-sm btn-primary">
-                            <i class="ti tabler-plus me-1"></i> New Order
+                            <i class="ti tabler-plus me-1" aria-hidden="true"></i> New Order
                         </a>
                         <a href="{{ route('employee.order.index') }}" class="btn btn-sm btn-label-secondary">View Orders</a>
+                        @php($up = $cards['sales_month_change'] >= 0)
+                        <span class="pos-glass-pill pos-tone-{{ $up ? 'success' : 'danger' }}">
+                            <i class="icon-base ti tabler-trending-{{ $up ? 'up' : 'down' }}" aria-hidden="true"></i>
+                            Sales ({{ $range['label'] }}): {{ $sym }}{{ number_format($cards['sales_this_month'], 2) }}
+                            ({{ $up ? '+' : '' }}{{ $cards['sales_month_change'] }}%)
+                        </span>
                     </div>
-                    <div class="d-none d-lg-block text-center">
-                        <img src="{{ asset('assets/img/illustrations/girl-with-laptop-light.png') }}" alt="Dashboard" class="img-fluid" style="max-height: 150px;">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Sales this month highlight --}}
-        <div class="col-xl-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <span class="text-muted d-block mb-1">Sales ({{ $range['label'] }})</span>
-                            <h4 class="mb-1">{{ $sym }}{{ number_format($cards['sales_this_month'], 2) }}</h4>
-                            @php($up = $cards['sales_month_change'] >= 0)
-                            <span class="badge bg-label-{{ $up ? 'success' : 'danger' }}">
-                                <i class="ti tabler-trending-{{ $up ? 'up' : 'down' }} me-1"></i>{{ $up ? '+' : '' }}{{ $cards['sales_month_change'] }}%
-                            </span>
-                            <small class="text-muted ms-1">vs previous period</small>
-                        </div>
-                        <div class="avatar">
-                            <span class="avatar-initial rounded bg-label-primary"><i class="ti tabler-chart-pie"></i></span>
-                        </div>
-                    </div>
-                    <div id="salesMonthChart" class="mt-2"></div>
                 </div>
             </div>
         </div>
@@ -103,24 +88,22 @@
     {{-- Stat cards --}}
     <div class="row g-4 mb-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-5 justify-content-center">
         @php($statCards = [
-            ['label' => 'Total Sales', 'value' => $sym.number_format($cards['total_sales'], 2), 'icon' => 'tabler-currency-dollar', 'color' => 'primary', 'sub' => 'Avg order '.$sym.number_format($cards['avg_order_value'], 2)],
-            ['label' => 'Orders', 'value' => number_format($cards['orders_total']), 'icon' => 'tabler-shopping-cart', 'color' => 'info', 'sub' => $cards['orders_this_month'].' this month'],
-            ['label' => 'Estimates', 'value' => number_format($cards['estimates_total'] ?? 0), 'icon' => 'tabler-file-analytics', 'color' => 'warning', 'sub' => 'Value: '.$sym.number_format($cards['estimates_value'] ?? 0, 2)],
-            ['label' => 'Customers', 'value' => number_format($cards['customers_total']), 'icon' => 'tabler-users', 'color' => 'success', 'sub' => $cards['items_sold'].' items sold'],
-            ['label' => 'Products', 'value' => number_format($cards['products_total']), 'icon' => 'tabler-package', 'color' => $cards['low_stock_count'] > 0 ? 'warning' : 'secondary', 'sub' => $cards['low_stock_count'].' low / out of stock'],
+            ['label' => 'Total Sales', 'value' => $sym.number_format($cards['total_sales'], 2), 'icon' => 'tabler-currency-dollar', 'tone' => 'primary', 'sub' => 'Avg order '.$sym.number_format($cards['avg_order_value'], 2)],
+            ['label' => 'Orders', 'value' => number_format($cards['orders_total']), 'icon' => 'tabler-shopping-cart', 'tone' => 'info', 'sub' => $cards['orders_this_month'].' this month'],
+            ['label' => 'Estimates', 'value' => number_format($cards['estimates_total'] ?? 0), 'icon' => 'tabler-file-analytics', 'tone' => 'warning', 'sub' => 'Value: '.$sym.number_format($cards['estimates_value'] ?? 0, 2)],
+            ['label' => 'Customers', 'value' => number_format($cards['customers_total']), 'icon' => 'tabler-users', 'tone' => 'success', 'sub' => $cards['items_sold'].' items sold'],
+            ['label' => 'Products', 'value' => number_format($cards['products_total']), 'icon' => 'tabler-package', 'tone' => $cards['low_stock_count'] > 0 ? 'warning' : 'secondary', 'sub' => $cards['low_stock_count'].' low / out of stock'],
         ])
         @foreach ($statCards as $c)
             <div class="col">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <div class="avatar">
-                                <span class="avatar-initial rounded bg-label-{{ $c['color'] }}"><i class="ti {{ $c['icon'] }}"></i></span>
-                            </div>
+                <div class="pos-glass-card pos-tone-{{ $c['tone'] }} h-100">
+                    <div class="pos-stat-body">
+                        <div class="pos-stat-head">
+                            <span class="pos-stat-icon"><i class="icon-base ti {{ $c['icon'] }}" aria-hidden="true"></i></span>
+                            <h6 class="pos-stat-label">{{ $c['label'] }}</h6>
                         </div>
-                        <span class="text-muted d-block">{{ $c['label'] }}</span>
-                        <h4 class="mb-1">{{ $c['value'] }}</h4>
-                        <small class="text-muted text-nowrap">{{ $c['sub'] }}</small>
+                        <p class="pos-stat-value">{{ $c['value'] }}</p>
+                        <p class="pos-stat-desc mb-0">{{ $c['sub'] }}</p>
                     </div>
                 </div>
             </div>
@@ -130,22 +113,20 @@
     {{-- Secondary key figures --}}
     <div class="row g-4 mb-4">
         @php($figures = [
-            ['label' => 'Collected', 'value' => $sym.number_format($cards['collected'], 2), 'icon' => 'tabler-cash', 'color' => 'success'],
-            ['label' => 'Outstanding', 'value' => $sym.number_format($cards['outstanding'], 2), 'icon' => 'tabler-clock-dollar', 'color' => 'danger'],
-            ['label' => 'Avg Order Value', 'value' => $sym.number_format($cards['avg_order_value'], 2), 'icon' => 'tabler-receipt', 'color' => 'info'],
-            ['label' => 'Items Sold', 'value' => number_format($cards['items_sold']), 'icon' => 'tabler-box', 'color' => 'primary'],
+            ['label' => 'Collected', 'value' => $sym.number_format($cards['collected'], 2), 'icon' => 'tabler-cash', 'tone' => 'success'],
+            ['label' => 'Outstanding', 'value' => $sym.number_format($cards['outstanding'], 2), 'icon' => 'tabler-clock-dollar', 'tone' => 'danger'],
+            ['label' => 'Avg Order Value', 'value' => $sym.number_format($cards['avg_order_value'], 2), 'icon' => 'tabler-receipt', 'tone' => 'info'],
+            ['label' => 'Items Sold', 'value' => number_format($cards['items_sold']), 'icon' => 'tabler-box', 'tone' => 'primary'],
         ])
         @foreach ($figures as $f)
             <div class="col-xl-3 col-sm-6">
-                <div class="card h-100">
-                    <div class="card-body d-flex align-items-center gap-3">
-                        <div class="avatar">
-                            <span class="avatar-initial rounded bg-label-{{ $f['color'] }}"><i class="ti {{ $f['icon'] }}"></i></span>
+                <div class="pos-glass-card pos-tone-{{ $f['tone'] }} h-100">
+                    <div class="pos-stat-body">
+                        <div class="pos-stat-head">
+                            <span class="pos-stat-icon"><i class="icon-base ti {{ $f['icon'] }}" aria-hidden="true"></i></span>
+                            <h6 class="pos-stat-label">{{ $f['label'] }}</h6>
                         </div>
-                        <div>
-                            <span class="text-muted d-block">{{ $f['label'] }}</span>
-                            <h5 class="mb-0">{{ $f['value'] }}</h5>
-                        </div>
+                        <p class="pos-stat-value">{{ $f['value'] }}</p>
                     </div>
                 </div>
             </div>
@@ -155,7 +136,7 @@
     {{-- Sales overview + orders by status --}}
     <div class="row g-4 mb-4">
         <div class="col-xl-8">
-            <div class="card h-100">
+            <div class="pos-glass-card pos-tone-primary h-100 pos-td-chart-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div>
                         <h5 class="mb-0">Sales Overview</h5>
@@ -169,7 +150,7 @@
             </div>
         </div>
         <div class="col-xl-4">
-            <div class="card h-100">
+            <div class="pos-glass-card pos-tone-info h-100 pos-td-chart-card">
                 <div class="card-header"><h5 class="mb-0">Orders by Status</h5></div>
                 <div class="card-body">
                     <div id="ordersStatusChart"></div>
@@ -189,7 +170,7 @@
     {{-- Payment methods + top products --}}
     <div class="row g-4 mb-4">
         <div class="col-xl-4">
-            <div class="card h-100">
+            <div class="pos-glass-card pos-tone-success h-100 pos-td-chart-card">
                 <div class="card-header"><h5 class="mb-0">Payment Methods</h5></div>
                 <div class="card-body">
                     @if (count($paymentMethods))
@@ -209,7 +190,7 @@
             </div>
         </div>
         <div class="col-xl-8">
-            <div class="card h-100">
+            <div class="pos-glass-card pos-tone-warning h-100 pos-td-chart-card">
                 <div class="card-header"><h5 class="mb-0">Top Selling Products</h5></div>
                 <div class="card-body">
                     @if (count($topProducts))
@@ -225,7 +206,7 @@
     {{-- Category sales + customers by type + revenue breakdown --}}
     <div class="row g-4 mb-4">
         <div class="col-xl-6">
-            <div class="card h-100">
+            <div class="pos-glass-card pos-tone-primary h-100 pos-td-chart-card">
                 <div class="card-header"><h5 class="mb-0">Sales by Category</h5></div>
                 <div class="card-body">
                     @if (count($salesByCategory))
@@ -237,7 +218,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-md-6">
-            <div class="card h-100">
+            <div class="pos-glass-card pos-tone-info h-100 pos-td-chart-card">
                 <div class="card-header"><h5 class="mb-0">Customers</h5></div>
                 <div class="card-body">
                     <div id="customersTypeChart"></div>
@@ -245,7 +226,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-md-6">
-            <div class="card h-100">
+            <div class="pos-glass-card pos-tone-success h-100 pos-td-chart-card">
                 <div class="card-header"><h5 class="mb-0">Revenue Breakdown</h5></div>
                 <div class="card-body">
                     <div id="revenueBreakdownChart"></div>
@@ -257,7 +238,7 @@
     {{-- Recent orders + low stock --}}
     <div class="row g-4 mb-4">
         <div class="col-xl-7">
-            <div class="card h-100">
+            <div class="pos-glass-card pos-tone-primary h-100 pos-td-chart-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Recent Orders</h5>
                     <a href="{{ route('employee.order.index') }}" class="btn btn-sm btn-label-primary">View all</a>
@@ -291,7 +272,7 @@
             </div>
         </div>
         <div class="col-xl-5">
-            <div class="card h-100">
+            <div class="pos-glass-card pos-tone-warning h-100 pos-td-chart-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Low Stock Alerts</h5>
                     <a href="{{ route('tenant.ecommerce.products.index') }}" class="btn btn-sm btn-label-primary">Manage</a>
@@ -327,7 +308,7 @@
     {{-- Application overview --}}
     <div class="row g-4">
         <div class="col-12">
-            <div class="card">
+            <div class="pos-glass-card pos-tone-secondary pos-td-chart-card">
                 <div class="card-header"><h5 class="mb-0">Application Overview</h5></div>
                 <div class="card-body">
                     <div class="row g-3 mb-4">
@@ -378,34 +359,19 @@
                             'Estimates' => route('employee.order.index', ['tab' => 'estimates']),
                         ];
                         $catalogMeta = [
-                            'Categories' => ['icon' => 'tabler-category', 'color' => 'primary'],
-                            'Sub Categories' => ['icon' => 'tabler-folders', 'color' => 'info'],
-                            'Product Types' => ['icon' => 'tabler-components', 'color' => 'dark'],
-                            'Products' => ['icon' => 'tabler-package', 'color' => 'success'],
-                            'Services' => ['icon' => 'tabler-settings', 'color' => 'danger'],
-                            'Discounts' => ['icon' => 'tabler-tag', 'color' => 'warning'],
-                            'Discount Groups' => ['icon' => 'tabler-tags', 'color' => 'secondary'],
-                            'Customers' => ['icon' => 'tabler-users', 'color' => 'primary'],
-                            'Vehicles' => ['icon' => 'tabler-car', 'color' => 'info'],
-                            'Orders' => ['icon' => 'tabler-shopping-cart', 'color' => 'success'],
-                            'Estimates' => ['icon' => 'tabler-file-analytics', 'color' => 'warning'],
+                            'Categories' => ['icon' => 'tabler-category', 'tone' => 'primary'],
+                            'Sub Categories' => ['icon' => 'tabler-folders', 'tone' => 'info'],
+                            'Product Types' => ['icon' => 'tabler-components', 'tone' => 'dark'],
+                            'Products' => ['icon' => 'tabler-package', 'tone' => 'success'],
+                            'Services' => ['icon' => 'tabler-settings', 'tone' => 'danger'],
+                            'Discounts' => ['icon' => 'tabler-tag', 'tone' => 'warning'],
+                            'Discount Groups' => ['icon' => 'tabler-tags', 'tone' => 'secondary'],
+                            'Customers' => ['icon' => 'tabler-users', 'tone' => 'primary'],
+                            'Vehicles' => ['icon' => 'tabler-car', 'tone' => 'info'],
+                            'Orders' => ['icon' => 'tabler-shopping-cart', 'tone' => 'success'],
+                            'Estimates' => ['icon' => 'tabler-file-analytics', 'tone' => 'warning'],
                         ];
                     ?>
-                    <style>
-                        .catalog-card-link {
-                            text-decoration: none !important;
-                            display: block;
-                        }
-                        .catalog-card-item {
-                            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-                            border: 1px solid transparent;
-                        }
-                        .catalog-card-item:hover {
-                            transform: translateY(-4px);
-                            box-shadow: 0 8px 16px rgba(115, 103, 240, 0.12);
-                            border-color: rgba(115, 103, 240, 0.3);
-                        }
-                    </style>
                     <div class="row g-3">
                         @foreach ($application['catalog'] as $label => $count)
                             @if (! $vehicleFeatureEnabled && $label === 'Vehicles')
@@ -413,18 +379,16 @@
                             @endif
                             <?php
                                 $targetUrl = $catalogUrls[$label] ?? '#';
-                                $meta = $catalogMeta[$label] ?? ['icon' => 'tabler-circle', 'color' => 'secondary'];
-                                $icon = $meta['icon'];
-                                $color = $meta['color'];
+                                $meta = $catalogMeta[$label] ?? ['icon' => 'tabler-circle', 'tone' => 'secondary'];
                             ?>
                             <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                                <a href="{{ $targetUrl }}" class="catalog-card-link h-100">
-                                    <div class="rounded bg-label-{{ $color }} p-3 text-center h-100 catalog-card-item d-flex flex-column align-items-center justify-content-center">
-                                        <div class="avatar avatar-sm mb-2">
-                                            <span class="avatar-initial rounded bg-{{ $color }}"><i class="ti {{ $icon }} fs-4 text-white"></i></span>
+                                <a href="{{ $targetUrl }}" class="pos-td-catalog-link h-100">
+                                    <div class="pos-glass-card pos-tone-{{ $meta['tone'] }} h-100 pos-td-catalog-item">
+                                        <div class="pos-stat-body text-center align-items-center">
+                                            <span class="pos-stat-icon"><i class="icon-base ti {{ $meta['icon'] }}" aria-hidden="true"></i></span>
+                                            <p class="pos-stat-value">{{ number_format($count) }}</p>
+                                            <p class="pos-stat-label mb-0">{{ $label }}</p>
                                         </div>
-                                        <h5 class="mb-0 fw-bold text-heading mt-1">{{ number_format($count) }}</h5>
-                                        <small class="text-muted text-nowrap">{{ $label }}</small>
                                     </div>
                                 </a>
                             </div>

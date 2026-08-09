@@ -1,22 +1,21 @@
+@php
+    $posTheme = \App\Support\AppTheme::resolve(auth('customer')->user() ?? auth()->user());
+@endphp
 <!doctype html>
 <html
     lang="en"
-    class="layout-navbar-fixed layout-menu-fixed layout-compact"
+    class="layout-navbar-fixed layout-menu-fixed layout-compact {{ $posTheme['classes'] }}"
     dir="ltr"
     data-skin="default"
-    data-bs-theme="light"
+    data-bs-theme="{{ $posTheme['bs_theme'] }}"
+    data-pos-theme="{{ $posTheme['variant'] }}"
+    data-pos-theme-mode="{{ $posTheme['mode'] }}"
     data-assets-path="{{ asset('assets') }}/"
     data-template="vertical-menu-template">
 <head>
     <meta charset="utf-8" />
     <script>
         (function () {
-            const theme = localStorage.getItem('templateCustomizer-vertical-menu-template--Theme') || 'light';
-            const themeToApply = theme === 'system'
-                ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-                : theme;
-            document.documentElement.setAttribute('data-bs-theme', themeToApply);
-
             const collapsed = localStorage.getItem('templateCustomizer-vertical-menu-template--LayoutCollapsed');
             if (collapsed !== null) {
                 if (collapsed === 'true') {
@@ -45,6 +44,7 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/node-waves/node-waves.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/core.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-themes.css') }}?v={{ filemtime(public_path('assets/css/pos-themes.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/app-datepicker.css') }}?v={{ filemtime(public_path('assets/css/app-datepicker.css')) }}" />
@@ -54,17 +54,16 @@
         @php
             $shopBrandPrimary = auth('customer')->user()?->tenant?->brandPrimaryColor();
         @endphp
-        :root {
-            @if ($shopBrandPrimary)
-                --shop-brand-primary: {{ $shopBrandPrimary }};
-            @endif
-        }
+        @include('partials._shop-brand-tokens')
         .shop-brand-logo img { display: block; }
     </style>
 
     <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
     <script src="{{ asset('assets/js/config.js') }}"></script>
     @stack('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-responsive.css') }}?v={{ filemtime(public_path('assets/css/pos-responsive.css')) }}" />
+    @include('partials._theme-prepaint')
+    <script src="{{ asset('assets/js/pos-theme.js') }}?v={{ filemtime(public_path('assets/js/pos-theme.js')) }}"></script>
 </head>
 <body class="customer-portal-page">
     @hasSection('portal-nav')
@@ -119,6 +118,7 @@
     <script src="{{ asset('assets/js/app-datepicker.js') }}?v={{ filemtime(public_path('assets/js/app-datepicker.js')) }}"></script>
     <script src="{{ asset('assets/js/main.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-aio-3.2.8.min.js"></script>
+    <script src="{{ asset('assets/js/pos-confirm.js') }}?v={{ filemtime(public_path('assets/js/pos-confirm.js')) }}"></script>
     <script src="{{ asset('assets/js/app-loader.js') }}?v={{ filemtime(public_path('assets/js/app-loader.js')) }}"></script>
     <script>
         window.appCurrency = { symbol: @json(\App\Support\Currency::symbol()), code: @json(\App\Support\Currency::code()) };

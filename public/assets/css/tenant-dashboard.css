@@ -1,0 +1,36 @@
+/*
+ * tenant-dashboard.css — screen layer for the tenant dashboard.
+ * Conventions: namespaced .pos-td-*, additive, no !important, reads kit tones.
+ */
+.pos-td .pos-glass-card .card-body,
+.pos-td .pos-glass-card .card-header {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+    border: 0;
+}
+
+.pos-td-chart-card {
+    padding: 0;
+}
+
+.pos-td-chart-card .card-header {
+    padding: 1.1rem 1.25rem 0.25rem;
+}
+
+.pos-td-chart-card .card-body {
+    padding: 0.75rem 1.25rem 1.25rem;
+}
+
+.pos-td-catalog-link {
+    text-decoration: none !important;
+    display: block;
+}
+
+.pos-td-catalog-item {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.pos-td-catalog-item:hover {
+    transform: translateY(-2px);
+}

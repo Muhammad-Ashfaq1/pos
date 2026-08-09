@@ -100,6 +100,8 @@ class Tenant extends Model implements TenantContract
         'business_type',
         'website_url',
         'logo',
+        'theme_variant',
+        'theme_mode',
         'rejected_reason',
         'onboarding_status',
     ];
