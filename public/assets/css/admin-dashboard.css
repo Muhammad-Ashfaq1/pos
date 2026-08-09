@@ -1,0 +1,23 @@
+/*
+ * admin-dashboard.css — screen layer for the platform admin dashboard.
+ * Conventions: namespaced .pos-ad-*, additive, no !important, reads kit tones.
+ */
+.pos-ad .pos-glass-card .card-body,
+.pos-ad .pos-glass-card .card-header {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+    border: 0;
+}
+
+.pos-ad-panel {
+    padding: 0;
+}
+
+.pos-ad-panel .card-header {
+    padding: 1.1rem 1.25rem 0.25rem;
+}
+
+.pos-ad-panel .card-body {
+    padding: 0.75rem 1.25rem 1.25rem;
+}

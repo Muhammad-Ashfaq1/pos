@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountSettingsController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\ThemePreferencesController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->controller(AuthController::class)->group(function () {
@@ -30,6 +31,13 @@ Route::middleware(['auth:web,customer', 'account.context'])
         Route::get('/account/password', 'password')->name('account.password');
         Route::post('/account/password', 'updatePassword')->name('account.password.update');
     });
+
+Route::middleware('auth')->group(function () {
+    Route::put('/account/theme', [ThemePreferencesController::class, 'update'])
+        ->name('account.theme.update');
+    Route::put('/account/theme/tenant', [ThemePreferencesController::class, 'updateTenant'])
+        ->name('account.theme.tenant.update');
+});
 
 Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
     ->middleware('signed')

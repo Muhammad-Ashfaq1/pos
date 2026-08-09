@@ -34,6 +34,9 @@
              data-panel="profile"
              @if (($accountSettingsActive ?? 'profile') !== 'profile') hidden @endif>
             @include('account-settings.partials.profile-form')
+            @if (auth()->user() instanceof \App\Models\User)
+                @include('partials._theme-picker')
+            @endif
         </div>
 
         <div class="account-settings-panel"

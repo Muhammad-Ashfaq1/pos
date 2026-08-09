@@ -49,6 +49,17 @@
 @endphp
 
 @section('content')
+    <div class="pos-ed-banner">
+        <div class="pos-glass-card pos-tone-primary">
+            <div class="pos-glass-intro">
+                <div class="pos-glass-intro-copy">
+                    <h4 class="pos-glass-intro-title">Employee workspace</h4>
+                    <p class="pos-glass-intro-subtitle">Today’s orders, product mix, and quick actions for the floor.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="preview-grid">
         <section class="preview-left-column">
             @include('employee.partials.preview-product-mix', [
@@ -79,6 +90,8 @@
 @endsection
 
 @push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/employee-dashboard.css') }}?v={{ filemtime(public_path('assets/css/employee-dashboard.css')) }}" />
     <style>
         .employee-admin-preview .preview-refresh-btn.is-refreshing i {
             animation: product-mix-spin 0.8s linear infinite;

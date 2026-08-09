@@ -38,17 +38,18 @@
     </div>
 
     <div class="preview-card-body">
-        <div class="preview-stats-grid" data-product-mix-stats>
-            @foreach($summaryCards as $card)
-                <div class="preview-chip {{ $card['chip'] }}">
-                    <div>
-                        <div class="preview-chip-number-row">
-                            <span class="preview-chip-value" data-product-mix-value="{{ $card['key'] }}">{{ $card['value'] }}</span>
-                            <span class="preview-chip-label">{{ $card['label'] }}</span>
+        <div class="preview-stats-grid pos-ed-kpis" data-product-mix-stats>
+            @php $edTones = ['primary', 'info', 'success']; @endphp
+            @foreach($summaryCards as $i => $card)
+                <div class="pos-glass-card pos-tone-{{ $edTones[$i % count($edTones)] }} h-100">
+                    <div class="pos-stat-body">
+                        <div class="pos-stat-head">
+                            <span class="pos-stat-icon"><i class="icon-base ti {{ $card['icon'] }}" aria-hidden="true"></i></span>
+                            <h6 class="pos-stat-label">{{ $card['label'] }}</h6>
                         </div>
-                        <div class="preview-chip-meta" data-product-mix-meta="{{ $card['key'] }}">{{ $card['meta'] }}</div>
+                        <p class="pos-stat-value" data-product-mix-value="{{ $card['key'] }}">{{ $card['value'] }}</p>
+                        <p class="pos-stat-desc mb-0" data-product-mix-meta="{{ $card['key'] }}">{{ $card['meta'] }}</p>
                     </div>
-                    <i class="ti {{ $card['icon'] }} preview-chip-icon"></i>
                 </div>
             @endforeach
         </div>

@@ -1,26 +1,21 @@
+@php
+    $posTheme = \App\Support\AppTheme::resolve(auth()->user());
+@endphp
 <!doctype html>
 <html
     lang="en"
-    class="layout-wide"
+    class="layout-wide {{ $posTheme['classes'] }}"
     dir="ltr"
     data-skin="default"
-    data-bs-theme="light"
+    data-bs-theme="{{ $posTheme['bs_theme'] }}"
+    data-pos-theme="{{ $posTheme['variant'] }}"
+    data-pos-theme-mode="{{ $posTheme['mode'] }}"
     data-assets-path="{{ asset('assets') }}/"
     data-template="vertical-menu-template">
 <head>
     <meta charset="utf-8" />
-    <script>
-        (function () {
-            // Inherit admin/shared theme so impersonated Create Order matches admin dark/light.
-            // Do not write localStorage here — never overwrite the admin preference.
-            var theme = localStorage.getItem('templateCustomizer-vertical-menu-template--Theme') || 'light';
-            var themeToApply = theme === 'system'
-                ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-                : theme;
-            document.documentElement.setAttribute('data-bs-theme', themeToApply);
-        })();
-    </script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="pos-table-scope" content="{{ \App\Support\TableFragment::scopeToken() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="description" content="@yield('meta_description', 'Employee Portal UI preview for the POS app.')" />
@@ -41,6 +36,7 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/pickr/pickr-themes.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/core.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-themes.css') }}?v={{ filemtime(public_path('assets/css/pos-themes.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
@@ -50,11 +46,7 @@
         @php
             $shopBrandPrimary = app(\App\Support\Tenancy\TenantContext::class)->current()?->brandPrimaryColor();
         @endphp
-        :root {
-            @if ($shopBrandPrimary)
-                --shop-brand-primary: {{ $shopBrandPrimary }};
-            @endif
-        }
+        @include('partials._shop-brand-tokens')
 
         /* Theme customizer panel (gear) disabled — use header Light/Dark/System only */
         #template-customizer {
@@ -680,6 +672,11 @@
     </style>
 
     @stack('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-responsive.css') }}?v={{ filemtime(public_path('assets/css/pos-responsive.css')) }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-table.css') }}?v={{ filemtime(public_path('assets/css/pos-table.css')) }}" />
+    @include('partials._theme-prepaint')
+    <script src="{{ asset('assets/js/pos-theme.js') }}?v={{ filemtime(public_path('assets/js/pos-theme.js')) }}"></script>
+    <script src="{{ asset('assets/js/pos-theme-bridge.js') }}?v={{ filemtime(public_path('assets/js/pos-theme-bridge.js')) }}"></script>
 </head>
 <body class="employee-admin-preview">
     <div class="preview-shell">
@@ -768,6 +765,7 @@
     <script src="{{ asset('assets/js/main.js') }}"></script>
     <script>
         window.appCurrency = { symbol: @json(\App\Support\Currency::symbol()), code: @json(\App\Support\Currency::code()) };
+        window.posThemeSaveUrl = @json(route('account.theme.update'));
     </script>
     <script>
         window.sessionMessages = window.sessionMessages || {};
@@ -792,9 +790,12 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-aio-3.2.8.min.js"></script>
+    <script src="{{ asset('assets/js/pos-confirm.js') }}?v={{ filemtime(public_path('assets/js/pos-confirm.js')) }}"></script>
     <script src="{{ asset('assets/js/app-helpers.js') }}?v={{ filemtime(public_path('assets/js/app-helpers.js')) }}"></script>
     <script src="{{ asset('assets/js/app-loader.js') }}?v={{ filemtime(public_path('assets/js/app-loader.js')) }}"></script>
     <script src="{{ asset('assets/js/session-notifications.js') }}"></script>
+    <script src="{{ asset('assets/js/pos-table.js') }}?v={{ filemtime(public_path('assets/js/pos-table.js')) }}"></script>
+    <script src="{{ asset('assets/js/pos-master-detail.js') }}?v={{ filemtime(public_path('assets/js/pos-master-detail.js')) }}"></script>
 
     @stack('page-script')
     @yield('scripts')

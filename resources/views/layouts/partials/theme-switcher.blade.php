@@ -1,4 +1,4 @@
-{{-- Shared Light / Dark / System theme switcher. --}}
+{{-- Navbar Light / Dark / System — also persists via PosTheme + account.theme.update. --}}
 @php
     $wrapperTag = $wrapperTag ?? 'li';
     $wrapperClass = $wrapperClass ?? 'nav-item dropdown';
@@ -14,19 +14,19 @@
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-theme-text">
         <li>
             <button type="button" class="dropdown-item align-items-center waves-effect active"
-                data-bs-theme-value="light" aria-pressed="true">
+                data-bs-theme-value="light" data-pos-theme-mode="light" aria-pressed="true">
                 <span><i class="icon-base ti tabler-sun icon-22px me-3" data-icon="sun"></i>Light</span>
             </button>
         </li>
         <li>
             <button type="button" class="dropdown-item align-items-center waves-effect"
-                data-bs-theme-value="dark" aria-pressed="false">
+                data-bs-theme-value="dark" data-pos-theme-mode="dark" aria-pressed="false">
                 <span><i class="icon-base ti tabler-moon-stars icon-22px me-3" data-icon="moon-stars"></i>Dark</span>
             </button>
         </li>
         <li>
             <button type="button" class="dropdown-item align-items-center waves-effect"
-                data-bs-theme-value="system" aria-pressed="false">
+                data-bs-theme-value="system" data-pos-theme-mode="system" aria-pressed="false">
                 <span><i class="icon-base ti tabler-device-desktop-analytics icon-22px me-3" data-icon="device-desktop-analytics"></i>System</span>
             </button>
         </li>

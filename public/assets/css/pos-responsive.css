@@ -1,0 +1,141 @@
+/* ============================================================================
+   pos-responsive.css  —  Shared responsive foundation
+   ----------------------------------------------------------------------------
+   ONE stylesheet, loaded LAST in every layout (after @stack('styles')), so it
+   can adjust layout at small viewports without adding new !important rules and
+   without fighting the theme. It introduces NO new CSS framework — it only uses
+   the existing Bootstrap 5 breakpoint ladder (sm 576 / md 768 / lg 992 /
+   xl 1200 / xxl 1400) already shipped in vendor/css/core.css.
+
+   HARD RULES honoured here:
+     • Everything meaningful lives inside a @media (max-width: …) block, so the
+       desktop design is byte-for-byte unchanged at ≥ the relevant breakpoint.
+     • No id/data-attr contract is touched; this file is pure styling.
+     • Reusable primitives only — pages opt in via existing classes; we do not
+       duplicate per-page CSS.
+
+   Sections:
+     1. Global safety (horizontal-overflow guard)
+     2. Responsive modals
+     3. Master-detail helper (single-pane + back button on ≤ md)
+   ========================================================================== */
+
+/* ── 1. Global safety ───────────────────────────────────────────────────── */
+.layout-wrapper {
+    max-width: 100%;
+}
+
+@media (max-width: 991.98px) {
+    .layout-page,
+    .content-wrapper {
+        max-width: 100%;
+        overflow-x: clip;
+    }
+}
+
+/* ── 2. Responsive modals (app-wide) ──────────────────────────────────────
+   Cap EVERY dialog to the viewport on small screens and let scrollable
+   bodies keep header/footer reachable. Desktop (≥576px) is untouched. */
+@media (max-width: 575.98px) {
+    .modal-dialog {
+        margin: 0.5rem auto;
+        max-width: calc(100% - 1rem);
+    }
+    .modal-dialog.modal-dialog-scrollable .modal-content {
+        max-height: calc(100dvh - 1rem);
+    }
+    .modal .dropdown-menu { max-width: calc(100vw - 2rem); }
+}
+
+/* ── Header rows: wrap title + actions on phones ────────────────────────── */
+@media (max-width: 575.98px) {
+    .card-header.d-flex.justify-content-between { flex-wrap: wrap; gap: 0.5rem; }
+}
+
+/* ── 3. Master-detail helper (single-pane + back button on ≤ md) ──────────
+   A page opts in with three markers on its EXISTING panes:
+     [data-pos-md] on the flex body, [data-pos-md-list] on the list pane,
+     [data-pos-md-detail] on the detail pane, and a [data-pos-md-back] button.
+   pos-master-detail.js toggles `.pos-md-detail-active` on the body.
+
+   The detail opens as a BOTTOM SHEET over the list — 60% of the viewport.
+   --pos-md-sheet-h is the one place that height is written. */
+[data-pos-md-back] { display: none; } /* desktop: no back button */
+
+:root { --pos-md-sheet-h: 60vh; }
+
+@media (max-width: 767.98px) {
+    [data-pos-md] > [data-pos-md-list] {
+        width: 100%;
+        max-width: 100%;
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+    [data-pos-md]:not([data-pos-md-full]).pos-md-detail-active > [data-pos-md-list] { display: flex; }
+
+    [data-pos-md-full] > [data-pos-md-list],
+    [data-pos-md-full] > [data-pos-md-detail] {
+        width: 100%;
+        max-width: 100%;
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+    [data-pos-md-full] > [data-pos-md-detail] { display: none; }
+    [data-pos-md-full].pos-md-detail-active > [data-pos-md-list] { display: none; }
+    [data-pos-md-full].pos-md-detail-active > [data-pos-md-detail] { display: flex; }
+
+    [data-pos-md]:not([data-pos-md-manual]):not([data-pos-md-full]) > [data-pos-md-detail] {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: auto;
+        width: 100%;
+        max-width: 100%;
+        height: var(--pos-md-sheet-h);
+        max-height: var(--pos-md-sheet-h);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        transform: translateY(100%);
+        transition: transform .25s ease;
+        z-index: 1050;
+        background: var(--bs-body-bg, #fff);
+        border-top-left-radius: 14px;
+        border-top-right-radius: 14px;
+        box-shadow: 0 -8px 28px rgba(0, 0, 0, .22);
+    }
+    [data-pos-md]:not([data-pos-md-manual]):not([data-pos-md-full]).pos-md-detail-active > [data-pos-md-detail] {
+        transform: translateY(0);
+    }
+
+    [data-pos-md]:not([data-pos-md-manual]):not([data-pos-md-full]).pos-md-detail-active::after {
+        content: "";
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: var(--pos-md-sheet-h);
+        background: rgba(0, 0, 0, .4);
+        z-index: 1049;
+    }
+
+    [data-pos-md-back] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+@supports (height: 60dvh) {
+    :root { --pos-md-sheet-h: 60dvh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-pos-md] > [data-pos-md-detail] {
+        transition: none;
+    }
+}

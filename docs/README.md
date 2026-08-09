@@ -27,6 +27,7 @@ The docs are ordered as a **journey** — the path a shop travels from first sig
 | 10 | [dashboards.md](dashboards.md) | **Analyse & oversee** — employee panel, tenant analytics dashboard, and the super-admin platform view. |
 | 11 | [reports.md](reports.md) | **Report & export** — the dynamic, filterable, Excel-exportable reports (sales/payments/products/customers) shared by the tenant portal and employee panel via one repository + report-definition layer. |
 | 12 | [pwa.md](pwa.md) | **Install as an app** — the Progressive Web App layer: manifest, service worker (caching + offline), install icons, and the shared `<head>` partial that makes every surface installable. |
+| — | [ui-kit.md](ui-kit.md) | **UI kit** — portable `pos-` design system (glass, themes, table, confirm, layout head-order, conventions), ported from AWT Phone. |
 | — | [database.md](database.md) | **Reference** — migration timeline, full schema per table, foreign keys, soft deletes, polymorphic relations, default tenant settings. |
 
 ## Key concepts at a glance
