@@ -2,7 +2,7 @@
     data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
-            <form id="customerForm" action="{{ route('tenant.ecommerce.customers.save') }}" method="POST" novalidate>
+            <form id="customerForm" action="{{ $customerSaveUrl ?? route('tenant.ecommerce.customers.save') }}" method="POST" novalidate>
                 @csrf
                 <input type="hidden" name="id" id="customer_id">
 

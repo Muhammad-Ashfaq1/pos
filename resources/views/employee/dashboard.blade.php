@@ -3,90 +3,67 @@
 @section('title', 'Employee Portal Dashboard')
 
 @php
+    use App\Support\EmployeeNavigation;
+
     $user = auth()->user();
     $productMixPeriod = $product_mix_period ?? 'today';
     $summaryCards = [
-        ['key' => 'orders_completed_today', 'value' => number_format($orders_completed_today), 'label' => 'Orders', 'meta' => $meta['orders_completed_today'] ?? 'Completed Today', 'icon' => 'tabler-calendar-event', 'chip' => 'preview-chip--blue'],
-        ['key' => 'orders_incomplete_today', 'value' => number_format($orders_incomplete_today), 'label' => 'Orders', 'meta' => $meta['orders_incomplete_today'] ?? 'Incomplete Today', 'icon' => 'tabler-map-pin-share', 'chip' => 'preview-chip--purple'],
-        ['key' => 'products_available', 'value' => number_format($products_available), 'label' => 'Products', 'meta' => $meta['products_available'] ?? 'In orders Today', 'icon' => 'tabler-search', 'chip' => 'preview-chip--violet'],
+        ['key' => 'total_sales', 'value' => \App\Support\Currency::format($total_sales ?? 0), 'label' => 'Sales', 'meta' => $meta['total_sales'] ?? 'Fully collected', 'icon' => 'tabler-currency-dollar', 'format' => 'money'],
+        ['key' => 'orders_completed', 'value' => number_format($orders_completed ?? 0), 'label' => 'Completed', 'meta' => $meta['orders_completed'] ?? 'Paid orders', 'icon' => 'tabler-circle-check', 'format' => 'number'],
+        ['key' => 'orders_incomplete', 'value' => number_format($orders_incomplete ?? 0), 'label' => 'Incomplete', 'meta' => $meta['orders_incomplete'] ?? 'Open orders', 'icon' => 'tabler-clock-pause', 'format' => 'number'],
+        ['key' => 'items_sold', 'value' => number_format($items_sold ?? 0), 'label' => 'Items Sold', 'meta' => $meta['items_sold'] ?? 'Units moved', 'icon' => 'tabler-packages', 'format' => 'number'],
     ];
 
-    $tiles = [
-        ['label' => 'Time Clock', 'icon' => 'tabler-clock-hour-4'],
-        ['label' => 'Create New Order', 'icon' => 'tabler-shopping-bag', 'url' => route('employee.order.new-order'), 'permission' => 'orders.create'],
-        ['label' => 'Reports', 'icon' => 'tabler-report-search', 'url' => route('employee.reports.index', 'sales'), 'permission' => 'reports.view'],
-        ['label' => 'Orders', 'icon' => 'tabler-clipboard-data', 'url' => route('employee.order.index'), 'permission' => 'orders.view'],
-        ['label' => 'Returns', 'icon' => 'tabler-arrow-back-up', 'url' => route('employee.order.returns'), 'permission' => 'orders.view'],
-        ['label' => 'Product Setup', 'icon' => 'tabler-package-import', 'url' => route('employee.products.index'), 'permission' => 'product.create'],
-        ['label' => 'Invoices', 'icon' => 'tabler-file-invoice', 'url' => route('employee.invoices.index'), 'permission' => 'orders.view'],
-        ['label' => 'Discounts', 'icon' => 'tabler-ticket', 'url' => route('employee.cards.type', 'discount'), 'permission' => ['cards.view', 'cards.manage']],
-    ];
-
-    $tiles = collect($tiles)
-        ->filter(function ($tile) use ($user) {
-            if (empty($tile['permission'])) {
-                return true;
-            }
-
-            $permissions = is_array($tile['permission']) ? $tile['permission'] : [$tile['permission']];
-
-            return collect($permissions)->contains(fn ($permission) => $user?->can($permission) ?? false);
-        })
-        ->values()
-        ->all();
+    $tiles = EmployeeNavigation::dashboardTiles($user);
 
     $operations = [
         ['label' => 'End of Day Status', 'icon' => 'tabler-sun-low'],
         ['label' => 'Till Management', 'icon' => 'tabler-credit-card'],
     ];
-
-    $bottomNav = [
-        ['label' => 'POS', 'icon' => 'tabler-device-desktop', 'url' => route('employee.order.new-order')],
-        ['label' => 'Customers', 'icon' => 'tabler-users', 'url' => route('tenant.ecommerce.customers.index')],
-        ['label' => 'Inventory', 'icon' => 'tabler-package', 'url' => route('tenant.ecommerce.products.index')],
-        ['label' => 'Settings', 'icon' => 'tabler-settings', 'url' => route('account.profile')],
-    ];
 @endphp
 
 @section('content')
-    <div class="pos-ed-banner">
-        <div class="pos-glass-card pos-tone-primary">
-            <div class="pos-glass-intro">
-                <div class="pos-glass-intro-copy">
-                    <h4 class="pos-glass-intro-title">Employee workspace</h4>
-                    <p class="pos-glass-intro-subtitle">Today’s orders, product mix, and quick actions for the floor.</p>
+    <div class="employee-dashboard">
+        <div class="pos-ed-banner">
+            <div class="pos-glass-card pos-tone-primary">
+                <div class="pos-glass-intro">
+                    <div class="pos-glass-intro-copy">
+                        <h4 class="pos-glass-intro-title">Employee workspace</h4>
+                        <p class="pos-glass-intro-subtitle">Today’s orders, product mix, and quick actions for the floor.</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="preview-grid">
-        <section class="preview-left-column">
-            @include('employee.partials.preview-product-mix', [
-                'summaryCards' => $summaryCards,
-                'productMixPeriod' => $productMixPeriod,
-            ])
+        <div class="preview-grid">
+            <section class="preview-left-column">
+                @include('employee.partials.preview-product-mix', [
+                    'summaryCards' => $summaryCards,
+                    'productMixPeriod' => $productMixPeriod,
+                    'topProducts' => $top_products ?? [],
+                    'salesByCategory' => $sales_by_category ?? [],
+                    'currencySymbol' => $currency_symbol ?? \App\Support\Currency::symbol(),
+                ])
 
-            <div class="preview-card mt-4 mb-4">
-                <div class="preview-card-header">
-                    <div>
-                        <h2 class="preview-card-title">Performance Trend (Last 7 Days)</h2>
+                <div class="preview-card pos-glass-card pos-tone-info mt-4 mb-4">
+                    <div class="preview-card-header">
+                        <div>
+                            <h2 class="preview-card-title">Performance Trend (Last 7 Days)</h2>
+                        </div>
+                    </div>
+                    <div class="preview-card-body">
+                        <div id="employeePerformanceChart" style="min-height: 220px;"></div>
                     </div>
                 </div>
-                <div class="preview-card-body">
-                    <div id="employeePerformanceChart" style="min-height: 220px;"></div>
-                </div>
-            </div>
 
-            @include('employee.partials.preview-operations', ['operations' => $operations])
-        </section>
+                @include('employee.partials.preview-operations', ['operations' => $operations])
+            </section>
 
-        <section class="preview-right-column">
-            @include('employee.partials.preview-tiles-grid', ['tiles' => $tiles])
-        </section>
+            <section class="preview-right-column">
+                @include('employee.partials.preview-tiles-grid', ['tiles' => $tiles])
+            </section>
+        </div>
     </div>
-
-    @include('employee.partials.preview-bottom-nav', ['bottomNav' => $bottomNav])
 @endsection
 
 @push('styles')
@@ -111,11 +88,12 @@
 @push('page-script')
     <script>
         window.employeeDashboardConfig = {
-            productMixUrl: @json(route('employee.dashboard.product-mix'))
+            productMixUrl: @json(route('employee.dashboard.product-mix')),
+            currencySymbol: @json($currency_symbol ?? \App\Support\Currency::symbol())
         };
     </script>
-    <script src="{{ asset('assets/js/employee/dashboard.js') }}?v={{ filemtime(public_path('assets/js/employee/dashboard.js')) }}"></script>
     <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+    <script src="{{ asset('assets/js/employee/dashboard.js') }}?v={{ filemtime(public_path('assets/js/employee/dashboard.js')) }}"></script>
     <script>
         $(function() {
             var options = {

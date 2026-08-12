@@ -47,6 +47,15 @@ class OrderController extends Controller
                 'Only estimates can be processed into the order form.'
             );
 
+            $user = $request->user();
+            if ($user?->isEmployee() && ! $user->isTenantAdmin() && ! $user->isManager() && $user->role !== \App\Models\User::ADMIN) {
+                abort_unless(
+                    (int) $order->created_by === (int) $user->getKey(),
+                    403,
+                    'You can only edit orders you created.'
+                );
+            }
+
             $editOrder = $this->orderRepository->editDraft($order);
         }
 

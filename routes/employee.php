@@ -1,10 +1,13 @@
 <?php
 
+use App\Http\Controllers\Employee\CardController;
+use App\Http\Controllers\Employee\CustomerController;
+use App\Http\Controllers\Employee\InvoiceController;
 use App\Http\Controllers\Employee\OrderCartController;
 use App\Http\Controllers\Employee\OrderController;
-use App\Http\Controllers\Employee\InvoiceController;
 use App\Http\Controllers\Employee\PanelController;
-use App\Http\Controllers\Employee\CardController;
+use App\Http\Controllers\Employee\VehicleController;
+use App\Http\Controllers\Employee\WorkspacePreferencesController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SharedDataController;
 use App\Http\Controllers\Tenant\ProductController;
@@ -24,6 +27,46 @@ Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.
         Route::get('/dashboard/product-mix', [PanelController::class, 'productMix'])
             ->middleware('permission:dashboard.view')
             ->name('dashboard.product-mix');
+
+        Route::put('/preferences/navigation', [WorkspacePreferencesController::class, 'updateNavigation'])
+            ->name('preferences.navigation');
+
+        Route::prefix('customers')
+            ->name('customers.')
+            ->controller(CustomerController::class)
+            ->group(function () {
+                Route::get('/', 'index')
+                    ->middleware('permission:customer.view|customers.view')
+                    ->name('index');
+                Route::get('/listing', 'listing')
+                    ->middleware('permission:customer.view|customers.view')
+                    ->name('listing');
+                Route::get('/{customer}/edit', 'edit')
+                    ->middleware('permission:customer.update|customers.manage')
+                    ->name('edit');
+                Route::post('/save', 'save')
+                    ->middleware('permission:customer.create|customer.update|customers.manage')
+                    ->name('save');
+            });
+
+        Route::prefix('vehicles')
+            ->name('vehicles.')
+            ->controller(VehicleController::class)
+            ->group(function () {
+                Route::get('/', 'index')
+                    ->middleware('permission:vehicle.view|vehicles.view')
+                    ->name('index');
+                Route::get('/listing', 'listing')
+                    ->middleware('permission:vehicle.view|vehicles.view')
+                    ->name('listing');
+                Route::get('/{vehicle}/edit', 'edit')
+                    ->middleware('permission:vehicle.update|vehicles.manage')
+                    ->whereNumber('vehicle')
+                    ->name('edit');
+                Route::post('/save', 'save')
+                    ->middleware('permission:vehicle.create|vehicle.update|vehicles.manage')
+                    ->name('save');
+            });
 
         Route::get('/cards', [CardController::class, 'index'])
             ->middleware('permission:cards.view|cards.create|cards.manage')

@@ -2,13 +2,13 @@
   $authUser = auth()->user();
   $routeName = request()->route()?->getName() ?? '';
   $panelContext = trim($__env->yieldContent('panel_context'));
-  $employeeChromePatterns = [
-      'employee.*',
-      'tenant.ecommerce.products.*',
-      'tenant.ecommerce.services.*',
-      'tenant.ecommerce.customers.*',
-      'tenant.ecommerce.vehicles.*',
-  ];
+    $employeeChromePatterns = [
+        'employee.*',
+        'tenant.ecommerce.products.*',
+        'tenant.ecommerce.services.*',
+        'tenant.ecommerce.customers.*',
+        'tenant.ecommerce.vehicles.*',
+    ];
   $isEmployeePanel = $panelContext === 'employee'
       || (($authUser?->isEmployee() ?? false)
           && collect($employeeChromePatterns)->contains(

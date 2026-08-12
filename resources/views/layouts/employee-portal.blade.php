@@ -1,5 +1,8 @@
 @php
     $posTheme = \App\Support\AppTheme::resolve(auth()->user());
+    $employeeNavMode = \App\Support\EmployeeNavigation::navMode(auth()->user());
+    $employeeBottomNav = \App\Support\EmployeeNavigation::bottomNav(auth()->user());
+    $employeeUsesSidebar = $employeeNavMode === \App\Support\EmployeeNavigation::MODE_SIDEBAR;
 @endphp
 <!doctype html>
 <html
@@ -669,6 +672,89 @@
             border: 0;
             display: block;
         }
+
+        .employee-admin-preview.employee-nav-sidebar-mode .preview-shell {
+            display: grid;
+            grid-template-columns: 15.5rem minmax(0, 1fr);
+            gap: 0;
+            min-height: 100vh;
+        }
+
+        .employee-preview-sidebar {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            padding: 1rem 0.85rem 1.25rem;
+            border-right: 1px solid rgba(165, 180, 252, 0.55);
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(18px) saturate(160%);
+            overflow-y: auto;
+        }
+
+        .employee-preview-sidebar-brand {
+            padding: 0.35rem 0.55rem 1rem;
+        }
+
+        .employee-preview-sidebar-brand-text {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--preview-indigo);
+        }
+
+        .employee-preview-sidebar-group + .employee-preview-sidebar-group {
+            margin-top: 1rem;
+        }
+
+        .employee-preview-sidebar-group-label {
+            padding: 0 0.55rem 0.35rem;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--preview-muted);
+        }
+
+        .employee-preview-sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.62rem 0.65rem;
+            margin-bottom: 0.2rem;
+            border-radius: 0.75rem;
+            text-decoration: none;
+            color: var(--preview-indigo);
+            font-size: 0.92rem;
+            font-weight: 600;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .employee-preview-sidebar-link:hover,
+        .employee-preview-sidebar-link.is-active {
+            background: rgba(49, 46, 129, 0.1);
+            color: var(--preview-indigo-dark);
+        }
+
+        .employee-preview-sidebar-link i {
+            font-size: 1.15rem;
+            opacity: 0.9;
+        }
+
+        .employee-admin-preview.employee-nav-bottom-mode .preview-main {
+            padding-bottom: 6.5rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .employee-admin-preview.employee-nav-sidebar-mode .preview-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .employee-preview-sidebar {
+                position: relative;
+                height: auto;
+                border-right: 0;
+                border-bottom: 1px solid rgba(165, 180, 252, 0.55);
+            }
+        }
     </style>
 
     @stack('styles')
@@ -678,8 +764,13 @@
     <script src="{{ asset('assets/js/pos-theme.js') }}?v={{ filemtime(public_path('assets/js/pos-theme.js')) }}"></script>
     <script src="{{ asset('assets/js/pos-theme-bridge.js') }}?v={{ filemtime(public_path('assets/js/pos-theme-bridge.js')) }}"></script>
 </head>
-<body class="employee-admin-preview">
+<body class="employee-admin-preview {{ $employeeUsesSidebar ? 'employee-nav-sidebar-mode' : 'employee-nav-bottom-mode' }}">
     <div class="preview-shell">
+        @if($employeeUsesSidebar)
+            @include('employee.partials.preview-sidebar')
+        @endif
+
+        <div class="preview-shell-main">
         <header class="preview-header">
             <div class="preview-container py-0">
                 <div class="preview-header-inner">
@@ -748,7 +839,12 @@
                 @yield('content')
             </div>
         </main>
+        </div>
     </div>
+
+    @if(! $employeeUsesSidebar && count($employeeBottomNav))
+        @include('employee.partials.preview-bottom-nav', ['bottomNav' => $employeeBottomNav])
+    @endif
 
     <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>

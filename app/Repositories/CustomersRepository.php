@@ -212,7 +212,11 @@ class CustomersRepository implements CustomerRepositoryInterface
             'default_vehicle_plate' => $customer->defaultVehicle?->plate_number,
             'created_at' => $customer->created_at?->format('d M Y'),
             'vehicles_index_url' => ($user?->can('viewAny', Vehicle::class) ?? false)
-                ? route('tenant.ecommerce.vehicles.index', ['customer_id' => $customer->id])
+                ? (
+                    ($user instanceof \App\Models\User && $user->isEmployee())
+                        ? route('employee.vehicles.index', ['customer_id' => $customer->id])
+                        : route('tenant.ecommerce.vehicles.index', ['customer_id' => $customer->id])
+                )
                 : null,
             'can_update' => $user?->can('update', $customer) ?? false,
             'can_delete' => $user?->can('delete', $customer) ?? false,

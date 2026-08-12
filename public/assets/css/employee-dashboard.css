@@ -1,6 +1,6 @@
 /*
- * employee-dashboard.css — glass KPI strip on the employee portal dashboard.
- * Conventions: namespaced .pos-ed-*, additive, no !important, reads kit tones.
+ * employee-dashboard.css — Product Mix KPIs keep stock pos-glass.
+ * Other cards + bottom nav: frosted glass like admin (size/layout unchanged).
  */
 .pos-ed-kpis {
     display: grid;
@@ -11,10 +11,385 @@
 
 @media (min-width: 768px) {
     .pos-ed-kpis {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+}
+
+@media (min-width: 1200px) {
+    .pos-ed-kpis--4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.employee-dashboard #employee-product-mix .preview-stats-grid .pos-glass-card:last-child {
+    max-width: none;
+}
+
+.product-mix-breakdown {
+    margin-top: 0.35rem;
+    padding-top: 1.15rem;
+    border-top: 1px solid rgba(var(--pos-tone-rgb), 0.12);
+}
+
+.product-mix-breakdown-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.product-mix-breakdown-title {
+    margin: 0 0 0.25rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--bs-heading-color, #444050);
+}
+
+.employee-dashboard #employee-product-mix .pos-stat-desc {
+    margin-top: 0.15rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    line-height: 1.25;
+    color: rgba(var(--bs-body-color-rgb, 111, 107, 125), 0.72);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-mix-breakdown-subtitle {
+    margin: 0;
+    font-size: 0.86rem;
+    color: var(--bs-secondary-color, #6f6b7d);
+}
+
+.product-mix-breakdown-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+@media (min-width: 992px) {
+    .product-mix-breakdown-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.product-mix-panel {
+    min-height: 100%;
+    padding: 0.95rem 1rem 1rem;
+    border-radius: 1rem;
+}
+
+.product-mix-panel.pos-glass-card {
+    background-color: rgba(255, 255, 255, 0.52);
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--pos-tone-rgb), 0.12) 0%,
+        rgba(var(--pos-tone-rgb), 0.04) 45%,
+        rgba(var(--pos-tone-rgb), 0) 78%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.68);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    backdrop-filter: blur(16px) saturate(160%);
+    box-shadow:
+        0 10px 24px -14px rgba(var(--pos-tone-rgb), 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+.product-mix-panel-head {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 0.65rem;
+}
+
+.product-mix-panel-icon {
+    width: 1.85rem;
+    height: 1.85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.55rem;
+    background: rgba(40, 199, 111, 0.12);
+    color: #28c76f;
+    font-size: 1rem;
+}
+
+.product-mix-panel-icon--info {
+    background: rgba(0, 207, 232, 0.12);
+    color: #00cfe8;
+}
+
+.product-mix-panel-title {
+    margin: 0;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--bs-heading-color, #444050);
+}
+
+.product-mix-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 168px;
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.product-mix-category-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.product-mix-chart-wrap {
+    min-height: 0;
+}
+
+#employeeCategoryMixChart {
+    min-height: 168px;
+}
+
+.product-mix-rank-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+}
+
+.product-mix-rank-list--compact {
+    gap: 0.4rem;
+}
+
+.product-mix-rank-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+    backdrop-filter: blur(10px) saturate(150%);
+    box-shadow:
+        0 4px 14px -10px rgba(47, 43, 61, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.product-mix-rank-item--compact {
+    padding: 0.48rem 0.6rem;
+}
+
+.product-mix-rank-no {
+    flex-shrink: 0;
+    width: 1.55rem;
+    height: 1.55rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #28c76f;
+    background: rgba(40, 199, 111, 0.12);
+    border: 1px solid rgba(40, 199, 111, 0.18);
+}
+
+.product-mix-rank-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.product-mix-rank-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.65rem;
+}
+
+.product-mix-rank-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--bs-heading-color, #444050);
+    line-height: 1.35;
+}
+
+.product-mix-rank-meta {
+    flex-shrink: 0;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--bs-secondary-color, #6f6b7d);
+    white-space: nowrap;
+}
+
+.product-mix-rank-bar {
+    display: block;
+    width: calc(var(--mix-pct, 0) * 1%);
+    max-width: 100%;
+    height: 0.28rem;
+    margin-top: 0.42rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(40, 199, 111, 0.85), rgba(40, 199, 111, 0.35));
+}
+
+.product-mix-rank-bar--info {
+    background: linear-gradient(90deg, rgba(0, 207, 232, 0.85), rgba(0, 207, 232, 0.35));
+}
+
+.product-mix-empty-badge {
+    width: 2.35rem;
+    height: 2.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.55rem;
+    border-radius: 999px;
+    background: rgba(40, 199, 111, 0.1);
+    color: #28c76f;
+    font-size: 1.1rem;
+}
+
+.product-mix-empty-badge--info {
+    background: rgba(0, 207, 232, 0.1);
+    color: #00cfe8;
+}
+
+.product-mix-empty-title {
+    margin: 0 0 0.2rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--bs-heading-color, #444050);
+}
+
+.product-mix-empty-text {
+    margin: 0;
+    max-width: 15rem;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--bs-secondary-color, #6f6b7d);
+}
+
+[data-bs-theme="dark"] .product-mix-breakdown-title,
+[data-bs-theme="dark"] .product-mix-panel-title,
+[data-bs-theme="dark"] .product-mix-rank-name,
+[data-bs-theme="dark"] .product-mix-empty-title {
+    color: var(--bs-heading-color, #cfcde4);
+}
+
+[data-bs-theme="dark"] .product-mix-panel.pos-glass-card {
+    background-color: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: none;
+}
+
+[data-bs-theme="dark"] .product-mix-rank-item {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: none;
 }
 
 .pos-ed-banner {
     margin-bottom: 1rem;
+}
+
+.employee-dashboard .pos-glass-card .preview-card-header,
+.employee-dashboard .pos-glass-card .preview-card-body,
+.employee-dashboard .pos-glass-card .preview-tile-content {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+}
+
+/* Chart, operations, action tiles — frost like admin glass */
+.employee-dashboard .preview-card.pos-glass-card,
+.employee-dashboard .preview-tile.pos-glass-card {
+    background-color: rgba(255, 255, 255, 0.58);
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--pos-tone-rgb), 0.1) 0%,
+        rgba(var(--pos-tone-rgb), 0.03) 42%,
+        rgba(var(--pos-tone-rgb), 0) 72%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.62);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
+    box-shadow:
+        0 10px 28px -12px rgba(var(--pos-tone-rgb), 0.32),
+        0 1px 2px rgba(47, 43, 61, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.employee-dashboard .preview-card.pos-glass-card .preview-card-header {
+    border-bottom-color: rgba(var(--pos-tone-rgb), 0.1);
+}
+
+.employee-dashboard .preview-card:not(#employee-product-mix) .preview-card-title,
+.employee-dashboard .preview-tile-title {
+    color: var(--bs-heading-color, #444050);
+}
+
+.employee-dashboard .preview-operation-icon,
+.employee-dashboard .preview-operation-link {
+    color: var(--bs-primary);
+}
+
+.employee-dashboard .preview-operation-label {
+    color: var(--bs-body-color, #6f6b7d);
+}
+
+.employee-dashboard .preview-operation-item {
+    border-bottom-color: rgba(47, 43, 61, 0.08);
+}
+
+.employee-dashboard .preview-tile-icon-wrap {
+    background: color-mix(in sRGB, #fff 82%, rgb(var(--pos-tone-rgb)));
+    color: rgb(var(--pos-tone-rgb));
+}
+
+.employee-dashboard .preview-tile:hover {
+    background-color: rgba(255, 255, 255, 0.72);
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow:
+        0 14px 30px -14px rgba(var(--pos-tone-rgb), 0.4),
+        0 1px 2px rgba(47, 43, 61, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Product Mix outer card only — inner KPI cards keep stock pos-glass */
+.employee-dashboard #employee-product-mix.preview-card.pos-glass-card .preview-card-header,
+.employee-dashboard #employee-product-mix.preview-card.pos-glass-card .preview-card-body {
+    background: transparent;
+}
+
+/* Bottom bar — frosted glass, same size/layout as portal */
+.employee-dashboard .preview-bottom-nav {
+    background: rgba(255, 255, 255, 0.48);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    -webkit-backdrop-filter: blur(20px) saturate(170%);
+    backdrop-filter: blur(20px) saturate(170%);
+    box-shadow:
+        0 14px 40px rgba(47, 43, 61, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.employee-dashboard .preview-bottom-link:hover {
+    background: rgba(255, 255, 255, 0.55);
+}
+
+[data-bs-theme="dark"] .employee-dashboard .preview-card:not(#employee-product-mix) .preview-card-title,
+[data-bs-theme="dark"] .employee-dashboard .preview-tile-title {
+    color: var(--bs-heading-color, #cfcde4);
+}
+
+[data-bs-theme="dark"] .employee-dashboard .preview-card.pos-glass-card,
+[data-bs-theme="dark"] .employee-dashboard .preview-tile.pos-glass-card {
+    background-color: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
 }

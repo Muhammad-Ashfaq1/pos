@@ -9,6 +9,7 @@ use App\Models\DiscountGroup;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Service;
+use App\Models\User;
 use App\Repositories\Interface\OrderRepositoryInterface;
 use App\Services\CreditService;
 use App\Support\Currency;
@@ -225,6 +226,8 @@ class OrdersRepository implements OrderRepositoryInterface
                         'order_id' => 'The selected estimate is no longer available for editing.',
                     ]);
                 }
+
+                $this->assertEmployeeCanEditOrder($existingOrder, $userId);
             }
 
             $requestedItems = collect($data['items']);
@@ -2074,5 +2077,24 @@ class OrdersRepository implements OrderRepositoryInterface
             'refunded_at_label' => $refundedAt?->format('M j, Y h:i A'),
             'items_count' => (int) ($order->items_count ?? 0),
         ];
+    }
+
+    private function assertEmployeeCanEditOrder(Order $order, mixed $userId): void
+    {
+        if ($userId === null) {
+            return;
+        }
+
+        $user = User::query()->find($userId);
+
+        if (! $user?->isEmployee() || $user->isTenantAdmin() || $user->isManager() || $user->role === User::ADMIN) {
+            return;
+        }
+
+        if ((int) $order->created_by !== (int) $userId) {
+            throw ValidationException::withMessages([
+                'order_id' => 'You can only edit orders you created.',
+            ]);
+        }
     }
 }

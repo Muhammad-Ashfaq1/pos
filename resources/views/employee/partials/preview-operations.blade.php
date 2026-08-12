@@ -1,4 +1,4 @@
-<div class="preview-card preview-operations-card">
+<div class="preview-card preview-operations-card pos-glass-card pos-tone-primary">
     <div class="preview-card-header">
         <div>
             <h2 class="preview-card-title">Operations</h2>

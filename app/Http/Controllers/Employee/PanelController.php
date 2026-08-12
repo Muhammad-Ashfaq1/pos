@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Employee;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Support\Currency;
 use App\Support\DashboardDateRange;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -52,15 +53,26 @@ class PanelController
      * @return array{
      *     period: string,
      *     period_label: string,
-     *     orders_completed_today: int,
-     *     orders_incomplete_today: int,
-     *     products_available: int,
-     *     meta: array{orders_completed_today: string, orders_incomplete_today: string, products_available: string}
+     *     currency_symbol: string,
+     *     total_sales: float,
+     *     outstanding: float,
+     *     orders_completed: int,
+     *     orders_incomplete: int,
+     *     items_sold: int,
+     *     meta: array{total_sales: string, orders_completed: string, orders_incomplete: string, items_sold: string},
+     *     top_products: list<array{name: string, qty: int, revenue: float}>,
+     *     sales_by_category: list<array{name: string, revenue: float}>
      * }
      */
     private function productMixStats(DashboardDateRange $range): array
     {
         $ordersInRange = Order::query()->withinRange($range);
+        $periodLabel = $range->label;
+        $symbol = Currency::symbol();
+
+        $totalSales = (float) (clone $ordersInRange)
+            ->where('status', Order::STATUS_PAID)
+            ->sum('total_amount');
 
         $completed = (clone $ordersInRange)
             ->where('status', Order::STATUS_PAID)
@@ -74,26 +86,69 @@ class PanelController
             ])
             ->count();
 
-        $productsAvailable = (int) OrderItem::query()
-            ->whereHas('order', function ($query) use ($range) {
-                $query->withinRange($range);
-            })
-            ->distinct()
-            ->count('product_id');
+        $outstanding = (float) (clone $ordersInRange)
+            ->where('status', '!=', Order::STATUS_ESTIMATE)
+            ->selectRaw('COALESCE(SUM(CASE WHEN total_amount > payment_amount THEN total_amount - payment_amount ELSE 0 END), 0) as outstanding')
+            ->value('outstanding');
 
-        $periodLabel = $range->label;
+        $itemsSold = (int) OrderItem::query()
+            ->whereHas('order', function ($query) use ($range) {
+                $query->withinRange($range)
+                    ->where('status', '!=', Order::STATUS_ESTIMATE);
+            })
+            ->sum('quantity');
+
+        $orderItemsInRange = fn ($query) => $query->withinRange($range)
+            ->where('status', '!=', Order::STATUS_ESTIMATE);
+
+        $topProducts = OrderItem::query()
+            ->whereHas('order', $orderItemsInRange)
+            ->selectRaw('product_name, SUM(quantity) as qty, SUM(line_total) as revenue')
+            ->groupBy('product_name')
+            ->orderByDesc('revenue')
+            ->limit(5)
+            ->get()
+            ->map(fn ($row) => [
+                'name' => (string) $row->product_name,
+                'qty' => (int) $row->qty,
+                'revenue' => round((float) $row->revenue, 2),
+            ])
+            ->all();
+
+        $salesByCategory = OrderItem::query()
+            ->whereHas('order', $orderItemsInRange)
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->join('categories', 'products.category_id', '=', 'categories.id')
+            ->selectRaw('categories.name as name, SUM(order_items.line_total) as revenue')
+            ->groupBy('categories.name')
+            ->orderByDesc('revenue')
+            ->limit(5)
+            ->get()
+            ->map(fn ($row) => [
+                'name' => (string) $row->name,
+                'revenue' => round((float) $row->revenue, 2),
+            ])
+            ->all();
 
         return [
             'period' => $range->period,
             'period_label' => $periodLabel,
-            'orders_completed_today' => $completed,
-            'orders_incomplete_today' => $incomplete,
-            'products_available' => $productsAvailable,
+            'currency_symbol' => $symbol,
+            'total_sales' => round($totalSales, 2),
+            'outstanding' => round($outstanding, 2),
+            'orders_completed' => $completed,
+            'orders_incomplete' => $incomplete,
+            'items_sold' => $itemsSold,
             'meta' => [
-                'orders_completed_today' => 'Completed '.$periodLabel,
-                'orders_incomplete_today' => 'Incomplete '.$periodLabel,
-                'products_available' => 'In orders '.$periodLabel,
+                'total_sales' => $outstanding > 0
+                    ? 'Due '.$symbol.number_format($outstanding, 2)
+                    : 'Fully collected',
+                'orders_completed' => 'Paid orders',
+                'orders_incomplete' => 'Open orders',
+                'items_sold' => 'Units moved',
             ],
+            'top_products' => $topProducts,
+            'sales_by_category' => $salesByCategory,
         ];
     }
 

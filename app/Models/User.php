@@ -50,6 +50,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'avatar',
         'theme_variant',
         'theme_mode',
+        'employee_nav_mode',
         'failed_attempts',
         'locked_until',
         'is_active',
