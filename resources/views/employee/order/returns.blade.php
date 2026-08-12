@@ -1,4 +1,4 @@
-@extends('layouts.employee-portal')
+@extends($layout ?? 'layouts.employee-portal')
 
 @section('title', 'Order Returns')
 
@@ -34,7 +34,7 @@
 
 @section('content')
     <div class="employee-orders-page">
-        <x-employee.page-header title="Order Returns" :back-url="route('employee.dashboard')" back-title="Back to dashboard" />
+        <x-employee.page-header title="Order Returns" :back-url="route($dashboardRoute ?? 'employee.dashboard')" back-title="Back to dashboard" />
 
         <div class="employee-orders-layout">
             <aside class="employee-orders-panel employee-orders-filters">
@@ -183,9 +183,9 @@
 @push('page-script')
     <script>
         window.employeeReturnsConfig = {
-            listingUrl: @json(route('employee.order.returns.listing')),
-            historyUrl: @json(route('employee.order.returns.history')),
-            returnUrlTemplate: @json(route('employee.order.return', ['order' => '__ORDER_ID__'])),
+            listingUrl: @json(route($orderRoutes['returns_listing'])),
+            historyUrl: @json(route($orderRoutes['returns_history'])),
+            returnUrlTemplate: @json(route($orderRoutes['return'], ['order' => '__ORDER_ID__'])),
             returnDays: @json($returnDays)
         };
     </script>

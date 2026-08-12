@@ -1,16 +1,16 @@
 <?php
 
 use App\Http\Controllers\Employee\CardController;
-use App\Http\Controllers\Employee\CustomerController;
 use App\Http\Controllers\Employee\InvoiceController;
 use App\Http\Controllers\Employee\OrderCartController;
 use App\Http\Controllers\Employee\OrderController;
 use App\Http\Controllers\Employee\PanelController;
-use App\Http\Controllers\Employee\VehicleController;
 use App\Http\Controllers\Employee\WorkspacePreferencesController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SharedDataController;
+use App\Http\Controllers\Tenant\CustomerController;
 use App\Http\Controllers\Tenant\ProductController;
+use App\Http\Controllers\Tenant\VehicleController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.init'])
@@ -44,9 +44,21 @@ Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.
                 Route::get('/{customer}/edit', 'edit')
                     ->middleware('permission:customer.update|customers.manage')
                     ->name('edit');
+                Route::get('/{customer}/credit-history', 'creditHistory')
+                    ->middleware('permission:customer.view|customers.view')
+                    ->name('credit-history');
+                Route::post('/{customer}/invite-portal', 'invitePortal')
+                    ->middleware('permission:customer.update|customers.manage')
+                    ->name('invite-portal');
+                Route::post('/{customer}/adjust-credit', 'adjustCredit')
+                    ->middleware('permission:customer.update|customers.manage')
+                    ->name('adjust-credit');
                 Route::post('/save', 'save')
                     ->middleware('permission:customer.create|customer.update|customers.manage')
                     ->name('save');
+                Route::delete('/{customer}', 'destroy')
+                    ->middleware('permission:customer.delete|customers.manage')
+                    ->name('destroy');
             });
 
         Route::prefix('vehicles')
@@ -66,6 +78,10 @@ Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.
                 Route::post('/save', 'save')
                     ->middleware('permission:vehicle.create|vehicle.update|vehicles.manage')
                     ->name('save');
+                Route::delete('/{vehicle}', 'destroy')
+                    ->middleware('permission:vehicle.delete|vehicles.manage')
+                    ->whereNumber('vehicle')
+                    ->name('destroy');
             });
 
         Route::get('/cards', [CardController::class, 'index'])

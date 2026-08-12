@@ -109,6 +109,18 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role === self::EMPLOYEE || $this->hasRole(self::EMPLOYEE);
     }
 
+    /**
+     * Floor staff on the employee panel: can create many records, but not update/delete
+     * customers/vehicles (managers / tenant admins are excluded).
+     */
+    public function isFloorEmployee(): bool
+    {
+        return $this->isEmployee()
+            && ! $this->isTenantAdmin()
+            && ! $this->isManager()
+            && $this->role !== self::ADMIN;
+    }
+
     public function isCustomer(): bool
     {
         return $this->hasRole(self::CUSTOMER);

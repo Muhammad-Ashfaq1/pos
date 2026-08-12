@@ -1,4 +1,4 @@
-@extends('layouts.employee-portal')
+@extends($layout ?? 'layouts.employee-portal')
 
 @section('title', 'Orders')
 
@@ -8,7 +8,7 @@
 
 @section('content')
     <div class="employee-orders-page">
-        <x-employee.page-header title="Orders" :back-url="route('employee.dashboard')" back-title="Back to dashboard" />
+        <x-employee.page-header title="Orders" :back-url="route($dashboardRoute ?? 'employee.dashboard')" back-title="Back to dashboard" />
 
         <div class="employee-orders-layout">
             <aside class="employee-orders-panel employee-orders-filters">
@@ -60,7 +60,7 @@
                         <button type="button" class="employee-orders-icon-btn" data-order-refresh data-bs-toggle="tooltip" title="Refresh orders">
                             <i class="ti tabler-refresh"></i>
                         </button>
-                        <a href="{{ route('employee.order.new-order') }}" class="employee-orders-icon-btn" data-bs-toggle="tooltip" title="Create new order">
+                        <a href="{{ route($orderRoutes['new']) }}" class="employee-orders-icon-btn" data-bs-toggle="tooltip" title="Create new order">
                             <i class="ti tabler-plus"></i>
                         </a>
                     </div>
@@ -84,9 +84,9 @@
 @push('page-script')
     <script>
         window.employeeOrdersConfig = {
-            listingUrl: @json(route('employee.order.listing')),
-            newOrderUrl: @json(route('employee.order.new-order')),
-            detailUrlTemplate: @json(route('employee.order.show', ['order' => '__ORDER_ID__']))
+            listingUrl: @json(route($orderRoutes['listing'])),
+            newOrderUrl: @json(route($orderRoutes['new'])),
+            detailUrlTemplate: @json(route($orderRoutes['show'], ['order' => '__ORDER_ID__']))
         };
     </script>
     <script src="{{ asset('assets/js/employee/orders.js') }}?v={{ filemtime(public_path('assets/js/employee/orders.js')) }}"></script>

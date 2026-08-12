@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Employee;
 use App\Http\Controllers\Controller;
 use App\Models\Card;
 use App\Repositories\Interface\OrderRepositoryInterface;
+use App\Support\OrderSurface;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,9 +22,14 @@ class InvoiceController extends Controller
     public function index(): View
     {
         $tenant = $this->tenantContext->current();
+        $surface = OrderSurface::fromRequest();
 
         return view('employee.invoices.index', [
             'dueDays' => $tenant?->returnDaysAfterPurchase() ?? 30,
+            'layout' => $surface['layout'],
+            'dashboardRoute' => $surface['dashboard_route'],
+            'orderRoutes' => $surface['routes'],
+            'isEmployeeSurface' => $surface['is_employee'],
         ]);
     }
 
@@ -68,6 +74,7 @@ class InvoiceController extends Controller
     public function create(): View
     {
         $tenant = $this->tenantContext->current();
+        $surface = OrderSurface::fromRequest();
 
         return view('employee.order.new-order', [
             'vehicleRequired' => $tenant?->isVehicleRequired() ?? true,
@@ -91,6 +98,10 @@ class InvoiceController extends Controller
                     'details',
                 ])
                 ->groupBy('card_type'),
+            'layout' => $surface['layout'],
+            'dashboardRoute' => $surface['dashboard_route'],
+            'orderRoutes' => $surface['routes'],
+            'isEmployeeSurface' => $surface['is_employee'],
         ]);
     }
 }

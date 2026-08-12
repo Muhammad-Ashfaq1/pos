@@ -5,12 +5,12 @@
     $navOptions = [
         [
             'value' => EmployeeNavigation::MODE_BOTTOM,
-            'label' => 'Bottom bar',
-            'icon' => 'tabler-layout-navbar',
+            'label' => 'Dashboard icons',
+            'icon' => 'tabler-layout-grid',
         ],
         [
             'value' => EmployeeNavigation::MODE_SIDEBAR,
-            'label' => 'Sidebar',
+            'label' => 'Sidebar tabs',
             'icon' => 'tabler-layout-sidebar',
         ],
     ];
@@ -23,7 +23,9 @@
     <div class="card-body">
         <div class="mb-3">
             <h5 class="mb-1">Navigation</h5>
-            <p class="text-muted mb-0 small">Choose bottom bar or sidebar.</p>
+            <p class="text-muted mb-0 small">
+                Default is dashboard icons (bottom bar). Sidebar shows only tasks you are allowed to use.
+            </p>
         </div>
 
         <div class="d-flex flex-wrap gap-2 mb-3">

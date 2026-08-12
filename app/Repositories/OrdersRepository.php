@@ -641,10 +641,10 @@ class OrdersRepository implements OrderRepositoryInterface
             'status' => $status,
             'status_label' => $this->statusLabel($status),
             'status_class' => $this->listingStatusClass($status),
-            'show_url' => route('employee.order.show', $order),
-            'print_url' => route('employee.order.print', $order),
-            'pdf_url' => route('employee.order.pdf', $order),
-            'share_url' => route('employee.order.share', $order),
+            'show_url' => \App\Support\OrderSurface::route('show', $order),
+            'print_url' => \App\Support\OrderSurface::route('print', $order),
+            'pdf_url' => \App\Support\OrderSurface::route('pdf', $order),
+            'share_url' => \App\Support\OrderSurface::route('share', $order),
         ];
     }
 
@@ -2087,7 +2087,7 @@ class OrdersRepository implements OrderRepositoryInterface
 
         $user = User::query()->find($userId);
 
-        if (! $user?->isEmployee() || $user->isTenantAdmin() || $user->isManager() || $user->role === User::ADMIN) {
+        if (! $user?->isFloorEmployee()) {
             return;
         }
 

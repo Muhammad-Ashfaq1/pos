@@ -98,6 +98,57 @@
                 ->all(),
         ],
         [
+            'label' => 'Orders',
+            'icon' => 'tabler-shopping-cart',
+            'items' => collect([
+                $user?->can('orders.view')
+                    ? [
+                        'label' => 'Orders',
+                        'route' => 'tenant.order.index',
+                        'pattern' => 'tenant.order.*',
+                        'excludePatterns' => [
+                            'tenant.order.returns*',
+                            'tenant.order.new-order',
+                            'tenant.order.categories',
+                            'tenant.order.sub-categories',
+                            'tenant.order.products',
+                            'tenant.order.search',
+                            'tenant.order.cart.*',
+                            'tenant.order.save',
+                        ],
+                        'icon' => 'tabler-clipboard-list',
+                    ]
+                    : null,
+                $user?->can('orders.create') || $user?->can('pos.bill')
+                    ? [
+                        'label' => 'New Order / POS',
+                        'route' => 'tenant.order.new-order',
+                        'pattern' => 'tenant.order.new-order',
+                        'icon' => 'tabler-cash-register',
+                    ]
+                    : null,
+                $user?->can('orders.view')
+                    ? [
+                        'label' => 'Invoices',
+                        'route' => 'tenant.invoices.index',
+                        'pattern' => 'tenant.invoices.*',
+                        'icon' => 'tabler-file-invoice',
+                    ]
+                    : null,
+                $user?->can('orders.view')
+                    ? [
+                        'label' => 'Returns',
+                        'route' => 'tenant.order.returns',
+                        'pattern' => 'tenant.order.returns*',
+                        'icon' => 'tabler-rotate-2',
+                    ]
+                    : null,
+            ])
+                ->filter()
+                ->values()
+                ->all(),
+        ],
+        [
             'label' => 'Sales & Promotions',
             'icon' => 'tabler-ticket',
             'items' => collect([
@@ -214,7 +265,17 @@
                 && request()->route('type') === $item['cardType'];
         }
 
-        return str($currentRouteName ?? '')->is($item['pattern']);
+        $active = str($currentRouteName ?? '')->is($item['pattern']);
+
+        if ($active && ! empty($item['excludePatterns'])) {
+            foreach ((array) $item['excludePatterns'] as $exclude) {
+                if (str($currentRouteName ?? '')->is($exclude)) {
+                    return false;
+                }
+            }
+        }
+
+        return $active;
     };
 
     $isGroupActive = function (array $group) use ($isMenuItemActive): bool {

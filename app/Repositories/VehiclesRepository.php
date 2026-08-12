@@ -6,6 +6,7 @@ use App\Http\Requests\Tenant\Vehicles\SaveVehicleRequest;
 use App\Models\Customer;
 use App\Models\Vehicle;
 use App\Repositories\Interface\VehicleRepositoryInterface;
+use App\Support\CustomerVehicleSurface;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -16,9 +17,16 @@ class VehiclesRepository implements VehicleRepositoryInterface
 {
     public function index(): View
     {
+        $surface = CustomerVehicleSurface::fromRequest();
+
         return view('tenant.ecommerce.vehicles.index', [
-            'listingUrl' => route('tenant.ecommerce.vehicles.listing'),
-            'editUrlTemplate' => route('tenant.ecommerce.vehicles.edit', ['vehicle' => '__VEHICLE__']),
+            'layout' => $surface['layout'],
+            'dashboardRoute' => $surface['dashboard_route'],
+            'isEmployeeSurface' => $surface['is_employee'],
+            'listingUrl' => CustomerVehicleSurface::route('vehicles_listing'),
+            'editUrlTemplate' => CustomerVehicleSurface::route('vehicles_edit', ['vehicle' => '__VEHICLE__']),
+            'vehicleSaveUrl' => CustomerVehicleSurface::route('vehicles_save'),
+            'customersIndexRoute' => $surface['routes']['customers_index'],
             'customersDropdownUrl' => route('tenant.ecommerce.dropdowns.customers'),
             'vehiclesDropdownUrl' => route('tenant.ecommerce.dropdowns.vehicles'),
         ]);
@@ -222,10 +230,10 @@ class VehiclesRepository implements VehicleRepositoryInterface
             'can_update' => $user?->can('update', $vehicle) ?? false,
             'can_delete' => $user?->can('delete', $vehicle) ?? false,
             'edit_url' => $user?->can('update', $vehicle)
-                ? route('tenant.ecommerce.vehicles.edit', $vehicle)
+                ? CustomerVehicleSurface::route('vehicles_edit', $vehicle)
                 : null,
             'delete_url' => $user?->can('delete', $vehicle)
-                ? route('tenant.ecommerce.vehicles.destroy', $vehicle)
+                ? CustomerVehicleSurface::route('vehicles_destroy', $vehicle)
                 : null,
         ];
     }

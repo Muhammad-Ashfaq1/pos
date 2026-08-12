@@ -29,7 +29,7 @@ class CustomerPolicy
 
     public function update(User $user, Customer $customer): bool
     {
-        if ($this->employeeIsReadOnly($user)) {
+        if ($user->isFloorEmployee()) {
             return false;
         }
 
@@ -40,21 +40,13 @@ class CustomerPolicy
 
     public function delete(User $user, Customer $customer): bool
     {
-        if ($this->employeeIsReadOnly($user)) {
+        if ($user->isFloorEmployee()) {
             return false;
         }
 
         return $this->hasTenantContext()
             && ($user->can('customer.delete') || $user->can('customers.manage'))
             && (int) $user->tenant_id === (int) $customer->tenant_id;
-    }
-
-    private function employeeIsReadOnly(User $user): bool
-    {
-        return $user->isEmployee()
-            && ! $user->isTenantAdmin()
-            && ! $user->isManager()
-            && $user->role !== User::ADMIN;
     }
 
     private function hasTenantContext(): bool

@@ -96,5 +96,5 @@
 </div>
 
 @include('tenant.ecommerce.vehicles.partials.save-modal', [
-    'vehicleSaveUrl' => $vehicleSaveUrl ?? route('tenant.ecommerce.vehicles.save'),
+    'vehicleSaveUrl' => $vehicleSaveUrl ?? null,
 ])

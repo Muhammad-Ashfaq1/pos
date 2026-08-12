@@ -1,4 +1,4 @@
-@extends('layouts.employee-portal')
+@extends($layout ?? 'layouts.employee-portal')
 
 @section('title', 'Invoices')
 
@@ -9,7 +9,7 @@
 
 @section('content')
     <div class="employee-invoices-page">
-        <x-employee.page-header title="Invoices" :back-url="route('employee.dashboard')" back-title="Back to dashboard" />
+        <x-employee.page-header title="Invoices" :back-url="route($dashboardRoute ?? 'employee.dashboard')" back-title="Back to dashboard" />
 
         <div class="card employee-invoices-card border-0 shadow-sm">
             <div class="card-body">
@@ -30,7 +30,7 @@
                             Reset Filters
                         </button>
                         @canany(['orders.create', 'pos.bill'])
-                            <a href="{{ route('employee.invoices.create') }}" class="btn btn-primary fw-semibold">
+                            <a href="{{ route($orderRoutes['invoices_create']) }}" class="btn btn-primary fw-semibold">
                                 <i class="ti tabler-plus me-1"></i>
                                 Create Invoice
                             </a>
@@ -132,8 +132,8 @@
 @push('page-script')
     <script>
         window.employeeInvoicesConfig = {
-            listingUrl: @json(route('employee.invoices.listing')),
-            createUrl: @json(route('employee.invoices.create')),
+            listingUrl: @json(route($orderRoutes['invoices_listing'])),
+            createUrl: @json(route($orderRoutes['invoices_create'])),
             csrfToken: @json(csrf_token()),
         };
     </script>

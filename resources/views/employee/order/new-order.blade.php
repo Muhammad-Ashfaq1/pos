@@ -1,4 +1,4 @@
-@extends('layouts.employee-portal')
+@extends($layout ?? 'layouts.employee-portal')
 
 @section('title', !empty($invoiceMode) ? 'Create Invoice' : 'Create New Order')
 
@@ -10,7 +10,9 @@
 @section('content')
     @php
         $invoiceMode = ! empty($invoiceMode);
-        $pageBackUrl = $invoiceMode ? route('employee.invoices.index') : route('employee.dashboard');
+        $pageBackUrl = $invoiceMode
+            ? route($orderRoutes['invoices_index'])
+            : route($dashboardRoute ?? 'employee.dashboard');
         $pageBackTitle = $invoiceMode ? 'Back to invoices' : 'Back to dashboard';
         $pageTitle = $invoiceMode ? 'Invoices' : 'New Order';
     @endphp
@@ -617,18 +619,18 @@
 @push('page-script')
     <script>
         window.catalogRoutes = {
-            categories: @json(route('employee.order.categories')),
-            subCategories: @json(route('employee.order.sub-categories')),
-            products: @json(route('employee.order.products')),
-            search: @json(route('employee.order.search')),
-            save: @json(route('employee.order.save')),
-            cartShow: @json(route('employee.order.cart.show')),
-            cartSave: @json(route('employee.order.cart.save')),
-            cartDestroy: @json(route('employee.order.cart.destroy')),
-            show: @json(route('employee.order.show', ['order' => '__ORDER_ID__'])),
-            print: @json(route('employee.order.print', ['order' => '__ORDER_ID__'])),
-            pdf: @json(route('employee.order.pdf', ['order' => '__ORDER_ID__'])),
-            share: @json(route('employee.order.share', ['order' => '__ORDER_ID__'])),
+            categories: @json(route($orderRoutes['categories'])),
+            subCategories: @json(route($orderRoutes['sub_categories'])),
+            products: @json(route($orderRoutes['products'])),
+            search: @json(route($orderRoutes['search'])),
+            save: @json(route($orderRoutes['save'])),
+            cartShow: @json(route($orderRoutes['cart_show'])),
+            cartSave: @json(route($orderRoutes['cart_save'])),
+            cartDestroy: @json(route($orderRoutes['cart_destroy'])),
+            show: @json(route($orderRoutes['show'], ['order' => '__ORDER_ID__'])),
+            print: @json(route($orderRoutes['print'], ['order' => '__ORDER_ID__'])),
+            pdf: @json(route($orderRoutes['pdf'], ['order' => '__ORDER_ID__'])),
+            share: @json(route($orderRoutes['share'], ['order' => '__ORDER_ID__'])),
             dropdownCustomers: @json(route('tenant.ecommerce.dropdowns.customers')),
             dropdownVehicles: @json(route('tenant.ecommerce.dropdowns.vehicles')),
             dropdownServices: @json(route('tenant.ecommerce.dropdowns.services')),
@@ -638,7 +640,7 @@
             returnDaysAfterPurchase: @json($returnDaysAfterPurchase),
             creditMinRedeemBalance: @json((float) ($creditMinRedeemBalance ?? 50)),
             invoiceMode: @json(!empty($invoiceMode)),
-            invoicesIndexUrl: @json(route('employee.invoices.index')),
+            invoicesIndexUrl: @json(route($orderRoutes['invoices_index'])),
         };
         window.editOrder = @json($editOrder ?? null);
         window.employeeCards = {

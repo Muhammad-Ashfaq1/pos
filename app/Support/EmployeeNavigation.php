@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\User;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Support\Collection;
 
 class EmployeeNavigation
@@ -52,7 +53,6 @@ class EmployeeNavigation
         return self::sidebarGroupsConfig()
             ->map(function (array $group) use ($user): array {
                 $group['items'] = self::filterItems(collect($group['items']), $user)
-                    ->map(fn (array $item): array => $item)
                     ->values()
                     ->all();
 
@@ -104,7 +104,13 @@ class EmployeeNavigation
      */
     private static function filterItems(Collection $items, ?User $user): Collection
     {
-        return $items->filter(function (array $item) use ($user): bool {
+        $vehicleRequired = app(TenantContext::class)->current()?->isVehicleRequired() ?? true;
+
+        return $items->filter(function (array $item) use ($user, $vehicleRequired): bool {
+            if (! empty($item['requires_vehicles']) && ! $vehicleRequired) {
+                return false;
+            }
+
             $permissions = $item['permissions'] ?? null;
 
             if ($permissions === null) {
@@ -165,6 +171,8 @@ class EmployeeNavigation
     }
 
     /**
+     * Sidebar shows only employee-portal routes, filtered by permissions.
+     *
      * @return Collection<int, array<string, mixed>>
      */
     private static function sidebarGroupsConfig(): Collection
@@ -173,25 +181,89 @@ class EmployeeNavigation
             [
                 'label' => 'Workspace',
                 'items' => [
-                    ['label' => 'Dashboard', 'route' => 'employee.dashboard', 'pattern' => 'employee.dashboard', 'icon' => 'tabler-layout-dashboard', 'permissions' => null],
-                    ['label' => 'POS / Workspace', 'route' => 'employee.order.new-order', 'pattern' => 'employee.order.*|employee.pos|employee.workspace', 'icon' => 'tabler-cash-register', 'permissions' => null],
-                    ['label' => 'Invoices', 'route' => 'employee.invoices.index', 'pattern' => 'employee.invoices.*', 'icon' => 'tabler-file-invoice', 'permissions' => ['orders.view']],
-                    ['label' => 'Discounts', 'route' => 'employee.cards.type', 'routeParams' => ['type' => 'discount'], 'pattern' => 'employee.cards.*', 'icon' => 'tabler-ticket', 'permissions' => ['cards.view', 'cards.manage']],
+                    [
+                        'label' => 'Dashboard',
+                        'route' => 'employee.dashboard',
+                        'pattern' => 'employee.dashboard',
+                        'icon' => 'tabler-layout-dashboard',
+                        'permissions' => null,
+                    ],
+                    [
+                        'label' => 'Create Order',
+                        'route' => 'employee.order.new-order',
+                        'pattern' => 'employee.order.new-order|employee.pos',
+                        'icon' => 'tabler-cash-register',
+                        'permissions' => ['orders.create', 'pos.bill'],
+                    ],
+                    [
+                        'label' => 'Orders',
+                        'route' => 'employee.order.index',
+                        'pattern' => 'employee.order.index|employee.order.show|employee.order.listing',
+                        'icon' => 'tabler-clipboard-list',
+                        'permissions' => ['orders.view'],
+                    ],
+                    [
+                        'label' => 'Invoices',
+                        'route' => 'employee.invoices.index',
+                        'pattern' => 'employee.invoices.*',
+                        'icon' => 'tabler-file-invoice',
+                        'permissions' => ['orders.view'],
+                    ],
+                    [
+                        'label' => 'Returns',
+                        'route' => 'employee.order.returns',
+                        'pattern' => 'employee.order.returns*',
+                        'icon' => 'tabler-rotate-2',
+                        'permissions' => ['orders.view'],
+                    ],
+                    [
+                        'label' => 'Reports',
+                        'route' => 'employee.reports.index',
+                        'routeParams' => ['report' => 'sales'],
+                        'pattern' => 'employee.reports.*',
+                        'icon' => 'tabler-chart-bar',
+                        'permissions' => ['reports.view'],
+                    ],
+                    [
+                        'label' => 'Discounts',
+                        'route' => 'employee.cards.type',
+                        'routeParams' => ['type' => 'discount'],
+                        'pattern' => 'employee.cards.*',
+                        'icon' => 'tabler-ticket',
+                        'permissions' => ['cards.view', 'cards.create', 'cards.manage'],
+                    ],
                 ],
             ],
             [
                 'label' => 'Catalog',
                 'items' => [
-                    ['label' => 'Products', 'route' => 'tenant.ecommerce.products.index', 'pattern' => 'tenant.ecommerce.products.*', 'icon' => 'tabler-package', 'permissions' => ['product.view', 'products.view', 'products.manage']],
-                    ['label' => 'Manage Products', 'route' => 'employee.products.index', 'pattern' => 'employee.products.*', 'icon' => 'tabler-package-import', 'permissions' => ['product.create', 'product.update']],
-                    ['label' => 'Services', 'route' => 'tenant.ecommerce.services.index', 'pattern' => 'tenant.ecommerce.services.*', 'icon' => 'tabler-tool', 'permissions' => ['service.view', 'services.view']],
+                    [
+                        'label' => 'Products',
+                        'route' => 'employee.products.index',
+                        'pattern' => 'employee.products.*',
+                        'icon' => 'tabler-package',
+                        'permissions' => ['product.view', 'products.view', 'product.create'],
+                    ],
                 ],
             ],
             [
                 'label' => 'Lookup',
                 'items' => [
-                    ['label' => 'Customers', 'route' => 'employee.customers.index', 'pattern' => 'employee.customers.*', 'icon' => 'tabler-users', 'permissions' => ['customer.view', 'customers.view']],
-                    ['label' => 'Vehicles', 'route' => 'employee.vehicles.index', 'pattern' => 'employee.vehicles.*', 'icon' => 'tabler-car', 'permissions' => ['vehicle.view', 'vehicles.view']],
+                    [
+                        'label' => 'Customers',
+                        'route' => 'employee.customers.index',
+                        'pattern' => 'employee.customers.*',
+                        'icon' => 'tabler-users',
+                        'permissions' => ['customer.view', 'customers.view'],
+                    ],
+                    [
+                        'label' => 'Vehicles',
+                        'route' => 'employee.vehicles.index',
+                        'pattern' => 'employee.vehicles.*',
+                        'icon' => 'tabler-car',
+                        'permissions' => ['vehicle.view', 'vehicles.view'],
+                        'requires_vehicles' => true,
+                    ],
                 ],
             ],
         ]);
