@@ -698,7 +698,7 @@
         .employee-preview-sidebar-brand-text {
             font-size: 0.95rem;
             font-weight: 700;
-            color: var(--preview-indigo);
+            color: var(--bs-heading-color, #444050);
         }
 
         .employee-preview-sidebar-group + .employee-preview-sidebar-group {
@@ -711,7 +711,7 @@
             font-weight: 700;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: var(--preview-muted);
+            color: var(--bs-menu-header-color, var(--bs-secondary-color, #6f6b7d));
         }
 
         .employee-preview-sidebar-link {
@@ -722,20 +722,30 @@
             margin-bottom: 0.2rem;
             border-radius: 0.75rem;
             text-decoration: none;
-            color: var(--preview-indigo);
+            color: var(--bs-menu-color, #444050);
             font-size: 0.92rem;
-            font-weight: 600;
+            font-weight: 500;
             transition: background-color 0.2s ease, color 0.2s ease;
         }
 
-        .employee-preview-sidebar-link:hover,
+        .employee-preview-sidebar-link:hover {
+            background: var(--bs-menu-hover-bg, rgba(47, 43, 61, 0.06));
+            color: var(--bs-menu-hover-color, #444050);
+        }
+
         .employee-preview-sidebar-link.is-active {
-            background: rgba(49, 46, 129, 0.1);
-            color: var(--preview-indigo-dark);
+            background: var(--bs-menu-active-bg, var(--bs-primary));
+            color: var(--bs-menu-active-color, #fff);
+        }
+
+        .employee-preview-sidebar-link.is-active i {
+            opacity: 1;
+            color: inherit;
         }
 
         .employee-preview-sidebar-link i {
             font-size: 1.15rem;
+            color: inherit;
             opacity: 0.9;
         }
 
