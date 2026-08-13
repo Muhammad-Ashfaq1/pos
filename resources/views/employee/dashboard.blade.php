@@ -85,7 +85,8 @@
     <script>
         window.employeeDashboardConfig = {
             productMixUrl: @json(route('employee.dashboard.product-mix')),
-            currencySymbol: @json($currency_symbol ?? \App\Support\Currency::symbol())
+            currencySymbol: @json($currency_symbol ?? \App\Support\Currency::symbol()),
+            chartPalette: @json(\App\Support\ProductMixCards::chartPalette())
         };
     </script>
     <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>

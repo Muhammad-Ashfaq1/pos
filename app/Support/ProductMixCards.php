@@ -150,6 +150,16 @@ final class ProductMixCards
     }
 
     /**
+     * Chart color palette shared by dashboard product-mix visuals.
+     *
+     * @return list<string>
+     */
+    public static function chartPalette(): array
+    {
+        return ['#7367F0', '#28C76F', '#FF9F43', '#00CFE8', '#EA5455', '#A8AAAE'];
+    }
+
+    /**
      * @return list<string>
      */
     public static function selectedFor(?User $user): array
@@ -160,13 +170,7 @@ final class ProductMixCards
             return self::defaults();
         }
 
-        $allowed = self::keys();
-        $selected = collect($stored)
-            ->filter(fn ($key): bool => is_string($key) && in_array($key, $allowed, true))
-            ->unique()
-            ->values()
-            ->take(self::MAX_SELECTED)
-            ->all();
+        $selected = self::sanitize($stored);
 
         return $selected !== [] ? $selected : self::defaults();
     }
@@ -185,6 +189,31 @@ final class ProductMixCards
             ->values()
             ->take(self::MAX_SELECTED)
             ->all();
+    }
+
+    /**
+     * Default card footnotes from the catalog, with optional per-key overrides.
+     *
+     * @param  array<string, string>  $overrides
+     * @return array<string, string>
+     */
+    public static function meta(array $overrides = []): array
+    {
+        $meta = [];
+
+        foreach (self::catalog() as $key => $card) {
+            $meta[$key] = (string) ($card['preview_meta'] ?? '');
+        }
+
+        foreach ($overrides as $key => $value) {
+            if ($value === null) {
+                continue;
+            }
+
+            $meta[$key] = (string) $value;
+        }
+
+        return $meta;
     }
 
     /**

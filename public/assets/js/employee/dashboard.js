@@ -14,7 +14,9 @@
 
   const csrfToken = $('meta[name="csrf-token"]').attr('content');
   const currencySymbol = String(config.currencySymbol || '$');
-  const palette = ['#7367F0', '#28C76F', '#FF9F43', '#00CFE8', '#EA5455', '#A8AAAE'];
+  const palette = Array.isArray(config.chartPalette) && config.chartPalette.length
+    ? config.chartPalette
+    : ['#7367F0', '#28C76F', '#FF9F43', '#00CFE8', '#EA5455', '#A8AAAE'];
 
   $.ajaxSetup({
     headers: {
@@ -98,14 +100,6 @@
     }
 
     return currencySymbol + Math.round(amount);
-  }
-
-  function formatValue(field, value, format) {
-    if (format === 'money' || field === 'total_sales') {
-      return money(value);
-    }
-
-    return Number(value || 0).toLocaleString();
   }
 
   function destroyChart(chart) {
@@ -427,30 +421,6 @@
       $grid
         .attr('class', 'preview-stats-grid pos-ed-kpis pos-ed-kpis--' + Math.max(1, Math.min(4, data.summary_cards.length)))
         .html(html);
-    } else {
-      const fields = Object.keys(data.meta || {}).concat([
-        'total_sales',
-        'orders_completed',
-        'orders_incomplete',
-        'items_sold',
-        'available_products',
-        'top_selling_products',
-        'low_stock_products',
-        'total_stock_units'
-      ]);
-
-      Array.from(new Set(fields)).forEach(function (field) {
-        const $valueEl = $card.find('[data-product-mix-value="' + field + '"]');
-
-        if (data[field] !== undefined && $valueEl.length) {
-          const format = $valueEl.attr('data-product-mix-format') || 'number';
-          $valueEl.text(formatValue(field, data[field], format));
-        }
-
-        if (data.meta && data.meta[field]) {
-          $card.find('[data-product-mix-meta="' + field + '"]').text(data.meta[field]);
-        }
-      });
     }
 
     if (data.period) {

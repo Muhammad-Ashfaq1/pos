@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Support\Currency;
 use App\Support\DashboardDateRange;
 use App\Support\ProductMixCards;
+use App\Support\SalesMixQueries;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -89,37 +90,8 @@ class PanelController
             })
             ->sum('quantity');
 
-        $orderItemsInRange = fn ($query) => $query->withinRange($range)
-            ->where('status', '!=', Order::STATUS_ESTIMATE);
-
-        $topProducts = OrderItem::query()
-            ->whereHas('order', $orderItemsInRange)
-            ->selectRaw('product_name, SUM(quantity) as qty, SUM(line_total) as revenue')
-            ->groupBy('product_name')
-            ->orderByDesc('revenue')
-            ->limit(5)
-            ->get()
-            ->map(fn ($row) => [
-                'name' => (string) $row->product_name,
-                'qty' => (int) $row->qty,
-                'revenue' => round((float) $row->revenue, 2),
-            ])
-            ->all();
-
-        $salesByCategory = OrderItem::query()
-            ->whereHas('order', $orderItemsInRange)
-            ->join('products', 'order_items.product_id', '=', 'products.id')
-            ->join('categories', 'products.category_id', '=', 'categories.id')
-            ->selectRaw('categories.name as name, SUM(order_items.line_total) as revenue')
-            ->groupBy('categories.name')
-            ->orderByDesc('revenue')
-            ->limit(5)
-            ->get()
-            ->map(fn ($row) => [
-                'name' => (string) $row->name,
-                'revenue' => round((float) $row->revenue, 2),
-            ])
-            ->all();
+        $topProducts = SalesMixQueries::topProducts($range, 5);
+        $salesByCategory = SalesMixQueries::salesByCategory($range, 5);
 
         $trackedProducts = Product::query()->where('track_inventory', true);
         $availableProducts = (int) Product::query()->where('is_active', true)->count();
@@ -143,18 +115,12 @@ class PanelController
             'top_selling_products' => $topSellerQty,
             'low_stock_products' => $lowStockProducts,
             'total_stock_units' => $totalStockUnits,
-            'meta' => [
+            'meta' => ProductMixCards::meta([
                 'total_sales' => $outstanding > 0
                     ? 'Due '.$symbol.number_format($outstanding, 2)
-                    : 'Fully collected',
-                'orders_completed' => 'Paid orders',
-                'orders_incomplete' => 'Open orders',
-                'items_sold' => 'Units moved',
-                'available_products' => 'Active catalog',
+                    : null,
                 'top_selling_products' => $topSellerName,
-                'low_stock_products' => 'Need reorder',
-                'total_stock_units' => 'Units on hand',
-            ],
+            ]),
             'top_products' => $topProducts,
             'sales_by_category' => $salesByCategory,
         ];
