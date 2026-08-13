@@ -40,10 +40,9 @@
     </div>
 
     <div class="preview-card-body">
-        <div class="preview-stats-grid pos-ed-kpis pos-ed-kpis--4" data-product-mix-stats>
-            @php $edTones = ['success', 'primary', 'warning', 'info']; @endphp
-            @foreach($summaryCards as $i => $card)
-                <div class="pos-glass-card pos-tone-{{ $edTones[$i % count($edTones)] }} h-100">
+        <div class="preview-stats-grid pos-ed-kpis pos-ed-kpis--{{ max(1, min(4, count($summaryCards))) }}" data-product-mix-stats>
+            @foreach($summaryCards as $card)
+                <div class="pos-glass-card pos-tone-{{ $card['tone'] ?? 'primary' }} h-100" data-product-mix-card="{{ $card['key'] }}">
                     <div class="pos-stat-body">
                         <div class="pos-stat-head">
                             <span class="pos-stat-icon"><i class="icon-base ti {{ $card['icon'] }}" aria-hidden="true"></i></span>
@@ -67,7 +66,7 @@
             <div class="product-mix-breakdown-grid">
                 <div class="product-mix-panel product-mix-panel--products pos-glass-card pos-tone-success">
                     <div class="product-mix-panel-head">
-                        <span class="product-mix-panel-icon"><i class="ti tabler-trending-up" aria-hidden="true"></i></span>
+                        <span class="product-mix-panel-icon"><i class="ti tabler-chart-bar" aria-hidden="true"></i></span>
                         <h4 class="product-mix-panel-title">Top Products</h4>
                     </div>
 
@@ -79,22 +78,47 @@
 
                     @php
                         $topProductMax = collect($topProducts)->max('revenue') ?: 1;
+                        $barPalette = ['#7367F0', '#28C76F', '#FF9F43', '#00CFE8', '#EA5455', '#A8AAAE'];
                     @endphp
-                    <ul class="product-mix-rank-list" data-product-mix-top-list @if(!count($topProducts)) hidden @endif>
-                        @foreach($topProducts as $index => $product)
-                            @php $mixPct = round(((float) $product['revenue'] / $topProductMax) * 100); @endphp
-                            <li class="product-mix-rank-item">
-                                <span class="product-mix-rank-no">{{ $index + 1 }}</span>
-                                <div class="product-mix-rank-body">
-                                    <div class="product-mix-rank-row">
-                                        <span class="product-mix-rank-name">{{ $product['name'] }}</span>
-                                        <span class="product-mix-rank-meta">{{ number_format($product['qty']) }} · {{ ($currencySymbol ?? '$') . number_format($product['revenue'], 2) }}</span>
-                                    </div>
-                                    <span class="product-mix-rank-bar" style="--mix-pct: {{ $mixPct }}"></span>
+                    <div class="product-mix-product-body" data-product-mix-top-body @if(!count($topProducts)) hidden @endif>
+                        <div class="product-mix-hbar" data-product-mix-top-chart>
+                            @foreach($topProducts as $index => $product)
+                                @php
+                                    $mixRevenue = (float) $product['revenue'];
+                                    $mixPct = max(8, round(($mixRevenue / $topProductMax) * 100));
+                                    $mixCompact = abs($mixRevenue) >= 1000
+                                        ? ($currencySymbol ?? '$') . number_format($mixRevenue / 1000, 1) . 'k'
+                                        : ($currencySymbol ?? '$') . number_format($mixRevenue, 0);
+                                @endphp
+                                <div class="product-mix-hbar-row"
+                                     data-name="{{ $product['name'] }}"
+                                     data-sales="{{ ($currencySymbol ?? '$') . number_format($mixRevenue, 2) }}"
+                                     data-qty="{{ number_format((float) $product['qty']) }}"
+                                     data-color="{{ $barPalette[$index % count($barPalette)] }}">
+                                    <span class="product-mix-hbar-track">
+                                        <span class="product-mix-hbar-fill" style="width: {{ $mixPct }}%; background: {{ $barPalette[$index % count($barPalette)] }}">
+                                            <span class="product-mix-hbar-value">{{ $mixCompact }}</span>
+                                        </span>
+                                    </span>
                                 </div>
-                            </li>
-                        @endforeach
-                    </ul>
+                            @endforeach
+                        </div>
+
+                        <ul class="product-mix-rank-list product-mix-rank-list--compact" data-product-mix-top-list>
+                            @foreach($topProducts as $index => $product)
+                                @php $mixPct = round(((float) $product['revenue'] / $topProductMax) * 100); @endphp
+                                <li class="product-mix-rank-item product-mix-rank-item--compact">
+                                    <div class="product-mix-rank-body">
+                                        <div class="product-mix-rank-row">
+                                            <span class="product-mix-rank-name">{{ $product['name'] }}</span>
+                                            <span class="product-mix-rank-meta">{{ number_format($product['qty']) }} · {{ ($currencySymbol ?? '$') . number_format($product['revenue'], 2) }}</span>
+                                        </div>
+                                        <span class="product-mix-rank-bar" style="--mix-pct: {{ $mixPct }}"></span>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
                 </div>
 
                 <div class="product-mix-panel product-mix-panel--categories pos-glass-card pos-tone-info">

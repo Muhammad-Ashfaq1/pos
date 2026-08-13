@@ -1,0 +1,200 @@
+/* Employee settings layout only — glass look comes from pos-glass.css. */
+
+.employee-settings-page {
+    padding-bottom: 5rem;
+}
+
+.employee-settings-layout {
+    display: grid;
+    grid-template-columns: 248px minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.employee-settings-sidebar {
+    position: sticky;
+    top: 0.75rem;
+    padding: 1.1rem 1rem;
+}
+
+.employee-settings-nav-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+    margin: 0 0 0.55rem;
+}
+
+.employee-settings-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.55rem 0.45rem;
+    border-radius: 0.75rem;
+    color: inherit;
+    text-decoration: none;
+}
+
+.employee-settings-nav-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.2;
+}
+
+.employee-settings-nav-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.employee-settings-nav-hint {
+    margin-top: 0.15rem;
+    font-size: 0.72rem;
+    color: var(--bs-secondary-color);
+}
+
+.employee-settings-nav-link.is-active {
+    background: rgba(var(--pos-tone-rgb, var(--bs-primary-rgb)), 0.1);
+}
+
+.employee-settings-nav-link:hover {
+    color: inherit;
+    background: rgba(var(--pos-tone-rgb, var(--bs-primary-rgb)), 0.08);
+}
+
+.employee-settings-main {
+    min-width: 0;
+}
+
+.employee-settings-stack,
+.employee-settings-form {
+    display: grid;
+    gap: 1rem;
+}
+
+.employee-settings-panel {
+    padding: 0;
+}
+
+.employee-settings-panel > .pos-glass-intro,
+.employee-settings-panel > .employee-pm-group-head,
+.employee-settings-panel > .employee-pm-group-stack,
+.employee-settings-panel > .employee-pm-card-grid,
+.employee-settings-panel > .pos-ed-kpis,
+.employee-settings-panel > [data-pm-preview-empty] {
+    position: relative;
+    z-index: 1;
+}
+
+.employee-settings-panel > .employee-pm-group-stack,
+.employee-settings-panel > .employee-pm-card-grid,
+.employee-settings-panel > .pos-ed-kpis,
+.employee-settings-panel > [data-pm-preview-empty] {
+    padding: 0 1.25rem 1.25rem;
+}
+
+.employee-settings-toolbar.pos-glass-intro {
+    align-items: flex-start;
+}
+
+.employee-settings-toolbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.65rem;
+}
+
+.employee-pm-group-stack {
+    display: grid;
+    gap: 1rem;
+}
+
+.employee-pm-group-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.55rem 1rem;
+    padding: 1.15rem 1.25rem 0.85rem;
+}
+
+.employee-pm-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+}
+
+.employee-pm-option {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    cursor: pointer;
+    margin: 0;
+}
+
+.employee-pm-option.is-selected {
+    border-color: rgba(var(--pos-tone-rgb), 0.42);
+}
+
+.employee-pm-option.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.employee-pm-option-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    position: relative;
+    z-index: 1;
+}
+
+.employee-pm-option-check {
+    margin-top: 0.2rem;
+    flex: 0 0 auto;
+}
+
+.employee-pm-option-title {
+    display: block;
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.3;
+}
+
+.employee-pm-option-desc {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.8rem;
+    color: var(--bs-secondary-color);
+    line-height: 1.4;
+}
+
+.employee-pm-option-preview {
+    position: relative;
+    z-index: 1;
+}
+
+.employee-pm-preview-head {
+    padding-bottom: 0.35rem;
+}
+
+.employee-settings-panel > .pos-ed-kpis {
+    margin-bottom: 0;
+}
+
+@media (max-width: 991.98px) {
+    .employee-settings-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .employee-settings-sidebar {
+        position: static;
+    }
+
+    .employee-pm-card-grid {
+        grid-template-columns: 1fr;
+    }
+}

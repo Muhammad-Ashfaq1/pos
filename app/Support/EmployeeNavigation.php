@@ -164,7 +164,7 @@ class EmployeeNavigation
             [
                 'label' => 'Settings',
                 'icon' => 'tabler-settings',
-                'route' => 'account.profile',
+                'route' => 'employee.settings.product-mix',
                 'permissions' => null,
             ],
         ];

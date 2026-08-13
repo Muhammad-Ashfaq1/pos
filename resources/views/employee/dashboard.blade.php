@@ -7,12 +7,7 @@
 
     $user = auth()->user();
     $productMixPeriod = $product_mix_period ?? 'today';
-    $summaryCards = [
-        ['key' => 'total_sales', 'value' => \App\Support\Currency::format($total_sales ?? 0), 'label' => 'Sales', 'meta' => $meta['total_sales'] ?? 'Fully collected', 'icon' => 'tabler-currency-dollar', 'format' => 'money'],
-        ['key' => 'orders_completed', 'value' => number_format($orders_completed ?? 0), 'label' => 'Completed', 'meta' => $meta['orders_completed'] ?? 'Paid orders', 'icon' => 'tabler-circle-check', 'format' => 'number'],
-        ['key' => 'orders_incomplete', 'value' => number_format($orders_incomplete ?? 0), 'label' => 'Incomplete', 'meta' => $meta['orders_incomplete'] ?? 'Open orders', 'icon' => 'tabler-clock-pause', 'format' => 'number'],
-        ['key' => 'items_sold', 'value' => number_format($items_sold ?? 0), 'label' => 'Items Sold', 'meta' => $meta['items_sold'] ?? 'Units moved', 'icon' => 'tabler-packages', 'format' => 'number'],
-    ];
+    $summaryCards = $summary_cards ?? [];
 
     $tiles = EmployeeNavigation::dashboardTiles($user);
 
@@ -68,6 +63,7 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/employee-dashboard.css') }}?v={{ filemtime(public_path('assets/css/employee-dashboard.css')) }}" />
     <style>
         .employee-admin-preview .preview-refresh-btn.is-refreshing i {

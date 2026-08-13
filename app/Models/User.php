@@ -51,6 +51,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'theme_variant',
         'theme_mode',
         'employee_nav_mode',
+        'employee_product_mix_cards',
         'failed_attempts',
         'locked_until',
         'is_active',
@@ -71,6 +72,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
             'locked_until' => 'datetime',
+            'employee_product_mix_cards' => 'array',
         ];
     }
 

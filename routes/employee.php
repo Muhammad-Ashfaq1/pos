@@ -31,6 +31,11 @@ Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.
         Route::put('/preferences/navigation', [WorkspacePreferencesController::class, 'updateNavigation'])
             ->name('preferences.navigation');
 
+        Route::get('/settings/product-mix', [WorkspacePreferencesController::class, 'settingsProductMix'])
+            ->name('settings.product-mix');
+        Route::put('/preferences/product-mix-cards', [WorkspacePreferencesController::class, 'updateProductMixCards'])
+            ->name('preferences.product-mix-cards');
+
         Route::prefix('customers')
             ->name('customers.')
             ->controller(CustomerController::class)

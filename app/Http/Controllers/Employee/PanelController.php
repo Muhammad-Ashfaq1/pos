@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Employee;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\User;
 use App\Support\Currency;
 use App\Support\DashboardDateRange;
+use App\Support\ProductMixCards;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -33,7 +36,7 @@ class PanelController
 
         $range = DashboardDateRange::fromRequest('today');
 
-        return view('employee.dashboard', array_merge($this->productMixStats($range), [
+        return view('employee.dashboard', array_merge($this->productMixStats($range, request()->user()), [
             'product_mix_period' => $range->period,
             'product_mix_period_label' => $range->label,
             'trend_labels' => $trendLabels,
@@ -46,25 +49,13 @@ class PanelController
     {
         $range = $this->resolveProductMixRange($request->query('period'));
 
-        return response()->json($this->productMixStats($range));
+        return response()->json($this->productMixStats($range, $request->user()));
     }
 
     /**
-     * @return array{
-     *     period: string,
-     *     period_label: string,
-     *     currency_symbol: string,
-     *     total_sales: float,
-     *     outstanding: float,
-     *     orders_completed: int,
-     *     orders_incomplete: int,
-     *     items_sold: int,
-     *     meta: array{total_sales: string, orders_completed: string, orders_incomplete: string, items_sold: string},
-     *     top_products: list<array{name: string, qty: int, revenue: float}>,
-     *     sales_by_category: list<array{name: string, revenue: float}>
-     * }
+     * @return array<string, mixed>
      */
-    private function productMixStats(DashboardDateRange $range): array
+    private function productMixStats(DashboardDateRange $range, mixed $user = null): array
     {
         $ordersInRange = Order::query()->withinRange($range);
         $periodLabel = $range->label;
@@ -130,7 +121,16 @@ class PanelController
             ])
             ->all();
 
-        return [
+        $trackedProducts = Product::query()->where('track_inventory', true);
+        $availableProducts = (int) Product::query()->where('is_active', true)->count();
+        $lowStockProducts = (int) (clone $trackedProducts)
+            ->whereColumn('current_stock', '<=', 'reorder_level')
+            ->count();
+        $totalStockUnits = (int) (clone $trackedProducts)->sum('current_stock');
+        $topSellerQty = (int) (($topProducts[0]['qty'] ?? 0));
+        $topSellerName = (string) ($topProducts[0]['name'] ?? 'No sales yet');
+
+        $stats = [
             'period' => $range->period,
             'period_label' => $periodLabel,
             'currency_symbol' => $symbol,
@@ -139,6 +139,10 @@ class PanelController
             'orders_completed' => $completed,
             'orders_incomplete' => $incomplete,
             'items_sold' => $itemsSold,
+            'available_products' => $availableProducts,
+            'top_selling_products' => $topSellerQty,
+            'low_stock_products' => $lowStockProducts,
+            'total_stock_units' => $totalStockUnits,
             'meta' => [
                 'total_sales' => $outstanding > 0
                     ? 'Due '.$symbol.number_format($outstanding, 2)
@@ -146,10 +150,20 @@ class PanelController
                 'orders_completed' => 'Paid orders',
                 'orders_incomplete' => 'Open orders',
                 'items_sold' => 'Units moved',
+                'available_products' => 'Active catalog',
+                'top_selling_products' => $topSellerName,
+                'low_stock_products' => 'Need reorder',
+                'total_stock_units' => 'Units on hand',
             ],
             'top_products' => $topProducts,
             'sales_by_category' => $salesByCategory,
         ];
+
+        $selectedKeys = ProductMixCards::selectedFor($user instanceof User ? $user : null);
+        $stats['selected_card_keys'] = $selectedKeys;
+        $stats['summary_cards'] = ProductMixCards::summaryCards($selectedKeys, $stats);
+
+        return $stats;
     }
 
     private function resolveProductMixRange(?string $period): DashboardDateRange

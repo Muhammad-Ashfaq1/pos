@@ -583,7 +583,8 @@
             transition: background-color 0.2s ease;
         }
 
-        .employee-admin-preview .preview-bottom-link:hover {
+        .employee-admin-preview .preview-bottom-link:hover,
+        .employee-admin-preview .preview-bottom-link.is-active {
             background: rgba(255, 255, 255, 0.72);
         }
 
