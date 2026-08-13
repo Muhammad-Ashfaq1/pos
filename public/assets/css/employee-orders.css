@@ -9,7 +9,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.1rem;
 }
 
 .employee-orders-heading--with-actions {
@@ -81,6 +81,57 @@
     color: #e2e8f0;
 }
 
+[data-bs-theme="dark"] .employee-orders-panel {
+    background: #2f3349;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 28px -16px rgba(0, 0, 0, 0.55);
+}
+
+[data-bs-theme="dark"] .employee-orders-action {
+    background: linear-gradient(180deg, #353a52 0%, #2f3349 100%);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .employee-orders-action i {
+    color: #c7d2fe;
+}
+
+[data-bs-theme="dark"] .employee-orders-search .form-control {
+    background: #25293c;
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .employee-orders-search i {
+    color: #b6bee3;
+}
+
+[data-bs-theme="dark"] .employee-orders-tabs {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .employee-orders-tab {
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .employee-orders-tab.active,
+[data-bs-theme="dark"] .employee-orders-tab:hover,
+[data-bs-theme="dark"] .employee-orders-list-heading h5 {
+    color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .employee-order-card {
+    background: #25293c;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .employee-order-card:hover,
+[data-bs-theme="dark"] .employee-order-card:focus-visible {
+    border-color: rgba(165, 180, 252, 0.55);
+    box-shadow: 0 14px 26px rgba(0, 0, 0, 0.35);
+}
+
 .employee-orders-layout {
     display: grid;
     grid-template-columns: minmax(18rem, 0.92fr) minmax(0, 1.95fr);
@@ -88,10 +139,20 @@
 }
 
 .employee-orders-panel {
-    border: 0;
-    border-radius: 0.75rem;
+    border: 1px solid rgba(49, 46, 129, 0.06);
+    border-radius: 0.9rem;
     background: #fff;
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+    box-shadow:
+        0 10px 28px -16px rgba(49, 46, 129, 0.28),
+        0 1px 2px rgba(15, 23, 42, 0.04);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.employee-orders-panel:hover {
+    border-color: rgba(49, 46, 129, 0.1);
+    box-shadow:
+        0 14px 32px -16px rgba(49, 46, 129, 0.34),
+        0 1px 2px rgba(15, 23, 42, 0.05);
 }
 
 .employee-orders-filters {
@@ -111,14 +172,21 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 0.5rem;
-    background: #fff;
+    border: 1px solid #d8deea;
+    border-radius: 0.6rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%);
     padding: 0.75rem 0.95rem;
     color: #111827;
     font-size: 0.9rem;
     font-weight: 700;
     text-align: left;
+    transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.employee-orders-action:hover {
+    border-color: #c4c9e8;
+    background: #fff;
+    box-shadow: 0 4px 12px -8px rgba(49, 46, 129, 0.35);
 }
 
 .employee-orders-action+.employee-orders-action {
@@ -170,10 +238,18 @@
 
 .employee-orders-search .form-control {
     height: 3rem;
-    border-color: #cbd5e1;
-    border-radius: 0.5rem;
+    border-color: #d8deea;
+    border-radius: 0.6rem;
     padding-left: 2.75rem;
     font-size: 0.9rem;
+    background: #fbfbfd;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.employee-orders-search .form-control:focus {
+    background: #fff;
+    border-color: #a5b4fc;
+    box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.12);
 }
 
 .employee-orders-advanced-drawer,
@@ -463,9 +539,11 @@
     font-size: 0.9rem;
     font-weight: 700;
     text-decoration: none;
+    transition: color 0.15s ease;
 }
 
-a.employee-orders-tab:hover {
+a.employee-orders-tab:hover,
+.employee-orders-tab:hover {
     color: #312e81;
     text-decoration: none;
 }
@@ -515,20 +593,20 @@ a.employee-orders-tab:hover {
     min-height: 6.25rem;
     display: grid;
     gap: 0.55rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 0.5rem;
+    border: 1px solid #d8deea;
+    border-radius: 0.7rem;
     background: #fff;
     padding: 1rem;
     cursor: pointer;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
 .employee-order-card:hover,
 .employee-order-card:focus-visible {
     border-color: #a5b4fc;
     outline: 0;
-    box-shadow: 0 14px 26px rgba(49, 46, 129, 0.08);
-    transform: translateY(-1px);
+    box-shadow: 0 14px 26px rgba(49, 46, 129, 0.1);
+    transform: translateY(-2px);
 }
 
 .employee-order-card-top,

@@ -14,7 +14,10 @@
         <div class="card employee-invoices-card border-0 shadow-sm">
             <div class="card-body">
                 <div class="employee-invoices-toolbar">
-                    <h5 class="mb-0 fw-bold">Invoices</h5>
+                    <div>
+                        <h5 class="mb-0 fw-bold">Invoices</h5>
+                        <p class="employee-invoices-subheading mb-0">Billing, print, and customer email</p>
+                    </div>
                     <div class="employee-invoices-toolbar-actions">
                         <button
                             type="button"

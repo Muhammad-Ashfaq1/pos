@@ -16,13 +16,10 @@
                     <div class="employee-settings-nav-label">Dashboard</div>
                     <a href="{{ route('employee.settings.product-mix') }}"
                        class="employee-settings-nav-link {{ $activeSettingsTab === 'product-mix' ? 'is-active' : '' }}">
-                        <span class="pos-stat-icon">
+                        <span class="employee-settings-nav-icon" aria-hidden="true">
                             <i class="icon-base ti tabler-chart-pie-2"></i>
                         </span>
-                        <span class="employee-settings-nav-copy">
-                            <span class="employee-settings-nav-title">Product Mix</span>
-                            <span class="employee-settings-nav-hint">KPI cards</span>
-                        </span>
+                        <span class="employee-settings-nav-title">Product Mix</span>
                     </a>
                 </div>
             </nav>

@@ -69,14 +69,14 @@ class EmployeeNavigation
     public static function dashboardTiles(?User $user): array
     {
         $items = [
-            ['key' => 'time_clock', 'label' => 'Time Clock', 'icon' => 'tabler-clock-hour-4', 'url' => null, 'permission' => null],
-            ['key' => 'new_order', 'label' => 'Create New Order', 'icon' => 'tabler-shopping-bag', 'route' => 'employee.order.new-order', 'permission' => ['orders.create', 'pos.bill']],
-            ['key' => 'reports', 'label' => 'Reports', 'icon' => 'tabler-report-search', 'route' => 'employee.reports.index', 'routeParams' => ['report' => 'sales'], 'permission' => 'reports.view'],
-            ['key' => 'orders', 'label' => 'Orders', 'icon' => 'tabler-clipboard-data', 'route' => 'employee.order.index', 'permission' => 'orders.view'],
-            ['key' => 'returns', 'label' => 'Returns', 'icon' => 'tabler-arrow-back-up', 'route' => 'employee.order.returns', 'permission' => 'orders.view'],
-            ['key' => 'products', 'label' => 'Product Setup', 'icon' => 'tabler-package-import', 'route' => 'employee.products.index', 'permission' => ['product.create', 'product.view', 'products.view']],
-            ['key' => 'invoices', 'label' => 'Invoices', 'icon' => 'tabler-file-invoice', 'route' => 'employee.invoices.index', 'permission' => 'orders.view'],
-            ['key' => 'discounts', 'label' => 'Discounts', 'icon' => 'tabler-ticket', 'route' => 'employee.cards.type', 'routeParams' => ['type' => 'discount'], 'permission' => ['cards.view', 'cards.manage']],
+            ['key' => 'time_clock', 'label' => 'Time Clock', 'icon' => 'tabler-clock-hour-4', 'url' => null, 'permission' => null, 'tone' => 'secondary'],
+            ['key' => 'new_order', 'label' => 'Create New Order', 'icon' => 'tabler-shopping-bag', 'route' => 'employee.order.new-order', 'permission' => ['orders.create', 'pos.bill'], 'tone' => 'primary'],
+            ['key' => 'reports', 'label' => 'Reports', 'icon' => 'tabler-report-search', 'route' => 'employee.reports.index', 'routeParams' => ['report' => 'sales'], 'permission' => 'reports.view', 'tone' => 'success'],
+            ['key' => 'orders', 'label' => 'Orders', 'icon' => 'tabler-clipboard-data', 'route' => 'employee.order.index', 'permission' => 'orders.view', 'tone' => 'warning'],
+            ['key' => 'returns', 'label' => 'Returns', 'icon' => 'tabler-arrow-back-up', 'route' => 'employee.order.returns', 'permission' => 'orders.view', 'tone' => 'info'],
+            ['key' => 'products', 'label' => 'Product Setup', 'icon' => 'tabler-package-import', 'route' => 'employee.products.index', 'permission' => ['product.create', 'product.view', 'products.view'], 'tone' => 'info'],
+            ['key' => 'invoices', 'label' => 'Invoices', 'icon' => 'tabler-file-invoice', 'route' => 'employee.invoices.index', 'permission' => 'orders.view', 'tone' => 'success'],
+            ['key' => 'discounts', 'label' => 'Discounts', 'icon' => 'tabler-ticket', 'route' => 'employee.cards.type', 'routeParams' => ['type' => 'discount'], 'permission' => ['cards.view', 'cards.manage'], 'tone' => 'warning'],
         ];
 
         return collect($items)
@@ -91,6 +91,7 @@ class EmployeeNavigation
                 return [
                     'label' => $item['label'],
                     'icon' => $item['icon'],
+                    'tone' => $item['tone'] ?? 'primary',
                     'url' => isset($item['route']) ? route($item['route'], $item['routeParams'] ?? []) : null,
                     'permission' => $item['permission'],
                 ];

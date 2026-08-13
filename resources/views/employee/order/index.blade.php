@@ -18,7 +18,7 @@
                     data-bs-toggle="offcanvas"
                     data-bs-target="#employeeOrderAdvancedSearch"
                     aria-controls="employeeOrderAdvancedSearch">
-                    <span>Advance Search</span>
+                    <span>Advanced Search</span>
                     <i class="ti tabler-chevron-right"></i>
                 </button>
 
@@ -34,7 +34,7 @@
 
                 <label class="employee-orders-search">
                     <i class="ti tabler-search"></i>
-                    <input type="search" class="form-control" placeholder="Search Name, Barcode or ALU" data-order-search>
+                    <input type="search" class="form-control" placeholder="Search name, barcode, or SKU" data-order-search>
                 </label>
             </aside>
 
@@ -55,7 +55,7 @@
                 </div>
 
                 <div class="employee-orders-list-heading">
-                    <h5>Order Lists</h5>
+                    <h5>Orders</h5>
                     <div class="employee-orders-list-actions">
                         <button type="button" class="employee-orders-icon-btn" data-order-refresh data-bs-toggle="tooltip" title="Refresh orders">
                             <i class="ti tabler-refresh"></i>

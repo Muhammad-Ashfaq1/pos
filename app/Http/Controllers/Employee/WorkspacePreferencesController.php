@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
+use App\Support\DashboardDateRange;
 use App\Support\EmployeeNavigation;
 use App\Support\ProductMixCards;
 use Illuminate\Http\RedirectResponse;
@@ -12,18 +13,27 @@ use Illuminate\View\View;
 
 class WorkspacePreferencesController extends Controller
 {
-    public function settingsProductMix(): View
+    public function settingsProductMix(PanelController $panel): View
     {
         $user = request()->user();
         abort_unless($user?->isEmployee(), 403);
 
         $selected = ProductMixCards::selectedFor($user);
+        $stats = $panel->productMixStats(DashboardDateRange::fromRequest('today'), $user);
+        $previewByKey = collect(ProductMixCards::summaryCards(ProductMixCards::keys(), $stats))
+            ->keyBy('key')
+            ->map(fn (array $card): array => [
+                'value' => (string) ($card['value'] ?? '0'),
+                'meta' => (string) ($card['meta'] ?? ''),
+            ])
+            ->all();
 
         return view('employee.settings.product-mix', [
             'groupedCards' => ProductMixCards::groupedCatalog(),
             'selectedKeys' => $selected,
             'maxSelected' => ProductMixCards::MAX_SELECTED,
             'selectedCount' => count($selected),
+            'previewByKey' => $previewByKey,
         ]);
     }
 

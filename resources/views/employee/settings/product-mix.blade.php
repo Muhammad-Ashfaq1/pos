@@ -68,6 +68,7 @@
                                         <x-employee.product-mix-option
                                             :card="$card"
                                             :checked="in_array($card['key'], $selectedKeys, true)"
+                                            :preview="$previewByKey[$card['key']] ?? null"
                                         />
                                     @endforeach
                                 </div>

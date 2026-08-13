@@ -30,6 +30,7 @@
     const icon = escapeHtml(option.getAttribute('data-pm-icon') || 'tabler-chart-bar');
     const tone = escapeHtml(option.getAttribute('data-pm-tone') || 'primary');
     const meta = escapeHtml(option.getAttribute('data-pm-meta') || '');
+    const value = escapeHtml(option.getAttribute('data-pm-value') || '0');
 
     return (
       '<div class="pos-glass-card pos-tone-' + tone + ' h-100">' +
@@ -38,7 +39,7 @@
             '<span class="pos-stat-icon"><i class="icon-base ti ' + icon + '" aria-hidden="true"></i></span>' +
             '<h6 class="pos-stat-label">' + label + '</h6>' +
           '</div>' +
-          '<p class="pos-stat-value">0</p>' +
+          '<p class="pos-stat-value">' + value + '</p>' +
           '<p class="pos-stat-desc mb-0">' + meta + '</p>' +
         '</div>' +
       '</div>'

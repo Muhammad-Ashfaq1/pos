@@ -452,18 +452,93 @@
     border-bottom-color: rgba(47, 43, 61, 0.08);
 }
 
+/* Action tiles only — keep Product Mix rules untouched above */
+.employee-dashboard .preview-tiles-grid {
+    gap: 0.95rem;
+}
+
+.employee-dashboard .preview-tile.pos-glass-card {
+    min-height: 8.75rem;
+    border-radius: 1.05rem;
+    text-decoration: none;
+    transition:
+        transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.2s ease,
+        border-color 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.employee-dashboard .preview-tile-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.85rem;
+    min-height: 8.75rem;
+    padding: 1.15rem 0.9rem;
+}
+
+.employee-dashboard .preview-tile-title {
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 750;
+    letter-spacing: -0.01em;
+    text-align: center;
+    line-height: 1.25;
+    color: var(--bs-heading-color, #444050);
+}
+
 .employee-dashboard .preview-tile-icon-wrap {
-    background: color-mix(in sRGB, #fff 82%, rgb(var(--pos-tone-rgb)));
+    width: 3rem;
+    height: 3rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.85rem;
+    background: color-mix(in sRGB, #fff 78%, rgb(var(--pos-tone-rgb)));
     color: rgb(var(--pos-tone-rgb));
+    box-shadow:
+        0 8px 18px -10px rgba(var(--pos-tone-rgb), 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.employee-dashboard .preview-tile-icon-wrap i {
+    font-size: 1.35rem;
+    line-height: 1;
 }
 
 .employee-dashboard .preview-tile:hover {
-    background-color: rgba(255, 255, 255, 0.72);
-    border-color: rgba(255, 255, 255, 0.8);
+    transform: translateY(-3px);
+    background-color: rgba(255, 255, 255, 0.78);
+    border-color: rgba(var(--pos-tone-rgb), 0.28);
     box-shadow:
-        0 14px 30px -14px rgba(var(--pos-tone-rgb), 0.4),
+        0 18px 34px -16px rgba(var(--pos-tone-rgb), 0.48),
         0 1px 2px rgba(47, 43, 61, 0.05),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+.employee-dashboard .preview-tile:hover .preview-tile-icon-wrap {
+    transform: translateY(-1px) scale(1.04);
+    box-shadow:
+        0 10px 20px -10px rgba(var(--pos-tone-rgb), 0.65),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.employee-dashboard .preview-tile:active {
+    transform: translateY(-1px);
+}
+
+.employee-dashboard .preview-tile--static {
+    cursor: default;
+}
+
+.employee-dashboard .preview-tile--static:hover {
+    transform: none;
+}
+
+.employee-dashboard .preview-tile--static:hover .preview-tile-icon-wrap {
+    transform: none;
 }
 
 /* Product Mix outer card only — inner KPI cards keep stock pos-glass */

@@ -6,61 +6,88 @@
 
 .employee-settings-layout {
     display: grid;
-    grid-template-columns: 248px minmax(0, 1fr);
-    gap: 1rem;
+    grid-template-columns: 550px minmax(0, 1fr);
+    gap: 1.25rem;
     align-items: start;
 }
 
 .employee-settings-sidebar {
     position: sticky;
     top: 0.75rem;
-    padding: 1.1rem 1rem;
+    padding: 1.25rem 1.15rem;
+}
+
+.employee-settings-nav-group {
+    display: grid;
+    gap: 0.75rem;
 }
 
 .employee-settings-nav-label {
-    font-size: 0.72rem;
+    font-size: 1rem;
     font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--bs-secondary-color);
-    margin: 0 0 0.55rem;
+    letter-spacing: 0;
+    text-transform: none;
+    color: #2f2b3d;
+    margin: 0;
+    line-height: 1.25;
 }
 
+/* Product Mix settings tile — larger to match reference */
 .employee-settings-nav-link {
     display: flex;
     align-items: center;
-    gap: 0.7rem;
-    padding: 0.55rem 0.45rem;
-    border-radius: 0.75rem;
+    gap: 0.875rem;
+    width: 100%;
+    height: 60px;
+    min-height: 60px;
+    max-height: 60px;
+    padding: 0 16px;
+    box-sizing: border-box;
+    border: 1px solid #dce3f9;
+    border-radius: 14px;
+    background: #f4f7ff;
+    box-shadow: none;
     color: inherit;
     text-decoration: none;
 }
 
-.employee-settings-nav-copy {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    line-height: 1.2;
+.employee-settings-nav-icon {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff4e6;
+}
+
+.employee-settings-nav-icon i {
+    font-size: 20px;
+    line-height: 1;
+    color: #f08c00;
 }
 
 .employee-settings-nav-title {
     font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.employee-settings-nav-hint {
-    margin-top: 0.15rem;
-    font-size: 0.72rem;
-    color: var(--bs-secondary-color);
+    font-size: 1rem;
+    color: #2f2b3d;
+    line-height: 1.2;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .employee-settings-nav-link.is-active {
-    background: rgba(var(--pos-tone-rgb, var(--bs-primary-rgb)), 0.1);
+    border-color: #dce3f9;
+    background: #f4f7ff;
 }
 
 .employee-settings-nav-link:hover {
     color: inherit;
-    background: rgba(var(--pos-tone-rgb, var(--bs-primary-rgb)), 0.08);
+    border-color: #c7d2fe;
+    background: #eef2ff;
 }
 
 .employee-settings-main {
@@ -123,20 +150,37 @@
 .employee-pm-card-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.9rem;
+    gap: 0.85rem;
+    padding: 0 1.15rem 1.15rem;
 }
 
+/* Exact Tiedown option card — clean white, no glass on outer card */
 .employee-pm-option {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    padding: 1rem;
-    cursor: pointer;
+    justify-content: space-between;
+    gap: 0.95rem;
+    padding: 1rem 1.05rem 1.05rem;
     margin: 0;
+    cursor: pointer;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.85rem;
+    background-color: #fff;
+    background-image: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.employee-pm-option::after {
+    display: none;
 }
 
 .employee-pm-option.is-selected {
-    border-color: rgba(var(--pos-tone-rgb), 0.42);
+    border-color: rgba(115, 103, 240, 0.4);
+    background-color: #f8f7ff;
+    box-shadow: none;
 }
 
 .employee-pm-option.is-disabled {
@@ -147,14 +191,19 @@
 .employee-pm-option-head {
     display: flex;
     align-items: flex-start;
-    gap: 0.65rem;
-    position: relative;
-    z-index: 1;
+    gap: 0.6rem;
 }
 
 .employee-pm-option-check {
-    margin-top: 0.2rem;
+    margin-top: 0.12rem;
     flex: 0 0 auto;
+    width: 1.05rem;
+    height: 1.05rem;
+}
+
+.employee-pm-option-copy {
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .employee-pm-option-title {
@@ -162,19 +211,116 @@
     font-weight: 700;
     font-size: 0.95rem;
     line-height: 1.3;
+    color: #1f2937;
 }
 
 .employee-pm-option-desc {
     display: block;
-    margin-top: 0.2rem;
-    font-size: 0.8rem;
-    color: var(--bs-secondary-color);
+    margin-top: 0.15rem;
+    font-size: 0.8125rem;
+    color: #71717a;
     line-height: 1.4;
 }
 
-.employee-pm-option-preview {
-    position: relative;
-    z-index: 1;
+/* Capsule / pill — flat sample match (no glass blur on bar) */
+.employee-pm-option-swatch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+    height: 3.65rem;
+    min-height: 3.65rem;
+    max-height: 3.65rem;
+    padding: 0 1.35rem;
+    box-sizing: border-box;
+    border: 0;
+    border-radius: 9999px;
+    overflow: hidden;
+    background-image: linear-gradient(90deg, #f4f3ff 0%, #dcd9fb 55%, #c2bef5 100%);
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+.employee-pm-option-swatch-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1;
+    color: #2f2b3d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.employee-pm-option-swatch-icon {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: inherit;
+}
+
+.employee-pm-option-swatch-icon i,
+.employee-pm-option-swatch-symbol {
+    font-size: 1.25rem;
+    line-height: 1;
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* Sales — pale mint → soft medium green */
+.employee-pm-swatch-green .employee-pm-option-swatch {
+    background-image: linear-gradient(90deg, #f0fff4 0%, #c6f6d5 45%, #82e0aa 100%);
+}
+
+.employee-pm-swatch-green .employee-pm-option-swatch-label,
+.employee-pm-swatch-green .employee-pm-option-swatch-icon {
+    color: #1b4d3e;
+}
+
+/* Completed / Available — pale lavender → soft purple */
+.employee-pm-swatch-blue .employee-pm-option-swatch,
+.employee-pm-swatch-purple .employee-pm-option-swatch {
+    background-image: linear-gradient(90deg, #f5f4ff 0%, #ddd6fe 45%, #b8a9f8 100%);
+}
+
+.employee-pm-swatch-blue .employee-pm-option-swatch-label,
+.employee-pm-swatch-blue .employee-pm-option-swatch-icon,
+.employee-pm-swatch-purple .employee-pm-option-swatch-label,
+.employee-pm-swatch-purple .employee-pm-option-swatch-icon {
+    color: #3b3670;
+}
+
+/* Items Sold / Total Stock — icy → soft periwinkle */
+.employee-pm-swatch-violet .employee-pm-option-swatch {
+    background-image: linear-gradient(90deg, #f5f8ff 0%, #dbe4ff 45%, #b4c0f7 100%);
+}
+
+.employee-pm-swatch-violet .employee-pm-option-swatch-label,
+.employee-pm-swatch-violet .employee-pm-option-swatch-icon {
+    color: #3730a3;
+}
+
+/* Low Stock / Incomplete — cream → soft apricot (sample exact) */
+.employee-pm-swatch-orange .employee-pm-option-swatch,
+.employee-pm-swatch-pink .employee-pm-option-swatch {
+    background-image: linear-gradient(90deg, #fff8f1 0%, #f8dcc0 48%, #efb888 100%);
+}
+
+.employee-pm-swatch-orange .employee-pm-option-swatch-label,
+.employee-pm-swatch-orange .employee-pm-option-swatch-icon,
+.employee-pm-swatch-pink .employee-pm-option-swatch-label,
+.employee-pm-swatch-pink .employee-pm-option-swatch-icon {
+    color: #2d2d2d;
+}
+
+.employee-pm-option-check:checked {
+    background-color: #26c6da;
+    border-color: #26c6da;
 }
 
 .employee-pm-preview-head {
@@ -197,4 +343,27 @@
     .employee-pm-card-grid {
         grid-template-columns: 1fr;
     }
+}
+
+[data-bs-theme="dark"] .employee-pm-option {
+    background-color: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .employee-pm-option.is-selected {
+    background-color: rgba(115, 103, 240, 0.16);
+    border-color: rgba(115, 103, 240, 0.4);
+}
+
+[data-bs-theme="dark"] .employee-pm-option-title,
+[data-bs-theme="dark"] .employee-pm-option-swatch-label {
+    color: var(--bs-heading-color, #cfcde4);
+}
+
+[data-bs-theme="dark"] .employee-pm-option-desc {
+    color: var(--bs-secondary-color);
+}
+
+[data-bs-theme="dark"] .employee-pm-option-swatch-icon {
+    color: #cfcde4;
 }

@@ -56,7 +56,7 @@ class PanelController
     /**
      * @return array<string, mixed>
      */
-    private function productMixStats(DashboardDateRange $range, mixed $user = null): array
+    public function productMixStats(DashboardDateRange $range, mixed $user = null): array
     {
         $ordersInRange = Order::query()->withinRange($range);
         $periodLabel = $range->label;

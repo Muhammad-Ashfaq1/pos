@@ -14,7 +14,7 @@
             ? route($orderRoutes['invoices_index'])
             : route($dashboardRoute ?? 'employee.dashboard');
         $pageBackTitle = $invoiceMode ? 'Back to invoices' : 'Back to dashboard';
-        $pageTitle = $invoiceMode ? 'Invoices' : 'New Order';
+        $pageTitle = $invoiceMode ? 'Create Invoice' : 'New Order';
     @endphp
     <div class="employee-orders-page" @if($invoiceMode) data-invoice-mode="1" @endif>
         <x-employee.page-header :title="$pageTitle" :back-url="$pageBackUrl" :back-title="$pageBackTitle" />

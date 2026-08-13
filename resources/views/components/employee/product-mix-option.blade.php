@@ -1,27 +1,34 @@
 @props([
     'card',
     'checked' => false,
+    'preview' => null,
 ])
 
 @php
     $card = is_array($card) ? $card : [];
+    $preview = is_array($preview) ? $preview : [];
     $key = (string) ($card['key'] ?? '');
     $label = (string) ($card['label'] ?? '');
     $description = (string) ($card['description'] ?? '');
     $icon = (string) ($card['icon'] ?? 'tabler-chart-bar');
     $tone = (string) ($card['tone'] ?? 'primary');
     $group = (string) ($card['group_label'] ?? '');
-    $meta = (string) ($card['preview_meta'] ?? '');
+    $gradient = (string) ($card['gradient'] ?? 'purple');
+    $fallbackMeta = (string) ($card['preview_meta'] ?? '');
+    $meta = (string) (($preview['meta'] ?? '') !== '' ? $preview['meta'] : $fallbackMeta);
+    $value = (string) ($preview['value'] ?? '0');
+    $useDollar = str_contains($icon, 'currency-dollar');
 @endphp
 
-<label class="employee-pm-option pos-glass-card pos-tone-{{ $tone }} {{ $checked ? 'is-selected' : '' }}"
+<label class="employee-pm-option employee-pm-swatch-{{ $gradient }} {{ $checked ? 'is-selected' : '' }}"
        data-pm-option
        data-pm-group="{{ $group }}"
        data-pm-key="{{ $key }}"
        data-pm-label="{{ $label }}"
        data-pm-icon="{{ $icon }}"
        data-pm-tone="{{ $tone }}"
-       data-pm-meta="{{ $meta }}">
+       data-pm-meta="{{ $meta }}"
+       data-pm-value="{{ $value }}">
     <span class="employee-pm-option-head">
         <input type="checkbox"
                name="cards[]"
@@ -34,8 +41,14 @@
         </span>
     </span>
 
-    <span class="employee-pm-option-preview pos-stat-head">
-        <span class="pos-stat-icon"><i class="icon-base ti {{ $icon }}" aria-hidden="true"></i></span>
-        <span class="pos-stat-label mb-0">{{ $meta !== '' ? $meta : $label }}</span>
+    <span class="employee-pm-option-swatch" aria-hidden="true">
+        <span class="employee-pm-option-swatch-label">{{ $label }}</span>
+        <span class="employee-pm-option-swatch-icon">
+            @if ($useDollar)
+                <span class="employee-pm-option-swatch-symbol">$</span>
+            @else
+                <i class="icon-base ti {{ $icon }}"></i>
+            @endif
+        </span>
     </span>
 </label>
