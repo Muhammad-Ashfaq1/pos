@@ -18,7 +18,7 @@
 }
 
 .employee-orders-heading-main {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.75rem;
     min-width: 0;
@@ -33,24 +33,27 @@
 
 .employee-orders-back-btn,
 .employee-orders-icon-btn {
-    width: 2.35rem;
-    height: 2.35rem;
+    width: 2.45rem;
+    height: 2.45rem;
+    flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 0;
-    border-radius: 0.55rem;
-    background: #e7e9f5;
-    color: #312e81;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: 0.65rem;
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    color: rgb(var(--bs-primary-rgb));
     text-decoration: none;
-    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .employee-orders-back-btn:hover,
 .employee-orders-icon-btn:hover {
-    background: #d9ddf0;
-    color: #262363;
-    transform: translateY(-1px);
+    background: rgba(var(--bs-primary-rgb), 0.2) !important;
+    border-color: rgba(var(--bs-primary-rgb), 0.35) !important;
+    color: rgb(var(--bs-primary-rgb)) !important;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 16px -4px rgba(var(--bs-primary-rgb), 0.3) !important;
 }
 
 .employee-orders-back-btn i,
@@ -63,6 +66,7 @@
     font-size: 1.35rem;
     font-weight: 800;
     line-height: 1.2;
+    display: inline-block;
 }
 
 [data-bs-theme="dark"] .employee-orders-title {
@@ -71,14 +75,18 @@
 
 [data-bs-theme="dark"] .employee-orders-back-btn,
 [data-bs-theme="dark"] .employee-orders-icon-btn {
-    background: #353a52;
-    color: #b6bee3;
+    background: rgba(var(--bs-primary-rgb), 0.2);
+    border-color: rgba(var(--bs-primary-rgb), 0.3);
+    color: #c7d2fe;
 }
 
 [data-bs-theme="dark"] .employee-orders-back-btn:hover,
 [data-bs-theme="dark"] .employee-orders-icon-btn:hover {
-    background: #434968;
-    color: #e2e8f0;
+    background: rgba(var(--bs-primary-rgb), 0.38) !important;
+    border-color: rgba(var(--bs-primary-rgb), 0.55) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.5) !important;
 }
 
 [data-bs-theme="dark"] .employee-orders-panel {
@@ -746,7 +754,7 @@ a.employee-orders-tab:hover,
     }
 }
 
-/* ── Returns ─────────────────────────────────────────────────────────── */
+/* â”€â”€ Returns â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .employee-order-status.danger {
     background: #fee2e2;
@@ -1189,7 +1197,7 @@ a.employee-orders-tab:hover,
     }
 }
 
-/* ── Loyalty Cards ───────────────────────────────────────────────────── */
+/* â”€â”€ Loyalty Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .employee-cards-panel {
     min-height: 28rem;
@@ -1216,7 +1224,7 @@ a.employee-orders-tab:hover,
     min-height: calc(1.5em + 0.875rem + 2px);
 }
 
-/* Compact tag wrap — kills Select2 float/clear/search gaps */
+/* Compact tag wrap â€” kills Select2 float/clear/search gaps */
 .card-product-select + .select2-container .select2-selection--multiple .select2-selection__rendered {
     display: flex !important;
     flex-wrap: wrap;
@@ -1244,11 +1252,11 @@ a.employee-orders-tab:hover,
     margin: 0 !important;
     z-index: 2;
     line-height: 1;
-    /* Keep clear out of the flex tag row (avoids a stray × on the left). */
+    /* Keep clear out of the flex tag row (avoids a stray Ã— on the left). */
     order: 99;
 }
 
-/* Blank chips from empty options — never show a lone × on the left */
+/* Blank chips from empty options â€” never show a lone Ã— on the left */
 .card-product-select + .select2-container .select2-selection__choice[title=""],
 .card-product-select + .select2-container .select2-selection__choice:not([title]) {
     display: none !important;
@@ -1363,4 +1371,615 @@ a.employee-orders-tab:hover,
     .employee-loyalty-cards {
         grid-template-columns: 1fr;
     }
+}
+
+/* â”€â”€ Admin glass palette on Orders / Discounts workspace â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+.employee-orders-glass {
+    --pos-order-accent-rgb: var(--bs-primary-rgb);
+}
+
+.employee-orders-panel.pos-glass-card {
+    background-color: rgba(255, 255, 255, 0.72);
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--pos-tone-rgb), 0.1) 0%,
+        rgba(var(--pos-tone-rgb), 0.03) 42%,
+        rgba(var(--pos-tone-rgb), 0) 72%
+    );
+    border-color: rgba(var(--pos-tone-rgb), 0.16);
+    box-shadow:
+        0 8px 22px -12px rgba(var(--pos-tone-rgb), 0.34),
+        0 1px 2px rgba(47, 43, 61, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    backdrop-filter: blur(14px) saturate(160%);
+    position: relative;
+    overflow: hidden;
+}
+
+.employee-orders-panel.pos-glass-card:hover {
+    border-color: rgba(var(--pos-tone-rgb), 0.3);
+    box-shadow:
+        0 14px 30px -14px rgba(var(--pos-tone-rgb), 0.44),
+        0 1px 2px rgba(47, 43, 61, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.employee-orders-glass .employee-orders-back-btn,
+.employee-orders-glass .employee-orders-icon-btn {
+    background: rgba(var(--pos-order-accent-rgb), 0.1);
+    color: rgb(var(--pos-order-accent-rgb));
+}
+
+.employee-orders-glass .employee-orders-back-btn:hover,
+.employee-orders-glass .employee-orders-icon-btn:hover {
+    background: rgba(var(--pos-order-accent-rgb), 0.16);
+    color: rgb(var(--pos-order-accent-rgb));
+}
+
+.employee-orders-glass .employee-orders-action {
+    border-color: rgba(var(--pos-tone-rgb, var(--pos-order-accent-rgb)), 0.22);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(var(--pos-tone-rgb, var(--pos-order-accent-rgb)), 0.08) 0%,
+            rgba(255, 255, 255, 0.85) 55%
+        );
+    color: var(--bs-heading-color, #444050);
+}
+
+.employee-orders-glass .employee-orders-action:hover {
+    border-color: rgba(var(--pos-tone-rgb, var(--pos-order-accent-rgb)), 0.4);
+    box-shadow: 0 6px 16px -10px rgba(var(--pos-tone-rgb, var(--pos-order-accent-rgb)), 0.45);
+}
+
+.employee-orders-glass .employee-orders-action i {
+    color: rgb(var(--pos-tone-rgb, var(--pos-order-accent-rgb)));
+}
+
+.employee-orders-glass .employee-orders-tab:hover,
+.employee-orders-glass a.employee-orders-tab:hover {
+    color: rgb(var(--pos-tone-rgb, var(--pos-order-accent-rgb)));
+}
+
+.employee-orders-glass .employee-orders-tab.active {
+    color: rgb(var(--pos-tone-rgb, var(--pos-order-accent-rgb)));
+}
+
+.employee-orders-glass .employee-orders-tab.active::after {
+    background: rgb(var(--pos-tone-rgb, var(--pos-order-accent-rgb)));
+}
+
+.employee-orders-glass .employee-orders-search i {
+    color: rgb(var(--pos-order-accent-rgb));
+}
+
+.employee-orders-glass .employee-orders-search .form-control {
+    border-color: rgba(var(--pos-order-accent-rgb), 0.22);
+    background: rgba(255, 255, 255, 0.78);
+}
+
+.employee-orders-glass .employee-orders-search .form-control:focus {
+    border-color: rgba(var(--pos-order-accent-rgb), 0.55);
+    box-shadow: 0 0 0 0.2rem rgba(var(--pos-order-accent-rgb), 0.16);
+}
+
+[data-bs-theme="dark"] .employee-orders-panel.pos-glass-card {
+    background-color: rgba(47, 51, 73, 0.78);
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--pos-tone-rgb), 0.16) 0%,
+        rgba(var(--pos-tone-rgb), 0.05) 45%,
+        rgba(var(--pos-tone-rgb), 0) 74%
+    );
+    border-color: rgba(var(--pos-tone-rgb), 0.22);
+    box-shadow:
+        0 10px 28px -16px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+[data-bs-theme="dark"] .employee-orders-glass .employee-orders-action {
+    background: linear-gradient(
+        135deg,
+        rgba(var(--pos-tone-rgb, var(--pos-order-accent-rgb)), 0.14) 0%,
+        rgba(47, 51, 73, 0.9) 60%
+    );
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #e2e8f0;
+}
+
+/* Create Order — exact admin dashboard glass + theme colors */
+
+.pos-order-glass {
+    --pos-order-accent-rgb: var(--bs-primary-rgb);
+    --pos-tone-rgb: var(--bs-primary-rgb);
+    background:
+        radial-gradient(ellipse 70% 45% at 0% 0%, rgba(var(--bs-primary-rgb), 0.08), transparent 55%),
+        radial-gradient(ellipse 55% 40% at 100% 20%, rgba(var(--bs-primary-rgb), 0.05), transparent 50%);
+    border-radius: 1rem;
+}
+
+.pos-order-glass .pos-glass-card > .card-body,
+.pos-order-glass .pos-glass-card > .card-header {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+    border: 0;
+}
+
+.pos-order-glass .order-entry-screen .pos-sidebar-card.pos-glass-card,
+.pos-order-glass .order-entry-screen .order-management.pos-glass-card,
+.pos-order-glass .payment-panel.pos-glass-card,
+.pos-order-glass .product-detail-card.pos-glass-card,
+.pos-order-glass .pos-product-card.pos-glass-card {
+    --pos-tone-rgb: var(--bs-primary-rgb);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.16);
+    border-radius: var(--pos-glass-radius, 1rem);
+    background-color: rgba(255, 255, 255, 0.68);
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--bs-primary-rgb), 0.12) 0%,
+        rgba(var(--bs-primary-rgb), 0.04) 42%,
+        rgba(var(--bs-primary-rgb), 0) 72%
+    );
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    backdrop-filter: blur(16px) saturate(150%);
+    box-shadow:
+        0 8px 22px -12px rgba(var(--bs-primary-rgb), 0.34),
+        0 1px 2px rgba(47, 43, 61, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    overflow: hidden;
+}
+
+.pos-order-glass .order-entry-screen .pos-sidebar-card.pos-glass-card:hover,
+.pos-order-glass .order-entry-screen .order-management.pos-glass-card:hover,
+.pos-order-glass .payment-panel.pos-glass-card:hover,
+.pos-order-glass .product-detail-card.pos-glass-card:hover,
+.pos-order-glass .pos-product-card.pos-glass-card:hover {
+    border-color: rgba(var(--bs-primary-rgb), 0.3);
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow:
+        0 14px 30px -14px rgba(var(--bs-primary-rgb), 0.44),
+        0 1px 2px rgba(47, 43, 61, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.pos-order-glass .pos-glass-card::after {
+    background: radial-gradient(
+        circle,
+        rgba(var(--bs-primary-rgb), 0.14) 0%,
+        rgba(var(--bs-primary-rgb), 0.05) 45%,
+        rgba(var(--bs-primary-rgb), 0) 70%
+    );
+}
+
+.pos-order-glass .order-management.pos-glass-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.pos-order-glass .payment-panel.pos-glass-card > .card-body,
+.pos-order-glass .pos-sidebar-card.pos-glass-card > .card-body {
+    padding: 1.2rem 1.2rem 1.4rem;
+}
+
+.pos-order-glass .order-management.pos-glass-card {
+    padding: 1.35rem !important;
+}
+
+.pos-order-glass .payment-actions-grid,
+.pos-order-glass .payment-methods {
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    width: 100%;
+}
+
+.pos-order-glass .add-customer-btn,
+.pos-order-glass .add-order-btn,
+.pos-order-glass .add-vehicle-btn,
+.pos-order-glass .text-primary,
+.pos-order-glass .summary-total,
+.pos-order-glass .payment-order-number,
+.pos-order-glass .payment-balance-due,
+.pos-order-glass .payment-amount-display {
+    color: rgb(var(--pos-order-accent-rgb)) !important;
+}
+
+.pos-order-glass .payment-key {
+    background: rgb(var(--pos-order-accent-rgb));
+    color: #fff;
+    border-radius: 0.5rem;
+}
+
+.pos-order-glass .payment-key:hover,
+.pos-order-glass .payment-key:focus {
+    background: rgba(var(--pos-order-accent-rgb), 0.9);
+    color: #fff;
+}
+
+.pos-order-glass .payment-method-btn,
+.pos-order-glass .payment-utility-btn {
+    background: rgba(var(--pos-order-accent-rgb), 0.1);
+    color: rgb(var(--pos-order-accent-rgb));
+    border: 1px solid rgba(var(--pos-order-accent-rgb), 0.18);
+    overflow: visible;
+}
+
+.pos-order-glass .payment-method-btn.active,
+.pos-order-glass .payment-utility-btn.active {
+    background: rgb(var(--pos-order-accent-rgb));
+    border-color: rgb(var(--pos-order-accent-rgb));
+    color: #fff;
+}
+
+.pos-order-glass .btn-pay,
+.pos-order-glass .pos-product-add-btn {
+    background: rgb(var(--pos-order-accent-rgb)) !important;
+    border-color: rgb(var(--pos-order-accent-rgb)) !important;
+    color: #fff !important;
+    box-shadow: 0 8px 16px rgba(var(--pos-order-accent-rgb), 0.28);
+}
+
+.pos-order-glass .btn-pay:hover,
+.pos-order-glass .pos-product-add-btn:hover {
+    background: rgba(var(--pos-order-accent-rgb), 0.9) !important;
+    border-color: rgba(var(--pos-order-accent-rgb), 0.9) !important;
+    color: #fff !important;
+}
+
+.pos-order-glass .category-card,
+.pos-order-glass .catalog-card.card {
+    background-color: rgba(255, 255, 255, 0.7) !important;
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--bs-primary-rgb), 0.12) 0%,
+        rgba(var(--bs-primary-rgb), 0.04) 45%,
+        rgba(var(--bs-primary-rgb), 0) 75%
+    ) !important;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.18) !important;
+    border-radius: var(--pos-glass-radius, 1rem) !important;
+    box-shadow:
+        0 8px 22px -12px rgba(var(--bs-primary-rgb), 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: blur(12px) saturate(150%);
+}
+
+.pos-order-glass .category-card .catalog-card-title,
+.pos-order-glass .catalog-card .catalog-card-title {
+    color: rgb(var(--bs-primary-rgb)) !important;
+}
+
+.pos-order-glass .catalog-header .input-group,
+.pos-order-glass .catalog-header .input-group-merge {
+    border-radius: 0.75rem;
+    overflow: hidden;
+    border: 1px solid rgba(var(--pos-order-accent-rgb), 0.2);
+    background-color: rgba(255, 255, 255, 0.72);
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--pos-order-accent-rgb), 0.08) 0%,
+        rgba(var(--pos-order-accent-rgb), 0) 70%
+    );
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.pos-order-glass .catalog-header .input-group .form-control,
+.pos-order-glass .catalog-header .input-group .input-group-text {
+    background: transparent;
+    border: 0;
+}
+
+.pos-order-glass .catalog-header .input-group .input-group-text {
+    color: rgb(var(--pos-order-accent-rgb));
+}
+
+.pos-order-glass .payment-panel {
+    border-color: rgba(var(--pos-tone-rgb), 0.16);
+    box-shadow: none;
+}
+
+[data-bs-theme="dark"] .pos-order-glass .order-entry-screen .pos-sidebar-card.pos-glass-card,
+[data-bs-theme="dark"] .pos-order-glass .order-entry-screen .order-management.pos-glass-card,
+[data-bs-theme="dark"] .pos-order-glass .payment-panel.pos-glass-card,
+[data-bs-theme="dark"] .pos-order-glass .product-detail-card.pos-glass-card,
+[data-bs-theme="dark"] .pos-order-glass .pos-product-card.pos-glass-card {
+    border-color: rgba(var(--bs-primary-rgb), 0.22);
+    background-color: rgba(255, 255, 255, 0.035);
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--bs-primary-rgb), 0.16) 0%,
+        rgba(var(--bs-primary-rgb), 0.05) 45%,
+        rgba(var(--bs-primary-rgb), 0) 74%
+    );
+    box-shadow:
+        0 10px 28px -14px rgba(0, 0, 0, 0.7),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* ── Create Order Glassy Refinement ───────── */
+
+/* 1. Glassy Select2 & Dropdowns Input Controls (excluding catalog search bar) */
+.pos-order-glass .select2-container--default .select2-selection--single,
+.pos-order-glass .select2-container--default .select2-selection--multiple,
+.pos-order-glass select.form-select {
+    min-height: 2.75rem;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.22) !important;
+    border-radius: 0.75rem !important;
+    background-color: rgba(255, 255, 255, 0.72) !important;
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--bs-primary-rgb), 0.06) 0%,
+        rgba(var(--bs-primary-rgb), 0.01) 60%,
+        rgba(255, 255, 255, 0.4) 100%
+    ) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: blur(12px) saturate(150%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.65),
+        0 4px 12px -6px rgba(var(--bs-primary-rgb), 0.12) !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.pos-order-glass .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 2.65rem !important;
+    padding-left: 1rem !important;
+    padding-right: 2.2rem !important;
+    color: var(--bs-heading-color, #2b2c40) !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+}
+
+.pos-order-glass .select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: rgba(68, 64, 80, 0.55) !important;
+    font-weight: 500 !important;
+}
+
+.pos-order-glass .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 2.65rem !important;
+    right: 0.75rem !important;
+}
+
+.pos-order-glass .select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: rgb(var(--bs-primary-rgb)) transparent transparent transparent !important;
+    border-width: 6px 5px 0 5px !important;
+    transition: transform 0.2s ease;
+}
+
+.pos-order-glass .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+    transform: rotate(180deg);
+    border-color: rgb(var(--bs-primary-rgb)) transparent transparent transparent !important;
+}
+
+/* Hover & Focus states on Select Controls */
+.pos-order-glass .select2-container--default:hover .select2-selection--single,
+.pos-order-glass .select2-container--default:hover .select2-selection--multiple,
+.pos-order-glass select.form-select:hover {
+    border-color: rgba(var(--bs-primary-rgb), 0.42) !important;
+    background-color: rgba(255, 255, 255, 0.85) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.75),
+        0 6px 16px -6px rgba(var(--bs-primary-rgb), 0.22) !important;
+}
+
+.pos-order-glass .select2-container--default.select2-container--focus .select2-selection--single,
+.pos-order-glass .select2-container--default.select2-container--focus .select2-selection--multiple,
+.pos-order-glass .select2-container--default.select2-container--open .select2-selection--single,
+.pos-order-glass .select2-container--default.select2-container--open .select2-selection--multiple,
+.pos-order-glass select.form-select:focus {
+    border-color: rgb(var(--bs-primary-rgb)) !important;
+    background-color: rgba(255, 255, 255, 0.94) !important;
+    box-shadow:
+        0 0 0 0.22rem rgba(var(--bs-primary-rgb), 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85) !important;
+    outline: none !important;
+}
+
+/* Multi-select Tags inside glass Select2 */
+.pos-order-glass .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.14) 0%, rgba(var(--bs-primary-rgb), 0.08) 100%) !important;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.25) !important;
+    border-radius: 999px !important;
+    color: rgb(var(--bs-primary-rgb)) !important;
+    font-weight: 700 !important;
+    font-size: 0.8rem !important;
+    padding: 0.2rem 0.65rem !important;
+    box-shadow: 0 2px 6px rgba(var(--bs-primary-rgb), 0.08) !important;
+}
+
+.pos-order-glass .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: rgba(var(--bs-primary-rgb), 0.7) !important;
+    margin-right: 0.35rem !important;
+    border-right: 0 !important;
+}
+
+.pos-order-glass .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    color: #ea5455 !important;
+    background: transparent !important;
+}
+
+/* 3. Open Dropdown Popup Menu (Glass Surface) */
+.select2-dropdown {
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.24) !important;
+    border-radius: 0.85rem !important;
+    background-color: rgba(255, 255, 255, 0.88) !important;
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--bs-primary-rgb), 0.09) 0%,
+        rgba(var(--bs-primary-rgb), 0.02) 40%,
+        rgba(255, 255, 255, 0.75) 100%
+    ) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+    backdrop-filter: blur(18px) saturate(180%) !important;
+    box-shadow:
+        0 18px 40px -10px rgba(var(--bs-primary-rgb), 0.28),
+        0 6px 20px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.75) !important;
+    overflow: hidden !important;
+    z-index: 10060 !important;
+    padding: 0.4rem 0 !important;
+    animation: posGlassDropdownFade 0.18s ease-out;
+}
+
+@keyframes posGlassDropdownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Search input inside open dropdown popup */
+.select2-dropdown .select2-search--dropdown {
+    padding: 0.5rem 0.65rem !important;
+}
+
+.select2-dropdown .select2-search--dropdown .select2-search__field {
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.2) !important;
+    border-radius: 0.6rem !important;
+    padding: 0.45rem 0.75rem !important;
+    background-color: rgba(255, 255, 255, 0.85) !important;
+    color: var(--bs-heading-color, #2b2c40) !important;
+    font-size: 0.85rem !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+    outline: none !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.select2-dropdown .select2-search--dropdown .select2-search__field:focus {
+    border-color: rgb(var(--bs-primary-rgb)) !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 0 0 0.18rem rgba(var(--bs-primary-rgb), 0.16) !important;
+}
+
+/* Results / Options List */
+.select2-dropdown .select2-results__options {
+    padding: 0.25rem 0.4rem !important;
+    max-height: 15rem !important;
+}
+
+.select2-dropdown .select2-results__option {
+    padding: 0.55rem 0.85rem !important;
+    margin: 0.15rem 0 !important;
+    border-radius: 0.55rem !important;
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+    color: var(--bs-body-color, #444050) !important;
+    transition: background-color 0.12s ease, color 0.12s ease, transform 0.12s ease;
+}
+
+/* Option Hover / Highlighted */
+.select2-dropdown .select2-results__option--highlighted[aria-selected],
+.select2-dropdown .select2-results__option--highlighted {
+    background: linear-gradient(
+        135deg,
+        rgb(var(--bs-primary-rgb)) 0%,
+        rgba(var(--bs-primary-rgb), 0.88) 100%
+    ) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 12px -3px rgba(var(--bs-primary-rgb), 0.45) !important;
+}
+
+/* Option Selected */
+.select2-dropdown .select2-results__option[aria-selected="true"] {
+    background-color: rgba(var(--bs-primary-rgb), 0.12) !important;
+    color: rgb(var(--bs-primary-rgb)) !important;
+    font-weight: 700 !important;
+}
+
+.select2-dropdown .select2-results__option[aria-selected="true"].select2-results__option--highlighted {
+    background: linear-gradient(
+        135deg,
+        rgb(var(--bs-primary-rgb)) 0%,
+        rgba(var(--bs-primary-rgb), 0.88) 100%
+    ) !important;
+    color: #ffffff !important;
+}
+
+/* 4. Glassy Modals & Offcanvas Drawers */
+.pos-order-glass .modal-content,
+.employee-orders-page .modal-content {
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.22) !important;
+    border-radius: 1.1rem !important;
+    background-color: rgba(255, 255, 255, 0.88) !important;
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--bs-primary-rgb), 0.1) 0%,
+        rgba(var(--bs-primary-rgb), 0.02) 50%,
+        rgba(255, 255, 255, 0.75) 100%
+    ) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    box-shadow: 0 20px 50px -10px rgba(var(--bs-primary-rgb), 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.75) !important;
+}
+
+.pos-order-glass .offcanvas,
+.employee-orders-page .offcanvas {
+    border-right: 1px solid rgba(var(--bs-primary-rgb), 0.22) !important;
+    background-color: rgba(255, 255, 255, 0.88) !important;
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--bs-primary-rgb), 0.1) 0%,
+        rgba(var(--bs-primary-rgb), 0.02) 50%,
+        rgba(255, 255, 255, 0.75) 100%
+    ) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    box-shadow: 0 10px 40px rgba(var(--bs-primary-rgb), 0.25) !important;
+}
+
+/* Dark Mode Overrides for Glassy Dropdowns */
+
+[data-bs-theme="dark"] .pos-order-glass .select2-container--default .select2-selection--single,
+[data-bs-theme="dark"] .pos-order-glass .select2-container--default .select2-selection--multiple,
+[data-bs-theme="dark"] .pos-order-glass select.form-select {
+    border-color: rgba(var(--bs-primary-rgb), 0.28) !important;
+    background-color: rgba(37, 41, 60, 0.65) !important;
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--bs-primary-rgb), 0.14) 0%,
+        rgba(var(--bs-primary-rgb), 0.03) 60%,
+        rgba(255, 255, 255, 0.02) 100%
+    ) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    color: #e2e8f0 !important;
+}
+
+[data-bs-theme="dark"] .select2-dropdown {
+    border-color: rgba(var(--bs-primary-rgb), 0.32) !important;
+    background-color: rgba(47, 51, 73, 0.92) !important;
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--bs-primary-rgb), 0.18) 0%,
+        rgba(var(--bs-primary-rgb), 0.04) 50%,
+        rgba(47, 51, 73, 0.95) 100%
+    ) !important;
+    box-shadow:
+        0 20px 45px -10px rgba(0, 0, 0, 0.7),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-bs-theme="dark"] .select2-dropdown .select2-search--dropdown .select2-search__field {
+    border-color: rgba(var(--bs-primary-rgb), 0.3) !important;
+    background-color: rgba(37, 41, 60, 0.8) !important;
+    color: #e2e8f0 !important;
+}
+
+[data-bs-theme="dark"] .select2-dropdown .select2-results__option {
+    color: #b6bee3 !important;
+}
+
+[data-bs-theme="dark"] .pos-order-glass .modal-content,
+[data-bs-theme="dark"] .employee-orders-page .modal-content,
+[data-bs-theme="dark"] .pos-order-glass .offcanvas,
+[data-bs-theme="dark"] .employee-orders-page .offcanvas {
+    background-color: rgba(47, 51, 73, 0.94) !important;
+    border-color: rgba(var(--bs-primary-rgb), 0.3) !important;
+    box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }

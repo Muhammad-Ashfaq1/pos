@@ -3,15 +3,16 @@
 @section('title', 'Orders')
 
 @push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}">
 @endpush
 
 @section('content')
-    <div class="employee-orders-page">
+    <div class="employee-orders-page employee-orders-glass">
         <x-employee.page-header title="Orders" :back-url="route($dashboardRoute ?? 'employee.dashboard')" back-title="Back to dashboard" />
 
         <div class="employee-orders-layout">
-            <aside class="employee-orders-panel employee-orders-filters">
+            <aside class="employee-orders-panel employee-orders-filters pos-glass-card pos-tone-primary">
                 <button
                     type="button"
                     class="employee-orders-action"
@@ -38,7 +39,7 @@
                 </label>
             </aside>
 
-            <section class="employee-orders-panel employee-orders-results">
+            <section class="employee-orders-panel employee-orders-results pos-glass-card pos-tone-warning">
                 <div class="employee-orders-tabs" role="tablist" aria-label="Order filters">
                     <button type="button" class="employee-orders-tab" data-order-tab="today">
                         Today (<span data-order-count="today">0</span>)

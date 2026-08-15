@@ -3,6 +3,7 @@
 @section('title', 'Order Returns')
 
 @push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}">
     <style>
         .employee-return-summary-value {
@@ -33,11 +34,11 @@
 @endpush
 
 @section('content')
-    <div class="employee-orders-page">
+    <div class="employee-orders-page employee-orders-glass">
         <x-employee.page-header title="Order Returns" :back-url="route($dashboardRoute ?? 'employee.dashboard')" back-title="Back to dashboard" />
 
         <div class="employee-orders-layout">
-            <aside class="employee-orders-panel employee-orders-filters">
+            <aside class="employee-orders-panel employee-orders-filters pos-glass-card pos-tone-info">
                 <div class="employee-returns-policy">
                     <span class="employee-returns-policy-icon">
                         <i class="ti tabler-rotate-2"></i>
@@ -54,7 +55,7 @@
                 </label>
             </aside>
 
-            <section class="employee-orders-panel employee-orders-results">
+            <section class="employee-orders-panel employee-orders-results pos-glass-card pos-tone-primary">
                 <div class="employee-orders-tabs" role="tablist" aria-label="Return views">
                     <button type="button" class="employee-orders-tab active" data-returns-tab="eligible">
                         Eligible for Return (<span data-returns-count="eligible">0</span>)

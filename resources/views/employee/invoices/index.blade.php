@@ -3,15 +3,16 @@
 @section('title', 'Invoices')
 
 @push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/employee-invoices.css') }}?v={{ filemtime(public_path('assets/css/employee-invoices.css')) }}">
 @endpush
 
 @section('content')
-    <div class="employee-invoices-page">
+    <div class="employee-invoices-page employee-orders-glass">
         <x-employee.page-header title="Invoices" :back-url="route($dashboardRoute ?? 'employee.dashboard')" back-title="Back to dashboard" />
 
-        <div class="card employee-invoices-card border-0 shadow-sm">
+        <div class="employee-invoices-card pos-glass-card pos-tone-success border-0">
             <div class="card-body">
                 <div class="employee-invoices-toolbar">
                     <div>

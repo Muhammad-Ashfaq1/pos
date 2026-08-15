@@ -2,21 +2,28 @@
 
 @section('title', !empty($invoiceMode) ? 'Create Invoice' : 'Create New Order')
 
+@php
+    $invoiceMode = ! empty($invoiceMode);
+    $pageBackUrl = $invoiceMode
+        ? route($orderRoutes['invoices_index'])
+        : route($dashboardRoute ?? 'employee.dashboard');
+    $pageBackTitle = $invoiceMode ? 'Back to invoices' : 'Back to dashboard';
+    $pageTitle = $invoiceMode ? 'Create Invoice' : 'New Order';
+    $sidebarCardClass = 'pos-glass-card pos-tone-primary h-100 pos-sidebar-card';
+    $catalogCardClass = 'pos-glass-card pos-tone-primary h-100 p-4 order-management';
+    $paymentCardClass = 'pos-glass-card pos-tone-primary payment-panel h-100';
+    $paymentSideCardClass = 'pos-glass-card pos-tone-primary payment-panel h-100';
+    $productDetailCardClass = 'pos-glass-card pos-tone-primary product-detail-card';
+@endphp
+
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/pos.css') }}?v={{ filemtime(public_path('assets/css/pos.css')) }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}" />
 @endpush
 
 @section('content')
-    @php
-        $invoiceMode = ! empty($invoiceMode);
-        $pageBackUrl = $invoiceMode
-            ? route($orderRoutes['invoices_index'])
-            : route($dashboardRoute ?? 'employee.dashboard');
-        $pageBackTitle = $invoiceMode ? 'Back to invoices' : 'Back to dashboard';
-        $pageTitle = $invoiceMode ? 'Create Invoice' : 'New Order';
-    @endphp
-    <div class="employee-orders-page" @if($invoiceMode) data-invoice-mode="1" @endif>
+    <div class="pos-order-glass employee-orders-page" @if($invoiceMode) data-invoice-mode="1" @endif>
         <x-employee.page-header :title="$pageTitle" :back-url="$pageBackUrl" :back-title="$pageBackTitle" />
 
         <div class="order-entry-screen">
@@ -24,7 +31,7 @@
             <div class="row g-4">
 
                 <div class="col-md-4">
-                    <div class="card shadow-sm border-0 h-100 pos-sidebar-card">
+                    <div class="{{ $sidebarCardClass }}">
                         <div class="card-body d-flex flex-column">
 
                             <div class="mb-3">
@@ -235,7 +242,7 @@
                 </div>
 
                 <div class="col-md-8">
-                    <div class="card shadow-sm border-0 h-100 p-4 order-management">
+                    <div class="{{ $catalogCardClass }}">
 
                         {{-- Header (back button + dynamic title + unified search) --}}
                         <div class="d-flex justify-content-between align-items-center mb-4 catalog-header">
@@ -302,7 +309,7 @@
 
                             <div class="row g-3 product-detail-grid">
                                 <div class="col-md-4">
-                                    <div class="card border-0 shadow-sm rounded-4 product-detail-card">
+                                    <div class="{{ $productDetailCardClass }}">
                                         <div class="card-body p-3">
                                             <div class="d-flex align-items-center gap-3 mb-3">
                                                 <div class="avatar avatar-lg flex-shrink-0">
@@ -312,7 +319,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="flex-grow-1 min-w-0">
-                                                    <h6 class="text-wrap fw-bold text-dark mb-1 text-truncate product-name">Product Name</h6>
+                                                    <h6 class="text-wrap fw-bold mb-1 text-truncate product-name">Product Name</h6>
                                                     <div class="d-flex gap-1 flex-wrap">
                                                         <small class="badge bg-label-secondary px-2 rounded-pill fs-tiny">SKU:
                                                             <span class="product-sku">—</span></small>
@@ -375,7 +382,7 @@
 
             <div class="row g-4 payment-layout">
                 <div class="col-lg-6">
-                    <div class="card payment-panel h-100">
+                    <div class="{{ $paymentCardClass }}">
                         <div class="card-body d-flex flex-column">
                             <div class="payment-summary">
                                 <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
@@ -469,7 +476,7 @@
                 </div>
 
                 <div class="col-lg-6">
-                    <div class="card payment-panel h-100">
+                    <div class="{{ $paymentSideCardClass }}">
                         <div class="card-body d-flex flex-column">
                             <h5 class="fw-bold border-bottom pb-3 mb-4">Payment Amount</h5>
 

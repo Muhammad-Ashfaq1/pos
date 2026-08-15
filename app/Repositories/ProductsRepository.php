@@ -11,6 +11,7 @@ use App\Repositories\Interface\ProductRepositoryInterface;
 use App\Repositories\Support\Concerns\HandlesCatalogSlugs;
 use App\Services\ImageService;
 use App\Support\Currency;
+use App\Support\ProductSurface;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -28,9 +29,15 @@ class ProductsRepository implements ProductRepositoryInterface
 
     public function index(): View
     {
+        $surface = ProductSurface::fromRequest();
+
         return view('tenant.ecommerce.products.index', [
-            'listingUrl' => route('tenant.ecommerce.products.listing'),
-            'editUrlTemplate' => route('tenant.ecommerce.products.edit', ['product' => '__PRODUCT__']),
+            'layout' => $surface['layout'],
+            'dashboardRoute' => $surface['dashboard_route'],
+            'isEmployeeSurface' => $surface['is_employee'],
+            'listingUrl' => ProductSurface::route('listing'),
+            'editUrlTemplate' => ProductSurface::route('edit', ['product' => '__PRODUCT__']),
+            'saveUrl' => ProductSurface::route('save'),
             'categoriesDropdownUrl' => route('tenant.ecommerce.dropdowns.categories'),
             'subCategoriesDropdownUrl' => route('tenant.ecommerce.dropdowns.subcategories'),
             'discountDropdownUrl' => route('tenant.ecommerce.dropdowns.discounts'),
