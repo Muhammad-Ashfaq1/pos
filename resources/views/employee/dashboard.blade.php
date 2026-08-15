@@ -90,6 +90,7 @@
         };
     </script>
     <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+    <script src="{{ asset('assets/js/shared/sales-mix-charts.js') }}?v={{ filemtime(public_path('assets/js/shared/sales-mix-charts.js')) }}"></script>
     <script src="{{ asset('assets/js/employee/dashboard.js') }}?v={{ filemtime(public_path('assets/js/employee/dashboard.js')) }}"></script>
     <script>
         $(function() {

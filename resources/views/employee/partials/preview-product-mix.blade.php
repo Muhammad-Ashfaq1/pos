@@ -56,10 +56,10 @@
             </div>
 
             <div class="product-mix-breakdown-grid">
-                <div class="product-mix-panel product-mix-panel--products pos-glass-card pos-tone-success">
+                <div class="product-mix-panel product-mix-panel--products pos-glass-card pos-tone-warning">
                     <div class="product-mix-panel-head">
-                        <span class="product-mix-panel-icon"><i class="ti tabler-chart-bar" aria-hidden="true"></i></span>
-                        <h4 class="product-mix-panel-title">Top Products</h4>
+                        <span class="product-mix-panel-icon product-mix-panel-icon--warning"><i class="ti tabler-chart-bar" aria-hidden="true"></i></span>
+                        <h4 class="product-mix-panel-title">Top Selling Products</h4>
                     </div>
 
                     <div class="product-mix-empty-state" data-product-mix-top-products-empty @if(count($topProducts)) hidden @endif>
@@ -68,17 +68,16 @@
                         <p class="product-mix-empty-text">Rankings appear after your first completed order.</p>
                     </div>
 
-                    {{-- Charts/lists hydrate from #employeeProductMixData via dashboard.js --}}
+                    {{-- Admin-style Apex hbar, sized for this card --}}
                     <div class="product-mix-product-body" data-product-mix-top-body @if(!count($topProducts)) hidden @endif>
-                        <div class="product-mix-hbar" data-product-mix-top-chart></div>
-                        <ul class="product-mix-rank-list product-mix-rank-list--compact" data-product-mix-top-list></ul>
+                        <div id="employeeTopProductsChart" data-product-mix-top-chart></div>
                     </div>
                 </div>
 
-                <div class="product-mix-panel product-mix-panel--categories pos-glass-card pos-tone-info">
+                <div class="product-mix-panel product-mix-panel--categories pos-glass-card pos-tone-primary">
                     <div class="product-mix-panel-head">
-                        <span class="product-mix-panel-icon product-mix-panel-icon--info"><i class="ti tabler-chart-donut-3" aria-hidden="true"></i></span>
-                        <h4 class="product-mix-panel-title">By Category</h4>
+                        <span class="product-mix-panel-icon product-mix-panel-icon--primary"><i class="ti tabler-chart-bar" aria-hidden="true"></i></span>
+                        <h4 class="product-mix-panel-title">Sales by Category</h4>
                     </div>
 
                     <div class="product-mix-empty-state" data-product-mix-category-empty @if(count($salesByCategory)) hidden @endif>
@@ -87,11 +86,9 @@
                         <p class="product-mix-empty-text">Category breakdown fills in as sales come through.</p>
                     </div>
 
+                    {{-- Admin-style Apex column chart, sized for this card --}}
                     <div class="product-mix-category-body" data-product-mix-category-body @if(!count($salesByCategory)) hidden @endif>
-                        <div class="product-mix-chart-wrap" data-product-mix-category-wrap>
-                            <div id="employeeCategoryMixChart" data-product-mix-category-chart></div>
-                        </div>
-                        <ul class="product-mix-rank-list product-mix-rank-list--compact" data-product-mix-category-list></ul>
+                        <div id="employeeCategorySalesChart" data-product-mix-category-chart></div>
                     </div>
                 </div>
             </div>

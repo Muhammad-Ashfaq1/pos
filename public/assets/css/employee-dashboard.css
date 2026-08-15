@@ -133,6 +133,16 @@
     font-size: 1rem;
 }
 
+.product-mix-panel-icon--warning {
+    background: rgba(255, 159, 67, 0.12);
+    color: #ff9f43;
+}
+
+.product-mix-panel-icon--primary {
+    background: rgba(115, 103, 240, 0.12);
+    color: #7367f0;
+}
+
 .product-mix-panel-icon--info {
     background: rgba(0, 207, 232, 0.12);
     color: #00cfe8;
@@ -160,104 +170,33 @@
 .product-mix-category-body,
 .product-mix-product-body {
     flex: 1 1 auto;
-    display: grid;
-    grid-template-rows: 230px 1fr;
-    gap: 0.65rem;
     min-height: 0;
+    width: 100%;
 }
 
-.product-mix-chart-wrap,
-.product-mix-hbar,
-#employeeCategoryMixChart {
-    min-height: 230px;
-    max-height: 230px;
-    height: 230px;
+#employeeTopProductsChart,
+#employeeCategorySalesChart {
+    width: 100%;
+    min-height: 220px;
 }
 
-.product-mix-chart-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.product-mix-hbar {
-    display: grid;
-    align-content: center;
-    gap: 0.55rem;
-    padding: 0.1rem 0;
-}
-
-.product-mix-hbar-row {
-    display: block;
-    cursor: pointer;
-}
-
-.product-mix-hbar-track {
-    display: block;
-    height: 1.45rem;
-    border-radius: 0.4rem;
-    background: rgba(47, 43, 61, 0.08);
-    overflow: hidden;
-}
-
-.product-mix-hbar-fill {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    min-width: 2.75rem;
-    border-radius: 0.4rem;
-}
-
-.product-mix-hbar-value {
-    font-size: 0.7rem;
-    font-weight: 700;
-    line-height: 1;
-    color: #fff;
-    white-space: nowrap;
-    pointer-events: none;
-}
-
-.product-mix-hbar-tooltip {
-    position: fixed !important;
-    z-index: 1080;
-    pointer-events: none;
-    color: #5e5873;
-}
-
-.product-mix-hbar-tooltip .apexcharts-tooltip-title {
-    font-weight: 600;
-    line-height: 1.3;
-}
-
-.product-mix-hbar-tooltip .apexcharts-tooltip-series-group {
-    align-items: center;
-}
-
-.product-mix-hbar-tooltip .apexcharts-tooltip-marker {
-    flex-shrink: 0;
-    top: 0;
+#employeeTopProductsChart .apexcharts-canvas,
+#employeeCategorySalesChart .apexcharts-canvas {
+    margin: 0 auto;
 }
 
 .product-mix-breakdown,
 .product-mix-breakdown-grid,
 #employee-product-mix.pos-glass-card,
 .product-mix-panel--categories.pos-glass-card,
+.product-mix-panel--products.pos-glass-card,
 .product-mix-category-body,
-.product-mix-chart-wrap,
-#employeeCategoryMixChart,
-#employeeCategoryMixChart .apexcharts-canvas {
+.product-mix-product-body,
+#employeeTopProductsChart,
+#employeeTopProductsChart .apexcharts-canvas,
+#employeeCategorySalesChart,
+#employeeCategorySalesChart .apexcharts-canvas {
     overflow: visible;
-}
-
-#employeeCategoryMixChart .apexcharts-tooltip {
-    z-index: 40;
-}
-
-#employeeCategoryMixChart .apexcharts-tooltip-title,
-#employeeCategoryMixChart .apexcharts-tooltip-text-y-label,
-#employeeCategoryMixChart .apexcharts-tooltip-text-y-value {
-    color: var(--mix-slice-color, var(--bs-heading-color)) !important;
 }
 
 .product-mix-rank-list,
@@ -393,10 +332,6 @@
     background: rgba(255, 255, 255, 0.04);
     border-color: rgba(255, 255, 255, 0.08);
     box-shadow: none;
-}
-
-[data-bs-theme="dark"] .product-mix-hbar-track {
-    background: rgba(255, 255, 255, 0.08);
 }
 
 .pos-ed-banner {

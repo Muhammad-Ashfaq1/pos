@@ -156,7 +156,7 @@ final class ProductMixCards
      */
     public static function chartPalette(): array
     {
-        return ['#7367F0', '#28C76F', '#FF9F43', '#00CFE8', '#EA5455', '#A8AAAE'];
+        return ['#7367F0', '#28C76F', '#FF9F43', '#00CFE8', '#EA5455', '#A8AAAE', '#826AF9', '#FFB400'];
     }
 
     /**
