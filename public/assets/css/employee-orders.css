@@ -1,4 +1,4 @@
-.employee-orders-page {
+﻿.employee-orders-page {
     /* max-width: 92rem; */
     margin: 0 auto;
     padding: 0.35rem 0 2rem;
@@ -1489,15 +1489,29 @@ a.employee-orders-tab:hover,
     color: #e2e8f0;
 }
 
-/* Create Order — exact admin dashboard glass + theme colors */
+/* Create Order — match admin dashboard glass (no inset outer canvas) */
+
+.pos-order-glass.employee-orders-page {
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+}
 
 .pos-order-glass {
     --pos-order-accent-rgb: var(--bs-primary-rgb);
     --pos-tone-rgb: var(--bs-primary-rgb);
-    background:
-        radial-gradient(ellipse 70% 45% at 0% 0%, rgba(var(--bs-primary-rgb), 0.08), transparent 55%),
-        radial-gradient(ellipse 55% 40% at 100% 20%, rgba(var(--bs-primary-rgb), 0.05), transparent 50%);
-    border-radius: 1rem;
+}
+
+.pos-order-glass .employee-orders-heading {
+    margin-top: 0;
+    margin-bottom: 1.25rem;
+}
+
+/* Employee portal: tighten top gap under header like admin content */
+.employee-admin-preview .preview-main:has(.pos-order-glass) {
+    padding-top: 0.35rem;
 }
 
 .pos-order-glass .pos-glass-card > .card-body,
@@ -1508,6 +1522,7 @@ a.employee-orders-tab:hover,
     border: 0;
 }
 
+/* Let stock pos-glass-card win over pos.css solid chrome */
 .pos-order-glass .order-entry-screen .pos-sidebar-card.pos-glass-card,
 .pos-order-glass .order-entry-screen .order-management.pos-glass-card,
 .pos-order-glass .payment-panel.pos-glass-card,
@@ -1516,11 +1531,11 @@ a.employee-orders-tab:hover,
     --pos-tone-rgb: var(--bs-primary-rgb);
     border: 1px solid rgba(var(--bs-primary-rgb), 0.16);
     border-radius: var(--pos-glass-radius, 1rem);
-    background-color: rgba(255, 255, 255, 0.68);
+    background-color: rgba(255, 255, 255, 0.72);
     background-image: linear-gradient(
         135deg,
-        rgba(var(--bs-primary-rgb), 0.12) 0%,
-        rgba(var(--bs-primary-rgb), 0.04) 42%,
+        rgba(var(--bs-primary-rgb), 0.1) 0%,
+        rgba(var(--bs-primary-rgb), 0.03) 42%,
         rgba(var(--bs-primary-rgb), 0) 72%
     );
     -webkit-backdrop-filter: blur(16px) saturate(150%);
@@ -1538,7 +1553,7 @@ a.employee-orders-tab:hover,
 .pos-order-glass .product-detail-card.pos-glass-card:hover,
 .pos-order-glass .pos-product-card.pos-glass-card:hover {
     border-color: rgba(var(--bs-primary-rgb), 0.3);
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.82);
     box-shadow:
         0 14px 30px -14px rgba(var(--bs-primary-rgb), 0.44),
         0 1px 2px rgba(47, 43, 61, 0.05),
@@ -1548,8 +1563,8 @@ a.employee-orders-tab:hover,
 .pos-order-glass .pos-glass-card::after {
     background: radial-gradient(
         circle,
-        rgba(var(--bs-primary-rgb), 0.14) 0%,
-        rgba(var(--bs-primary-rgb), 0.05) 45%,
+        rgba(var(--bs-primary-rgb), 0.13) 0%,
+        rgba(var(--bs-primary-rgb), 0.045) 45%,
         rgba(var(--bs-primary-rgb), 0) 70%
     );
 }
@@ -1902,7 +1917,7 @@ a.employee-orders-tab:hover,
     color: #ffffff !important;
 }
 
-/* 4. Glassy Modals & Offcanvas Drawers */
+/* 4. Glassy Modals & Offcanvas (discount / gift / reward / service fee / email) */
 .pos-order-glass .modal-content,
 .employee-orders-page .modal-content {
     border: 1px solid rgba(var(--bs-primary-rgb), 0.22) !important;
@@ -1932,6 +1947,75 @@ a.employee-orders-tab:hover,
     -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
     backdrop-filter: blur(20px) saturate(180%) !important;
     box-shadow: 0 10px 40px rgba(var(--bs-primary-rgb), 0.25) !important;
+}
+
+.pos-order-glass .offcanvas-header,
+.pos-order-glass .modal-header,
+.pos-order-glass .modal-footer {
+    border-color: rgba(var(--bs-primary-rgb), 0.14) !important;
+    background: transparent !important;
+}
+
+.pos-order-glass .order-card-option,
+.pos-order-glass .order-discount-item,
+.pos-order-glass .service-fee-item,
+.pos-order-glass .selected-service-fee-row,
+.pos-order-glass .service-fee-picker-panel,
+.pos-order-glass .custom-service-fee-section {
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.16) !important;
+    border-radius: var(--pos-glass-radius, 1rem) !important;
+    background-color: rgba(255, 255, 255, 0.72) !important;
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--bs-primary-rgb), 0.1) 0%,
+        rgba(var(--bs-primary-rgb), 0.03) 42%,
+        rgba(var(--bs-primary-rgb), 0) 72%
+    ) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(150%) !important;
+    backdrop-filter: blur(14px) saturate(150%) !important;
+    box-shadow:
+        0 8px 22px -12px rgba(var(--bs-primary-rgb), 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55) !important;
+}
+
+.pos-order-glass .order-card-option:hover,
+.pos-order-glass .order-card-option:has(.order-card-radio:checked) {
+    border-color: rgba(var(--bs-primary-rgb), 0.32) !important;
+    background-color: rgba(255, 255, 255, 0.84) !important;
+    box-shadow:
+        0 12px 26px -12px rgba(var(--bs-primary-rgb), 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.65) !important;
+}
+
+.pos-order-glass .order-card-option-icon {
+    background: rgba(var(--bs-primary-rgb), 0.12) !important;
+    color: rgb(var(--bs-primary-rgb)) !important;
+}
+
+.pos-order-glass .order-card-list [data-order-card-empty],
+.pos-order-glass .selected-service-fee-empty,
+.pos-order-glass .service-fee-empty {
+    border: 1px dashed rgba(var(--bs-primary-rgb), 0.28) !important;
+    border-radius: var(--pos-glass-radius, 1rem) !important;
+    background: rgba(var(--bs-primary-rgb), 0.04) !important;
+    box-shadow: none !important;
+}
+
+.pos-order-glass .offcanvas .form-control,
+.pos-order-glass .offcanvas .form-select,
+.pos-order-glass .modal .form-control,
+.pos-order-glass .modal .form-select {
+    border-color: rgba(var(--bs-primary-rgb), 0.18) !important;
+    background-color: rgba(255, 255, 255, 0.72) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.pos-order-glass .offcanvas .form-control:focus,
+.pos-order-glass .offcanvas .form-select:focus,
+.pos-order-glass .modal .form-control:focus,
+.pos-order-glass .modal .form-select:focus {
+    border-color: rgba(var(--bs-primary-rgb), 0.45) !important;
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15) !important;
 }
 
 /* Dark Mode Overrides for Glassy Dropdowns */
@@ -1982,4 +2066,24 @@ a.employee-orders-tab:hover,
     background-color: rgba(47, 51, 73, 0.94) !important;
     border-color: rgba(var(--bs-primary-rgb), 0.3) !important;
     box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-bs-theme="dark"] .pos-order-glass .order-card-option,
+[data-bs-theme="dark"] .pos-order-glass .order-discount-item,
+[data-bs-theme="dark"] .pos-order-glass .service-fee-item,
+[data-bs-theme="dark"] .pos-order-glass .selected-service-fee-row,
+[data-bs-theme="dark"] .pos-order-glass .service-fee-picker-panel,
+[data-bs-theme="dark"] .pos-order-glass .custom-service-fee-section {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(var(--bs-primary-rgb), 0.24) !important;
+    box-shadow: 0 10px 28px -14px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+[data-bs-theme="dark"] .pos-order-glass .offcanvas .form-control,
+[data-bs-theme="dark"] .pos-order-glass .offcanvas .form-select,
+[data-bs-theme="dark"] .pos-order-glass .modal .form-control,
+[data-bs-theme="dark"] .pos-order-glass .modal .form-select {
+    background-color: rgba(37, 41, 60, 0.72) !important;
+    border-color: rgba(var(--bs-primary-rgb), 0.28) !important;
+    color: #e2e8f0 !important;
 }

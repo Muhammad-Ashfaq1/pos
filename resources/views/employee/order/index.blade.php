@@ -1,6 +1,7 @@
 @extends($layout ?? 'layouts.employee-portal')
 
 @section('title', 'Orders')
+@section('content_container_class', 'container-fluid flex-grow-1 container-p-y')
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}">
