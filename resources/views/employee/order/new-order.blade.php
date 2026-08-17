@@ -525,104 +525,104 @@
                 </div>
             </div>
         </div>
-
-        @include('employee.order.sidebar-modal')
-        @include('employee.cards.partials.create-modals', [
-            'products' => $cardFormProducts ?? collect(),
-            'currencySymbol' => $currencySymbol ?? \App\Support\Currency::symbol(),
-        ])
-        @include('tenant.ecommerce.customers.partials.save-modal')
-        @if($vehicleRequired)
-            @include('tenant.ecommerce.vehicles.partials.save-modal')
-        @endif
-
-        <div class="modal fade" id="draftShareModal" tabindex="-1" aria-labelledby="draftShareModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content text-start">
-                    <div class="modal-header border-bottom">
-                        <h5 class="modal-title fw-bold" id="draftShareModalLabel">Share Estimate PDF</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form id="draft-share-form">
-                        <div class="modal-body">
-                            <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" role="alert">
-                                <i class="ti tabler-info-circle me-2 fs-5"></i>
-                                <span>This saves the current cart as an estimate, then emails the PDF.</span>
-                            </div>
-                            <label for="draft_share_email" class="form-label fw-bold">Recipient Email <span class="text-danger">*</span></label>
-                            <input type="email" id="draft_share_email" name="email" class="form-control" required placeholder="name@example.com">
-                        </div>
-                        <div class="modal-footer border-top">
-                            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary fw-bold btn-submit-draft-share">Send PDF</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal fade" id="emailReceiptModal" tabindex="-1" aria-labelledby="emailReceiptModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content text-start border-0 shadow">
-                    <div class="modal-header border-0 pb-0">
-                        <h5 class="modal-title fw-bold" id="emailReceiptModalLabel">Email Receipt</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form id="email-receipt-form">
-                        <div class="modal-body pt-3">
-                            <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" role="alert">
-                                <i class="ti tabler-info-circle me-2 fs-5"></i>
-                                <span>After checkout, the invoice PDF will be emailed to this address.</span>
-                            </div>
-                            <label for="email_receipt_email" class="form-label fw-bold">Recipient Email <span class="text-danger">*</span></label>
-                            <input type="email" id="email_receipt_email" name="email" class="form-control" required placeholder="name@example.com" autocomplete="email">
-                            <div class="invalid-feedback">Please enter a valid email address.</div>
-                        </div>
-                        <div class="modal-footer border-0 pt-0">
-                            <button type="button" class="btn btn-label-secondary btn-clear-email-receipt">Don't Email</button>
-                            <button type="submit" class="btn btn-primary fw-bold btn-save-email-receipt">Save Email</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        @if(! empty($invoiceMode))
-        <div class="modal fade" id="invoiceSaveSendModal" tabindex="-1" aria-labelledby="invoiceSaveSendModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content text-start">
-                    <div class="modal-header border-bottom">
-                        <h5 class="modal-title fw-bold" id="invoiceSaveSendModalLabel">Save &amp; Send Invoice</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form id="invoice-save-send-form">
-                        <div class="modal-body">
-                            <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" role="alert">
-                                <i class="ti tabler-info-circle me-2 fs-5"></i>
-                                <span>This saves the invoice, then emails the PDF. You can edit the recipient address before sending.</span>
-                            </div>
-                            <label for="invoice_save_send_email" class="form-label fw-bold">
-                                Recipient Email <span class="text-danger">*</span>
-                            </label>
-                            <input
-                                type="email"
-                                id="invoice_save_send_email"
-                                name="email"
-                                class="form-control"
-                                required
-                                placeholder="name@example.com"
-                                autocomplete="email">
-                        </div>
-                        <div class="modal-footer border-top">
-                            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary fw-bold btn-submit-invoice-save-send">Save &amp; Send</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        @endif
     </div>
+
+    @include('employee.order.sidebar-modal')
+    @include('employee.cards.partials.create-modals', [
+        'products' => $cardFormProducts ?? collect(),
+        'currencySymbol' => $currencySymbol ?? \App\Support\Currency::symbol(),
+    ])
+    @include('tenant.ecommerce.customers.partials.save-modal')
+    @if($vehicleRequired)
+        @include('tenant.ecommerce.vehicles.partials.save-modal')
+    @endif
+
+    <div class="modal fade" id="draftShareModal" tabindex="-1" aria-labelledby="draftShareModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-start">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold" id="draftShareModalLabel">Share Estimate PDF</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="draft-share-form">
+                    <div class="modal-body">
+                        <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" role="alert">
+                            <i class="ti tabler-info-circle me-2 fs-5"></i>
+                            <span>This saves the current cart as an estimate, then emails the PDF.</span>
+                        </div>
+                        <label for="draft_share_email" class="form-label fw-bold">Recipient Email <span class="text-danger">*</span></label>
+                        <input type="email" id="draft_share_email" name="email" class="form-control" required placeholder="name@example.com">
+                    </div>
+                    <div class="modal-footer border-top">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary fw-bold btn-submit-draft-share">Send PDF</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="emailReceiptModal" tabindex="-1" aria-labelledby="emailReceiptModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-start border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="emailReceiptModalLabel">Email Receipt</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="email-receipt-form">
+                    <div class="modal-body pt-3">
+                        <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" role="alert">
+                            <i class="ti tabler-info-circle me-2 fs-5"></i>
+                            <span>After checkout, the invoice PDF will be emailed to this address.</span>
+                        </div>
+                        <label for="email_receipt_email" class="form-label fw-bold">Recipient Email <span class="text-danger">*</span></label>
+                        <input type="email" id="email_receipt_email" name="email" class="form-control" required placeholder="name@example.com" autocomplete="email">
+                        <div class="invalid-feedback">Please enter a valid email address.</div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-label-secondary btn-clear-email-receipt">Don't Email</button>
+                        <button type="submit" class="btn btn-primary fw-bold btn-save-email-receipt">Save Email</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @if(! empty($invoiceMode))
+    <div class="modal fade" id="invoiceSaveSendModal" tabindex="-1" aria-labelledby="invoiceSaveSendModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-start">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold" id="invoiceSaveSendModalLabel">Save &amp; Send Invoice</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="invoice-save-send-form">
+                    <div class="modal-body">
+                        <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" role="alert">
+                            <i class="ti tabler-info-circle me-2 fs-5"></i>
+                            <span>This saves the invoice, then emails the PDF. You can edit the recipient address before sending.</span>
+                        </div>
+                        <label for="invoice_save_send_email" class="form-label fw-bold">
+                            Recipient Email <span class="text-danger">*</span>
+                        </label>
+                        <input
+                            type="email"
+                            id="invoice_save_send_email"
+                            name="email"
+                            class="form-control"
+                            required
+                            placeholder="name@example.com"
+                            autocomplete="email">
+                    </div>
+                    <div class="modal-footer border-top">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary fw-bold btn-submit-invoice-save-send">Save &amp; Send</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
 @endsection
 
 @push('page-script')

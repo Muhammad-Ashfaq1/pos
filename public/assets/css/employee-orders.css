@@ -1,4 +1,4 @@
-.employee-orders-page {
+﻿.employee-orders-page {
     /* max-width: 92rem; */
     margin: 0 auto;
     padding: 0.35rem 0 2rem;
@@ -1816,8 +1816,8 @@ a.employee-orders-tab:hover,
     background: transparent !important;
 }
 
-/* 3. Open Dropdown Popup Menu (Glass Surface) */
-.select2-dropdown {
+/* 3. Open dropdown menu — Create Order only (Select2 appends this to body) */
+.select2-dropdown.pos-order-select2 {
     border: 1px solid rgba(var(--bs-primary-rgb), 0.24) !important;
     border-radius: 0.85rem !important;
     background-color: rgba(255, 255, 255, 0.88) !important;
@@ -1850,12 +1850,11 @@ a.employee-orders-tab:hover,
     }
 }
 
-/* Search input inside open dropdown popup */
-.select2-dropdown .select2-search--dropdown {
+.select2-dropdown.pos-order-select2 .select2-search--dropdown {
     padding: 0.5rem 0.65rem !important;
 }
 
-.select2-dropdown .select2-search--dropdown .select2-search__field {
+.select2-dropdown.pos-order-select2 .select2-search--dropdown .select2-search__field {
     border: 1px solid rgba(var(--bs-primary-rgb), 0.2) !important;
     border-radius: 0.6rem !important;
     padding: 0.45rem 0.75rem !important;
@@ -1867,19 +1866,18 @@ a.employee-orders-tab:hover,
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.select2-dropdown .select2-search--dropdown .select2-search__field:focus {
+.select2-dropdown.pos-order-select2 .select2-search--dropdown .select2-search__field:focus {
     border-color: rgb(var(--bs-primary-rgb)) !important;
     background-color: #ffffff !important;
     box-shadow: 0 0 0 0.18rem rgba(var(--bs-primary-rgb), 0.16) !important;
 }
 
-/* Results / Options List */
-.select2-dropdown .select2-results__options {
+.select2-dropdown.pos-order-select2 .select2-results__options {
     padding: 0.25rem 0.4rem !important;
     max-height: 15rem !important;
 }
 
-.select2-dropdown .select2-results__option {
+.select2-dropdown.pos-order-select2 .select2-results__option {
     padding: 0.55rem 0.85rem !important;
     margin: 0.15rem 0 !important;
     border-radius: 0.55rem !important;
@@ -1889,9 +1887,8 @@ a.employee-orders-tab:hover,
     transition: background-color 0.12s ease, color 0.12s ease, transform 0.12s ease;
 }
 
-/* Option Hover / Highlighted */
-.select2-dropdown .select2-results__option--highlighted[aria-selected],
-.select2-dropdown .select2-results__option--highlighted {
+.select2-dropdown.pos-order-select2 .select2-results__option--highlighted[aria-selected],
+.select2-dropdown.pos-order-select2 .select2-results__option--highlighted {
     background: linear-gradient(
         135deg,
         rgb(var(--bs-primary-rgb)) 0%,
@@ -1902,14 +1899,13 @@ a.employee-orders-tab:hover,
     box-shadow: 0 4px 12px -3px rgba(var(--bs-primary-rgb), 0.45) !important;
 }
 
-/* Option Selected */
-.select2-dropdown .select2-results__option[aria-selected="true"] {
+.select2-dropdown.pos-order-select2 .select2-results__option[aria-selected="true"] {
     background-color: rgba(var(--bs-primary-rgb), 0.12) !important;
     color: rgb(var(--bs-primary-rgb)) !important;
     font-weight: 700 !important;
 }
 
-.select2-dropdown .select2-results__option[aria-selected="true"].select2-results__option--highlighted {
+.select2-dropdown.pos-order-select2 .select2-results__option[aria-selected="true"].select2-results__option--highlighted {
     background: linear-gradient(
         135deg,
         rgb(var(--bs-primary-rgb)) 0%,
@@ -1917,109 +1913,6 @@ a.employee-orders-tab:hover,
     ) !important;
     color: #ffffff !important;
 }
-
-/* 4. Glassy Modals & Offcanvas (discount / gift / reward / service fee / email) */
-.pos-order-glass .modal-content,
-.employee-orders-page .modal-content {
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.22) !important;
-    border-radius: 1.1rem !important;
-    background-color: rgba(255, 255, 255, 0.88) !important;
-    background-image: linear-gradient(
-        135deg,
-        rgba(var(--bs-primary-rgb), 0.1) 0%,
-        rgba(var(--bs-primary-rgb), 0.02) 50%,
-        rgba(255, 255, 255, 0.75) 100%
-    ) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    box-shadow: 0 20px 50px -10px rgba(var(--bs-primary-rgb), 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.75) !important;
-}
-
-.pos-order-glass .offcanvas,
-.employee-orders-page .offcanvas {
-    border-right: 1px solid rgba(var(--bs-primary-rgb), 0.22) !important;
-    background-color: rgba(255, 255, 255, 0.88) !important;
-    background-image: linear-gradient(
-        135deg,
-        rgba(var(--bs-primary-rgb), 0.1) 0%,
-        rgba(var(--bs-primary-rgb), 0.02) 50%,
-        rgba(255, 255, 255, 0.75) 100%
-    ) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    box-shadow: 0 10px 40px rgba(var(--bs-primary-rgb), 0.25) !important;
-}
-
-.pos-order-glass .offcanvas-header,
-.pos-order-glass .modal-header,
-.pos-order-glass .modal-footer {
-    border-color: rgba(var(--bs-primary-rgb), 0.14) !important;
-    background: transparent !important;
-}
-
-.pos-order-glass .order-card-option,
-.pos-order-glass .order-discount-item,
-.pos-order-glass .service-fee-item,
-.pos-order-glass .selected-service-fee-row,
-.pos-order-glass .service-fee-picker-panel,
-.pos-order-glass .custom-service-fee-section {
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.16) !important;
-    border-radius: var(--pos-glass-radius, 1rem) !important;
-    background-color: rgba(255, 255, 255, 0.72) !important;
-    background-image: linear-gradient(
-        135deg,
-        rgba(var(--bs-primary-rgb), 0.1) 0%,
-        rgba(var(--bs-primary-rgb), 0.03) 42%,
-        rgba(var(--bs-primary-rgb), 0) 72%
-    ) !important;
-    -webkit-backdrop-filter: blur(14px) saturate(150%) !important;
-    backdrop-filter: blur(14px) saturate(150%) !important;
-    box-shadow:
-        0 8px 22px -12px rgba(var(--bs-primary-rgb), 0.28),
-        inset 0 1px 0 rgba(255, 255, 255, 0.55) !important;
-}
-
-.pos-order-glass .order-card-option:hover,
-.pos-order-glass .order-card-option:has(.order-card-radio:checked) {
-    border-color: rgba(var(--bs-primary-rgb), 0.32) !important;
-    background-color: rgba(255, 255, 255, 0.84) !important;
-    box-shadow:
-        0 12px 26px -12px rgba(var(--bs-primary-rgb), 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.65) !important;
-}
-
-.pos-order-glass .order-card-option-icon {
-    background: rgba(var(--bs-primary-rgb), 0.12) !important;
-    color: rgb(var(--bs-primary-rgb)) !important;
-}
-
-.pos-order-glass .order-card-list [data-order-card-empty],
-.pos-order-glass .selected-service-fee-empty,
-.pos-order-glass .service-fee-empty {
-    border: 1px dashed rgba(var(--bs-primary-rgb), 0.28) !important;
-    border-radius: var(--pos-glass-radius, 1rem) !important;
-    background: rgba(var(--bs-primary-rgb), 0.04) !important;
-    box-shadow: none !important;
-}
-
-.pos-order-glass .offcanvas .form-control,
-.pos-order-glass .offcanvas .form-select,
-.pos-order-glass .modal .form-control,
-.pos-order-glass .modal .form-select {
-    border-color: rgba(var(--bs-primary-rgb), 0.18) !important;
-    background-color: rgba(255, 255, 255, 0.72) !important;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
-}
-
-.pos-order-glass .offcanvas .form-control:focus,
-.pos-order-glass .offcanvas .form-select:focus,
-.pos-order-glass .modal .form-control:focus,
-.pos-order-glass .modal .form-select:focus {
-    border-color: rgba(var(--bs-primary-rgb), 0.45) !important;
-    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15) !important;
-}
-
-/* Dark Mode Overrides for Glassy Dropdowns */
 
 [data-bs-theme="dark"] .pos-order-glass .select2-container--default .select2-selection--single,
 [data-bs-theme="dark"] .pos-order-glass .select2-container--default .select2-selection--multiple,
@@ -2036,7 +1929,7 @@ a.employee-orders-tab:hover,
     color: #e2e8f0 !important;
 }
 
-[data-bs-theme="dark"] .select2-dropdown {
+[data-bs-theme="dark"] .select2-dropdown.pos-order-select2 {
     border-color: rgba(var(--bs-primary-rgb), 0.32) !important;
     background-color: rgba(47, 51, 73, 0.92) !important;
     background-image: linear-gradient(
@@ -2050,41 +1943,12 @@ a.employee-orders-tab:hover,
         inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 
-[data-bs-theme="dark"] .select2-dropdown .select2-search--dropdown .select2-search__field {
+[data-bs-theme="dark"] .select2-dropdown.pos-order-select2 .select2-search--dropdown .select2-search__field {
     border-color: rgba(var(--bs-primary-rgb), 0.3) !important;
     background-color: rgba(37, 41, 60, 0.8) !important;
     color: #e2e8f0 !important;
 }
 
-[data-bs-theme="dark"] .select2-dropdown .select2-results__option {
+[data-bs-theme="dark"] .select2-dropdown.pos-order-select2 .select2-results__option {
     color: #b6bee3 !important;
-}
-
-[data-bs-theme="dark"] .pos-order-glass .modal-content,
-[data-bs-theme="dark"] .employee-orders-page .modal-content,
-[data-bs-theme="dark"] .pos-order-glass .offcanvas,
-[data-bs-theme="dark"] .employee-orders-page .offcanvas {
-    background-color: rgba(47, 51, 73, 0.94) !important;
-    border-color: rgba(var(--bs-primary-rgb), 0.3) !important;
-    box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-}
-
-[data-bs-theme="dark"] .pos-order-glass .order-card-option,
-[data-bs-theme="dark"] .pos-order-glass .order-discount-item,
-[data-bs-theme="dark"] .pos-order-glass .service-fee-item,
-[data-bs-theme="dark"] .pos-order-glass .selected-service-fee-row,
-[data-bs-theme="dark"] .pos-order-glass .service-fee-picker-panel,
-[data-bs-theme="dark"] .pos-order-glass .custom-service-fee-section {
-    background-color: rgba(255, 255, 255, 0.04) !important;
-    border-color: rgba(var(--bs-primary-rgb), 0.24) !important;
-    box-shadow: 0 10px 28px -14px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
-}
-
-[data-bs-theme="dark"] .pos-order-glass .offcanvas .form-control,
-[data-bs-theme="dark"] .pos-order-glass .offcanvas .form-select,
-[data-bs-theme="dark"] .pos-order-glass .modal .form-control,
-[data-bs-theme="dark"] .pos-order-glass .modal .form-select {
-    background-color: rgba(37, 41, 60, 0.72) !important;
-    border-color: rgba(var(--bs-primary-rgb), 0.28) !important;
-    color: #e2e8f0 !important;
 }

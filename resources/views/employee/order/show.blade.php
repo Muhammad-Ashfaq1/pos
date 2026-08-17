@@ -1,6 +1,15 @@
 @extends($layout ?? 'layouts.employee-portal')
 
-@section('title', ! empty($order['is_invoice'] ?? false) ? 'Invoice Details' : 'Order Details')
+@php
+    $openedFromInvoices = ! empty($openedFromInvoices);
+    $orderBackUrl = $openedFromInvoices
+        ? route($orderRoutes['invoices_index'])
+        : route($orderRoutes['index']);
+    $orderBackTitle = $openedFromInvoices ? 'Back to invoices' : 'Back to orders';
+    $orderDetailsTitle = $openedFromInvoices ? 'Invoice Details' : 'Order Details';
+@endphp
+
+@section('title', $orderDetailsTitle)
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}">
@@ -9,14 +18,6 @@
 @endpush
 
 @section('content')
-    @php
-        $isInvoiceOrder = ! empty($order['is_invoice']);
-        $orderBackUrl = $isInvoiceOrder
-            ? route($orderRoutes['invoices_index'])
-            : route($orderRoutes['index']);
-        $orderBackTitle = $isInvoiceOrder ? 'Back to invoices' : 'Back to orders';
-        $orderDetailsTitle = $isInvoiceOrder ? 'Invoice Details' : 'Order Details';
-    @endphp
     <div class="employee-orders-page employee-order-details-page">
         <x-employee.page-header
             :title="$orderDetailsTitle"

@@ -3262,6 +3262,13 @@
                 minimumResultsForSearch: parseMinResults($this.data('minimum-results-for-search')),
             };
 
+            if (
+                $this.closest('.pos-order-glass').length
+                || $this.closest('#offcanvasServiceFee, #offcanvasDiscount').length
+            ) {
+                options.dropdownCssClass = 'pos-order-select2';
+            }
+
             if ($this.attr('id') === 'order_service_filter' && $.fn.select2.amd) {
                 const Utils = $.fn.select2.amd.require('select2/utils');
                 const Dropdown = $.fn.select2.amd.require('select2/dropdown');

@@ -88,7 +88,7 @@
         window.employeeOrdersConfig = {
             listingUrl: @json(route($orderRoutes['listing'])),
             newOrderUrl: @json(route($orderRoutes['new'])),
-            detailUrlTemplate: @json(route($orderRoutes['show'], ['order' => '__ORDER_ID__']))
+            detailUrlTemplate: @json(route($orderRoutes['show'], ['order' => '__ORDER_ID__', 'from' => 'orders']))
         };
     </script>
     <script src="{{ asset('assets/js/employee/orders.js') }}?v={{ filemtime(public_path('assets/js/employee/orders.js')) }}"></script>

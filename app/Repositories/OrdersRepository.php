@@ -641,7 +641,7 @@ class OrdersRepository implements OrderRepositoryInterface
             'status' => $status,
             'status_label' => $this->statusLabel($status),
             'status_class' => $this->listingStatusClass($status),
-            'show_url' => \App\Support\OrderSurface::route('show', $order),
+            'show_url' => \App\Support\OrderSurface::route('show', ['order' => $order, 'from' => 'invoices']),
             'print_url' => \App\Support\OrderSurface::route('print', $order),
             'pdf_url' => \App\Support\OrderSurface::route('pdf', $order),
             'share_url' => \App\Support\OrderSurface::route('share', $order),

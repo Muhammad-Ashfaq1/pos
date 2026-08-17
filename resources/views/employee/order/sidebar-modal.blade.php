@@ -92,7 +92,7 @@
                     @forelse($orderCards->get($cardType, collect()) as $card)
                         @include('employee.order.partials.order-card-option', ['card' => $card])
                     @empty
-                        <div class="text-center py-5 border rounded-3" data-order-card-empty="{{ $cardType }}">
+                        <div class="text-center py-5 border rounded-3 bg-light bg-opacity-50" data-order-card-empty="{{ $cardType }}">
                             <i class="ti {{ $config['icon'] }} fs-1 text-muted"></i>
                             <p class="text-muted mb-0 mt-2">No valid {{ strtolower($config['title']) }} available.</p>
                         </div>
