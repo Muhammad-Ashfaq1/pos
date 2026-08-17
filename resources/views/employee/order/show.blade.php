@@ -155,32 +155,33 @@
                     <strong>{{ $order['balance_due_label'] }}</strong>
                 </div>
 
-                <div class="d-grid gap-2 mt-4">
+                <div class="row g-2 mt-4">
                     @if($order['status'] === 'estimate')
-                        <a href="{{ route($orderRoutes['new'], ['order' => $order['id']]) }}" class="btn btn-primary btn-lg w-100 fw-bold btn-process-order">
-                            <i class="ti tabler-check me-1"></i> Process Order
-                        </a>
+                        <div class="col">
+                            <a href="{{ route($orderRoutes['new'], ['order' => $order['id']]) }}" class="btn btn-primary btn-lg w-100 fw-bold btn-process-order">
+                                <i class="ti tabler-check me-1"></i> Process Order
+                            </a>
+                        </div>
                     @elseif($order['status'] !== 'paid')
-                        <button type="button" class="btn btn-primary btn-lg w-100 fw-bold btn-pay-balance" data-bs-toggle="modal" data-bs-target="#paymentModal">
-                            <i class="ti tabler-coin me-1"></i> Pay Balance
-                        </button>
+                        <div class="col">
+                            <button type="button" class="btn btn-primary btn-lg w-100 fw-bold btn-pay-balance" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                                <i class="ti tabler-coin me-1"></i> Pay Balance
+                            </button>
+                        </div>
                     @endif
-                </div>
-
-                <div class="row g-2 mt-2">
-                    <div class="col-4">
-                        <a href="{{ route($orderRoutes['print'], $order['id']) }}" target="_blank" class="btn btn-outline-secondary w-100 py-2">
-                            <i class="ti tabler-printer"></i><br><small class="fw-bold">Print</small>
+                    <div class="col">
+                        <a href="{{ route($orderRoutes['print'], $order['id']) }}" target="_blank" class="btn btn-outline-secondary btn-lg w-100 fw-bold">
+                            <i class="ti tabler-printer me-1"></i> Print
                         </a>
                     </div>
-                    <div class="col-4">
-                        <a href="{{ route($orderRoutes['pdf'], $order['id']) }}" class="btn btn-outline-secondary w-100 py-2">
-                            <i class="ti tabler-download"></i><br><small class="fw-bold">PDF</small>
+                    <div class="col">
+                        <a href="{{ route($orderRoutes['pdf'], $order['id']) }}" class="btn btn-outline-secondary btn-lg w-100 fw-bold">
+                            <i class="ti tabler-download me-1"></i> PDF
                         </a>
                     </div>
-                    <div class="col-4">
-                        <button type="button" class="btn btn-outline-secondary w-100 py-2 btn-share-pdf" data-bs-toggle="modal" data-bs-target="#shareModal">
-                            <i class="ti tabler-send"></i><br><small class="fw-bold">Share</small>
+                    <div class="col">
+                        <button type="button" class="btn btn-outline-secondary btn-lg w-100 fw-bold btn-share-pdf" data-bs-toggle="modal" data-bs-target="#shareModal">
+                            <i class="ti tabler-send me-1"></i> Share
                         </button>
                     </div>
                 </div>

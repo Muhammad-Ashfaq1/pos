@@ -250,6 +250,21 @@
   font-weight: 800;
 }
 
+.employee-order-details-page .btn-outline-primary {
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #7367f0;
+  --bs-btn-hover-border-color: #7367f0;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #7367f0;
+  --bs-btn-active-border-color: #7367f0;
+}
+
+.employee-order-details-page .btn-outline-primary:hover,
+.employee-order-details-page .btn-outline-primary:hover i,
+.employee-order-details-page .btn-outline-primary:hover span:not(.badge) {
+  color: #fff;
+}
+
 @media (max-width: 991px) {
   .employee-order-details-layout {
     grid-template-columns: 1fr;
@@ -373,10 +388,12 @@
   color: #b6bee3;
 }
 
-[data-bs-theme="dark"] .employee-order-details-page .btn-outline-primary:hover {
-  background: rgba(115, 103, 240, 0.12);
+[data-bs-theme="dark"] .employee-order-details-page .btn-outline-primary:hover,
+[data-bs-theme="dark"] .employee-order-details-page .btn-outline-primary:hover i,
+[data-bs-theme="dark"] .employee-order-details-page .btn-outline-primary:hover span:not(.badge) {
+  background: #7367f0;
   border-color: #7367f0;
-  color: #e2e8f0;
+  color: #fff;
 }
 
 [data-bs-theme="dark"] .employee-order-details-page .btn-primary {
