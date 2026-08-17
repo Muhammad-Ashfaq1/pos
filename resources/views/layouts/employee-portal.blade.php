@@ -7,7 +7,7 @@
 <!doctype html>
 <html
     lang="en"
-    class="layout-wide {{ $posTheme['classes'] }}"
+    class="layout-wide employee-admin-preview {{ $posTheme['classes'] }}"
     dir="ltr"
     data-skin="default"
     data-bs-theme="{{ $posTheme['bs_theme'] }}"
@@ -49,7 +49,12 @@
         @php
             $shopBrandPrimary = app(\App\Support\Tenancy\TenantContext::class)->current()?->brandPrimaryColor();
         @endphp
-        @include('partials._shop-brand-tokens')
+        {{-- Logo/name only — employee accents stay purple (do not map brand → --bs-primary). --}}
+        @if ($shopBrandPrimary)
+            :root {
+                --shop-brand-primary: {{ $shopBrandPrimary }};
+            }
+        @endif
 
         /* Theme customizer panel (gear) disabled — use header Light/Dark/System only */
         #template-customizer {
@@ -68,78 +73,63 @@
     @stack('extra-css')
 
     <style>
+        /*
+         * Employee panel accent is locked to purple/indigo.
+         * Shop brand color must not replace --bs-primary here (that caused cyan/blue CTAs).
+         */
+        html.employee-admin-preview,
         body.employee-admin-preview {
             --preview-page: #f8f8fc;
             --preview-card: #ffffff;
             --preview-border: #c7d2fe;
-            /* --preview-indigo: #4338ca;
-            --preview-indigo-dark: #312e81; */
-            --preview-indigo: #312e81;
-            --preview-indigo-dark: #262363;
+            --preview-indigo: #5b4bdb;
+            --preview-indigo-dark: #312e81;
             --preview-muted: #64748b;
             --preview-slate-light: #94a3b8;
             --preview-amber: #fbbf24;
             --preview-amber-soft: #fef3c7;
-            --preview-blue-soft: #dbeafe;
+            --preview-blue-soft: #ede9fe;
             --preview-purple-soft: #eedcff;
             --preview-violet-soft: #ddd6fe;
+            --bs-primary: #5b4bdb;
+            --bs-primary-rgb: 91, 75, 219;
+            --bs-link-color: #5b4bdb;
+            --bs-link-hover-color: #312e81;
+        }
+
+        body.employee-admin-preview {
             margin: 0;
             min-height: 100vh;
             font-family: 'Public Sans', sans-serif;
             background:
-                radial-gradient(circle at top right, rgba(165, 180, 252, 0.18), transparent 22%),
+                radial-gradient(circle at top right, rgba(167, 139, 250, 0.2), transparent 22%),
                 linear-gradient(180deg, #fafafd 0%, #f5f6fb 100%);
         }
 
-        :root, [data-bs-theme=light] {
-            --bs-primary: #312e81;
-            --bs-primary-rgb: 49, 46, 129;
-            --bs-link-color: #312e81;
-            --bs-link-hover-color: #262363;
+        html.employee-admin-preview .btn-primary,
+        body.employee-admin-preview .btn-primary {
+            --bs-btn-bg: #5b4bdb;
+            --bs-btn-border-color: #5b4bdb;
+            --bs-btn-hover-bg: #4a3cc7;
+            --bs-btn-hover-border-color: #4338ca;
+            --bs-btn-active-bg: #312e81;
+            --bs-btn-active-border-color: #2e2a6e;
         }
 
-        .btn-primary {
-            --bs-btn-bg: #312e81;
-            --bs-btn-border-color: #312e81;
-            --bs-btn-hover-bg: #28256a;
-            --bs-btn-hover-border-color: #262363;
-            --bs-btn-active-bg: #262363;
-            --bs-btn-active-border-color: #23215d;
+        html.employee-admin-preview .text-primary,
+        body.employee-admin-preview .text-primary {
+            color: #5b4bdb !important;
         }
 
-        .text-primary {
-            color: #312e81 !important;
+        html.employee-admin-preview .btn-outline-primary,
+        body.employee-admin-preview .btn-outline-primary {
+            --bs-btn-color: #5b4bdb;
+            --bs-btn-border-color: #5b4bdb;
+            --bs-btn-hover-bg: #5b4bdb;
+            --bs-btn-hover-border-color: #5b4bdb;
+            --bs-btn-active-bg: #312e81;
+            --bs-btn-active-border-color: #312e81;
         }
-
-        @if ($shopBrandPrimary)
-            @php
-                $brandRgb = sscanf($shopBrandPrimary, '#%02x%02x%02x');
-            @endphp
-            :root, [data-bs-theme=light] {
-                --bs-primary: {{ $shopBrandPrimary }};
-                --bs-primary-rgb: {{ $brandRgb[0] }}, {{ $brandRgb[1] }}, {{ $brandRgb[2] }};
-                --bs-link-color: {{ $shopBrandPrimary }};
-                --bs-link-hover-color: {{ $shopBrandPrimary }};
-            }
-
-            .btn-primary {
-                --bs-btn-bg: {{ $shopBrandPrimary }};
-                --bs-btn-border-color: {{ $shopBrandPrimary }};
-                --bs-btn-hover-bg: {{ $shopBrandPrimary }};
-                --bs-btn-hover-border-color: {{ $shopBrandPrimary }};
-                --bs-btn-active-bg: {{ $shopBrandPrimary }};
-                --bs-btn-active-border-color: {{ $shopBrandPrimary }};
-            }
-
-            .text-primary {
-                color: {{ $shopBrandPrimary }} !important;
-            }
-
-            body.employee-admin-preview {
-                --preview-indigo: {{ $shopBrandPrimary }};
-                --preview-indigo-dark: {{ $shopBrandPrimary }};
-            }
-        @endif
 
         .employee-admin-preview .preview-shell {
             min-height: 100vh;
@@ -187,7 +177,7 @@
             font-weight: 800;
             line-height: 1.15;
             letter-spacing: 0.01em;
-            color: var(--shop-brand-primary, var(--preview-indigo-dark));
+            color: var(--preview-indigo-dark);
             max-width: min(42vw, 18rem);
             overflow: hidden;
             text-overflow: ellipsis;
