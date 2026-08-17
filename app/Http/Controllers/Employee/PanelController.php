@@ -4,7 +4,12 @@ namespace App\Http\Controllers\Employee;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\User;
+use App\Support\Currency;
 use App\Support\DashboardDateRange;
+use App\Support\ProductMixCards;
+use App\Support\SalesMixQueries;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -32,7 +37,7 @@ class PanelController
 
         $range = DashboardDateRange::fromRequest('today');
 
-        return view('employee.dashboard', array_merge($this->productMixStats($range), [
+        return view('employee.dashboard', array_merge($this->productMixStats($range, request()->user()), [
             'product_mix_period' => $range->period,
             'product_mix_period_label' => $range->label,
             'trend_labels' => $trendLabels,
@@ -45,22 +50,21 @@ class PanelController
     {
         $range = $this->resolveProductMixRange($request->query('period'));
 
-        return response()->json($this->productMixStats($range));
+        return response()->json($this->productMixStats($range, $request->user()));
     }
 
     /**
-     * @return array{
-     *     period: string,
-     *     period_label: string,
-     *     orders_completed_today: int,
-     *     orders_incomplete_today: int,
-     *     products_available: int,
-     *     meta: array{orders_completed_today: string, orders_incomplete_today: string, products_available: string}
-     * }
+     * @return array<string, mixed>
      */
-    private function productMixStats(DashboardDateRange $range): array
+    public function productMixStats(DashboardDateRange $range, mixed $user = null): array
     {
         $ordersInRange = Order::query()->withinRange($range);
+        $periodLabel = $range->label;
+        $symbol = Currency::symbol();
+
+        $totalSales = (float) (clone $ordersInRange)
+            ->where('status', Order::STATUS_PAID)
+            ->sum('total_amount');
 
         $completed = (clone $ordersInRange)
             ->where('status', Order::STATUS_PAID)
@@ -74,27 +78,58 @@ class PanelController
             ])
             ->count();
 
-        $productsAvailable = (int) OrderItem::query()
+        $outstanding = (float) (clone $ordersInRange)
+            ->where('status', '!=', Order::STATUS_ESTIMATE)
+            ->selectRaw('COALESCE(SUM(CASE WHEN total_amount > payment_amount THEN total_amount - payment_amount ELSE 0 END), 0) as outstanding')
+            ->value('outstanding');
+
+        $itemsSold = (int) OrderItem::query()
             ->whereHas('order', function ($query) use ($range) {
-                $query->withinRange($range);
+                $query->withinRange($range)
+                    ->where('status', '!=', Order::STATUS_ESTIMATE);
             })
-            ->distinct()
-            ->count('product_id');
+            ->sum('quantity');
 
-        $periodLabel = $range->label;
+        $topProducts = SalesMixQueries::topProducts($range, 5);
+        $salesByCategory = SalesMixQueries::salesByCategory($range, 5);
 
-        return [
+        $trackedProducts = Product::query()->where('track_inventory', true);
+        $availableProducts = (int) Product::query()->where('is_active', true)->count();
+        $lowStockProducts = (int) (clone $trackedProducts)
+            ->whereColumn('current_stock', '<=', 'reorder_level')
+            ->count();
+        $totalStockUnits = (int) (clone $trackedProducts)->sum('current_stock');
+        $topSellerQty = (int) (($topProducts[0]['qty'] ?? 0));
+        $topSellerName = (string) ($topProducts[0]['name'] ?? 'No sales yet');
+
+        $stats = [
             'period' => $range->period,
             'period_label' => $periodLabel,
-            'orders_completed_today' => $completed,
-            'orders_incomplete_today' => $incomplete,
-            'products_available' => $productsAvailable,
-            'meta' => [
-                'orders_completed_today' => 'Completed '.$periodLabel,
-                'orders_incomplete_today' => 'Incomplete '.$periodLabel,
-                'products_available' => 'In orders '.$periodLabel,
-            ],
+            'currency_symbol' => $symbol,
+            'total_sales' => round($totalSales, 2),
+            'outstanding' => round($outstanding, 2),
+            'orders_completed' => $completed,
+            'orders_incomplete' => $incomplete,
+            'items_sold' => $itemsSold,
+            'available_products' => $availableProducts,
+            'top_selling_products' => $topSellerQty,
+            'low_stock_products' => $lowStockProducts,
+            'total_stock_units' => $totalStockUnits,
+            'meta' => ProductMixCards::meta([
+                'total_sales' => $outstanding > 0
+                    ? 'Due '.$symbol.number_format($outstanding, 2)
+                    : null,
+                'top_selling_products' => $topSellerName,
+            ]),
+            'top_products' => $topProducts,
+            'sales_by_category' => $salesByCategory,
         ];
+
+        $selectedKeys = ProductMixCards::selectedFor($user instanceof User ? $user : null);
+        $stats['selected_card_keys'] = $selectedKeys;
+        $stats['summary_cards'] = ProductMixCards::summaryCards($selectedKeys, $stats);
+
+        return $stats;
     }
 
     private function resolveProductMixRange(?string $period): DashboardDateRange

@@ -69,10 +69,10 @@
                         </p>
                     </div>
                     <div class="pos-glass-intro-actions d-flex flex-wrap gap-2 align-items-center">
-                        <a href="{{ route('employee.order.new-order') }}" class="btn btn-sm btn-primary">
+                        <a href="{{ route('tenant.order.new-order') }}" class="btn btn-sm btn-primary">
                             <i class="ti tabler-plus me-1" aria-hidden="true"></i> New Order
                         </a>
-                        <a href="{{ route('employee.order.index') }}" class="btn btn-sm btn-label-secondary">View Orders</a>
+                        <a href="{{ route('tenant.order.index') }}" class="btn btn-sm btn-label-secondary">View Orders</a>
                         @php($up = $cards['sales_month_change'] >= 0)
                         <span class="pos-glass-pill pos-tone-{{ $up ? 'success' : 'danger' }}">
                             <i class="icon-base ti tabler-trending-{{ $up ? 'up' : 'down' }}" aria-hidden="true"></i>
@@ -241,7 +241,7 @@
             <div class="pos-glass-card pos-tone-primary h-100 pos-td-chart-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Recent Orders</h5>
-                    <a href="{{ route('employee.order.index') }}" class="btn btn-sm btn-label-primary">View all</a>
+                    <a href="{{ route('tenant.order.index') }}" class="btn btn-sm btn-label-primary">View all</a>
                 </div>
                 <div class="table-responsive">
                     <table class="table mb-0">
@@ -257,7 +257,7 @@
                         <tbody>
                             @forelse ($recentOrders as $o)
                                 <tr>
-                                    <td><a href="{{ route('employee.order.show', $o['id']) }}" class="fw-medium">{{ $o['order_number'] }}</a></td>
+                                    <td><a href="{{ route('tenant.order.show', $o['id']) }}" class="fw-medium">{{ $o['order_number'] }}</a></td>
                                     <td>{{ $o['customer'] }}</td>
                                     <td><span class="badge {{ $o['status_class'] }}">{{ $o['status_label'] }}</span></td>
                                     <td class="text-end fw-medium">{{ $o['total'] }}</td>
@@ -355,8 +355,8 @@
                             'Discount Groups' => route('tenant.discounts.group.index'),
                             'Customers' => route('tenant.ecommerce.customers.index'),
                             'Vehicles' => route('tenant.ecommerce.vehicles.index'),
-                            'Orders' => route('employee.order.index'),
-                            'Estimates' => route('employee.order.index', ['tab' => 'estimates']),
+                            'Orders' => route('tenant.order.index'),
+                            'Estimates' => route('tenant.order.index', ['tab' => 'estimates']),
                         ];
                         $catalogMeta = [
                             'Categories' => ['icon' => 'tabler-category', 'tone' => 'primary'],
@@ -415,5 +415,6 @@
 @endsection
 
 @section('scripts')
+    <script src="{{ asset('assets/js/shared/sales-mix-charts.js') }}?v={{ filemtime(public_path('assets/js/shared/sales-mix-charts.js')) }}"></script>
     <script src="{{ asset('assets/js/tenant/dashboard.js') }}?v={{ filemtime(public_path('assets/js/tenant/dashboard.js')) }}"></script>
 @endsection

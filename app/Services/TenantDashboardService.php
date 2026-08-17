@@ -16,6 +16,7 @@ use App\Models\Tenant;
 use App\Models\Vehicle;
 use App\Support\Currency;
 use App\Support\DashboardDateRange;
+use App\Support\SalesMixQueries;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -181,37 +182,12 @@ class TenantDashboardService
 
     private function topProducts(): array
     {
-        return OrderItem::query()
-            ->whereHas('order', fn ($q) => $this->inRange($q->where('status', '!=', Order::STATUS_ESTIMATE)))
-            ->selectRaw('product_name, SUM(quantity) as qty, SUM(line_total) as revenue')
-            ->groupBy('product_name')
-            ->orderByDesc('revenue')
-            ->limit(7)
-            ->get()
-            ->map(fn ($row) => [
-                'name' => (string) $row->product_name,
-                'qty' => (int) $row->qty,
-                'revenue' => round((float) $row->revenue, 2),
-            ])
-            ->all();
+        return SalesMixQueries::topProducts($this->range, 7);
     }
 
     private function salesByCategory(): array
     {
-        return OrderItem::query()
-            ->whereHas('order', fn ($q) => $this->inRange($q->where('status', '!=', Order::STATUS_ESTIMATE)))
-            ->join('products', 'order_items.product_id', '=', 'products.id')
-            ->join('categories', 'products.category_id', '=', 'categories.id')
-            ->selectRaw('categories.name as name, SUM(order_items.line_total) as revenue')
-            ->groupBy('categories.name')
-            ->orderByDesc('revenue')
-            ->limit(6)
-            ->get()
-            ->map(fn ($row) => [
-                'name' => (string) $row->name,
-                'revenue' => round((float) $row->revenue, 2),
-            ])
-            ->all();
+        return SalesMixQueries::salesByCategory($this->range, 6);
     }
 
     private function customersByType(): array

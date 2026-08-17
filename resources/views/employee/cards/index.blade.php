@@ -3,6 +3,7 @@
 @section('title', 'Discounts')
 
 @push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/gift-card.css') }}?v={{ filemtime(public_path('assets/css/gift-card.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/reward-card.css') }}?v={{ filemtime(public_path('assets/css/reward-card.css')) }}">
@@ -21,7 +22,7 @@
         }
     @endphp
 
-    <div class="employee-orders-page">
+    <div class="employee-orders-page employee-orders-glass">
         <x-employee.page-header title="Discounts" :back-url="route('employee.dashboard')" back-title="Back to dashboard">
             <x-slot:actions>
                 @can('create', \App\Models\Card::class)
@@ -39,7 +40,7 @@
             </x-slot:actions>
         </x-employee.page-header>
 
-        <section class="employee-orders-panel employee-orders-results employee-cards-panel">
+        <section class="employee-orders-panel employee-orders-results employee-cards-panel pos-glass-card pos-tone-warning">
             <div class="employee-orders-tabs" role="tablist" aria-label="Card types">
                 @foreach ($modules as $module => $config)
                     <a

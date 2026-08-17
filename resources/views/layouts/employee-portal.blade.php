@@ -1,10 +1,13 @@
 @php
     $posTheme = \App\Support\AppTheme::resolve(auth()->user());
+    $employeeNavMode = \App\Support\EmployeeNavigation::navMode(auth()->user());
+    $employeeBottomNav = \App\Support\EmployeeNavigation::bottomNav(auth()->user());
+    $employeeUsesSidebar = $employeeNavMode === \App\Support\EmployeeNavigation::MODE_SIDEBAR;
 @endphp
 <!doctype html>
 <html
     lang="en"
-    class="layout-wide {{ $posTheme['classes'] }}"
+    class="layout-wide employee-admin-preview {{ $posTheme['classes'] }}"
     dir="ltr"
     data-skin="default"
     data-bs-theme="{{ $posTheme['bs_theme'] }}"
@@ -46,7 +49,12 @@
         @php
             $shopBrandPrimary = app(\App\Support\Tenancy\TenantContext::class)->current()?->brandPrimaryColor();
         @endphp
-        @include('partials._shop-brand-tokens')
+        {{-- Logo/name only — employee accents stay purple (do not map brand → --bs-primary). --}}
+        @if ($shopBrandPrimary)
+            :root {
+                --shop-brand-primary: {{ $shopBrandPrimary }};
+            }
+        @endif
 
         /* Theme customizer panel (gear) disabled — use header Light/Dark/System only */
         #template-customizer {
@@ -65,78 +73,63 @@
     @stack('extra-css')
 
     <style>
+        /*
+         * Employee panel accent is locked to purple/indigo.
+         * Shop brand color must not replace --bs-primary here (that caused cyan/blue CTAs).
+         */
+        html.employee-admin-preview,
         body.employee-admin-preview {
             --preview-page: #f8f8fc;
             --preview-card: #ffffff;
             --preview-border: #c7d2fe;
-            /* --preview-indigo: #4338ca;
-            --preview-indigo-dark: #312e81; */
-            --preview-indigo: #312e81;
-            --preview-indigo-dark: #262363;
+            --preview-indigo: #5b4bdb;
+            --preview-indigo-dark: #312e81;
             --preview-muted: #64748b;
             --preview-slate-light: #94a3b8;
             --preview-amber: #fbbf24;
             --preview-amber-soft: #fef3c7;
-            --preview-blue-soft: #dbeafe;
+            --preview-blue-soft: #ede9fe;
             --preview-purple-soft: #eedcff;
             --preview-violet-soft: #ddd6fe;
+            --bs-primary: #5b4bdb;
+            --bs-primary-rgb: 91, 75, 219;
+            --bs-link-color: #5b4bdb;
+            --bs-link-hover-color: #312e81;
+        }
+
+        body.employee-admin-preview {
             margin: 0;
             min-height: 100vh;
             font-family: 'Public Sans', sans-serif;
             background:
-                radial-gradient(circle at top right, rgba(165, 180, 252, 0.18), transparent 22%),
+                radial-gradient(circle at top right, rgba(167, 139, 250, 0.2), transparent 22%),
                 linear-gradient(180deg, #fafafd 0%, #f5f6fb 100%);
         }
 
-        :root, [data-bs-theme=light] {
-            --bs-primary: #312e81;
-            --bs-primary-rgb: 49, 46, 129;
-            --bs-link-color: #312e81;
-            --bs-link-hover-color: #262363;
+        html.employee-admin-preview .btn-primary,
+        body.employee-admin-preview .btn-primary {
+            --bs-btn-bg: #5b4bdb;
+            --bs-btn-border-color: #5b4bdb;
+            --bs-btn-hover-bg: #4a3cc7;
+            --bs-btn-hover-border-color: #4338ca;
+            --bs-btn-active-bg: #312e81;
+            --bs-btn-active-border-color: #2e2a6e;
         }
 
-        .btn-primary {
-            --bs-btn-bg: #312e81;
-            --bs-btn-border-color: #312e81;
-            --bs-btn-hover-bg: #28256a;
-            --bs-btn-hover-border-color: #262363;
-            --bs-btn-active-bg: #262363;
-            --bs-btn-active-border-color: #23215d;
+        html.employee-admin-preview .text-primary,
+        body.employee-admin-preview .text-primary {
+            color: #5b4bdb !important;
         }
 
-        .text-primary {
-            color: #312e81 !important;
+        html.employee-admin-preview .btn-outline-primary,
+        body.employee-admin-preview .btn-outline-primary {
+            --bs-btn-color: #5b4bdb;
+            --bs-btn-border-color: #5b4bdb;
+            --bs-btn-hover-bg: #5b4bdb;
+            --bs-btn-hover-border-color: #5b4bdb;
+            --bs-btn-active-bg: #312e81;
+            --bs-btn-active-border-color: #312e81;
         }
-
-        @if ($shopBrandPrimary)
-            @php
-                $brandRgb = sscanf($shopBrandPrimary, '#%02x%02x%02x');
-            @endphp
-            :root, [data-bs-theme=light] {
-                --bs-primary: {{ $shopBrandPrimary }};
-                --bs-primary-rgb: {{ $brandRgb[0] }}, {{ $brandRgb[1] }}, {{ $brandRgb[2] }};
-                --bs-link-color: {{ $shopBrandPrimary }};
-                --bs-link-hover-color: {{ $shopBrandPrimary }};
-            }
-
-            .btn-primary {
-                --bs-btn-bg: {{ $shopBrandPrimary }};
-                --bs-btn-border-color: {{ $shopBrandPrimary }};
-                --bs-btn-hover-bg: {{ $shopBrandPrimary }};
-                --bs-btn-hover-border-color: {{ $shopBrandPrimary }};
-                --bs-btn-active-bg: {{ $shopBrandPrimary }};
-                --bs-btn-active-border-color: {{ $shopBrandPrimary }};
-            }
-
-            .text-primary {
-                color: {{ $shopBrandPrimary }} !important;
-            }
-
-            body.employee-admin-preview {
-                --preview-indigo: {{ $shopBrandPrimary }};
-                --preview-indigo-dark: {{ $shopBrandPrimary }};
-            }
-        @endif
 
         .employee-admin-preview .preview-shell {
             min-height: 100vh;
@@ -184,7 +177,7 @@
             font-weight: 800;
             line-height: 1.15;
             letter-spacing: 0.01em;
-            color: var(--shop-brand-primary, var(--preview-indigo-dark));
+            color: var(--preview-indigo-dark);
             max-width: min(42vw, 18rem);
             overflow: hidden;
             text-overflow: ellipsis;
@@ -580,7 +573,8 @@
             transition: background-color 0.2s ease;
         }
 
-        .employee-admin-preview .preview-bottom-link:hover {
+        .employee-admin-preview .preview-bottom-link:hover,
+        .employee-admin-preview .preview-bottom-link.is-active {
             background: rgba(255, 255, 255, 0.72);
         }
 
@@ -669,6 +663,99 @@
             border: 0;
             display: block;
         }
+
+        .employee-admin-preview.employee-nav-sidebar-mode .preview-shell {
+            display: grid;
+            grid-template-columns: 15.5rem minmax(0, 1fr);
+            gap: 0;
+            min-height: 100vh;
+        }
+
+        .employee-preview-sidebar {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            padding: 1rem 0.85rem 1.25rem;
+            border-right: 1px solid rgba(165, 180, 252, 0.55);
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(18px) saturate(160%);
+            overflow-y: auto;
+        }
+
+        .employee-preview-sidebar-brand {
+            padding: 0.35rem 0.55rem 1rem;
+        }
+
+        .employee-preview-sidebar-brand-text {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--bs-heading-color, #444050);
+        }
+
+        .employee-preview-sidebar-group + .employee-preview-sidebar-group {
+            margin-top: 1rem;
+        }
+
+        .employee-preview-sidebar-group-label {
+            padding: 0 0.55rem 0.35rem;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--bs-menu-header-color, var(--bs-secondary-color, #6f6b7d));
+        }
+
+        .employee-preview-sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.62rem 0.65rem;
+            margin-bottom: 0.2rem;
+            border-radius: 0.75rem;
+            text-decoration: none;
+            color: var(--bs-menu-color, #444050);
+            font-size: 0.92rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .employee-preview-sidebar-link:hover {
+            background: var(--bs-menu-hover-bg, rgba(47, 43, 61, 0.06));
+            color: var(--bs-menu-hover-color, #444050);
+        }
+
+        .employee-preview-sidebar-link.is-active {
+            background: var(--bs-menu-active-bg, var(--bs-primary));
+            color: var(--bs-menu-active-color, #fff);
+        }
+
+        .employee-preview-sidebar-link.is-active i {
+            opacity: 1;
+            color: inherit;
+        }
+
+        .employee-preview-sidebar-link i {
+            font-size: 1.15rem;
+            color: inherit;
+            opacity: 0.9;
+        }
+
+        .employee-admin-preview.employee-nav-bottom-mode .preview-main {
+            padding-bottom: 6.5rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .employee-admin-preview.employee-nav-sidebar-mode .preview-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .employee-preview-sidebar {
+                position: relative;
+                height: auto;
+                border-right: 0;
+                border-bottom: 1px solid rgba(165, 180, 252, 0.55);
+            }
+        }
     </style>
 
     @stack('styles')
@@ -678,8 +765,13 @@
     <script src="{{ asset('assets/js/pos-theme.js') }}?v={{ filemtime(public_path('assets/js/pos-theme.js')) }}"></script>
     <script src="{{ asset('assets/js/pos-theme-bridge.js') }}?v={{ filemtime(public_path('assets/js/pos-theme-bridge.js')) }}"></script>
 </head>
-<body class="employee-admin-preview">
+<body class="employee-admin-preview {{ $employeeUsesSidebar ? 'employee-nav-sidebar-mode' : 'employee-nav-bottom-mode' }}">
     <div class="preview-shell">
+        @if($employeeUsesSidebar)
+            @include('employee.partials.preview-sidebar')
+        @endif
+
+        <div class="preview-shell-main">
         <header class="preview-header">
             <div class="preview-container py-0">
                 <div class="preview-header-inner">
@@ -748,7 +840,12 @@
                 @yield('content')
             </div>
         </main>
+        </div>
     </div>
+
+    @if(! $employeeUsesSidebar && count($employeeBottomNav))
+        @include('employee.partials.preview-bottom-nav', ['bottomNav' => $employeeBottomNav])
+    @endif
 
     <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>

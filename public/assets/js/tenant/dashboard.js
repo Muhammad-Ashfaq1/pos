@@ -153,33 +153,26 @@
       'Total'
     );
 
-    if (data.topProducts.length) {
-      render('topProductsChart', {
-        chart: { type: 'bar', height: 340, toolbar: { show: false } },
-        series: [{ name: 'Revenue', data: data.topProducts.map(function (p) { return p.revenue; }) }],
-        plotOptions: { bar: { horizontal: true, borderRadius: 5, barHeight: '65%', distributed: true } },
-        colors: palette,
-        dataLabels: { enabled: true, formatter: compact, style: { fontSize: '11px' } },
-        legend: { show: false },
-        grid: { borderColor: cfg.borderColor, strokeDashArray: 6 },
-        xaxis: { categories: data.topProducts.map(function (p) { return p.name; }), labels: { formatter: compact } },
-        tooltip: { y: { formatter: money } }
-      });
-    }
+    if (window.PosSalesMixCharts) {
+      if (data.topProducts.length) {
+        var topChart = PosSalesMixCharts.renderTopProducts('topProductsChart', data.topProducts, {
+          currencySymbol: sym,
+          palette: palette,
+          borderColor: cfg.borderColor,
+          height: 340
+        });
+        if (topChart) charts.push(topChart);
+      }
 
-    if (data.salesByCategory.length) {
-      render('categorySalesChart', {
-        chart: { type: 'bar', height: 300, toolbar: { show: false } },
-        series: [{ name: 'Revenue', data: data.salesByCategory.map(function (c) { return c.revenue; }) }],
-        plotOptions: { bar: { horizontal: false, borderRadius: 6, columnWidth: '45%', distributed: true } },
-        colors: palette,
-        dataLabels: { enabled: false },
-        legend: { show: false },
-        grid: { borderColor: cfg.borderColor, strokeDashArray: 6 },
-        xaxis: { categories: data.salesByCategory.map(function (c) { return c.name; }) },
-        yaxis: { labels: { formatter: compact } },
-        tooltip: { y: { formatter: money } }
-      });
+      if (data.salesByCategory.length) {
+        var categoryChart = PosSalesMixCharts.renderCategorySales('categorySalesChart', data.salesByCategory, {
+          currencySymbol: sym,
+          palette: palette,
+          borderColor: cfg.borderColor,
+          height: 300
+        });
+        if (categoryChart) charts.push(categoryChart);
+      }
     }
   }
 

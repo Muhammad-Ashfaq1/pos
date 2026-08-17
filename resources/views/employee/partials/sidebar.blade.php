@@ -1,39 +1,9 @@
 @php
+    use App\Support\EmployeeNavigation;
+
     $user = auth()->user();
     $currentRouteName = request()->route()?->getName();
-    $menuGroups = collect([
-        [
-            'label' => 'Workspace',
-            'items' => [
-                ['label' => 'Dashboard', 'route' => 'employee.dashboard', 'pattern' => 'employee.dashboard', 'icon' => 'tabler-layout-dashboard', 'visible' => true],
-                ['label' => 'POS / Workspace', 'route' => 'employee.order.new-order', 'pattern' => 'employee.order.*|employee.pos|employee.workspace', 'icon' => 'tabler-cash-register', 'visible' => true],
-                ['label' => 'Invoices', 'route' => 'employee.invoices.index', 'pattern' => 'employee.invoices.*', 'icon' => 'tabler-file-invoice', 'visible' => $user?->can('orders.view')],
-                ['label' => 'Discounts', 'route' => 'employee.cards.type', 'routeParams' => ['type' => 'discount'], 'pattern' => 'employee.cards.*', 'icon' => 'tabler-ticket', 'visible' => $user?->can('cards.view') || $user?->can('cards.manage')],
-            ],
-        ],
-        [
-            'label' => 'Catalog',
-            'items' => [
-                ['label' => 'Products', 'route' => 'tenant.ecommerce.products.index', 'pattern' => 'tenant.ecommerce.products.*', 'icon' => 'tabler-package', 'visible' => $user?->can('product.view') || $user?->can('products.view') || $user?->can('products.manage')],
-                ['label' => 'Manage Products', 'route' => 'employee.products.index', 'pattern' => 'employee.products.*', 'icon' => 'tabler-package-import', 'visible' => $user?->can('product.create') || $user?->can('product.update')],
-                ['label' => 'Services', 'route' => 'tenant.ecommerce.services.index', 'pattern' => 'tenant.ecommerce.services.*', 'icon' => 'tabler-tool', 'visible' => $user?->can('service.view') || $user?->can('services.view')],
-            ],
-        ],
-        [
-            'label' => 'Lookup',
-            'items' => [
-                ['label' => 'Customers', 'route' => 'tenant.ecommerce.customers.index', 'pattern' => 'tenant.ecommerce.customers.*', 'icon' => 'tabler-users', 'visible' => $user?->can('customer.view') || $user?->can('customers.view')],
-                ['label' => 'Vehicles', 'route' => 'tenant.ecommerce.vehicles.index', 'pattern' => 'tenant.ecommerce.vehicles.*', 'icon' => 'tabler-car', 'visible' => $user?->can('vehicle.view') || $user?->can('vehicles.view')],
-            ],
-        ],
-    ])->map(function (array $group): array {
-        $group['items'] = collect($group['items'])
-            ->filter(fn (array $item): bool => (bool) $item['visible'])
-            ->values()
-            ->all();
-
-        return $group;
-    })->filter(fn (array $group): bool => ! empty($group['items']))->values();
+    $menuGroups = collect(EmployeeNavigation::sidebarGroups($user));
 
     $isActive = function (string $pattern) use ($currentRouteName): bool {
         return collect(explode('|', $pattern))->contains(

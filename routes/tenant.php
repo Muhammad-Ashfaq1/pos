@@ -1,7 +1,11 @@
 <?php
 
 use App\Http\Controllers\DiscountGroupController;
+use App\Http\Controllers\Employee\InvoiceController;
+use App\Http\Controllers\Employee\OrderCartController;
+use App\Http\Controllers\Employee\OrderController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SharedDataController;
 use App\Http\Controllers\Tenant\CardController;
 use App\Http\Controllers\Tenant\CategoryController;
 use App\Http\Controllers\Tenant\CustomerController;
@@ -33,6 +37,97 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                 Route::get('/{report}/data', 'data')->name('data');
                 Route::get('/{report}/export', 'export')->name('export');
                 Route::get('/{report}', 'index')->name('index');
+            });
+
+        // ── Orders / POS / Invoices (shared Employee controllers + OrderSurface) ──
+        Route::prefix('invoices')
+            ->name('invoices.')
+            ->group(function () {
+                Route::get('/', [InvoiceController::class, 'index'])
+                    ->middleware('permission:orders.view')
+                    ->name('index');
+                Route::get('/listing', [InvoiceController::class, 'listing'])
+                    ->middleware('permission:orders.view')
+                    ->name('listing');
+                Route::get('/create', [InvoiceController::class, 'create'])
+                    ->middleware('permission:orders.create|pos.bill')
+                    ->name('create');
+            });
+
+        Route::prefix('order')
+            ->name('order.')
+            ->group(function () {
+                Route::get('/', [OrderController::class, 'index'])
+                    ->middleware('permission:orders.view')
+                    ->name('index');
+                Route::get('/listing', [OrderController::class, 'listing'])
+                    ->middleware('permission:orders.view')
+                    ->name('listing');
+                Route::get('/new', [OrderController::class, 'create'])
+                    ->middleware('permission:orders.create|pos.bill')
+                    ->name('new-order');
+                Route::post('/save', [OrderController::class, 'store'])
+                    ->middleware('permission:orders.create|pos.bill')
+                    ->name('save');
+                Route::get('/cart', [OrderCartController::class, 'show'])
+                    ->middleware('permission:orders.create|pos.bill')
+                    ->name('cart.show');
+                Route::post('/cart', [OrderCartController::class, 'store'])
+                    ->middleware('permission:orders.create|pos.bill')
+                    ->name('cart.save');
+                Route::delete('/cart', [OrderCartController::class, 'destroy'])
+                    ->middleware('permission:orders.create|pos.bill')
+                    ->name('cart.destroy');
+
+                Route::controller(SharedDataController::class)->group(function () {
+                    Route::get('/categories', 'categories')
+                        ->middleware('permission:orders.create|pos.bill')
+                        ->name('categories');
+                    Route::get('/sub-categories', 'subCategories')
+                        ->middleware('permission:orders.create|pos.bill')
+                        ->name('sub-categories');
+                    Route::get('/products', 'products')
+                        ->middleware('permission:orders.create|pos.bill')
+                        ->name('products');
+                    Route::get('/search', 'search')
+                        ->middleware('permission:orders.create|pos.bill')
+                        ->name('search');
+                });
+
+                Route::get('/returns', [OrderController::class, 'returns'])
+                    ->middleware('permission:orders.view')
+                    ->name('returns');
+                Route::get('/returns/listing', [OrderController::class, 'returnsListing'])
+                    ->middleware('permission:orders.view')
+                    ->name('returns.listing');
+                Route::get('/returns/history', [OrderController::class, 'returnsHistory'])
+                    ->middleware('permission:orders.view')
+                    ->name('returns.history');
+
+                Route::get('/{order}', [OrderController::class, 'show'])
+                    ->middleware('permission:orders.view')
+                    ->whereNumber('order')
+                    ->name('show');
+                Route::post('/{order}/pay', [OrderController::class, 'pay'])
+                    ->middleware('permission:orders.create|pos.bill')
+                    ->whereNumber('order')
+                    ->name('pay');
+                Route::get('/{order}/print', [OrderController::class, 'print'])
+                    ->middleware('permission:orders.view')
+                    ->whereNumber('order')
+                    ->name('print');
+                Route::get('/{order}/pdf', [OrderController::class, 'pdf'])
+                    ->middleware('permission:orders.view')
+                    ->whereNumber('order')
+                    ->name('pdf');
+                Route::post('/{order}/share', [OrderController::class, 'share'])
+                    ->middleware('permission:orders.view')
+                    ->whereNumber('order')
+                    ->name('share');
+                Route::post('/{order}/return', [OrderController::class, 'processReturn'])
+                    ->middleware('permission:orders.create|pos.bill')
+                    ->whereNumber('order')
+                    ->name('return');
             });
 
         Route::prefix('ecommerce')

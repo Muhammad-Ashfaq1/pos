@@ -1,4 +1,4 @@
-@extends('layouts.employee-portal')
+@extends($layout ?? 'layouts.employee-portal')
 
 @section('title', ! empty($order['is_invoice'] ?? false) ? 'Invoice Details' : 'Order Details')
 
@@ -12,8 +12,8 @@
     @php
         $isInvoiceOrder = ! empty($order['is_invoice']);
         $orderBackUrl = $isInvoiceOrder
-            ? route('employee.invoices.index')
-            : route('employee.order.index');
+            ? route($orderRoutes['invoices_index'])
+            : route($orderRoutes['index']);
         $orderBackTitle = $isInvoiceOrder ? 'Back to invoices' : 'Back to orders';
         $orderDetailsTitle = $isInvoiceOrder ? 'Invoice Details' : 'Order Details';
     @endphp
@@ -156,7 +156,7 @@
 
                 <div class="d-grid gap-2 mt-4">
                     @if($order['status'] === 'estimate')
-                        <a href="{{ route('employee.order.new-order', ['order' => $order['id']]) }}" class="btn btn-primary btn-lg w-100 fw-bold btn-process-order">
+                        <a href="{{ route($orderRoutes['new'], ['order' => $order['id']]) }}" class="btn btn-primary btn-lg w-100 fw-bold btn-process-order">
                             <i class="ti tabler-check me-1"></i> Process Order
                         </a>
                     @elseif($order['status'] !== 'paid')
@@ -168,12 +168,12 @@
 
                 <div class="row g-2 mt-2">
                     <div class="col-4">
-                        <a href="{{ route('employee.order.print', $order['id']) }}" target="_blank" class="btn btn-outline-secondary w-100 py-2">
+                        <a href="{{ route($orderRoutes['print'], $order['id']) }}" target="_blank" class="btn btn-outline-secondary w-100 py-2">
                             <i class="ti tabler-printer"></i><br><small class="fw-bold">Print</small>
                         </a>
                     </div>
                     <div class="col-4">
-                        <a href="{{ route('employee.order.pdf', $order['id']) }}" class="btn btn-outline-secondary w-100 py-2">
+                        <a href="{{ route($orderRoutes['pdf'], $order['id']) }}" class="btn btn-outline-secondary w-100 py-2">
                             <i class="ti tabler-download"></i><br><small class="fw-bold">PDF</small>
                         </a>
                     </div>
@@ -205,7 +205,7 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="payment-form" method="POST" action="{{ route('employee.order.pay', $order['id']) }}">
+                <form id="payment-form" method="POST" action="{{ route($orderRoutes['pay'], $order['id']) }}">
                     @csrf
                     <div class="modal-body">
                         <div class="mb-3">
@@ -268,7 +268,7 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="share-form" method="POST" action="{{ route('employee.order.share', $order['id']) }}">
+                <form id="share-form" method="POST" action="{{ route($orderRoutes['share'], $order['id']) }}">
                     @csrf
                     <div class="modal-body">
                         <div class="mb-3">

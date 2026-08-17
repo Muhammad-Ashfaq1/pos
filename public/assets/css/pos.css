@@ -1,5 +1,38 @@
 /* POS System Styles */
 
+.order-entry-screen .pos-sidebar-card,
+.order-entry-screen .order-management {
+    border: 1px solid rgba(49, 46, 129, 0.06);
+    border-radius: 0.9rem;
+    box-shadow:
+        0 10px 28px -16px rgba(49, 46, 129, 0.28),
+        0 1px 2px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+}
+
+.order-entry-screen .pos-sidebar-card .card-body {
+    padding: 1.15rem;
+}
+
+.order-entry-screen .pos-sidebar-card .form-label {
+    font-weight: 700;
+    color: #334155;
+    font-size: 0.86rem;
+}
+
+.order-entry-screen .add-customer-btn,
+.order-entry-screen .add-order-btn,
+.order-entry-screen .add-vehicle-btn {
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-decoration: none;
+}
+
+.order-entry-screen .catalog-header .input-group {
+    border-radius: 0.6rem;
+    overflow: hidden;
+}
+
 .pos-sidebar-card {
     min-height: 85vh;
 }
@@ -1079,9 +1112,14 @@
     color: #cfd3ec !important;
 }
 
-/* Order entry screen — page shell & contrast fixes */
-[data-bs-theme="dark"] .employee-orders-page {
-    color: #cfd3ec;
+[data-bs-theme="dark"] .order-entry-screen .pos-sidebar-card,
+[data-bs-theme="dark"] .order-entry-screen .order-management {
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 28px -16px rgba(0, 0, 0, 0.55);
+}
+
+[data-bs-theme="dark"] .order-entry-screen .pos-sidebar-card .form-label {
+    color: #cbd5e1;
 }
 
 [data-bs-theme="dark"] .employee-orders-title {
@@ -1090,14 +1128,18 @@
 
 [data-bs-theme="dark"] .employee-orders-back-btn,
 [data-bs-theme="dark"] .employee-orders-icon-btn {
-    background: #353a52;
-    color: #b6bee3;
+    background: rgba(var(--bs-primary-rgb), 0.2);
+    border-color: rgba(var(--bs-primary-rgb), 0.3);
+    color: #c7d2fe;
 }
 
 [data-bs-theme="dark"] .employee-orders-back-btn:hover,
 [data-bs-theme="dark"] .employee-orders-icon-btn:hover {
-    background: #434968;
-    color: #e2e8f0;
+    background: rgba(var(--bs-primary-rgb), 0.38) !important;
+    border-color: rgba(var(--bs-primary-rgb), 0.55) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.5) !important;
 }
 
 [data-bs-theme="dark"] .order-entry-screen .pos-sidebar-card,

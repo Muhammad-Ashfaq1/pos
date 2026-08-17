@@ -7,6 +7,7 @@ use App\Models\DiscountGroup;
 use App\Models\Vehicle;
 use App\Repositories\Interface\CustomerRepositoryInterface;
 use App\Support\Currency;
+use App\Support\CustomerVehicleSurface;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -16,11 +17,17 @@ class CustomersRepository implements CustomerRepositoryInterface
 {
     public function index(): View
     {
+        $surface = CustomerVehicleSurface::fromRequest();
+
         return view('tenant.ecommerce.customers.index', [
-            'listingUrl' => route('tenant.ecommerce.customers.listing'),
-            'editUrlTemplate' => route('tenant.ecommerce.customers.edit', ['customer' => '__CUSTOMER__']),
+            'layout' => $surface['layout'],
+            'dashboardRoute' => $surface['dashboard_route'],
+            'isEmployeeSurface' => $surface['is_employee'],
+            'listingUrl' => CustomerVehicleSurface::route('customers_listing'),
+            'editUrlTemplate' => CustomerVehicleSurface::route('customers_edit', ['customer' => '__CUSTOMER__']),
+            'customerSaveUrl' => CustomerVehicleSurface::route('customers_save'),
             'customerTypes' => Customer::typeOptions(),
-            'vehicleIndexUrlTemplate' => route('tenant.ecommerce.vehicles.index', ['customer_id' => '__CUSTOMER__']),
+            'vehicleIndexUrlTemplate' => CustomerVehicleSurface::route('vehicles_index', ['customer_id' => '__CUSTOMER__']),
         ]);
     }
 
@@ -201,10 +208,10 @@ class CustomersRepository implements CustomerRepositoryInterface
             'portal_enabled' => (bool) $customer->portal_enabled,
             'has_portal_access' => $customer->hasPortalAccess(),
             'invite_portal_url' => filled($customer->email)
-                ? route('tenant.ecommerce.customers.invite-portal', $customer)
+                ? CustomerVehicleSurface::route('customers_invite_portal', $customer)
                 : null,
-            'adjust_credit_url' => route('tenant.ecommerce.customers.adjust-credit', $customer),
-            'credit_history_url' => route('tenant.ecommerce.customers.credit-history', $customer),
+            'adjust_credit_url' => CustomerVehicleSurface::route('customers_adjust_credit', $customer),
+            'credit_history_url' => CustomerVehicleSurface::route('customers_credit_history', $customer),
             'last_visit_at' => $customer->last_visit_at?->format('Y-m-d H:i:s'),
             'last_visit_at_form' => $customer->last_visit_at?->format('Y-m-d\TH:i'),
             'last_visit_at_label' => $customer->last_visit_at?->format('d M Y h:i A'),
@@ -212,15 +219,15 @@ class CustomersRepository implements CustomerRepositoryInterface
             'default_vehicle_plate' => $customer->defaultVehicle?->plate_number,
             'created_at' => $customer->created_at?->format('d M Y'),
             'vehicles_index_url' => ($user?->can('viewAny', Vehicle::class) ?? false)
-                ? route('tenant.ecommerce.vehicles.index', ['customer_id' => $customer->id])
+                ? CustomerVehicleSurface::route('vehicles_index', ['customer_id' => $customer->id])
                 : null,
             'can_update' => $user?->can('update', $customer) ?? false,
             'can_delete' => $user?->can('delete', $customer) ?? false,
             'edit_url' => $user?->can('update', $customer)
-                ? route('tenant.ecommerce.customers.edit', $customer)
+                ? CustomerVehicleSurface::route('customers_edit', $customer)
                 : null,
             'delete_url' => $user?->can('delete', $customer)
-                ? route('tenant.ecommerce.customers.destroy', $customer)
+                ? CustomerVehicleSurface::route('customers_destroy', $customer)
                 : null,
         ];
     }

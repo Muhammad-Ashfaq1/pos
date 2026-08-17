@@ -1,20 +1,30 @@
-@extends('layouts.employee-portal')
+@extends($layout ?? 'layouts.employee-portal')
 
 @section('title', !empty($invoiceMode) ? 'Create Invoice' : 'Create New Order')
+@section('content_container_class', 'container-xxl flex-grow-1 container-p-y')
+
+@php
+    $invoiceMode = ! empty($invoiceMode);
+    $pageBackUrl = $invoiceMode
+        ? route($orderRoutes['invoices_index'])
+        : route($dashboardRoute ?? 'employee.dashboard');
+    $pageBackTitle = $invoiceMode ? 'Back to invoices' : 'Back to dashboard';
+    $pageTitle = $invoiceMode ? 'Create Invoice' : 'New Order';
+    $sidebarCardClass = 'pos-glass-card pos-tone-primary h-100 pos-sidebar-card';
+    $catalogCardClass = 'pos-glass-card pos-tone-primary h-100 p-4 order-management';
+    $paymentCardClass = 'pos-glass-card pos-tone-primary payment-panel h-100';
+    $paymentSideCardClass = 'pos-glass-card pos-tone-primary payment-panel h-100';
+    $productDetailCardClass = 'pos-glass-card pos-tone-primary product-detail-card';
+@endphp
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/pos.css') }}?v={{ filemtime(public_path('assets/css/pos.css')) }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}" />
 @endpush
 
 @section('content')
-    @php
-        $invoiceMode = ! empty($invoiceMode);
-        $pageBackUrl = $invoiceMode ? route('employee.invoices.index') : route('employee.dashboard');
-        $pageBackTitle = $invoiceMode ? 'Back to invoices' : 'Back to dashboard';
-        $pageTitle = $invoiceMode ? 'Invoices' : 'New Order';
-    @endphp
-    <div class="employee-orders-page" @if($invoiceMode) data-invoice-mode="1" @endif>
+    <div class="pos-order-glass employee-orders-page" @if($invoiceMode) data-invoice-mode="1" @endif>
         <x-employee.page-header :title="$pageTitle" :back-url="$pageBackUrl" :back-title="$pageBackTitle" />
 
         <div class="order-entry-screen">
@@ -22,7 +32,7 @@
             <div class="row g-4">
 
                 <div class="col-md-4">
-                    <div class="card shadow-sm border-0 h-100 pos-sidebar-card">
+                    <div class="{{ $sidebarCardClass }}">
                         <div class="card-body d-flex flex-column">
 
                             <div class="mb-3">
@@ -233,7 +243,7 @@
                 </div>
 
                 <div class="col-md-8">
-                    <div class="card shadow-sm border-0 h-100 p-4 order-management">
+                    <div class="{{ $catalogCardClass }}">
 
                         {{-- Header (back button + dynamic title + unified search) --}}
                         <div class="d-flex justify-content-between align-items-center mb-4 catalog-header">
@@ -300,7 +310,7 @@
 
                             <div class="row g-3 product-detail-grid">
                                 <div class="col-md-4">
-                                    <div class="card border-0 shadow-sm rounded-4 product-detail-card">
+                                    <div class="{{ $productDetailCardClass }}">
                                         <div class="card-body p-3">
                                             <div class="d-flex align-items-center gap-3 mb-3">
                                                 <div class="avatar avatar-lg flex-shrink-0">
@@ -310,7 +320,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="flex-grow-1 min-w-0">
-                                                    <h6 class="text-wrap fw-bold text-dark mb-1 text-truncate product-name">Product Name</h6>
+                                                    <h6 class="text-wrap fw-bold mb-1 text-truncate product-name">Product Name</h6>
                                                     <div class="d-flex gap-1 flex-wrap">
                                                         <small class="badge bg-label-secondary px-2 rounded-pill fs-tiny">SKU:
                                                             <span class="product-sku">—</span></small>
@@ -373,7 +383,7 @@
 
             <div class="row g-4 payment-layout">
                 <div class="col-lg-6">
-                    <div class="card payment-panel h-100">
+                    <div class="{{ $paymentCardClass }}">
                         <div class="card-body d-flex flex-column">
                             <div class="payment-summary">
                                 <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
@@ -467,7 +477,7 @@
                 </div>
 
                 <div class="col-lg-6">
-                    <div class="card payment-panel h-100">
+                    <div class="{{ $paymentSideCardClass }}">
                         <div class="card-body d-flex flex-column">
                             <h5 class="fw-bold border-bottom pb-3 mb-4">Payment Amount</h5>
 
@@ -515,120 +525,121 @@
                 </div>
             </div>
         </div>
-    </div>
-    @include('employee.order.sidebar-modal')
-    @include('employee.cards.partials.create-modals', [
-        'products' => $cardFormProducts ?? collect(),
-        'currencySymbol' => $currencySymbol ?? \App\Support\Currency::symbol(),
-    ])
-    @include('tenant.ecommerce.customers.partials.save-modal')
-    @if($vehicleRequired)
-        @include('tenant.ecommerce.vehicles.partials.save-modal')
-    @endif
 
-    <div class="modal fade" id="draftShareModal" tabindex="-1" aria-labelledby="draftShareModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content text-start">
-                <div class="modal-header border-bottom">
-                    <h5 class="modal-title fw-bold" id="draftShareModalLabel">Share Estimate PDF</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="draft-share-form">
-                    <div class="modal-body">
-                        <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" role="alert">
-                            <i class="ti tabler-info-circle me-2 fs-5"></i>
-                            <span>This saves the current cart as an estimate, then emails the PDF.</span>
+        @include('employee.order.sidebar-modal')
+        @include('employee.cards.partials.create-modals', [
+            'products' => $cardFormProducts ?? collect(),
+            'currencySymbol' => $currencySymbol ?? \App\Support\Currency::symbol(),
+        ])
+        @include('tenant.ecommerce.customers.partials.save-modal')
+        @if($vehicleRequired)
+            @include('tenant.ecommerce.vehicles.partials.save-modal')
+        @endif
+
+        <div class="modal fade" id="draftShareModal" tabindex="-1" aria-labelledby="draftShareModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content text-start">
+                    <div class="modal-header border-bottom">
+                        <h5 class="modal-title fw-bold" id="draftShareModalLabel">Share Estimate PDF</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="draft-share-form">
+                        <div class="modal-body">
+                            <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" role="alert">
+                                <i class="ti tabler-info-circle me-2 fs-5"></i>
+                                <span>This saves the current cart as an estimate, then emails the PDF.</span>
+                            </div>
+                            <label for="draft_share_email" class="form-label fw-bold">Recipient Email <span class="text-danger">*</span></label>
+                            <input type="email" id="draft_share_email" name="email" class="form-control" required placeholder="name@example.com">
                         </div>
-                        <label for="draft_share_email" class="form-label fw-bold">Recipient Email <span class="text-danger">*</span></label>
-                        <input type="email" id="draft_share_email" name="email" class="form-control" required placeholder="name@example.com">
-                    </div>
-                    <div class="modal-footer border-top">
-                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary fw-bold btn-submit-draft-share">Send PDF</button>
-                    </div>
-                </form>
+                        <div class="modal-footer border-top">
+                            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary fw-bold btn-submit-draft-share">Send PDF</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="modal fade" id="emailReceiptModal" tabindex="-1" aria-labelledby="emailReceiptModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content text-start border-0 shadow">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold" id="emailReceiptModalLabel">Email Receipt</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="email-receipt-form">
-                    <div class="modal-body pt-3">
-                        <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" role="alert">
-                            <i class="ti tabler-info-circle me-2 fs-5"></i>
-                            <span>After checkout, the invoice PDF will be emailed to this address.</span>
+        <div class="modal fade" id="emailReceiptModal" tabindex="-1" aria-labelledby="emailReceiptModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content text-start border-0 shadow">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold" id="emailReceiptModalLabel">Email Receipt</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="email-receipt-form">
+                        <div class="modal-body pt-3">
+                            <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" role="alert">
+                                <i class="ti tabler-info-circle me-2 fs-5"></i>
+                                <span>After checkout, the invoice PDF will be emailed to this address.</span>
+                            </div>
+                            <label for="email_receipt_email" class="form-label fw-bold">Recipient Email <span class="text-danger">*</span></label>
+                            <input type="email" id="email_receipt_email" name="email" class="form-control" required placeholder="name@example.com" autocomplete="email">
+                            <div class="invalid-feedback">Please enter a valid email address.</div>
                         </div>
-                        <label for="email_receipt_email" class="form-label fw-bold">Recipient Email <span class="text-danger">*</span></label>
-                        <input type="email" id="email_receipt_email" name="email" class="form-control" required placeholder="name@example.com" autocomplete="email">
-                        <div class="invalid-feedback">Please enter a valid email address.</div>
-                    </div>
-                    <div class="modal-footer border-0 pt-0">
-                        <button type="button" class="btn btn-label-secondary btn-clear-email-receipt">Don't Email</button>
-                        <button type="submit" class="btn btn-primary fw-bold btn-save-email-receipt">Save Email</button>
-                    </div>
-                </form>
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-label-secondary btn-clear-email-receipt">Don't Email</button>
+                            <button type="submit" class="btn btn-primary fw-bold btn-save-email-receipt">Save Email</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
 
-    @if(! empty($invoiceMode))
-    <div class="modal fade" id="invoiceSaveSendModal" tabindex="-1" aria-labelledby="invoiceSaveSendModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content text-start">
-                <div class="modal-header border-bottom">
-                    <h5 class="modal-title fw-bold" id="invoiceSaveSendModalLabel">Save &amp; Send Invoice</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="invoice-save-send-form">
-                    <div class="modal-body">
-                        <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" role="alert">
-                            <i class="ti tabler-info-circle me-2 fs-5"></i>
-                            <span>This saves the invoice, then emails the PDF. You can edit the recipient address before sending.</span>
+        @if(! empty($invoiceMode))
+        <div class="modal fade" id="invoiceSaveSendModal" tabindex="-1" aria-labelledby="invoiceSaveSendModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content text-start">
+                    <div class="modal-header border-bottom">
+                        <h5 class="modal-title fw-bold" id="invoiceSaveSendModalLabel">Save &amp; Send Invoice</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="invoice-save-send-form">
+                        <div class="modal-body">
+                            <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" role="alert">
+                                <i class="ti tabler-info-circle me-2 fs-5"></i>
+                                <span>This saves the invoice, then emails the PDF. You can edit the recipient address before sending.</span>
+                            </div>
+                            <label for="invoice_save_send_email" class="form-label fw-bold">
+                                Recipient Email <span class="text-danger">*</span>
+                            </label>
+                            <input
+                                type="email"
+                                id="invoice_save_send_email"
+                                name="email"
+                                class="form-control"
+                                required
+                                placeholder="name@example.com"
+                                autocomplete="email">
                         </div>
-                        <label for="invoice_save_send_email" class="form-label fw-bold">
-                            Recipient Email <span class="text-danger">*</span>
-                        </label>
-                        <input
-                            type="email"
-                            id="invoice_save_send_email"
-                            name="email"
-                            class="form-control"
-                            required
-                            placeholder="name@example.com"
-                            autocomplete="email">
-                    </div>
-                    <div class="modal-footer border-top">
-                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary fw-bold btn-submit-invoice-save-send">Save &amp; Send</button>
-                    </div>
-                </form>
+                        <div class="modal-footer border-top">
+                            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary fw-bold btn-submit-invoice-save-send">Save &amp; Send</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
+        @endif
     </div>
-    @endif
 @endsection
 
 @push('page-script')
     <script>
         window.catalogRoutes = {
-            categories: @json(route('employee.order.categories')),
-            subCategories: @json(route('employee.order.sub-categories')),
-            products: @json(route('employee.order.products')),
-            search: @json(route('employee.order.search')),
-            save: @json(route('employee.order.save')),
-            cartShow: @json(route('employee.order.cart.show')),
-            cartSave: @json(route('employee.order.cart.save')),
-            cartDestroy: @json(route('employee.order.cart.destroy')),
-            show: @json(route('employee.order.show', ['order' => '__ORDER_ID__'])),
-            print: @json(route('employee.order.print', ['order' => '__ORDER_ID__'])),
-            pdf: @json(route('employee.order.pdf', ['order' => '__ORDER_ID__'])),
-            share: @json(route('employee.order.share', ['order' => '__ORDER_ID__'])),
+            categories: @json(route($orderRoutes['categories'])),
+            subCategories: @json(route($orderRoutes['sub_categories'])),
+            products: @json(route($orderRoutes['products'])),
+            search: @json(route($orderRoutes['search'])),
+            save: @json(route($orderRoutes['save'])),
+            cartShow: @json(route($orderRoutes['cart_show'])),
+            cartSave: @json(route($orderRoutes['cart_save'])),
+            cartDestroy: @json(route($orderRoutes['cart_destroy'])),
+            show: @json(route($orderRoutes['show'], ['order' => '__ORDER_ID__'])),
+            print: @json(route($orderRoutes['print'], ['order' => '__ORDER_ID__'])),
+            pdf: @json(route($orderRoutes['pdf'], ['order' => '__ORDER_ID__'])),
+            share: @json(route($orderRoutes['share'], ['order' => '__ORDER_ID__'])),
             dropdownCustomers: @json(route('tenant.ecommerce.dropdowns.customers')),
             dropdownVehicles: @json(route('tenant.ecommerce.dropdowns.vehicles')),
             dropdownServices: @json(route('tenant.ecommerce.dropdowns.services')),
@@ -638,7 +649,7 @@
             returnDaysAfterPurchase: @json($returnDaysAfterPurchase),
             creditMinRedeemBalance: @json((float) ($creditMinRedeemBalance ?? 50)),
             invoiceMode: @json(!empty($invoiceMode)),
-            invoicesIndexUrl: @json(route('employee.invoices.index')),
+            invoicesIndexUrl: @json(route($orderRoutes['invoices_index'])),
         };
         window.editOrder = @json($editOrder ?? null);
         window.employeeCards = {

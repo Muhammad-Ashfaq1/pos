@@ -1,20 +1,24 @@
-@extends('layouts.employee-portal')
+@extends($layout ?? 'layouts.employee-portal')
 
 @section('title', 'Invoices')
 
 @push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/employee-invoices.css') }}?v={{ filemtime(public_path('assets/css/employee-invoices.css')) }}">
 @endpush
 
 @section('content')
-    <div class="employee-invoices-page">
-        <x-employee.page-header title="Invoices" :back-url="route('employee.dashboard')" back-title="Back to dashboard" />
+    <div class="employee-invoices-page employee-orders-glass">
+        <x-employee.page-header title="Invoices" :back-url="route($dashboardRoute ?? 'employee.dashboard')" back-title="Back to dashboard" />
 
-        <div class="card employee-invoices-card border-0 shadow-sm">
+        <div class="employee-invoices-card pos-glass-card pos-tone-success border-0">
             <div class="card-body">
                 <div class="employee-invoices-toolbar">
-                    <h5 class="mb-0 fw-bold">Invoices</h5>
+                    <div>
+                        <h5 class="mb-0 fw-bold">Invoices</h5>
+                        <p class="employee-invoices-subheading mb-0">Billing, print, and customer email</p>
+                    </div>
                     <div class="employee-invoices-toolbar-actions">
                         <button
                             type="button"
@@ -30,7 +34,7 @@
                             Reset Filters
                         </button>
                         @canany(['orders.create', 'pos.bill'])
-                            <a href="{{ route('employee.invoices.create') }}" class="btn btn-primary fw-semibold">
+                            <a href="{{ route($orderRoutes['invoices_create']) }}" class="btn btn-primary fw-semibold">
                                 <i class="ti tabler-plus me-1"></i>
                                 Create Invoice
                             </a>
@@ -132,8 +136,8 @@
 @push('page-script')
     <script>
         window.employeeInvoicesConfig = {
-            listingUrl: @json(route('employee.invoices.listing')),
-            createUrl: @json(route('employee.invoices.create')),
+            listingUrl: @json(route($orderRoutes['invoices_listing'])),
+            createUrl: @json(route($orderRoutes['invoices_create'])),
             csrfToken: @json(csrf_token()),
         };
     </script>

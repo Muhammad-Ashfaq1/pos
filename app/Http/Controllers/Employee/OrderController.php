@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Repositories\Interface\OrderRepositoryInterface;
 use App\Services\CreditService;
 use App\Support\Currency;
+use App\Support\OrderSurface;
 use App\Support\Tenancy\TenantContext;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
@@ -30,7 +31,7 @@ class OrderController extends Controller
 
     public function index(): View
     {
-        return view('employee.order.index');
+        return view('employee.order.index', $this->surfaceData());
     }
 
     public function create(Request $request): View
@@ -47,37 +48,31 @@ class OrderController extends Controller
                 'Only estimates can be processed into the order form.'
             );
 
+            $user = $request->user();
+            if ($user?->isFloorEmployee()) {
+                abort_unless(
+                    (int) $order->created_by === (int) $user->getKey(),
+                    403,
+                    'You can only edit orders you created.'
+                );
+            }
+
             $editOrder = $this->orderRepository->editDraft($order);
         }
 
-        return view('employee.order.new-order', [
+        return view('employee.order.new-order', $this->surfaceData([
             'vehicleRequired' => $tenant?->isVehicleRequired() ?? true,
             'returnDaysAfterPurchase' => $tenant?->returnDaysAfterPurchase() ?? 30,
             'creditMinRedeemBalance' => $tenant?->creditMinRedeemBalance() ?? 50.0,
             'editOrder' => $editOrder,
             'invoiceMode' => false,
-            'orderCards' => Card::query()
-                ->currentlyValid()
-                ->whereIn('card_type', [Card::TYPE_DISCOUNT, Card::TYPE_GIFT, Card::TYPE_REWARD])
-                ->orderBy('name')
-                ->get([
-                    'id',
-                    'product_id',
-                    'card_type',
-                    'discount_type',
-                    'name',
-                    'value',
-                    'minimum_spend',
-                    'valid_until',
-                    'details',
-                ])
-                ->groupBy('card_type'),
+            'orderCards' => $this->orderCards(),
             'cardFormProducts' => Product::query()
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name']),
-            'currencySymbol' => \App\Support\Currency::symbol(),
-        ]);
+            'currencySymbol' => Currency::symbol(),
+        ]));
     }
 
     public function listing(Request $request): JsonResponse
@@ -115,9 +110,9 @@ class OrderController extends Controller
 
     public function show(Order $order): View
     {
-        return view('employee.order.show', [
+        return view('employee.order.show', $this->surfaceData([
             'order' => $this->orderRepository->details($order),
-        ]);
+        ]));
     }
 
     public function store(SaveOrderRequest $request): JsonResponse
@@ -135,10 +130,10 @@ class OrderController extends Controller
                 'errors' => $e->errors(),
             ], 422);
         } catch (\Throwable $e) {
-            logger()->error('Order save error: ' . $e->getMessage(), ['exception' => $e]);
+            logger()->error('Order save error: '.$e->getMessage(), ['exception' => $e]);
 
             return response()->json([
-                'message' => 'An error occurred while saving the order: ' . $e->getMessage(),
+                'message' => 'An error occurred while saving the order: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -172,7 +167,7 @@ class OrderController extends Controller
         $order->refresh();
 
         if ($order->is_invoice && ($result['data']['status'] ?? null) === Order::STATUS_PAID) {
-            $result['redirect_url'] = route('employee.invoices.index');
+            $result['redirect_url'] = OrderSurface::route('invoices_index');
         }
 
         return response()->json($result);
@@ -219,8 +214,6 @@ class OrderController extends Controller
         $email = $data['email'];
         $customer = $order->customer;
 
-        // Prefill-only: save recipient onto customer when they have no email yet.
-        // Do not overwrite an existing customer email when sending to an alternate address.
         if ($customer && blank($customer->email)) {
             $customer->update(['email' => $email]);
         }
@@ -250,11 +243,10 @@ class OrderController extends Controller
     public function returns(): View
     {
         $tenant = $this->tenantContext->current();
-        $returnDays = $tenant?->returnDaysAfterPurchase() ?? 30;
 
-        return view('employee.order.returns', [
-            'returnDays' => $returnDays,
-        ]);
+        return view('employee.order.returns', $this->surfaceData([
+            'returnDays' => $tenant?->returnDaysAfterPurchase() ?? 30,
+        ]));
     }
 
     public function returnsListing(Request $request): JsonResponse
@@ -287,7 +279,6 @@ class OrderController extends Controller
         $tenant = $this->tenantContext->current();
         $returnDays = $tenant?->returnDaysAfterPurchase() ?? 30;
 
-        // Check if order is within return policy
         if ($order->paid_at && $order->paid_at->diffInDays(now()) > $returnDays) {
             return response()->json([
                 'success' => false,
@@ -295,7 +286,6 @@ class OrderController extends Controller
             ], 422);
         }
 
-        // Check if order is already returned
         if ($order->status === 'returned') {
             return response()->json([
                 'success' => false,
@@ -303,7 +293,6 @@ class OrderController extends Controller
             ], 422);
         }
 
-        // Check if order is paid
         if ($order->status !== Order::STATUS_PAID && $order->status !== Order::STATUS_PARTIALLY_PAID) {
             return response()->json([
                 'success' => false,
@@ -323,5 +312,41 @@ class OrderController extends Controller
         $result = $this->orderRepository->processReturn($order, $data, $request->user());
 
         return response()->json($result);
+    }
+
+    /**
+     * @param  array<string, mixed>  $extra
+     * @return array<string, mixed>
+     */
+    private function surfaceData(array $extra = []): array
+    {
+        $surface = OrderSurface::fromRequest();
+
+        return array_merge([
+            'layout' => $surface['layout'],
+            'dashboardRoute' => $surface['dashboard_route'],
+            'orderRoutes' => $surface['routes'],
+            'isEmployeeSurface' => $surface['is_employee'],
+        ], $extra);
+    }
+
+    private function orderCards()
+    {
+        return Card::query()
+            ->currentlyValid()
+            ->whereIn('card_type', [Card::TYPE_DISCOUNT, Card::TYPE_GIFT, Card::TYPE_REWARD])
+            ->orderBy('name')
+            ->get([
+                'id',
+                'product_id',
+                'card_type',
+                'discount_type',
+                'name',
+                'value',
+                'minimum_spend',
+                'valid_until',
+                'details',
+            ])
+            ->groupBy('card_type');
     }
 }

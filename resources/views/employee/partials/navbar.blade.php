@@ -3,7 +3,7 @@
     $workspaceName = $user?->tenant?->display_name ?? 'Employee Workspace';
     $quickLinks = collect([
         ($user?->can('customer.view') || $user?->can('customers.view')) ? ['label' => 'Customers', 'route' => route('tenant.ecommerce.customers.index'), 'icon' => 'tabler-users'] : null,
-        ($user?->can('vehicle.view') || $user?->can('vehicles.view')) ? ['label' => 'Vehicles', 'route' => route('tenant.ecommerce.vehicles.index'), 'icon' => 'tabler-car'] : null,
+        ($user?->can('vehicle.view') || $user?->can('vehicles.view')) ? ['label' => 'Vehicles', 'route' => route('employee.vehicles.index'), 'icon' => 'tabler-car'] : null,
         ($user?->can('product.view') || $user?->can('products.view')) ? ['label' => 'Products', 'route' => route('tenant.ecommerce.products.index'), 'icon' => 'tabler-package'] : null,
         ($user?->can('service.view') || $user?->can('services.view')) ? ['label' => 'Services', 'route' => route('tenant.ecommerce.services.index'), 'icon' => 'tabler-tool'] : null,
     ])->filter()->take(2)->values();

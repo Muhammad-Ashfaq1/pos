@@ -37,6 +37,10 @@
             @if (auth()->user() instanceof \App\Models\User)
                 @include('partials._theme-picker')
             @endif
+
+            @if (auth()->user()?->isEmployee())
+                @include('account-settings.partials.workspace-form')
+            @endif
         </div>
 
         <div class="account-settings-panel"

@@ -1,6 +1,6 @@
 /*
- * employee-dashboard.css — glass KPI strip on the employee portal dashboard.
- * Conventions: namespaced .pos-ed-*, additive, no !important, reads kit tones.
+ * employee-dashboard.css — Product Mix KPIs keep stock pos-glass.
+ * Other cards + bottom nav: frosted glass like admin (size/layout unchanged).
  */
 .pos-ed-kpis {
     display: grid;
@@ -11,10 +11,499 @@
 
 @media (min-width: 768px) {
     .pos-ed-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1200px) {
+    .pos-ed-kpis--1 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pos-ed-kpis--2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pos-ed-kpis--3 {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+
+    .pos-ed-kpis--4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.employee-dashboard #employee-product-mix .preview-stats-grid .pos-glass-card:last-child {
+    max-width: none;
+}
+
+.product-mix-breakdown {
+    margin-top: 0.35rem;
+    padding-top: 1.15rem;
+    border-top: 1px solid rgba(var(--pos-tone-rgb), 0.12);
+}
+
+.product-mix-breakdown-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.product-mix-breakdown-title {
+    margin: 0 0 0.25rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--bs-heading-color, #444050);
+}
+
+.employee-dashboard #employee-product-mix .pos-stat-desc {
+    margin-top: 0.15rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    line-height: 1.25;
+    color: rgba(var(--bs-body-color-rgb, 111, 107, 125), 0.72);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-mix-breakdown-subtitle {
+    margin: 0;
+    font-size: 0.86rem;
+    color: var(--bs-secondary-color, #6f6b7d);
+}
+
+.product-mix-breakdown-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    align-items: stretch;
+}
+
+@media (min-width: 992px) {
+    .product-mix-breakdown-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.product-mix-panel {
+    min-height: 100%;
+    padding: 0.95rem 1rem 1rem;
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-mix-panel.pos-glass-card {
+    background-color: rgba(255, 255, 255, 0.52);
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--pos-tone-rgb), 0.12) 0%,
+        rgba(var(--pos-tone-rgb), 0.04) 45%,
+        rgba(var(--pos-tone-rgb), 0) 78%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.68);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    backdrop-filter: blur(16px) saturate(160%);
+    box-shadow:
+        0 10px 24px -14px rgba(var(--pos-tone-rgb), 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+.product-mix-panel-head {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 0.65rem;
+}
+
+.product-mix-panel-icon {
+    width: 1.85rem;
+    height: 1.85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.55rem;
+    background: rgba(40, 199, 111, 0.12);
+    color: #28c76f;
+    font-size: 1rem;
+}
+
+.product-mix-panel-icon--warning {
+    background: rgba(255, 159, 67, 0.12);
+    color: #ff9f43;
+}
+
+.product-mix-panel-icon--primary {
+    background: rgba(115, 103, 240, 0.12);
+    color: #7367f0;
+}
+
+.product-mix-panel-icon--info {
+    background: rgba(0, 207, 232, 0.12);
+    color: #00cfe8;
+}
+
+.product-mix-panel-title {
+    margin: 0;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--bs-heading-color, #444050);
+}
+
+.product-mix-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 230px;
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.product-mix-category-body,
+.product-mix-product-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+}
+
+#employeeTopProductsChart,
+#employeeCategorySalesChart {
+    width: 100%;
+    min-height: 220px;
+}
+
+#employeeTopProductsChart .apexcharts-canvas,
+#employeeCategorySalesChart .apexcharts-canvas {
+    margin: 0 auto;
+}
+
+.product-mix-breakdown,
+.product-mix-breakdown-grid,
+#employee-product-mix.pos-glass-card,
+.product-mix-panel--categories.pos-glass-card,
+.product-mix-panel--products.pos-glass-card,
+.product-mix-category-body,
+.product-mix-product-body,
+#employeeTopProductsChart,
+#employeeTopProductsChart .apexcharts-canvas,
+#employeeCategorySalesChart,
+#employeeCategorySalesChart .apexcharts-canvas {
+    overflow: visible;
+}
+
+.product-mix-rank-list,
+.product-mix-rank-list--compact {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+}
+
+.product-mix-rank-item,
+.product-mix-rank-item--compact {
+    display: block;
+    padding: 0.48rem 0.6rem;
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+    backdrop-filter: blur(10px) saturate(150%);
+    box-shadow:
+        0 4px 14px -10px rgba(47, 43, 61, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.product-mix-rank-no {
+    flex-shrink: 0;
+    width: 1.55rem;
+    height: 1.55rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #28c76f;
+    background: rgba(40, 199, 111, 0.12);
+    border: 1px solid rgba(40, 199, 111, 0.18);
+}
+
+.product-mix-rank-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.product-mix-rank-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+}
+
+.product-mix-rank-name {
+    min-width: 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--bs-heading-color, #444050);
+    line-height: 1.35;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.product-mix-rank-meta {
+    flex-shrink: 0;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--bs-secondary-color, #6f6b7d);
+    white-space: nowrap;
+}
+
+.product-mix-rank-bar {
+    display: block;
+    width: calc(var(--mix-pct, 0) * 1%);
+    max-width: 100%;
+    height: 0.28rem;
+    margin-top: 0.42rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(40, 199, 111, 0.85), rgba(40, 199, 111, 0.35));
+}
+
+.product-mix-rank-bar--info {
+    background: linear-gradient(90deg, rgba(0, 207, 232, 0.85), rgba(0, 207, 232, 0.35));
+}
+
+.product-mix-empty-badge {
+    width: 2.35rem;
+    height: 2.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.55rem;
+    border-radius: 999px;
+    background: rgba(40, 199, 111, 0.1);
+    color: #28c76f;
+    font-size: 1.1rem;
+}
+
+.product-mix-empty-badge--info {
+    background: rgba(0, 207, 232, 0.1);
+    color: #00cfe8;
+}
+
+.product-mix-empty-title {
+    margin: 0 0 0.2rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--bs-heading-color, #444050);
+}
+
+.product-mix-empty-text {
+    margin: 0;
+    max-width: 15rem;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--bs-secondary-color, #6f6b7d);
+}
+
+[data-bs-theme="dark"] .product-mix-breakdown-title,
+[data-bs-theme="dark"] .product-mix-panel-title,
+[data-bs-theme="dark"] .product-mix-rank-name,
+[data-bs-theme="dark"] .product-mix-empty-title {
+    color: var(--bs-heading-color, #cfcde4);
+}
+
+[data-bs-theme="dark"] .product-mix-panel.pos-glass-card {
+    background-color: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: none;
+}
+
+[data-bs-theme="dark"] .product-mix-rank-item {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: none;
 }
 
 .pos-ed-banner {
     margin-bottom: 1rem;
+}
+
+.employee-dashboard .pos-glass-card .preview-card-header,
+.employee-dashboard .pos-glass-card .preview-card-body,
+.employee-dashboard .pos-glass-card .preview-tile-content {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+}
+
+/* Chart, operations, action tiles — frost like admin glass */
+.employee-dashboard .preview-card.pos-glass-card,
+.employee-dashboard .preview-tile.pos-glass-card {
+    background-color: rgba(255, 255, 255, 0.58);
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--pos-tone-rgb), 0.1) 0%,
+        rgba(var(--pos-tone-rgb), 0.03) 42%,
+        rgba(var(--pos-tone-rgb), 0) 72%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.62);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
+    box-shadow:
+        0 10px 28px -12px rgba(var(--pos-tone-rgb), 0.32),
+        0 1px 2px rgba(47, 43, 61, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.employee-dashboard .preview-card.pos-glass-card .preview-card-header {
+    border-bottom-color: rgba(var(--pos-tone-rgb), 0.1);
+}
+
+.employee-dashboard .preview-card:not(#employee-product-mix) .preview-card-title,
+.employee-dashboard .preview-tile-title {
+    color: var(--bs-heading-color, #444050);
+}
+
+.employee-dashboard .preview-operation-icon,
+.employee-dashboard .preview-operation-link {
+    color: var(--bs-primary);
+}
+
+.employee-dashboard .preview-operation-label {
+    color: var(--bs-body-color, #6f6b7d);
+}
+
+.employee-dashboard .preview-operation-item {
+    border-bottom-color: rgba(47, 43, 61, 0.08);
+}
+
+/* Action tiles only — keep Product Mix rules untouched above */
+.employee-dashboard .preview-tiles-grid {
+    gap: 0.95rem;
+}
+
+.employee-dashboard .preview-tile.pos-glass-card {
+    min-height: 8.75rem;
+    border-radius: 1.05rem;
+    text-decoration: none;
+    transition:
+        transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.2s ease,
+        border-color 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.employee-dashboard .preview-tile-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.85rem;
+    min-height: 8.75rem;
+    padding: 1.15rem 0.9rem;
+}
+
+.employee-dashboard .preview-tile-title {
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 750;
+    letter-spacing: -0.01em;
+    text-align: center;
+    line-height: 1.25;
+    color: var(--bs-heading-color, #444050);
+}
+
+.employee-dashboard .preview-tile-icon-wrap {
+    width: 3rem;
+    height: 3rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.85rem;
+    background: color-mix(in sRGB, #fff 78%, rgb(var(--pos-tone-rgb)));
+    color: rgb(var(--pos-tone-rgb));
+    box-shadow:
+        0 8px 18px -10px rgba(var(--pos-tone-rgb), 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.employee-dashboard .preview-tile-icon-wrap i {
+    font-size: 1.35rem;
+    line-height: 1;
+}
+
+.employee-dashboard .preview-tile:hover {
+    transform: translateY(-3px);
+    background-color: rgba(255, 255, 255, 0.78);
+    border-color: rgba(var(--pos-tone-rgb), 0.28);
+    box-shadow:
+        0 18px 34px -16px rgba(var(--pos-tone-rgb), 0.48),
+        0 1px 2px rgba(47, 43, 61, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+.employee-dashboard .preview-tile:hover .preview-tile-icon-wrap {
+    transform: translateY(-1px) scale(1.04);
+    box-shadow:
+        0 10px 20px -10px rgba(var(--pos-tone-rgb), 0.65),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.employee-dashboard .preview-tile:active {
+    transform: translateY(-1px);
+}
+
+.employee-dashboard .preview-tile--static {
+    cursor: default;
+}
+
+.employee-dashboard .preview-tile--static:hover {
+    transform: none;
+}
+
+.employee-dashboard .preview-tile--static:hover .preview-tile-icon-wrap {
+    transform: none;
+}
+
+/* Product Mix outer card only — inner KPI cards keep stock pos-glass */
+.employee-dashboard #employee-product-mix.preview-card.pos-glass-card .preview-card-header,
+.employee-dashboard #employee-product-mix.preview-card.pos-glass-card .preview-card-body {
+    background: transparent;
+}
+
+/* Bottom bar — frosted glass, same size/layout as portal */
+.employee-dashboard .preview-bottom-nav {
+    background: rgba(255, 255, 255, 0.48);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    -webkit-backdrop-filter: blur(20px) saturate(170%);
+    backdrop-filter: blur(20px) saturate(170%);
+    box-shadow:
+        0 14px 40px rgba(47, 43, 61, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.employee-dashboard .preview-bottom-link:hover {
+    background: rgba(255, 255, 255, 0.55);
+}
+
+[data-bs-theme="dark"] .employee-dashboard .preview-card:not(#employee-product-mix) .preview-card-title,
+[data-bs-theme="dark"] .employee-dashboard .preview-tile-title {
+    color: var(--bs-heading-color, #cfcde4);
+}
+
+[data-bs-theme="dark"] .employee-dashboard .preview-card.pos-glass-card,
+[data-bs-theme="dark"] .employee-dashboard .preview-tile.pos-glass-card {
+    background-color: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
 }

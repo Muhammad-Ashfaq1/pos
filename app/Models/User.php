@@ -50,6 +50,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'avatar',
         'theme_variant',
         'theme_mode',
+        'employee_nav_mode',
+        'employee_product_mix_cards',
         'failed_attempts',
         'locked_until',
         'is_active',
@@ -70,6 +72,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
             'locked_until' => 'datetime',
+            'employee_product_mix_cards' => 'array',
         ];
     }
 
@@ -106,6 +109,18 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isEmployee(): bool
     {
         return $this->role === self::EMPLOYEE || $this->hasRole(self::EMPLOYEE);
+    }
+
+    /**
+     * Floor staff on the employee panel: can create many records, but not update/delete
+     * customers/vehicles (managers / tenant admins are excluded).
+     */
+    public function isFloorEmployee(): bool
+    {
+        return $this->isEmployee()
+            && ! $this->isTenantAdmin()
+            && ! $this->isManager()
+            && $this->role !== self::ADMIN;
     }
 
     public function isCustomer(): bool

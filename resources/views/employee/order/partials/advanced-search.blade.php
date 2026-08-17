@@ -30,7 +30,7 @@
             <input
                 type="search"
                 class="form-control"
-                placeholder="Search Name, Barcode or ALU"
+                placeholder="Search name, barcode, or SKU"
                 data-order-search
                 data-order-search-source="advanced">
         </label>

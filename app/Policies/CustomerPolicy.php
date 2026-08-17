@@ -29,6 +29,10 @@ class CustomerPolicy
 
     public function update(User $user, Customer $customer): bool
     {
+        if ($user->isFloorEmployee()) {
+            return false;
+        }
+
         return $this->hasTenantContext()
             && ($user->can('customer.update') || $user->can('customers.manage'))
             && (int) $user->tenant_id === (int) $customer->tenant_id;
@@ -36,6 +40,10 @@ class CustomerPolicy
 
     public function delete(User $user, Customer $customer): bool
     {
+        if ($user->isFloorEmployee()) {
+            return false;
+        }
+
         return $this->hasTenantContext()
             && ($user->can('customer.delete') || $user->can('customers.manage'))
             && (int) $user->tenant_id === (int) $customer->tenant_id;

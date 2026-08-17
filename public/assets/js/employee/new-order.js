@@ -732,7 +732,7 @@
 
         return ''
             + '<div class="col-md-4">'
-            + '  <div class="card border-0 pos-product-card product-detail-card"'
+            + '  <div class="' + (document.querySelector('.pos-order-glass') ? 'pos-glass-card pos-tone-primary pos-product-card product-detail-card' : 'card border-0 pos-product-card product-detail-card') + '"'
             + '       data-type="product" data-id="' + productId + '" data-name="' + escape(item.name || 'Product') + '"'
             + '       data-price="' + unitPrice.toFixed(2) + '"'
             + '       data-sku="' + escape(item.sku || '') + '"'

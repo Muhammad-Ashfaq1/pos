@@ -29,6 +29,10 @@ class VehiclePolicy
 
     public function update(User $user, Vehicle $vehicle): bool
     {
+        if ($user->isFloorEmployee()) {
+            return false;
+        }
+
         return $this->hasTenantContext()
             && ($user->can('vehicle.update') || $user->can('vehicles.manage'))
             && (int) $user->tenant_id === (int) $vehicle->tenant_id;
@@ -36,6 +40,10 @@ class VehiclePolicy
 
     public function delete(User $user, Vehicle $vehicle): bool
     {
+        if ($user->isFloorEmployee()) {
+            return false;
+        }
+
         return $this->hasTenantContext()
             && ($user->can('vehicle.delete') || $user->can('vehicles.manage'))
             && (int) $user->tenant_id === (int) $vehicle->tenant_id;
