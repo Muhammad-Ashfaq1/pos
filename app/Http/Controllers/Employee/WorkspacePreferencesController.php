@@ -31,7 +31,6 @@ class WorkspacePreferencesController extends Controller
         return view('employee.settings.product-mix', [
             'groupedCards' => ProductMixCards::groupedCatalog(),
             'selectedKeys' => $selected,
-            'maxSelected' => ProductMixCards::MAX_SELECTED,
             'selectedCount' => count($selected),
             'previewByKey' => $previewByKey,
         ]);
@@ -65,7 +64,7 @@ class WorkspacePreferencesController extends Controller
         abort_unless($user?->isEmployee(), 403);
 
         $validated = $request->validate([
-            'cards' => ['nullable', 'array', 'max:'.ProductMixCards::MAX_SELECTED],
+            'cards' => ['nullable', 'array'],
             'cards.*' => ['string', Rule::in(ProductMixCards::keys())],
         ]);
 
