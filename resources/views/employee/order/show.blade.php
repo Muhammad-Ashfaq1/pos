@@ -12,13 +12,14 @@
 @section('title', $orderDetailsTitle)
 
 @push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/employee-order-details.css') }}?v={{ filemtime(public_path('assets/css/employee-order-details.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/pos.css') }}?v={{ filemtime(public_path('assets/css/pos.css')) }}">
 @endpush
 
 @section('content')
-    <div class="employee-orders-page employee-order-details-page">
+    <div class="employee-orders-page employee-order-details-page employee-orders-glass {{ $openedFromInvoices ? 'opened-from-invoices' : '' }}">
         <x-employee.page-header
             :title="$orderDetailsTitle"
             :back-url="$orderBackUrl"
@@ -26,7 +27,7 @@
         />
 
         <div class="employee-order-details-layout">
-            <section class="employee-order-details-panel employee-order-details-items-panel">
+            <section class="employee-order-details-panel employee-order-details-items-panel pos-glass-card pos-tone-primary">
                 <div class="employee-order-details-panel-header">
                     <h5>Order details</h5>
                 </div>
@@ -83,7 +84,7 @@
                 </div>
             </section>
 
-            <section class="employee-order-details-panel employee-order-details-payment-panel">
+            <section class="employee-order-details-panel employee-order-details-payment-panel pos-glass-card pos-tone-warning">
                 <div class="employee-order-details-order-title">
                     <h5>
                         <span>Order No.</span>
