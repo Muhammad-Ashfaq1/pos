@@ -1380,30 +1380,33 @@ a.employee-orders-tab:hover,
 }
 
 .employee-orders-panel.pos-glass-card {
-    background-color: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-radius: var(--pos-glass-radius, 1.25rem);
+    background-color: rgba(255, 255, 255, 0.62);
     background-image: linear-gradient(
         135deg,
-        rgba(var(--pos-tone-rgb), 0.1) 0%,
-        rgba(var(--pos-tone-rgb), 0.03) 42%,
-        rgba(var(--pos-tone-rgb), 0) 72%
+        rgba(var(--pos-tone-rgb), 0.12) 0%,
+        rgba(var(--pos-tone-rgb), 0.03) 45%,
+        rgba(255, 255, 255, 0.2) 80%
     );
-    border-color: rgba(var(--pos-tone-rgb), 0.16);
+    -webkit-backdrop-filter: blur(20px) saturate(170%);
+    backdrop-filter: blur(20px) saturate(170%);
     box-shadow:
-        0 8px 22px -12px rgba(var(--pos-tone-rgb), 0.34),
-        0 1px 2px rgba(47, 43, 61, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.55);
-    -webkit-backdrop-filter: blur(14px) saturate(160%);
-    backdrop-filter: blur(14px) saturate(160%);
+        0 12px 32px -10px rgba(var(--pos-tone-rgb), 0.35),
+        0 2px 4px rgba(47, 43, 61, 0.04),
+        inset 0 1px 1.5px rgba(255, 255, 255, 0.95),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.02);
     position: relative;
     overflow: hidden;
 }
 
 .employee-orders-panel.pos-glass-card:hover {
-    border-color: rgba(var(--pos-tone-rgb), 0.3);
+    border-color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.78);
     box-shadow:
-        0 14px 30px -14px rgba(var(--pos-tone-rgb), 0.44),
-        0 1px 2px rgba(47, 43, 61, 0.05),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        0 18px 38px -14px rgba(var(--pos-tone-rgb), 0.48),
+        0 2px 4px rgba(47, 43, 61, 0.05),
+        inset 0 1px 1.5px #ffffff;
 }
 
 .employee-orders-glass .employee-orders-back-btn,
@@ -1562,21 +1565,22 @@ a.employee-orders-tab:hover,
 .pos-order-glass .product-detail-card.pos-glass-card,
 .pos-order-glass .pos-product-card.pos-glass-card {
     --pos-tone-rgb: 91, 75, 219;
-    border: 1px solid rgba(91, 75, 219, 0.16);
-    border-radius: var(--pos-glass-radius, 1rem);
-    background-color: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-radius: var(--pos-glass-radius, 1.25rem);
+    background-color: rgba(255, 255, 255, 0.62);
     background-image: linear-gradient(
         135deg,
-        rgba(91, 75, 219, 0.1) 0%,
-        rgba(91, 75, 219, 0.03) 42%,
-        rgba(91, 75, 219, 0) 72%
+        rgba(91, 75, 219, 0.12) 0%,
+        rgba(91, 75, 219, 0.03) 45%,
+        rgba(255, 255, 255, 0.2) 80%
     );
-    -webkit-backdrop-filter: blur(16px) saturate(150%);
-    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(170%);
+    backdrop-filter: blur(20px) saturate(170%);
     box-shadow:
-        0 8px 22px -12px rgba(var(--bs-primary-rgb), 0.34),
-        0 1px 2px rgba(47, 43, 61, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.55);
+        0 12px 32px -10px rgba(var(--bs-primary-rgb), 0.35),
+        0 2px 4px rgba(47, 43, 61, 0.04),
+        inset 0 1px 1.5px rgba(255, 255, 255, 0.95),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.02);
     overflow: hidden;
 }
 
@@ -1585,12 +1589,12 @@ a.employee-orders-tab:hover,
 .pos-order-glass .payment-panel.pos-glass-card:hover,
 .pos-order-glass .product-detail-card.pos-glass-card:hover,
 .pos-order-glass .pos-product-card.pos-glass-card:hover {
-    border-color: rgba(var(--bs-primary-rgb), 0.3);
-    background-color: rgba(255, 255, 255, 0.82);
+    border-color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.78);
     box-shadow:
-        0 14px 30px -14px rgba(var(--bs-primary-rgb), 0.44),
-        0 1px 2px rgba(47, 43, 61, 0.05),
-        inset 0 1px 0 rgba(255, 255, 255, 0.65);
+        0 18px 38px -14px rgba(var(--bs-primary-rgb), 0.48),
+        0 2px 4px rgba(47, 43, 61, 0.05),
+        inset 0 1px 1.5px #ffffff;
 }
 
 .pos-order-glass .pos-glass-card::after {
