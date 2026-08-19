@@ -343,8 +343,20 @@
   });
 
   $rangeRoot.on('shown.bs.dropdown', '.dropdown', function () {
+    $card.addClass('is-range-dropdown-open');
     if (window.AppDatepicker && typeof window.AppDatepicker.init === 'function') {
       window.AppDatepicker.init(this);
+    }
+  });
+
+  $rangeRoot.on('hidden.bs.dropdown', '.dropdown', function () {
+    $card.removeClass('is-range-dropdown-open');
+  });
+
+  $rangeRoot.on('hide.bs.dropdown', '.dropdown', function (event) {
+    const clickTarget = event.clickEvent && event.clickEvent.target;
+    if (clickTarget && clickTarget.closest && clickTarget.closest('.flatpickr-calendar')) {
+      event.preventDefault();
     }
   });
 

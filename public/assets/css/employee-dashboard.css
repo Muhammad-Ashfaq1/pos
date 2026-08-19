@@ -52,30 +52,53 @@
     color: #1e3a8a;
 }
 
-/* Date filter lives in the product mix header — keep dropdown above KPI cards */
-.employee-dashboard #employee-product-mix.pos-glass-card {
+/* Product mix shell — header sits outside glass card so the filter dropdown is not clipped */
+.employee-dashboard .employee-product-mix-shell {
+    position: relative;
     overflow: visible;
 }
 
-.employee-dashboard #employee-product-mix .preview-card-header {
+.employee-dashboard .employee-product-mix-header {
     position: relative;
-    z-index: 30;
+    z-index: 40;
     overflow: visible;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-bottom: 1px solid rgba(var(--pos-tone-rgb), 0.1);
+    border-radius: var(--pos-glass-radius, 1rem) var(--pos-glass-radius, 1rem) 0 0;
+    background-color: rgba(255, 255, 255, 0.62);
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--pos-tone-rgb), 0.12) 0%,
+        rgba(var(--pos-tone-rgb), 0.03) 45%,
+        rgba(255, 255, 255, 0.2) 80%
+    );
+    -webkit-backdrop-filter: blur(20px) saturate(170%);
+    backdrop-filter: blur(20px) saturate(170%);
 }
 
-.employee-dashboard #employee-product-mix .preview-card-body {
-    position: relative;
-    z-index: 1;
+.employee-dashboard .employee-product-mix-card {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-top: none;
+}
+
+.employee-dashboard #employee-product-mix.is-range-dropdown-open {
+    z-index: 120;
 }
 
 .employee-dashboard #employee-product-mix .preview-card-tools {
     position: relative;
-    z-index: 40;
-    flex-wrap: nowrap;
+    z-index: 50;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
-.employee-dashboard #employee-product-mix .preview-card-tools .dropdown-menu {
-    z-index: 1050;
+.employee-dashboard #employee-product-mix .employee-dashboard-range-dropdown {
+    position: relative;
+}
+
+.employee-dashboard #employee-product-mix .employee-dashboard-range-menu {
+    z-index: 2000;
 }
 
 .employee-dashboard #employee-product-mix .employee-dashboard-range-toggle {
@@ -246,7 +269,7 @@
 
 .product-mix-breakdown,
 .product-mix-breakdown-grid,
-#employee-product-mix.pos-glass-card,
+#employee-product-mix .employee-product-mix-card,
 .product-mix-panel--categories.pos-glass-card,
 .product-mix-panel--products.pos-glass-card,
 .product-mix-category-body,
@@ -401,7 +424,7 @@
     margin-bottom: 1rem;
 }
 
-.employee-dashboard .pos-glass-card .preview-card-header,
+.employee-dashboard .pos-glass-card:not(.employee-product-mix-card) .preview-card-header,
 .employee-dashboard .pos-glass-card .preview-card-body,
 .employee-dashboard .pos-glass-card .preview-tile-content {
     position: relative;
@@ -409,11 +432,17 @@
     background: transparent;
 }
 
+.employee-dashboard .employee-product-mix-header,
+.employee-dashboard .employee-product-mix-card .preview-card-body {
+    position: relative;
+    background: transparent;
+}
+
 .employee-dashboard .preview-card.pos-glass-card .preview-card-header {
     border-bottom-color: rgba(var(--pos-tone-rgb), 0.1);
 }
 
-.employee-dashboard .preview-card:not(#employee-product-mix) .preview-card-title,
+.employee-dashboard .preview-card:not(.employee-product-mix-card) .preview-card-title,
 .employee-dashboard .preview-tile-title {
     color: var(--bs-heading-color, #444050);
 }
@@ -538,9 +567,9 @@
     transform: none;
 }
 
-/* Product Mix outer card only — inner KPI cards keep stock pos-glass */
-.employee-dashboard #employee-product-mix.preview-card.pos-glass-card .preview-card-header,
-.employee-dashboard #employee-product-mix.preview-card.pos-glass-card .preview-card-body {
+/* Product Mix shell header + inner glass card */
+.employee-dashboard .employee-product-mix-header,
+.employee-dashboard .employee-product-mix-card .preview-card-body {
     background: transparent;
 }
 
@@ -559,7 +588,7 @@
     background: rgba(255, 255, 255, 0.75);
 }
 
-[data-bs-theme="dark"] .employee-dashboard .preview-card:not(#employee-product-mix) .preview-card-title,
+[data-bs-theme="dark"] .employee-dashboard .preview-card:not(.employee-product-mix-card) .preview-card-title,
 [data-bs-theme="dark"] .employee-dashboard .preview-tile-title {
     color: var(--bs-heading-color, #cfcde4);
 }

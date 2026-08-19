@@ -17,8 +17,8 @@
     $summaryCards = $summaryCards ?? [];
 @endphp
 
-<div class="preview-card pos-glass-card pos-tone-primary" id="employee-product-mix">
-    <div class="preview-card-header">
+<div class="employee-product-mix-shell pos-tone-primary" id="employee-product-mix">
+    <div class="preview-card-header employee-product-mix-header">
         <div>
             <h2 class="preview-card-title">Sales &amp; Product Mix</h2>
             <p class="preview-card-subtitle mb-0">
@@ -28,7 +28,7 @@
 
         <div class="preview-card-tools" data-dashboard-range>
             <div class="dropdown employee-dashboard-range-dropdown">
-                <button class="btn btn-sm btn-label-primary dropdown-toggle employee-dashboard-range-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" data-dashboard-range-toggle>
+                <button class="btn btn-sm btn-label-primary dropdown-toggle employee-dashboard-range-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="false" aria-expanded="false" data-dashboard-range-toggle>
                     <i class="ti tabler-filter me-1"></i><span data-dashboard-range-toggle-label>{{ $selectedPeriod === 'custom' ? 'Custom range' : $rangeLabel }}</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end p-2 employee-dashboard-range-menu" style="min-width: 16rem;">
@@ -71,53 +71,55 @@
         </div>
     </div>
 
-    <div class="preview-card-body">
-        <div class="preview-stats-grid pos-ed-kpis pos-ed-kpis--{{ max(1, min(4, count($summaryCards))) }}" data-product-mix-stats>
-            @foreach($summaryCards as $card)
-                <x-employee.product-mix-stat-card :card="$card" />
-            @endforeach
-        </div>
-
-        <div class="product-mix-breakdown">
-            <div class="product-mix-breakdown-header">
-                <div>
-                    <h3 class="product-mix-breakdown-title">Product Mix</h3>
-                    <p class="product-mix-breakdown-subtitle">Top sellers &amp; categories</p>
-                </div>
+    <div class="preview-card pos-glass-card pos-tone-primary employee-product-mix-card">
+        <div class="preview-card-body">
+            <div class="preview-stats-grid pos-ed-kpis pos-ed-kpis--{{ max(1, min(4, count($summaryCards))) }}" data-product-mix-stats>
+                @foreach($summaryCards as $card)
+                    <x-employee.product-mix-stat-card :card="$card" />
+                @endforeach
             </div>
 
-            <div class="product-mix-breakdown-grid">
-                <div class="product-mix-panel product-mix-panel--products pos-glass-card pos-tone-warning">
-                    <div class="product-mix-panel-head">
-                        <span class="product-mix-panel-icon product-mix-panel-icon--warning"><i class="ti tabler-chart-bar" aria-hidden="true"></i></span>
-                        <h4 class="product-mix-panel-title">Top Selling Products</h4>
-                    </div>
-
-                    <div class="product-mix-empty-state" data-product-mix-top-products-empty @if(count($topProducts)) hidden @endif>
-                        <span class="product-mix-empty-badge"><i class="ti tabler-package" aria-hidden="true"></i></span>
-                        <p class="product-mix-empty-title">No product sales</p>
-                        <p class="product-mix-empty-text">Rankings appear after your first completed order.</p>
-                    </div>
-
-                    <div class="product-mix-product-body" data-product-mix-top-body @if(!count($topProducts)) hidden @endif>
-                        <div id="employeeTopProductsChart" data-product-mix-top-chart></div>
+            <div class="product-mix-breakdown">
+                <div class="product-mix-breakdown-header">
+                    <div>
+                        <h3 class="product-mix-breakdown-title">Product Mix</h3>
+                        <p class="product-mix-breakdown-subtitle">Top sellers &amp; categories</p>
                     </div>
                 </div>
 
-                <div class="product-mix-panel product-mix-panel--categories pos-glass-card pos-tone-primary">
-                    <div class="product-mix-panel-head">
-                        <span class="product-mix-panel-icon product-mix-panel-icon--primary"><i class="ti tabler-chart-bar" aria-hidden="true"></i></span>
-                        <h4 class="product-mix-panel-title">Sales by Category</h4>
+                <div class="product-mix-breakdown-grid">
+                    <div class="product-mix-panel product-mix-panel--products pos-glass-card pos-tone-warning">
+                        <div class="product-mix-panel-head">
+                            <span class="product-mix-panel-icon product-mix-panel-icon--warning"><i class="ti tabler-chart-bar" aria-hidden="true"></i></span>
+                            <h4 class="product-mix-panel-title">Top Selling Products</h4>
+                        </div>
+
+                        <div class="product-mix-empty-state" data-product-mix-top-products-empty @if(count($topProducts)) hidden @endif>
+                            <span class="product-mix-empty-badge"><i class="ti tabler-package" aria-hidden="true"></i></span>
+                            <p class="product-mix-empty-title">No product sales</p>
+                            <p class="product-mix-empty-text">Rankings appear after your first completed order.</p>
+                        </div>
+
+                        <div class="product-mix-product-body" data-product-mix-top-body @if(!count($topProducts)) hidden @endif>
+                            <div id="employeeTopProductsChart" data-product-mix-top-chart></div>
+                        </div>
                     </div>
 
-                    <div class="product-mix-empty-state" data-product-mix-category-empty @if(count($salesByCategory)) hidden @endif>
-                        <span class="product-mix-empty-badge product-mix-empty-badge--info"><i class="ti tabler-category" aria-hidden="true"></i></span>
-                        <p class="product-mix-empty-title">No category data</p>
-                        <p class="product-mix-empty-text">Category breakdown fills in as sales come through.</p>
-                    </div>
+                    <div class="product-mix-panel product-mix-panel--categories pos-glass-card pos-tone-primary">
+                        <div class="product-mix-panel-head">
+                            <span class="product-mix-panel-icon product-mix-panel-icon--primary"><i class="ti tabler-chart-bar" aria-hidden="true"></i></span>
+                            <h4 class="product-mix-panel-title">Sales by Category</h4>
+                        </div>
 
-                    <div class="product-mix-category-body" data-product-mix-category-body @if(!count($salesByCategory)) hidden @endif>
-                        <div id="employeeCategorySalesChart" data-product-mix-category-chart></div>
+                        <div class="product-mix-empty-state" data-product-mix-category-empty @if(count($salesByCategory)) hidden @endif>
+                            <span class="product-mix-empty-badge product-mix-empty-badge--info"><i class="ti tabler-category" aria-hidden="true"></i></span>
+                            <p class="product-mix-empty-title">No category data</p>
+                            <p class="product-mix-empty-text">Category breakdown fills in as sales come through.</p>
+                        </div>
+
+                        <div class="product-mix-category-body" data-product-mix-category-body @if(!count($salesByCategory)) hidden @endif>
+                            <div id="employeeCategorySalesChart" data-product-mix-category-chart></div>
+                        </div>
                     </div>
                 </div>
             </div>
