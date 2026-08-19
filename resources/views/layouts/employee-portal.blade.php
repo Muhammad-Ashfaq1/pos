@@ -40,6 +40,7 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/core.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/pos-themes.css') }}?v={{ filemtime(public_path('assets/css/pos-themes.css')) }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
@@ -102,8 +103,9 @@
             min-height: 100vh;
             font-family: 'Public Sans', sans-serif;
             background:
-                radial-gradient(circle at top right, rgba(167, 139, 250, 0.2), transparent 22%),
-                linear-gradient(180deg, #fafafd 0%, #f5f6fb 100%);
+                radial-gradient(circle at 12% 18%, rgba(215, 208, 252, 0.65) 0%, transparent 40%),
+                radial-gradient(circle at 88% 58%, rgba(225, 212, 253, 0.55) 0%, transparent 45%),
+                linear-gradient(135deg, #f4f3fb 0%, #ebe6f8 100%);
         }
 
         html.employee-admin-preview .btn-primary,
@@ -139,9 +141,11 @@
             position: sticky;
             top: 0;
             z-index: 30;
-            border-bottom: 1px solid rgba(199, 210, 254, 0.9);
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.78);
+            -webkit-backdrop-filter: blur(20px) saturate(170%);
+            backdrop-filter: blur(20px) saturate(170%);
+            box-shadow: 0 4px 20px -8px rgba(91, 75, 219, 0.15), inset 0 -1px 0 rgba(255, 255, 255, 0.8);
         }
 
         .employee-admin-preview .preview-container {
@@ -290,6 +294,15 @@
             flex-direction: column;
             gap: 1rem;
             padding-top: 2rem;
+        }
+
+        .employee-admin-preview .preview-card.pos-glass-card .preview-card-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+            background: transparent;
+        }
+
+        .employee-admin-preview .preview-card.pos-glass-card .preview-card-body {
+            background: transparent;
         }
 
         .employee-admin-preview .preview-card:not(.pos-glass-card) {
@@ -487,7 +500,7 @@
             align-items: start;
         }
 
-        .employee-admin-preview .preview-tile {
+        .employee-admin-preview .preview-tile:not(.pos-glass-card) {
             min-height: 9.7rem;
             height: auto;
             display: flex;
@@ -499,7 +512,7 @@
             transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
         }
 
-        .employee-admin-preview .preview-tile-content {
+        .employee-admin-preview .preview-tile:not(.pos-glass-card) .preview-tile-content {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -508,7 +521,7 @@
             padding-top: 0.35rem;
         }
 
-        .employee-admin-preview .preview-tile-icon-wrap {
+        .employee-admin-preview .preview-tile:not(.pos-glass-card) .preview-tile-icon-wrap {
             width: 4rem;
             height: 4rem;
             display: inline-flex;
@@ -521,19 +534,25 @@
             font-size: 1.95rem;
         }
 
-        .employee-admin-preview .preview-tile-title {
+        .employee-admin-preview .preview-tile:not(.pos-glass-card) .preview-tile-title {
             margin: 0;
             font-size: 1.15rem;
             font-weight: 700;
             color: var(--preview-indigo);
         }
 
-        /* Same lavender hover on every tile — icon/title styles unchanged */
-        .employee-admin-preview .preview-tile:hover {
+        /* Same lavender hover on legacy tiles only */
+        .employee-admin-preview .preview-tile:not(.pos-glass-card):hover {
             background: #d2d1e1;
             border-color: #d2d1e1;
             transform: translateY(-2px);
             box-shadow: 0 14px 28px rgba(67, 56, 202, 0.12);
+        }
+
+        .employee-admin-preview .preview-tile.pos-glass-card {
+            padding: 0;
+            cursor: pointer;
+            text-decoration: none;
         }
 
         .employee-admin-preview .preview-tile:focus-visible {
@@ -553,11 +572,12 @@
             justify-content: space-around;
             gap: 0.5rem;
             padding: 0.7rem 0.9rem;
-            border-radius: 1rem;
-            border: 1px solid rgba(165, 180, 252, 0.9);
-            background: rgba(224, 231, 255, 0.92);
-            backdrop-filter: blur(20px);
-            box-shadow: 0 24px 50px rgba(67, 56, 202, 0.18);
+            border-radius: 1.15rem;
+            border: 1px solid rgba(255, 255, 255, 0.75);
+            background: rgba(238, 242, 255, 0.72);
+            -webkit-backdrop-filter: blur(20px) saturate(170%);
+            backdrop-filter: blur(20px) saturate(170%);
+            box-shadow: 0 16px 40px -10px rgba(91, 75, 219, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.85);
         }
 
         .employee-admin-preview .preview-bottom-link {
@@ -573,9 +593,13 @@
             transition: background-color 0.2s ease;
         }
 
-        .employee-admin-preview .preview-bottom-link:hover,
-        .employee-admin-preview .preview-bottom-link.is-active {
+        .employee-admin-preview .preview-bottom-link:hover {
             background: rgba(255, 255, 255, 0.72);
+        }
+
+        .employee-admin-preview .preview-bottom-link.is-active {
+            background: rgba(255, 255, 255, 0.82);
+            box-shadow: inset 0 -2px 0 rgb(var(--bs-primary-rgb));
         }
 
         .employee-admin-preview .preview-bottom-icon {

@@ -1,4 +1,4 @@
-<div class="card">
+<div class="{{ ! empty($isEmployeeSurface) ? 'pos-glass-card pos-tone-primary' : 'card' }}">
     <div class="card-datatable table-responsive pt-0">
         <table class="products-datatables table">
             <thead class="bg-label-primary">
