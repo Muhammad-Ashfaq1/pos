@@ -17,29 +17,20 @@ use Illuminate\View\View;
 
 class PanelController
 {
-    public function dashboard(): View
+    public function dashboard(Request $request): View
     {
-        // Weekly trend data for graph
-        $days = collect(range(0, 6))
-            ->map(fn (int $i) => Carbon::today()->subDays(6 - $i));
+        $range = $this->resolveProductMixRange(
+            $request->query('period'),
+            $request->query('start'),
+            $request->query('end'),
+        );
 
-        $orders = Order::query()
-            ->where('created_at', '>=', $days->first())
-            ->get(['total_amount', 'status', 'created_at']);
+        ['labels' => $trendLabels, 'sales' => $trendSales, 'estimates' => $trendEstimates] = $this->trendForRange($range);
 
-        $byDay = $orders->groupBy(fn ($o) => $o->created_at->format('Y-m-d'));
-
-        $trendLabels = $days->map(fn ($d) => $d->format('D'))->all();
-
-        $trendSales = $days->map(fn ($d) => round((float) ($byDay->get($d->format('Y-m-d'))?->where('status', '!=', Order::STATUS_ESTIMATE)->sum('total_amount') ?? 0), 2))->all();
-
-        $trendEstimates = $days->map(fn ($d) => round((float) ($byDay->get($d->format('Y-m-d'))?->where('status', Order::STATUS_ESTIMATE)->sum('total_amount') ?? 0), 2))->all();
-
-        $range = DashboardDateRange::fromRequest('today');
-
-        return view('employee.dashboard', array_merge($this->productMixStats($range, request()->user()), [
+        return view('employee.dashboard', array_merge($this->productMixStats($range, $request->user()), [
             'product_mix_period' => $range->period,
             'product_mix_period_label' => $range->label,
+            'dashboard_range' => $this->rangePayload($range),
             'trend_labels' => $trendLabels,
             'trend_sales' => $trendSales,
             'trend_estimates' => $trendEstimates,
@@ -48,9 +39,16 @@ class PanelController
 
     public function productMix(Request $request): JsonResponse
     {
-        $range = $this->resolveProductMixRange($request->query('period'));
+        $range = $this->resolveProductMixRange(
+            $request->query('period'),
+            $request->query('start'),
+            $request->query('end'),
+        );
 
-        return response()->json($this->productMixStats($range, $request->user()));
+        return response()->json(array_merge(
+            $this->productMixStats($range, $request->user()),
+            ['dashboard_range' => $this->rangePayload($range)],
+        ));
     }
 
     /**
@@ -128,14 +126,19 @@ class PanelController
         $selectedKeys = ProductMixCards::selectedFor($user instanceof User ? $user : null);
         $stats['selected_card_keys'] = $selectedKeys;
         $stats['summary_cards'] = ProductMixCards::summaryCards($selectedKeys, $stats);
+        $stats['trend'] = $this->trendForRange($range);
 
         return $stats;
     }
 
-    private function resolveProductMixRange(?string $period): DashboardDateRange
+    private function resolveProductMixRange(?string $period, ?string $start = null, ?string $end = null): DashboardDateRange
     {
         $period = is_string($period) ? strtolower(trim($period)) : 'today';
         $now = Carbon::now();
+
+        if ($period === 'custom') {
+            return DashboardDateRange::fromRequest('custom', $start, $end);
+        }
 
         return match ($period) {
             'yesterday' => DashboardDateRange::fromRequest('yesterday'),
@@ -161,6 +164,63 @@ class PanelController
             'year' => DashboardDateRange::fromRequest('year'),
             default => DashboardDateRange::fromRequest('today'),
         };
+    }
+
+    /**
+     * @return array{labels: list<string>, sales: list<float>, estimates: list<float>}
+     */
+    private function trendForRange(DashboardDateRange $range): array
+    {
+        $orders = Order::query()
+            ->withinRange($range)
+            ->get(['total_amount', 'status', 'created_at']);
+
+        if ($range->isDailyTrend()) {
+            $days = collect();
+            $cursor = $range->start->copy()->startOfDay();
+
+            while ($cursor->lte($range->end)) {
+                $days->push($cursor->copy());
+                $cursor->addDay();
+            }
+
+            $byDay = $orders->groupBy(fn ($o) => $o->created_at->format('Y-m-d'));
+
+            return [
+                'labels' => $days->map(fn ($d) => $d->format('d M'))->all(),
+                'sales' => $days->map(fn ($d) => round((float) ($byDay->get($d->format('Y-m-d'))?->where('status', '!=', Order::STATUS_ESTIMATE)->sum('total_amount') ?? 0), 2))->all(),
+                'estimates' => $days->map(fn ($d) => round((float) ($byDay->get($d->format('Y-m-d'))?->where('status', Order::STATUS_ESTIMATE)->sum('total_amount') ?? 0), 2))->all(),
+            ];
+        }
+
+        $months = collect();
+        $cursor = $range->start->copy()->startOfMonth();
+
+        while ($cursor->lte($range->end)) {
+            $months->push($cursor->copy());
+            $cursor->addMonth();
+        }
+
+        $byMonth = $orders->groupBy(fn ($o) => $o->created_at->format('Y-m'));
+
+        return [
+            'labels' => $months->map(fn ($d) => $d->format('M Y'))->all(),
+            'sales' => $months->map(fn ($d) => round((float) ($byMonth->get($d->format('Y-m'))?->where('status', '!=', Order::STATUS_ESTIMATE)->sum('total_amount') ?? 0), 2))->all(),
+            'estimates' => $months->map(fn ($d) => round((float) ($byMonth->get($d->format('Y-m'))?->where('status', Order::STATUS_ESTIMATE)->sum('total_amount') ?? 0), 2))->all(),
+        ];
+    }
+
+    /**
+     * @return array{period: string, label: string, start: string, end: string}
+     */
+    private function rangePayload(DashboardDateRange $range): array
+    {
+        return [
+            'period' => $range->period,
+            'label' => $range->label,
+            'start' => $range->start->toDateString(),
+            'end' => $range->end->toDateString(),
+        ];
     }
 
     public function newOrder(): View

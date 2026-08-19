@@ -7,6 +7,7 @@
 
     $user = auth()->user();
     $productMixPeriod = $product_mix_period ?? 'today';
+    $dashboardRange = $dashboard_range ?? ['period' => 'today', 'label' => 'Today', 'start' => '', 'end' => ''];
     $summaryCards = $summary_cards ?? [];
 
     $tiles = EmployeeNavigation::dashboardTiles($user);
@@ -14,6 +15,20 @@
     $operations = [
         ['label' => 'End of Day Status', 'icon' => 'tabler-sun-low'],
         ['label' => 'Till Management', 'icon' => 'tabler-credit-card'],
+    ];
+
+    $initialDashboardData = [
+        'period' => $productMixPeriod,
+        'period_label' => $product_mix_period_label ?? 'Today',
+        'dashboard_range' => $dashboardRange,
+        'summary_cards' => $summaryCards,
+        'top_products' => $top_products ?? [],
+        'sales_by_category' => $sales_by_category ?? [],
+        'trend' => [
+            'labels' => $trend_labels ?? [],
+            'sales' => $trend_sales ?? [],
+            'estimates' => $trend_estimates ?? [],
+        ],
     ];
 @endphp
 
@@ -35,15 +50,18 @@
                 @include('employee.partials.preview-product-mix', [
                     'summaryCards' => $summaryCards,
                     'productMixPeriod' => $productMixPeriod,
+                    'productMixPeriodLabel' => $product_mix_period_label ?? 'Today',
+                    'dashboardRange' => $dashboardRange,
                     'topProducts' => $top_products ?? [],
                     'salesByCategory' => $sales_by_category ?? [],
                     'currencySymbol' => $currency_symbol ?? \App\Support\Currency::symbol(),
                 ])
 
-                <div class="preview-card pos-glass-card pos-tone-info mt-4 mb-4">
+                <div class="preview-card pos-glass-card pos-tone-info mt-4 mb-4" id="employee-performance-chart-card">
                     <div class="preview-card-header">
                         <div>
-                            <h2 class="preview-card-title">Performance Trend (Last 7 Days)</h2>
+                            <h2 class="preview-card-title">Performance Trend</h2>
+                            <p class="preview-card-subtitle mb-0" data-performance-range-label>{{ $product_mix_period_label ?? 'Today' }}</p>
                         </div>
                     </div>
                     <div class="preview-card-body">
@@ -86,56 +104,12 @@
         window.employeeDashboardConfig = {
             productMixUrl: @json(route('employee.dashboard.product-mix')),
             currencySymbol: @json($currency_symbol ?? \App\Support\Currency::symbol()),
-            chartPalette: @json(\App\Support\ProductMixCards::chartPalette())
+            chartPalette: @json(\App\Support\ProductMixCards::chartPalette()),
+            trendChartId: 'employeePerformanceChart',
+            initialData: @json($initialDashboardData)
         };
     </script>
     <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
     <script src="{{ asset('assets/js/shared/sales-mix-charts.js') }}?v={{ filemtime(public_path('assets/js/shared/sales-mix-charts.js')) }}"></script>
     <script src="{{ asset('assets/js/employee/dashboard.js') }}?v={{ filemtime(public_path('assets/js/employee/dashboard.js')) }}"></script>
-    <script>
-        $(function() {
-            var options = {
-                chart: {
-                    type: 'area',
-                    height: 220,
-                    parentHeightOffset: 0,
-                    toolbar: { show: false }
-                },
-                series: [
-                    { name: 'Sales', data: @json($trend_sales) },
-                    { name: 'Estimates', data: @json($trend_estimates) }
-                ],
-                stroke: { curve: 'smooth', width: 2.5 },
-                fill: { type: 'gradient', opacity: [0.15, 0.1] },
-                colors: ['#28c76f', '#ff9f43'],
-                xaxis: {
-                    categories: @json($trend_labels),
-                    axisBorder: { show: false },
-                    axisTicks: { show: false }
-                },
-                yaxis: {
-                    labels: {
-                        formatter: function(val) {
-                            return '{{ \App\Support\Currency::symbol() }}' + Number(val).toLocaleString(undefined, { minimumFractionDigits: 0 });
-                        }
-                    }
-                },
-                grid: { borderColor: '#e2e8f0', strokeDashArray: 5 },
-                dataLabels: { enabled: false },
-                tooltip: {
-                    shared: true,
-                    y: {
-                        formatter: function(val) {
-                            return '{{ \App\Support\Currency::symbol() }}' + Number(val).toLocaleString(undefined, { minimumFractionDigits: 2 });
-                        }
-                    }
-                }
-            };
-
-            var el = document.getElementById('employeePerformanceChart');
-            if (el) {
-                new ApexCharts(el, options).render();
-            }
-        });
-    </script>
 @endpush

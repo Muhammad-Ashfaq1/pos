@@ -52,6 +52,7 @@ class PermissionSeeder extends Seeder
             'pos.bill',
             'orders.view',
             'orders.create',
+            'returns.view',
             'discount.manage',
             'discount.apply_bill',
             'discount.apply_item',

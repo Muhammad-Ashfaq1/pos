@@ -6,12 +6,6 @@
     return window.Helpers;
   };
 
-  const getSharedLoader = function () {
-    return window.AppLoader && typeof window.AppLoader.show === 'function'
-      ? window.AppLoader
-      : null;
-  };
-
   const resolveButton = function (button) {
     if (!button) {
       return null;
@@ -36,9 +30,7 @@
     return html;
   };
 
-  // Loading display is centralized in the AppLoader overlay (auto-wired to
-  // every ajax call), so this only guards against double-submits — it must
-  // not render a second, duplicate spinner inside the button.
+  // Full-screen loading overlay removed app-wide; helpers only disable buttons.
   const setButtonLoading = function (button, isLoading, loadingText, defaultHtml) {
     if (!$) {
       return;
@@ -60,28 +52,9 @@
     $button.prop('disabled', false).html(originalHtml);
   };
 
-  const showLoading = function (message) {
-    const sharedLoader = getSharedLoader();
-    if (sharedLoader) {
-      sharedLoader.show(message || 'Please wait...');
-    }
-  };
+  const showLoading = function () {};
 
-  const hideLoading = function (delay) {
-    const sharedLoader = getSharedLoader();
-    if (!sharedLoader) {
-      return;
-    }
-
-    if (delay && typeof window.setTimeout === 'function') {
-      window.setTimeout(function () {
-        sharedLoader.hide(true);
-      }, delay);
-      return;
-    }
-
-    sharedLoader.hide(true);
-  };
+  const hideLoading = function () {};
 
   const addLoaderToModalHeader = function (modalSelector, text) {
     if (!$) {

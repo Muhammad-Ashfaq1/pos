@@ -192,8 +192,6 @@
       .map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]); })
       .join('&');
 
-    if (window.AppLoader) AppLoader.show('Loading dashboard…');
-
     fetch(baseUrl() + (query ? '?' + query : ''), {
       headers: { 'X-Requested-With': 'XMLHttpRequest' },
       credentials: 'same-origin'
@@ -210,9 +208,6 @@
       })
       .catch(function () {
         if (window.Notiflix && Notiflix.Notify) Notiflix.Notify.failure('Could not update the dashboard.');
-      })
-      .finally(function () {
-        if (window.AppLoader) AppLoader.hide(true);
       });
   }
 

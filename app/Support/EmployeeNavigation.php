@@ -73,7 +73,7 @@ class EmployeeNavigation
             ['key' => 'new_order', 'label' => 'Create New Order', 'icon' => 'tabler-shopping-bag', 'route' => 'employee.order.new-order', 'permission' => ['orders.create', 'pos.bill'], 'tone' => 'primary'],
             ['key' => 'reports', 'label' => 'Reports', 'icon' => 'tabler-report-search', 'route' => 'employee.reports.index', 'routeParams' => ['report' => 'sales'], 'permission' => 'reports.view', 'tone' => 'success'],
             ['key' => 'orders', 'label' => 'Orders', 'icon' => 'tabler-clipboard-data', 'route' => 'employee.order.index', 'permission' => 'orders.view', 'tone' => 'warning'],
-            ['key' => 'returns', 'label' => 'Returns', 'icon' => 'tabler-arrow-back-up', 'route' => 'employee.order.returns', 'permission' => 'orders.view', 'tone' => 'info'],
+            ['key' => 'returns', 'label' => 'Returns', 'icon' => 'tabler-arrow-back-up', 'route' => 'employee.order.returns', 'permission' => ['returns.view', 'orders.view'], 'tone' => 'info'],
             ['key' => 'products', 'label' => 'Product Setup', 'icon' => 'tabler-package-import', 'route' => 'employee.products.index', 'permission' => ['product.create', 'product.view', 'products.view'], 'tone' => 'info'],
             ['key' => 'invoices', 'label' => 'Invoices', 'icon' => 'tabler-file-invoice', 'route' => 'employee.invoices.index', 'permission' => 'orders.view', 'tone' => 'success'],
             ['key' => 'discounts', 'label' => 'Discounts', 'icon' => 'tabler-ticket', 'route' => 'employee.cards.type', 'routeParams' => ['type' => 'discount'], 'permission' => ['cards.view', 'cards.manage'], 'tone' => 'warning'],
@@ -215,7 +215,7 @@ class EmployeeNavigation
                         'route' => 'employee.order.returns',
                         'pattern' => 'employee.order.returns*',
                         'icon' => 'tabler-rotate-2',
-                        'permissions' => ['orders.view'],
+                        'permissions' => ['returns.view', 'orders.view'],
                     ],
                     [
                         'label' => 'Reports',

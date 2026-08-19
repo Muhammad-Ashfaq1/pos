@@ -37,6 +37,65 @@
     max-width: none;
 }
 
+.employee-dashboard .preview-card-subtitle {
+    margin-top: 0.2rem;
+    font-size: 0.8125rem;
+    color: rgba(30, 58, 138, 0.72);
+}
+
+.employee-dashboard .preview-card-tools .dropdown .btn-label-primary {
+    white-space: nowrap;
+}
+
+.employee-dashboard-range-menu .dropdown-item.active {
+    background: rgba(37, 99, 235, 0.12);
+    color: #1e3a8a;
+}
+
+/* Date filter lives in the product mix header — keep dropdown above KPI cards */
+.employee-dashboard #employee-product-mix.pos-glass-card {
+    overflow: visible;
+}
+
+.employee-dashboard #employee-product-mix .preview-card-header {
+    position: relative;
+    z-index: 30;
+    overflow: visible;
+}
+
+.employee-dashboard #employee-product-mix .preview-card-body {
+    position: relative;
+    z-index: 1;
+}
+
+.employee-dashboard #employee-product-mix .preview-card-tools {
+    position: relative;
+    z-index: 40;
+    flex-wrap: nowrap;
+}
+
+.employee-dashboard #employee-product-mix .preview-card-tools .dropdown-menu {
+    z-index: 1050;
+}
+
+.employee-dashboard #employee-product-mix .employee-dashboard-range-toggle {
+    min-width: 9.5rem;
+}
+
+.employee-dashboard #employee-product-mix.is-dashboard-refreshing [data-product-mix-stats] {
+    opacity: 0.55;
+    transition: opacity 0.2s ease;
+}
+
+.employee-dashboard #employee-product-mix [data-product-mix-stats].is-loading {
+    pointer-events: none;
+}
+
+.employee-dashboard-range-label {
+    margin-right: 0.35rem;
+    color: rgba(30, 58, 138, 0.62);
+}
+
 .product-mix-breakdown {
     margin-top: 0.35rem;
     padding-top: 1.15rem;

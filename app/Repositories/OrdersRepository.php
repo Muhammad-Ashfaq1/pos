@@ -1790,11 +1790,7 @@ class OrdersRepository implements OrderRepositoryInterface
         $query = Order::query()
             ->where(function ($query) {
                 $query->where('status', Order::STATUS_RETURNED)
-                    ->orWhereNotNull('notes');
-            })
-            ->where(function ($query) {
-                $query->whereJsonLength('notes', '>', 0)
-                    ->orWhere('status', Order::STATUS_RETURNED);
+                    ->orWhere('notes', 'like', '%"returned_items"%');
             })
             ->with([
                 'customer:id,name,phone,email',
