@@ -292,7 +292,7 @@
             padding-top: 2rem;
         }
 
-        .employee-admin-preview .preview-card {
+        .employee-admin-preview .preview-card:not(.pos-glass-card) {
             border: 1px solid var(--preview-border);
             border-radius: 1.4rem;
             background: var(--preview-card);

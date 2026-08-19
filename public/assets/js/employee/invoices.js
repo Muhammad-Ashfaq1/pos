@@ -132,8 +132,14 @@
     $page.find('[data-invoice-next]').prop('disabled', !pagination.has_more);
   };
 
+  let listRequest = null;
+
   const loadInvoices = function () {
-    if (state.loading) return;
+    if (listRequest) {
+      listRequest.abort();
+      listRequest = null;
+    }
+
     state.loading = true;
 
     const $tbody = $page.find('[data-invoice-list]');
@@ -142,7 +148,7 @@
     );
     $page.find('[data-invoice-empty]').addClass('d-none');
 
-    $.ajax({
+    listRequest = $.ajax({
       url: config.listingUrl,
       method: 'GET',
       data: {
@@ -160,12 +166,19 @@
       renderRows(response.invoices || []);
       updatePagination(response.pagination || null);
     }).fail(function (xhr) {
+      if (xhr.statusText === 'abort') {
+        return;
+      }
       $tbody.html(
         '<tr><td colspan="15" class="text-center text-danger py-5">Failed to load invoices.</td></tr>'
       );
       notify('failure', (xhr.responseJSON && xhr.responseJSON.message) || 'Failed to load invoices.');
-    }).always(function () {
+    }).always(function (xhr, textStatus) {
+      if (textStatus === 'abort') {
+        return;
+      }
       state.loading = false;
+      listRequest = null;
     });
   };
 
@@ -232,10 +245,16 @@
       return;
     }
 
-    const url = $(this).data('show-url');
-    if (url) {
-      window.location.href = url;
+    let url = $(this).attr('data-show-url');
+    if (!url) {
+      return;
     }
+
+    if (!/(?:^|[?&])from=/.test(url)) {
+      url += (url.indexOf('?') === -1 ? '?' : '&') + 'from=invoices';
+    }
+
+    window.location.href = url;
   });
 
   $page.on('click', '[data-invoice-email]', function (event) {

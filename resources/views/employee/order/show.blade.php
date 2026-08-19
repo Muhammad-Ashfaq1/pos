@@ -1,23 +1,25 @@
 @extends($layout ?? 'layouts.employee-portal')
 
-@section('title', ! empty($order['is_invoice'] ?? false) ? 'Invoice Details' : 'Order Details')
+@php
+    $openedFromInvoices = ! empty($openedFromInvoices);
+    $orderBackUrl = $openedFromInvoices
+        ? route($orderRoutes['invoices_index'])
+        : route($orderRoutes['index']);
+    $orderBackTitle = $openedFromInvoices ? 'Back to invoices' : 'Back to orders';
+    $orderDetailsTitle = $openedFromInvoices ? 'Invoice Details' : 'Order Details';
+@endphp
+
+@section('title', $orderDetailsTitle)
 
 @push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/employee-order-details.css') }}?v={{ filemtime(public_path('assets/css/employee-order-details.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/pos.css') }}?v={{ filemtime(public_path('assets/css/pos.css')) }}">
 @endpush
 
 @section('content')
-    @php
-        $isInvoiceOrder = ! empty($order['is_invoice']);
-        $orderBackUrl = $isInvoiceOrder
-            ? route($orderRoutes['invoices_index'])
-            : route($orderRoutes['index']);
-        $orderBackTitle = $isInvoiceOrder ? 'Back to invoices' : 'Back to orders';
-        $orderDetailsTitle = $isInvoiceOrder ? 'Invoice Details' : 'Order Details';
-    @endphp
-    <div class="employee-orders-page employee-order-details-page">
+    <div class="employee-orders-page employee-order-details-page employee-orders-glass {{ $openedFromInvoices ? 'opened-from-invoices' : '' }}">
         <x-employee.page-header
             :title="$orderDetailsTitle"
             :back-url="$orderBackUrl"
@@ -25,7 +27,7 @@
         />
 
         <div class="employee-order-details-layout">
-            <section class="employee-order-details-panel employee-order-details-items-panel">
+            <section class="employee-order-details-panel employee-order-details-items-panel pos-glass-card pos-tone-primary">
                 <div class="employee-order-details-panel-header">
                     <h5>Order details</h5>
                 </div>
@@ -82,7 +84,7 @@
                 </div>
             </section>
 
-            <section class="employee-order-details-panel employee-order-details-payment-panel">
+            <section class="employee-order-details-panel employee-order-details-payment-panel pos-glass-card pos-tone-warning">
                 <div class="employee-order-details-order-title">
                     <h5>
                         <span>Order No.</span>
@@ -154,32 +156,33 @@
                     <strong>{{ $order['balance_due_label'] }}</strong>
                 </div>
 
-                <div class="d-grid gap-2 mt-4">
+                <div class="row g-2 mt-4">
                     @if($order['status'] === 'estimate')
-                        <a href="{{ route($orderRoutes['new'], ['order' => $order['id']]) }}" class="btn btn-primary btn-lg w-100 fw-bold btn-process-order">
-                            <i class="ti tabler-check me-1"></i> Process Order
-                        </a>
+                        <div class="col">
+                            <a href="{{ route($orderRoutes['new'], ['order' => $order['id']]) }}" class="btn btn-primary btn-lg w-100 fw-bold btn-process-order">
+                                <i class="ti tabler-check me-1"></i> Process Order
+                            </a>
+                        </div>
                     @elseif($order['status'] !== 'paid')
-                        <button type="button" class="btn btn-primary btn-lg w-100 fw-bold btn-pay-balance" data-bs-toggle="modal" data-bs-target="#paymentModal">
-                            <i class="ti tabler-coin me-1"></i> Pay Balance
-                        </button>
+                        <div class="col">
+                            <button type="button" class="btn btn-primary btn-lg w-100 fw-bold btn-pay-balance" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                                <i class="ti tabler-coin me-1"></i> Pay Balance
+                            </button>
+                        </div>
                     @endif
-                </div>
-
-                <div class="row g-2 mt-2">
-                    <div class="col-4">
-                        <a href="{{ route($orderRoutes['print'], $order['id']) }}" target="_blank" class="btn btn-outline-secondary w-100 py-2">
-                            <i class="ti tabler-printer"></i><br><small class="fw-bold">Print</small>
+                    <div class="col">
+                        <a href="{{ route($orderRoutes['print'], $order['id']) }}" target="_blank" class="btn btn-outline-secondary btn-lg w-100 fw-bold">
+                            <i class="ti tabler-printer me-1"></i> Print
                         </a>
                     </div>
-                    <div class="col-4">
-                        <a href="{{ route($orderRoutes['pdf'], $order['id']) }}" class="btn btn-outline-secondary w-100 py-2">
-                            <i class="ti tabler-download"></i><br><small class="fw-bold">PDF</small>
+                    <div class="col">
+                        <a href="{{ route($orderRoutes['pdf'], $order['id']) }}" class="btn btn-outline-secondary btn-lg w-100 fw-bold">
+                            <i class="ti tabler-download me-1"></i> PDF
                         </a>
                     </div>
-                    <div class="col-4">
-                        <button type="button" class="btn btn-outline-secondary w-100 py-2 btn-share-pdf" data-bs-toggle="modal" data-bs-target="#shareModal">
-                            <i class="ti tabler-send"></i><br><small class="fw-bold">Share</small>
+                    <div class="col">
+                        <button type="button" class="btn btn-outline-secondary btn-lg w-100 fw-bold btn-share-pdf" data-bs-toggle="modal" data-bs-target="#shareModal">
+                            <i class="ti tabler-send me-1"></i> Share
                         </button>
                     </div>
                 </div>

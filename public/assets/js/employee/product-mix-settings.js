@@ -4,7 +4,6 @@
   const form = document.querySelector('[data-product-mix-picker]');
   if (!form) return;
 
-  const maxSelected = Number(form.getAttribute('data-max-selected') || 4);
   const countEl = form.querySelector('[data-selected-count]');
   const previewGrid = form.querySelector('[data-pm-slots]');
   const previewEmpty = form.querySelector('[data-pm-preview-empty]');
@@ -68,10 +67,7 @@
       const isChecked = Boolean(input && input.checked);
       option.classList.toggle('is-selected', isChecked);
 
-      if (input && !isChecked && checked.length >= maxSelected) {
-        input.disabled = true;
-        option.classList.add('is-disabled');
-      } else if (input) {
+      if (input) {
         input.disabled = false;
         option.classList.remove('is-disabled');
       }
@@ -101,13 +97,6 @@
     const target = event.target;
     if (!(target instanceof HTMLInputElement) || target.name !== 'cards[]') {
       return;
-    }
-
-    if (target.checked && checkedInputs().length > maxSelected) {
-      target.checked = false;
-      if (typeof window.appNotify === 'function') {
-        window.appNotify('warning', 'You can select a maximum of ' + maxSelected + ' cards.');
-      }
     }
 
     refresh();

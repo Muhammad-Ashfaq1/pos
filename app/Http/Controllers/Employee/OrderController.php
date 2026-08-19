@@ -108,10 +108,11 @@ class OrderController extends Controller
         return response()->json($this->orderRepository->listing($filters));
     }
 
-    public function show(Order $order): View
+    public function show(Request $request, Order $order): View
     {
         return view('employee.order.show', $this->surfaceData([
             'order' => $this->orderRepository->details($order),
+            'openedFromInvoices' => $this->openedFromInvoices($request, $order),
         ]));
     }
 
@@ -312,6 +313,33 @@ class OrderController extends Controller
         $result = $this->orderRepository->processReturn($order, $data, $request->user());
 
         return response()->json($result);
+    }
+
+    private function openedFromInvoices(Request $request, Order $order): bool
+    {
+        $from = $request->query('from');
+        if ($from === 'invoices') {
+            return true;
+        }
+        if ($from === 'orders') {
+            return false;
+        }
+
+        $referer = $request->headers->get('referer');
+        if (is_string($referer) && $referer !== '') {
+            $refererPath = rtrim((string) (parse_url($referer, PHP_URL_PATH) ?: ''), '/');
+            $invoicesPath = rtrim((string) (parse_url(OrderSurface::route('invoices_index'), PHP_URL_PATH) ?: ''), '/');
+            $ordersPath = rtrim((string) (parse_url(OrderSurface::route('index'), PHP_URL_PATH) ?: ''), '/');
+
+            if ($refererPath === $invoicesPath) {
+                return true;
+            }
+            if ($refererPath === $ordersPath) {
+                return false;
+            }
+        }
+
+        return (bool) $order->is_invoice;
     }
 
     /**

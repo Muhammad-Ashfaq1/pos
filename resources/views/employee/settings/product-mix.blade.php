@@ -12,8 +12,7 @@
 @section('content')
     <x-employee.settings-shell active-settings-tab="product-mix">
         <div class="employee-settings-stack"
-             data-product-mix-picker
-             data-max-selected="{{ $maxSelected }}">
+             data-product-mix-picker>
             <form method="POST"
                   action="{{ route('employee.preferences.product-mix-cards') }}"
                   class="employee-settings-form">
@@ -26,13 +25,12 @@
                             <h2 class="pos-glass-intro-title">Dashboard Product Mix Cards</h2>
                             <p class="pos-glass-intro-subtitle mb-0">
                                 Select which cards you want to display on your dashboard product mix section.
-                                <strong>You can select a maximum of {{ $maxSelected }} cards.</strong>
                             </p>
                         </div>
                         <div class="employee-settings-toolbar-actions">
                             <span class="pos-glass-pill pos-tone-primary">
                                 Currently selected:
-                                <strong><span data-selected-count>{{ $selectedCount }}</span>/{{ $maxSelected }}</strong>
+                                <strong><span data-selected-count>{{ $selectedCount }}</span></strong>
                             </span>
                             <button type="submit" class="btn btn-primary">
                                 <i class="ti tabler-check me-1"></i>

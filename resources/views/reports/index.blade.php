@@ -16,6 +16,7 @@
 
 @if($isEmployee)
     @push('styles')
+        <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}" />
         <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css') }}" />
         <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}" />
     @endpush
@@ -23,7 +24,7 @@
 
 @section('content')
 @if($isEmployee)
-    <div class="employee-orders-page">
+    <div class="employee-orders-page employee-orders-glass">
         <x-employee.page-header
             title="Reports"
             :back-url="route($dashboardRoute)"
@@ -109,7 +110,7 @@
     {{-- Summary strip (populated via AJAX) --}}
     <div class="mb-3" id="report-summary"></div>
 
-    <div class="card">
+    <div class="{{ $isEmployee ? 'pos-glass-card pos-tone-primary' : 'card' }}">
         <div class="card-datatable table-responsive pt-0">
             <table class="reports-datatable table table-hover align-middle">
                 <thead class="bg-label-primary">

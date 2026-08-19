@@ -187,7 +187,6 @@ final class ProductMixCards
             ->filter(fn ($key): bool => is_string($key) && in_array($key, $allowed, true))
             ->unique()
             ->values()
-            ->take(self::MAX_SELECTED)
             ->all();
     }
 

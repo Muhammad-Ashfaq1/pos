@@ -15,10 +15,22 @@
 }
 
 .employee-order-details-panel {
+  border-radius: var(--pos-glass-radius, 1rem);
+}
+
+.employee-order-details-panel:not(.pos-glass-card) {
   border: 1px solid #c7d2fe;
-  border-radius: 0.5rem;
   background: #fff;
   box-shadow: 0 10px 24px rgba(49, 46, 129, 0.04);
+}
+
+.employee-order-details-panel.pos-glass-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.employee-order-details-panel.pos-glass-card .employee-order-details-item {
+  background: rgba(var(--pos-tone-rgb), 0.12);
 }
 
 .employee-order-details-items-panel {
@@ -250,6 +262,21 @@
   font-weight: 800;
 }
 
+.employee-order-details-page .btn-outline-primary {
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #7367f0;
+  --bs-btn-hover-border-color: #7367f0;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #7367f0;
+  --bs-btn-active-border-color: #7367f0;
+}
+
+.employee-order-details-page .btn-outline-primary:hover,
+.employee-order-details-page .btn-outline-primary:hover i,
+.employee-order-details-page .btn-outline-primary:hover span:not(.badge) {
+  color: #fff;
+}
+
 @media (max-width: 991px) {
   .employee-order-details-layout {
     grid-template-columns: 1fr;
@@ -284,10 +311,14 @@
   color: #cfd3ec;
 }
 
-[data-bs-theme="dark"] .employee-order-details-panel {
+[data-bs-theme="dark"] .employee-order-details-panel:not(.pos-glass-card) {
   background: #2f3349;
   border-color: #434968;
   box-shadow: 0 8px 24px rgba(15, 20, 34, 0.35);
+}
+
+[data-bs-theme="dark"] .employee-order-details-panel.pos-glass-card .employee-order-details-item {
+  background: rgba(53, 58, 82, 0.88);
 }
 
 [data-bs-theme="dark"] .employee-order-details-panel-header,
@@ -373,10 +404,12 @@
   color: #b6bee3;
 }
 
-[data-bs-theme="dark"] .employee-order-details-page .btn-outline-primary:hover {
-  background: rgba(115, 103, 240, 0.12);
+[data-bs-theme="dark"] .employee-order-details-page .btn-outline-primary:hover,
+[data-bs-theme="dark"] .employee-order-details-page .btn-outline-primary:hover i,
+[data-bs-theme="dark"] .employee-order-details-page .btn-outline-primary:hover span:not(.badge) {
+  background: #7367f0;
   border-color: #7367f0;
-  color: #e2e8f0;
+  color: #fff;
 }
 
 [data-bs-theme="dark"] .employee-order-details-page .btn-primary {
@@ -474,3 +507,5 @@
     max-width: 50%;
   }
 }
+
+

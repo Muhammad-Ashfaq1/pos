@@ -8,6 +8,9 @@
 @endphp
 
 @push('styles')
+    @if ($isEmployeeAccountSettings)
+        <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}">
+    @endif
     <link rel="stylesheet" href="{{ asset('assets/css/account-settings.css') }}?v={{ filemtime(public_path('assets/css/account-settings.css')) }}">
     @if ($isEmployeeAccountSettings)
         <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}">
@@ -16,7 +19,7 @@
 
 @section('content')
     @if ($isEmployeeAccountSettings)
-        <div class="employee-orders-page">
+        <div class="employee-orders-page employee-orders-glass">
             <x-employee.page-header
                 :title="$accountSettingsPageTitle"
                 :back-url="route('employee.dashboard')"
@@ -24,7 +27,7 @@
             />
     @endif
 
-    <div class="account-settings-card" id="account-settings"
+    <div class="account-settings-card{{ $isEmployeeAccountSettings ? ' pos-glass-card pos-tone-primary' : '' }}" id="account-settings"
          data-profile-url="{{ route('account.profile') }}"
          data-password-url="{{ route('account.password') }}"
          data-active="{{ $accountSettingsActive ?? 'profile' }}">

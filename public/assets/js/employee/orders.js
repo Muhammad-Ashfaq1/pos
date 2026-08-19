@@ -267,7 +267,13 @@
       return '';
     }
 
-    return config.detailUrlTemplate.replace('__ORDER_ID__', encodeURIComponent(orderId));
+    const url = config.detailUrlTemplate.replace('__ORDER_ID__', encodeURIComponent(orderId));
+
+    if (/(?:^|[?&])from=/.test(url)) {
+      return url;
+    }
+
+    return url + (url.indexOf('?') === -1 ? '?' : '&') + 'from=orders';
   };
 
   const makeOrderCard = function (order, options) {
@@ -501,7 +507,7 @@
     }, 100));
 
     $(document).on('click', '[data-order-detail-url]', function () {
-      const detailUrl = $(this).data('order-detail-url');
+      const detailUrl = $(this).attr('data-order-detail-url');
 
       if (detailUrl) {
         window.location.href = detailUrl;
