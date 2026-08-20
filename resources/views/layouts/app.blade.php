@@ -128,6 +128,8 @@
     <link rel="stylesheet" href="{{ asset('assets/css/pos-responsive.css') }}?v={{ filemtime(public_path('assets/css/pos-responsive.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/pos-table.css') }}?v={{ filemtime(public_path('assets/css/pos-table.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/pos-menu.css') }}?v={{ filemtime(public_path('assets/css/pos-menu.css')) }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-navbar.css') }}?v={{ filemtime(public_path('assets/css/pos-navbar.css')) }}" />
     @include('partials._theme-prepaint')
     <script src="{{ asset('assets/js/pos-theme.js') }}?v={{ filemtime(public_path('assets/js/pos-theme.js')) }}"></script>
     <script src="{{ asset('assets/js/pos-theme-bridge.js') }}?v={{ filemtime(public_path('assets/js/pos-theme-bridge.js')) }}"></script>
