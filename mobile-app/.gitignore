@@ -65,7 +65,6 @@ app.*.map.json
 **/ios/Runner/GeneratedPluginRegistrant.*
 
 # Web / desktop generated
-**/web/**/favicon.png
 lib/generated_plugin_registrant.dart
 
 # Misc

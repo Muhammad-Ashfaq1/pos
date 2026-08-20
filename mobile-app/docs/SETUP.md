@@ -195,16 +195,19 @@ After `php artisan migrate --seed` (see [customer-portal.md](../../docs/customer
 
 ## Icons
 
-Source: the same PWA mark as the web app — repo `public/assets/img/pwa/icon-512.png`.
+Source of truth: the AutoServe brand mark `public/assets/img/logo/autoserve.svg` (same mark as the web navbar).
 
+That script writes:
+
+- Web PWA: `public/assets/img/pwa/`
+- Web favicons: `public/assets/img/favicon/`
 - Android: `android/app/src/main/res/mipmap-*/ic_launcher.png`
 - iOS: `ios/Runner/Assets.xcassets/AppIcon.appiconset/`
-- Web: `web/icons/`
+- Flutter web: `web/icons/` and `web/favicon.png`
 
 Regenerate (macOS):
 
 ```bash
-chmod +x mobile-app/tooling/generate-icons.sh
 mobile-app/tooling/generate-icons.sh
 ```
 

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pos_mobile/app/theme/app_colors.dart';
 import 'package:pos_mobile/app/theme/app_spacing.dart';
 import 'package:pos_mobile/app/theme/app_text_styles.dart';
@@ -19,15 +20,15 @@ class AppLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     final textStyle =
         onDark ? AppTextStyles.displayLogo : AppTextStyles.displayLogoBlue;
-    final size = compact ? 22.0 : 28.0;
+    final size = compact ? 28.0 : 36.0;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          Icons.directions_car_filled_rounded,
-          color: onDark ? AppColors.white : AppColors.primary,
-          size: size,
+        SvgPicture.asset(
+          'assets/brand/autoserve.svg',
+          width: size,
+          height: size,
         ),
         const SizedBox(width: AppSpacing.xs),
         Text(
