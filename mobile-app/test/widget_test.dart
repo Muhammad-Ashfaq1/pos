@@ -109,4 +109,34 @@ void main() {
     expect(dashboard.recentOrders.first.orderNumber, 'INV-1009');
     expect(dashboard.recentOrders.first.vehicleLabel, '2019 Toyota Corolla');
   });
+
+  test('CustomerDashboard.fromJson still works with the web-only keys', () {
+    final dashboard = CustomerDashboard.fromJson({
+      'customer': {
+        'id': 1,
+        'name': 'Olivia Bennett',
+        'email': 'olivia@obtainsolutions.com',
+        'credit_balance': 20,
+        'credit_balance_label': '\$20.00',
+        'total_visits': 4,
+        'lifetime_value_label': '\$80.00',
+        'loyalty_points_balance': 12,
+      },
+      'credit': {
+        'balance': 20,
+        'balance_label': '\$20.00',
+        'min_redeem_balance': 50,
+        'min_redeem_balance_label': '\$50.00',
+        'can_redeem': false,
+      },
+      'recent_orders': const [],
+    });
+
+    expect(dashboard.credit.remainingToUnlock, 30);
+    expect(dashboard.credit.unlockProgress, closeTo(0.4, 0.001));
+    expect(dashboard.stats.visits, 4);
+    expect(dashboard.stats.loyaltyPoints, 12);
+    expect(dashboard.vehicles, isEmpty);
+    expect(dashboard.recentOrders, isEmpty);
+  });
 }

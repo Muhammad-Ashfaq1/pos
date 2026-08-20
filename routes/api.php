@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Route;
 |   POST /api/v1/customer/logout
 |   GET  /api/v1/customer/me
 |   PATCH /api/v1/customer/me              { name?, phone?, address? }
-|   GET  /api/v1/customer/dashboard        ?recent_limit=5
+|   GET  /api/v1/customer/dashboard        ?recent_limit=5  (web + Flutter overview)
 |   GET  /api/v1/customer/orders           ?per_page=15&page=1
 |   GET  /api/v1/customer/orders/{id}
 |   GET  /api/v1/customer/credits          ?type=earn|redeem|adjust|expire&per_page=20&page=1

@@ -193,6 +193,23 @@ After `php artisan migrate --seed` (see [customer-portal.md](../../docs/customer
 | Black screen from home icon | iOS | Install **release** build, not debug |
 | Untrusted developer | iOS | Settings → VPN & Device Management → Trust |
 
+## Icons
+
+Source: the same PWA mark as the web app — repo `public/assets/img/pwa/icon-512.png`.
+
+- Android: `android/app/src/main/res/mipmap-*/ic_launcher.png`
+- iOS: `ios/Runner/Assets.xcassets/AppIcon.appiconset/`
+- Web: `web/icons/`
+
+Regenerate (macOS):
+
+```bash
+chmod +x mobile-app/tooling/generate-icons.sh
+mobile-app/tooling/generate-icons.sh
+```
+
+Hot reload does **not** update launcher icons — full reinstall after icon changes.
+
 ## Layout reminder
 
 Work only under `mobile-app/`. Entry: `lib/main.dart` → `PosApp`.

@@ -22,16 +22,25 @@ class CreditInfo {
   final bool canRedeem;
 
   factory CreditInfo.fromJson(Map<String, dynamic> json) {
+    final balance = _asDouble(json['balance']);
+    final minRedeem = _asDouble(json['min_redeem_balance']);
+    final remaining = json.containsKey('remaining_to_unlock')
+        ? _asDouble(json['remaining_to_unlock'])
+        : (minRedeem - balance < 0 ? 0.0 : minRedeem - balance);
+    final progress = json.containsKey('unlock_progress')
+        ? _asDouble(json['unlock_progress'])
+        : (minRedeem > 0 ? (balance / minRedeem).clamp(0.0, 1.0) : 1.0);
+
     return CreditInfo(
-      balance: _asDouble(json['balance']),
+      balance: balance,
       balanceLabel: json['balance_label']?.toString() ?? '',
-      minRedeemBalance: _asDouble(json['min_redeem_balance']),
+      minRedeemBalance: minRedeem,
       minRedeemBalanceLabel:
           json['min_redeem_balance_label']?.toString() ?? '',
-      remainingToUnlock: _asDouble(json['remaining_to_unlock']),
-      remainingToUnlockLabel:
-          json['remaining_to_unlock_label']?.toString() ?? '',
-      unlockProgress: _asDouble(json['unlock_progress']),
+      remainingToUnlock: remaining,
+      remainingToUnlockLabel: json['remaining_to_unlock_label']?.toString() ??
+          '',
+      unlockProgress: progress,
       canRedeem: json['can_redeem'] == true,
     );
   }
