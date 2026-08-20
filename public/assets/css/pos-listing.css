@@ -1,0 +1,423 @@
+/*
+ * pos-listing.css — Reusable glass listing chrome for ecommerce DataTables pages.
+ *
+ * Layer 2.5 (shared screen kit): sits on pos-glass.css. Pages opt in with
+ * .pos-listing and load this file + pos-glass.css. No flow / JS contracts.
+ *
+ * Pieces:
+ *   .pos-listing              page shell
+ *   .pos-listing-panel        single glass card (toolbar + table)
+ *   .pos-listing-toolbar      title · search · filter · add in one row
+ *   .pos-listing-table        padded transparent DataTable
+ *   .pos-listing-toolbar-actions  filter + add (parked until DT relocates)
+ *   .pos-listing-modal        glass modal surface
+ */
+
+/* ── Page shell ─────────────────────────────────────────────────────── */
+
+.pos-listing {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* ── Listing panel + table ──────────────────────────────────────────── */
+
+.pos-listing .pos-listing-panel {
+    position: relative;
+    padding: 0;
+    overflow: visible;
+}
+
+/* Single toolbar: title · search (left) · filter · add (right) */
+.pos-listing .pos-listing-toolbar {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.75rem 1rem;
+    width: 100%;
+    padding: 1rem 1rem 0.85rem;
+    border-bottom: 1px solid rgba(var(--pos-tone-rgb, var(--bs-secondary-rgb)), 0.1);
+}
+
+.pos-listing .pos-listing-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--bs-heading-color, var(--bs-body-color));
+    white-space: nowrap;
+}
+
+.pos-listing .pos-listing-search-slot {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    flex: 1 1 12rem;
+    max-width: 20rem;
+}
+
+.pos-listing .pos-listing-search-slot .dt-search {
+    margin: 0;
+    width: 100%;
+}
+
+.pos-listing .pos-listing-search-slot .dt-search label {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.pos-listing .pos-listing-search-slot .dt-search .form-control {
+    width: 100%;
+    min-width: 0;
+    background-color: rgba(255, 255, 255, 0.72);
+    border-color: rgba(var(--pos-tone-rgb, var(--bs-secondary-rgb)), 0.22);
+    box-shadow: none;
+}
+
+.pos-listing .pos-listing-search-slot .dt-search .form-control:focus {
+    border-color: rgba(var(--bs-primary-rgb), 0.55);
+    box-shadow: 0 0 0 0.15rem rgba(var(--bs-primary-rgb), 0.12);
+}
+
+.pos-listing .pos-listing-toolbar-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem 0.65rem;
+    margin-inline-start: auto;
+    min-width: 0;
+}
+
+.pos-listing .pos-listing-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.pos-listing .pos-listing-toolbar-actions .btn-icon {
+    flex-shrink: 0;
+}
+
+/* DataTables top row emptied after search is moved into the Blade toolbar */
+.pos-listing .pos-listing-panel .dt-layout-row.is-pos-listing-top-moved {
+    display: none !important;
+}
+
+.pos-listing .pos-listing-table {
+    position: relative;
+    z-index: 1;
+    padding-inline: 1rem;
+    padding-block: 0.25rem 0.75rem;
+    overflow-x: auto;
+    border-radius: 0;
+}
+
+.pos-listing .pos-listing-table .table {
+    --bs-table-bg: transparent;
+    margin-bottom: 0;
+}
+
+.pos-listing .pos-listing-table .table > thead th {
+    padding-top: 1rem;
+    border-bottom: 1px solid rgba(var(--pos-tone-rgb, var(--bs-secondary-rgb)), 0.18);
+    background-color: transparent;
+    color: var(--bs-secondary-color);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.pos-listing .pos-listing-table .table > thead.bg-label-primary,
+.pos-listing .pos-listing-table .table > thead.bg-label-primary th {
+    background-color: transparent !important;
+    background: transparent !important;
+}
+
+.pos-listing .pos-listing-table .table > tbody td {
+    border-bottom-color: rgba(var(--pos-tone-rgb, var(--bs-secondary-rgb)), 0.1);
+    vertical-align: middle;
+}
+
+.pos-listing .pos-listing-table .table > tbody tr:last-child td {
+    border-bottom: 0;
+    padding-bottom: 1rem;
+}
+
+.pos-listing .pos-listing-table .table-hover > tbody > tr:hover > * {
+    --bs-table-accent-bg: transparent;
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
+    color: inherit;
+}
+
+/* Soft status / count badges on glass */
+.pos-listing .pos-listing-table .badge {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.pos-listing .pos-listing-table code {
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.35rem;
+    background: rgba(var(--pos-tone-rgb, var(--bs-secondary-rgb)), 0.08);
+    color: var(--bs-heading-color, var(--bs-body-color));
+    font-size: 0.8125rem;
+}
+
+/* Row action cluster */
+.pos-listing .pos-listing-table .btn-icon.btn-outline-primary,
+.pos-listing .pos-listing-table .btn-icon.btn-outline-danger,
+.pos-listing .pos-listing-table .btn-icon.btn-outline-secondary {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border-radius: 0.5rem;
+}
+
+.pos-listing .pos-listing-table .btn-icon + .btn-icon {
+    margin-inline-start: 0.35rem;
+}
+
+/* ── DataTables chrome ──────────────────────────────────────────────── */
+
+.pos-listing .pos-listing-panel .dt-container {
+    position: relative;
+    z-index: 1;
+}
+
+.pos-listing .pos-listing-panel .dt-layout-row {
+    padding-inline: 1rem;
+}
+
+.pos-listing .pos-listing-panel .dt-layout-table {
+    padding-inline: 0;
+}
+
+.pos-listing .pos-listing-panel .dt-info {
+    color: var(--bs-secondary-color);
+    font-size: 0.8125rem;
+}
+
+.pos-listing .pos-listing-panel .dt-search .form-control,
+.pos-listing .pos-listing-panel .dt-length .form-select {
+    background-color: rgba(255, 255, 255, 0.72);
+    border-color: rgba(var(--pos-tone-rgb, var(--bs-secondary-rgb)), 0.22);
+    box-shadow: none;
+}
+
+.pos-listing .pos-listing-panel .dt-search .form-control:focus,
+.pos-listing .pos-listing-panel .dt-length .form-select:focus {
+    border-color: rgba(var(--bs-primary-rgb), 0.55);
+    box-shadow: 0 0 0 0.15rem rgba(var(--bs-primary-rgb), 0.12);
+}
+
+/* Pagination */
+.pos-listing .pos-listing-panel .pagination {
+    gap: 0.25rem;
+    margin-bottom: 0;
+}
+
+.pos-listing .pos-listing-panel .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 2rem;
+    padding: 0 0.55rem;
+    border: 1px solid rgba(var(--pos-tone-rgb, var(--bs-secondary-rgb)), 0.18);
+    border-radius: 0.5rem !important;
+    background-color: rgba(255, 255, 255, 0.55);
+    color: var(--bs-heading-color, var(--bs-body-color));
+    box-shadow: none;
+}
+
+.pos-listing .pos-listing-panel .page-link:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    border-color: rgba(var(--bs-primary-rgb), 0.35);
+    color: rgb(var(--bs-primary-rgb));
+}
+
+.pos-listing .pos-listing-panel .page-item.active .page-link {
+    background-color: rgba(var(--bs-primary-rgb), 0.16);
+    border-color: rgba(var(--bs-primary-rgb), 0.4);
+    color: rgb(var(--bs-primary-rgb));
+    font-weight: 600;
+}
+
+.pos-listing .pos-listing-panel .page-item.disabled .page-link {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(var(--pos-tone-rgb, var(--bs-secondary-rgb)), 0.1);
+    color: var(--bs-secondary-color);
+    opacity: 0.65;
+}
+
+/* Processing indicator */
+.pos-listing .pos-listing-panel .dt-processing > div {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 24px -12px rgba(var(--bs-primary-rgb), 0.35);
+}
+
+.pos-listing .pos-listing-toolbar-actions .dropdown-menu {
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.12);
+    border-radius: 0.85rem;
+    background-color: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 16px 40px -16px rgba(47, 43, 61, 0.35);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+}
+
+/* ── Glass modal ────────────────────────────────────────────────────── */
+
+.pos-listing .pos-listing-modal .modal-content {
+    overflow: visible;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-radius: var(--pos-glass-radius, 1rem);
+    background-color: rgba(255, 255, 255, 0.92);
+    background-image: linear-gradient(
+        135deg,
+        rgba(var(--bs-primary-rgb), 0.08) 0%,
+        rgba(var(--bs-primary-rgb), 0.02) 45%,
+        rgba(255, 255, 255, 0.35) 80%
+    );
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
+    box-shadow:
+        0 24px 48px -18px rgba(var(--bs-primary-rgb), 0.35),
+        0 2px 6px rgba(47, 43, 61, 0.06),
+        inset 0 1px 1.5px rgba(255, 255, 255, 0.95);
+}
+
+.pos-listing .pos-listing-modal .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.15rem 1.35rem;
+    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+    background: transparent;
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+}
+
+.pos-listing .pos-listing-modal .modal-header .modal-title {
+    margin: 0;
+    padding-inline-end: 0.5rem;
+}
+
+.pos-listing .pos-listing-modal .modal-header .btn-close {
+    margin: 0 0 0 auto;
+    padding: 0.5rem;
+    box-sizing: content-box;
+    opacity: 0.65;
+}
+
+.pos-listing .pos-listing-modal .modal-header .btn-close:hover,
+.pos-listing .pos-listing-modal .modal-header .btn-close:focus {
+    opacity: 1;
+    box-shadow: none;
+}
+
+.pos-listing .pos-listing-modal .modal-title {
+    font-weight: 600;
+    color: var(--bs-heading-color, var(--bs-body-color));
+}
+
+.pos-listing .pos-listing-modal .modal-body {
+    padding: 1.25rem 1.35rem;
+    background: transparent;
+    border-radius: 0;
+    overflow: visible;
+}
+
+.pos-listing .pos-listing-modal .modal-footer {
+    padding: 1rem 1.35rem;
+    border-top: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+    background: rgba(var(--bs-primary-rgb), 0.03);
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
+}
+
+.pos-listing .pos-listing-modal .form-label {
+    font-weight: 600;
+    color: var(--bs-heading-color, var(--bs-body-color));
+}
+
+.pos-listing .pos-listing-modal .form-control,
+.pos-listing .pos-listing-modal .form-select {
+    border-color: rgba(var(--bs-primary-rgb), 0.18);
+    background-color: rgba(255, 255, 255, 0.78);
+}
+
+.pos-listing .pos-listing-modal .form-control:focus,
+.pos-listing .pos-listing-modal .form-select:focus {
+    border-color: rgba(var(--bs-primary-rgb), 0.55);
+    box-shadow: 0 0 0 0.15rem rgba(var(--bs-primary-rgb), 0.12);
+}
+
+.pos-listing .pos-listing-modal .form-check-input:checked {
+    background-color: rgb(var(--bs-primary-rgb));
+    border-color: rgb(var(--bs-primary-rgb));
+}
+
+.pos-listing .pos-listing-modal .btn-label-secondary {
+    background-color: rgba(var(--bs-secondary-rgb), 0.12);
+}
+
+/* ── Dark theme ─────────────────────────────────────────────────────── */
+
+[data-bs-theme='dark'] .pos-listing .pos-listing-table .table-hover > tbody > tr:hover > * {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+[data-bs-theme='dark'] .pos-listing .pos-listing-panel .dt-search .form-control,
+[data-bs-theme='dark'] .pos-listing .pos-listing-panel .dt-length .form-select,
+[data-bs-theme='dark'] .pos-listing .pos-listing-modal .form-control,
+[data-bs-theme='dark'] .pos-listing .pos-listing-modal .form-select {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-bs-theme='dark'] .pos-listing .pos-listing-panel .page-link {
+    background-color: rgba(255, 255, 255, 0.06);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme='dark'] .pos-listing .pos-listing-panel .page-item.active .page-link {
+    background-color: rgba(var(--bs-primary-rgb), 0.22);
+    color: #fff;
+}
+
+[data-bs-theme='dark'] .pos-listing .pos-listing-toolbar-actions .dropdown-menu,
+[data-bs-theme='dark'] .pos-listing .pos-listing-modal .modal-content {
+    background-color: rgba(37, 41, 60, 0.94);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-bs-theme='dark'] .pos-listing .pos-listing-modal .modal-footer {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+[data-bs-theme='dark'] .pos-listing .pos-listing-table code {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Soft glass Notiflix toasts (success / error / etc.) on listing pages */
+.pos-listing ~ .notiflix-notify-wrap,
+body:has(.pos-listing) .notiflix-notify {
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    backdrop-filter: blur(12px) saturate(160%);
+    box-shadow:
+        0 12px 32px -12px rgba(47, 43, 61, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+}
