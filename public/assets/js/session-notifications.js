@@ -36,27 +36,33 @@
   document.addEventListener('DOMContentLoaded', function () {
     if (typeof window.Notiflix !== 'undefined' && window.Notiflix.Notify) {
       window.Notiflix.Notify.init({
-        width: '320px',
+        width: '340px',
         position: 'right-top',
         distance: '20px',
         opacity: 1,
-        borderRadius: '10px',
+        borderRadius: '0.85rem',
         timeout: 3500,
+        cssAnimationStyle: 'from-right',
+        fontFamily: 'inherit',
         success: {
-          background: '#28c76f',
-          textColor: '#ffffff'
+          background: 'rgba(40, 199, 111, 0.94)',
+          textColor: '#ffffff',
+          notiflixIconColor: 'rgba(255,255,255,0.9)'
         },
         failure: {
-          background: '#ea5455',
-          textColor: '#ffffff'
+          background: 'rgba(234, 84, 85, 0.94)',
+          textColor: '#ffffff',
+          notiflixIconColor: 'rgba(255,255,255,0.9)'
         },
         warning: {
-          background: '#ff9f43',
-          textColor: '#ffffff'
+          background: 'rgba(255, 159, 67, 0.94)',
+          textColor: '#ffffff',
+          notiflixIconColor: 'rgba(255,255,255,0.9)'
         },
         info: {
-          background: '#00cfe8',
-          textColor: '#ffffff'
+          background: 'rgba(0, 207, 232, 0.94)',
+          textColor: '#ffffff',
+          notiflixIconColor: 'rgba(255,255,255,0.9)'
         }
       });
     }
