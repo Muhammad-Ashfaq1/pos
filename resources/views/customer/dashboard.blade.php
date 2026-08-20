@@ -16,15 +16,9 @@
         <div class="col-lg-5">
             <div class="cp-hero h-100">
                 <div class="cp-hero-label"><i class="ti tabler-wallet"></i><span>Store Credit Balance</span></div>
-                <div class="cp-hero-value">@money($customer->credit_balance)</div>
-                <div class="cp-hero-meta">at {{ $customer->tenant?->name ?? $customer->tenant?->shop_name }}</div>
-                @if ($creditCanRedeem)
-                    <div class="mt-3"><span class="badge bg-label-success">Ready to use at checkout</span></div>
-                @else
-                    <div class="cp-hero-meta mt-3">
-                        Usable when balance reaches @money($creditMinRedeemBalance).
-                    </div>
-                @endif
+                <div class="cp-hero-value" id="cp-dashboard-credit">—</div>
+                <div class="cp-hero-meta" id="cp-dashboard-shop"></div>
+                <div id="cp-dashboard-credit-meta"></div>
                 <a href="{{ route('customer.credits') }}" class="cp-hero-link">
                     View credit activity <i class="ti tabler-arrow-right"></i>
                 </a>
@@ -37,7 +31,7 @@
                         <div class="cp-stat-icon cp-stat-icon--indigo"><i class="ti tabler-calendar-check"></i></div>
                         <div>
                             <div class="cp-stat-label">Total Visits</div>
-                            <div class="cp-stat-value">{{ $customer->total_visits }}</div>
+                            <div class="cp-stat-value" id="cp-dashboard-visits">—</div>
                             <div class="cp-stat-meta">Completed service visits</div>
                         </div>
                     </div>
@@ -47,7 +41,7 @@
                         <div class="cp-stat-icon cp-stat-icon--amber"><i class="ti tabler-receipt-dollar"></i></div>
                         <div>
                             <div class="cp-stat-label">Lifetime Spend</div>
-                            <div class="cp-stat-value">@money($customer->lifetime_value)</div>
+                            <div class="cp-stat-value" id="cp-dashboard-lifetime">—</div>
                             <div class="cp-stat-meta">Across all paid visits</div>
                         </div>
                     </div>
@@ -91,36 +85,15 @@
             </div>
             <a class="btn btn-sm btn-link fw-semibold" href="{{ route('customer.orders') }}">View all</a>
         </div>
-        <div class="cp-list">
-            @forelse ($recentOrders as $order)
-                <a href="{{ route('customer.orders.show', $order->id) }}" class="cp-list-item">
-                    <div class="d-flex align-items-start gap-3">
-                        <span class="cp-order-icon"><i class="ti tabler-file-invoice"></i></span>
-                        <div>
-                        <div class="fw-semibold">{{ $order->order_number }}</div>
-                        <div class="small text-muted">{{ $order->created_at?->format('M j, Y h:i A') }} · {{ $order->items_count }} item(s)</div>
-                        @if ($order->vehicle)
-                            <div class="small text-muted mt-1">
-                                <i class="ti tabler-car me-1"></i>{{ trim(collect([$order->vehicle->year, $order->vehicle->make, $order->vehicle->model])->filter()->implode(' ')) }}
-                                @if ($order->vehicle->plate_number) · {{ $order->vehicle->plate_number }} @endif
-                            </div>
-                        @endif
-                        @if ($order->credit_earned > 0)
-                            <div class="small text-success">+@money($order->credit_earned) credit earned</div>
-                        @endif
-                        </div>
-                    </div>
-                    <div class="text-end">
-                        <div class="fw-bold">@money($order->total_amount)</div>
-                        <span class="badge bg-label-{{ $order->status === 'paid' ? 'success' : 'warning' }} text-capitalize">{{ str_replace('_', ' ', $order->status) }}</span>
-                    </div>
-                </a>
-            @empty
-                <div class="cp-list-empty">
-                    <i class="ti tabler-clipboard-list"></i>
-                    <p class="mb-0">No visits yet.</p>
-                </div>
-            @endforelse
+        <div class="cp-list" id="cp-dashboard-recent">
+            <div class="cp-list-empty">
+                <div class="spinner-border text-primary mb-2" role="status"></div>
+                <p class="mb-0">Loading...</p>
+            </div>
         </div>
     </div>
 @endsection
+
+@push('page-script')
+    <script src="{{ asset('assets/js/customer/dashboard.js') }}?v={{ filemtime(public_path('assets/js/customer/dashboard.js')) }}"></script>
+@endpush

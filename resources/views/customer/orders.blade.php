@@ -13,30 +13,16 @@
     </div>
 
     <div class="cp-panel">
-        <div class="cp-list">
-            @forelse ($orders as $order)
-                <a href="{{ route('customer.orders.show', $order->id) }}" class="cp-list-item">
-                    <div>
-                        <div class="fw-semibold">{{ $order->order_number }}</div>
-                        <div class="small text-muted">{{ $order->created_at?->format('M j, Y h:i A') }} · {{ $order->items_count }} item(s)</div>
-                        @if ($order->credit_earned > 0)
-                            <div class="small text-success">+@money($order->credit_earned) credit earned</div>
-                        @endif
-                    </div>
-                    <div class="text-end">
-                        <div class="fw-bold">@money($order->total_amount)</div>
-                        <span class="badge bg-label-{{ $order->status === 'paid' ? 'success' : 'warning' }} text-capitalize">{{ str_replace('_', ' ', $order->status) }}</span>
-                    </div>
-                </a>
-            @empty
-                <div class="cp-list-empty">
-                    <i class="ti tabler-clipboard-list"></i>
-                    <p class="mb-0">No visits yet.</p>
-                </div>
-            @endforelse
+        <div class="cp-list" id="cp-orders-list">
+            <div class="cp-list-empty">
+                <div class="spinner-border text-primary mb-2" role="status"></div>
+                <p class="mb-0">Loading...</p>
+            </div>
         </div>
-        @if ($orders->hasPages())
-            <div class="cp-panel-footer">{{ $orders->links('pagination::bootstrap-5') }}</div>
-        @endif
+        <div class="cp-panel-footer d-none" id="cp-orders-pagination"></div>
     </div>
 @endsection
+
+@push('page-script')
+    <script src="{{ asset('assets/js/customer/orders.js') }}?v={{ filemtime(public_path('assets/js/customer/orders.js')) }}"></script>
+@endpush

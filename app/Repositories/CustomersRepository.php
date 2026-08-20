@@ -210,6 +210,9 @@ class CustomersRepository implements CustomerRepositoryInterface
             'invite_portal_url' => filled($customer->email)
                 ? CustomerVehicleSurface::route('customers_invite_portal', $customer)
                 : null,
+            'impersonate_portal_url' => ($user?->can('update', $customer) ?? false)
+                ? CustomerVehicleSurface::route('customers_impersonate_portal', $customer)
+                : null,
             'adjust_credit_url' => CustomerVehicleSurface::route('customers_adjust_credit', $customer),
             'credit_history_url' => CustomerVehicleSurface::route('customers_credit_history', $customer),
             'last_visit_at' => $customer->last_visit_at?->format('Y-m-d H:i:s'),

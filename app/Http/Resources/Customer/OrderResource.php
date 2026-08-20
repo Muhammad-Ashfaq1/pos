@@ -21,9 +21,12 @@ class OrderResource extends JsonResource
             'id' => $this->id,
             'order_number' => $this->order_number,
             'status' => $this->status,
+            'status_label' => str_replace('_', ' ', (string) $this->status),
+            'status_class' => $this->status === 'paid' ? 'success' : 'warning',
             'total_amount' => (float) $this->total_amount,
             'total_amount_label' => Currency::format((float) $this->total_amount),
             'credit_earned' => (float) $this->credit_earned,
+            'credit_earned_label' => Currency::format((float) $this->credit_earned),
             'credit_applied' => (float) $this->credit_applied,
             'items_count' => (int) ($this->items_count ?? $this->items->sum('quantity')),
             'vehicle' => $this->whenLoaded('vehicle', fn () => [

@@ -1,6 +1,7 @@
 @php
     $portalCustomer = auth('customer')->user();
     $shopName = $portalCustomer->tenant?->shop_name ?? $portalCustomer->tenant?->name ?? 'Customer Portal';
+    $isImpersonatingCustomer = session()->has('impersonator_id') && session('impersonating_customer');
 @endphp
 
 <nav class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
@@ -17,7 +18,21 @@
             <small class="text-muted">{{ $shopName }}</small>
         </div>
 
-        <ul class="navbar-nav flex-row align-items-center gap-3 ms-auto">
+        <ul class="navbar-nav flex-row align-items-center gap-2 ms-auto">
+            @if ($isImpersonatingCustomer)
+                <li class="nav-item me-2">
+                    <div class="impersonation-banner">
+                        <i class="ti tabler-user-exclamation"></i>
+                        <span class="impersonation-banner-text">
+                            Impersonating as <strong>{{ $portalCustomer->name }}</strong>
+                        </span>
+                        <a href="{{ route('admin.impersonate.stop') }}" class="impersonation-banner-stop">
+                            <i class="ti tabler-x"></i>
+                            <span>Stop</span>
+                        </a>
+                    </div>
+                </li>
+            @endif
             @include('layouts.partials.theme-switcher')
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown"
@@ -49,15 +64,24 @@
                         </a>
                     </li>
                     <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="dropdown-item">
-                                <i class="icon-base ti tabler-logout me-2"></i>
-                                Sign out
-                            </button>
-                        </form>
-                    </li>
+                    @if ($isImpersonatingCustomer)
+                        <li>
+                            <a href="{{ route('admin.impersonate.stop') }}" class="dropdown-item text-warning">
+                                <i class="icon-base ti tabler-user-off me-2"></i>
+                                Stop Impersonation
+                            </a>
+                        </li>
+                    @else
+                        <li>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="dropdown-item">
+                                    <i class="icon-base ti tabler-logout me-2"></i>
+                                    Sign out
+                                </button>
+                            </form>
+                        </li>
+                    @endif
                 </ul>
             </li>
         </ul>

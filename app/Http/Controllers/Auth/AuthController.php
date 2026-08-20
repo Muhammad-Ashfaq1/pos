@@ -155,6 +155,7 @@ class AuthController extends Controller
         Auth::logout();
         Auth::guard('customer')->logout();
 
+        $request->session()->forget('customer_api_token');
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

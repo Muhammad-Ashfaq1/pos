@@ -10,9 +10,12 @@ use App\Repositories\Interface\CustomerRepositoryInterface;
 use App\Services\CreditService;
 use App\Services\CustomerPortalService;
 use App\Support\Currency;
+use App\Support\CustomerVehicleSurface;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -109,6 +112,37 @@ class CustomerController extends Controller
         return response()->json([
             'message' => "Portal invitation sent to {$customer->email}.",
         ]);
+    }
+
+    /**
+     * Login as this customer and open the customer portal (same pattern as staff impersonate).
+     */
+    public function impersonatePortal(Customer $customer): RedirectResponse
+    {
+        $this->authorize('update', $customer);
+
+        $currentUser = auth()->user();
+
+        if (! $currentUser) {
+            return back()->with('error', 'You must be signed in to impersonate a customer.');
+        }
+
+        if ((int) $customer->tenant_id !== (int) $currentUser->tenant_id) {
+            return back()->with('error', 'Customer does not belong to this tenant.');
+        }
+
+        session([
+            'impersonator_id' => $currentUser->id,
+            'impersonator_return_url' => CustomerVehicleSurface::route('customers_index'),
+            'impersonating_customer' => true,
+        ]);
+        session()->forget('customer_api_token');
+
+        Auth::guard('customer')->login($customer);
+
+        return redirect()
+            ->route('customer.dashboard')
+            ->with('info', "You are now impersonating {$customer->name}.");
     }
 
     /**
