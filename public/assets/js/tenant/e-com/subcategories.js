@@ -389,7 +389,7 @@
           orderable: false,
           searchable: false,
           render: function (data, type, row) {
-            return '<span class="badge ' + row.status_badge_class + '">' + escapeHtml(row.status_label) + '</span>';
+            return '<span class="badge rounded ' + row.status_badge_class + '">' + escapeHtml(row.status_label) + '</span>';
           }
         },
         {

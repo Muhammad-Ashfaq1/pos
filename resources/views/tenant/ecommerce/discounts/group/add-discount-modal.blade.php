@@ -1,8 +1,8 @@
-<div class="modal fade" id="addDiscountGroupModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade pos-listing-modal" id="addDiscountGroupModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-            <div class="modal-header border-0 pb-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                <h4 class="modal-title fw-bold mb-0" id="addDiscountGroupModalLabel">Customer Discount Group</h4>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold mb-0" id="addDiscountGroupModalLabel">Customer Discount Group</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">

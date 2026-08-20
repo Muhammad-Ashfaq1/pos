@@ -28,20 +28,10 @@
     }
   };
 
-  const alignCreateButtonWithSearch = function (table, actionsSelector) {
-    const $actions = $(actionsSelector);
-    if (!table || !$actions.length || typeof table.table !== 'function') {
-      return;
+  const alignDiscountActionsWithSearch = function (table) {
+    if (window.PosListingToolbar && typeof window.PosListingToolbar.align === 'function') {
+      window.PosListingToolbar.align(table, '#discountTableActions');
     }
-
-    const $topStart = $(table.table().container()).find('.dt-layout-start').first();
-    if (!$topStart.length) {
-      return;
-    }
-
-    $topStart.addClass('w-100 d-flex justify-content-between align-items-center gap-2 flex-wrap');
-    $actions.removeClass('ms-auto');
-    $topStart.append($actions);
   };
 
   const escapeHtml = function (value) {
@@ -155,7 +145,7 @@
 
     if (row.can_update) {
       html +=
-        '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect edit-discount-btn" ' +
+        '<button type="button" class="btn btn-sm btn-icon btn-outline-primary edit-discount-btn" ' +
         'data-id="' + row.id + '" data-edit-url="' + escapeHtml(row.edit_url || discountEditUrl(row.id)) + '" ' + tooltipAttrs('Edit') + '>' +
         '<i class="icon-base ti tabler-edit icon-md"></i>' +
         '</button>';
@@ -163,9 +153,9 @@
 
     if (row.can_delete && row.delete_url) {
       html +=
-        '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect delete-discount-btn" ' +
+        '<button type="button" class="btn btn-sm btn-icon btn-outline-danger delete-discount-btn" ' +
         'data-url="' + row.delete_url + '" data-name="' + escapeHtml(row.name) + '" ' + tooltipAttrs('Delete') + '>' +
-        '<i class="icon-base ti tabler-trash icon-md text-danger"></i>' +
+        '<i class="icon-base ti tabler-trash icon-md"></i>' +
         '</button>';
     }
 
@@ -301,7 +291,7 @@
         {
           data: 'discount_type_label',
           render: function (data) {
-            return '<span class="badge bg-label-info">' + escapeHtml(data || '—') + '</span>';
+            return '<span class="badge rounded bg-label-info">' + escapeHtml(data || '—') + '</span>';
           }
         },
         {
@@ -325,12 +315,12 @@
           data: null,
           render: function (data, type, row) {
             let html = '<div class="d-flex flex-column gap-1">';
-            html += '<span class="badge ' + row.combinable_badge_class + '">' + escapeHtml(row.combinable_label) + '</span>';
+            html += '<span class="badge rounded ' + row.combinable_badge_class + '">' + escapeHtml(row.combinable_label) + '</span>';
             if (row.requires_reason) {
-              html += '<span class="badge bg-label-secondary">Reason Required</span>';
+              html += '<span class="badge rounded bg-label-secondary">Reason Required</span>';
             }
             if (row.requires_manager_approval) {
-              html += '<span class="badge bg-label-danger">Manager Approval</span>';
+              html += '<span class="badge rounded bg-label-danger">Manager Approval</span>';
             }
             html += '</div>';
             return html;
@@ -347,7 +337,7 @@
         {
           data: null,
           render: function (data, type, row) {
-            return '<span class="badge ' + row.status_badge_class + '">' + escapeHtml(row.status_label) + '</span>';
+            return '<span class="badge rounded ' + row.status_badge_class + '">' + escapeHtml(row.status_label) + '</span>';
           }
         },
         {
@@ -367,14 +357,14 @@
         }
       ],
       drawCallback: function () {
-        alignCreateButtonWithSearch(this.api(), '#discountTableActions');
+        alignDiscountActionsWithSearch(this.api());
         if (window.Helpers && window.Helpers.initToolTip) {
           window.Helpers.initToolTip(this.api().table().container());
         }
       }
     });
 
-    alignCreateButtonWithSearch(discountTable, '#discountTableActions');
+    alignDiscountActionsWithSearch(discountTable);
   };
 
   const renderValidationErrors = function (errors) {

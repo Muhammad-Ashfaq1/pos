@@ -85,16 +85,16 @@ $(function () {
                     <td>${response.data.type}</td>
                     <td>${response.data.type === 'fixed' ? currencySymbol + response.data.min_limit : '-'}</td>
                     <td>${response.data.earns_credit
-                        ? `<span class="badge bg-label-info">${response.data.credit_earn_type === 'percentage' ? response.data.credit_earn_rate + '%' : currencySymbol + response.data.credit_earn_rate}</span>`
+                        ? `<span class="badge rounded bg-label-info">${response.data.credit_earn_type === 'percentage' ? response.data.credit_earn_rate + '%' : currencySymbol + response.data.credit_earn_rate}</span>`
                         : '<span class="text-muted">-</span>'}</td>
                     <td class="text-center">
-                        <span class="badge bg-label-${response.data.is_active ? 'success' : 'danger'}">${response.data.is_active
+                        <span class="badge rounded bg-label-${response.data.is_active ? 'success' : 'danger'}">${response.data.is_active
                         ? 'Yes'
                         : 'No'}</span>
                     </td>
                     <td class="text-center">
                         <div class="d-flex align-items-center justify-content-center gap-2">
-                            <a href="javascript:void(0);" class="text-primary edit-discount-group"
+                            <button type="button" class="btn btn-sm btn-icon btn-outline-primary edit-discount-group"
                                 data-id="${response.data.id}"
                                 data-title="${response.data.name}"
                                 data-type="${response.data.type}"
@@ -105,11 +105,13 @@ $(function () {
                                 data-credit-earn-type="${response.data.credit_earn_type || 'percentage'}"
                                 data-credit-earn-rate="${response.data.credit_earn_rate || 0}"
                                 data-credit-min-spend="${response.data.credit_min_spend || 0}"
-                            ><i class="ti tabler-edit"></i></a>
-                            <a href="javascript:void(0);" class="text-danger delete-discount-group"
+                                title="Edit"
+                            ><i class="icon-base ti tabler-edit icon-md"></i></button>
+                            <button type="button" class="btn btn-sm btn-icon btn-outline-danger delete-discount-group"
                                 data-id="${response.data.id}"
                                 data-url="${$('#discount-groups-body').closest('table').data('delete-url-pattern').replace(':id', response.data.id)}"
-                            ><i class="ti tabler-trash"></i></a>
+                                title="Delete"
+                            ><i class="icon-base ti tabler-trash icon-md"></i></button>
                         </div>
                     </td>
                 `;
