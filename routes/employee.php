@@ -55,6 +55,9 @@ Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.
                 Route::post('/{customer}/invite-portal', 'invitePortal')
                     ->middleware('permission:customer.update|customers.manage')
                     ->name('invite-portal');
+                Route::get('/{customer}/impersonate-portal', 'impersonatePortal')
+                    ->middleware('permission:customer.update|customers.manage')
+                    ->name('impersonate-portal');
                 Route::post('/{customer}/adjust-credit', 'adjustCredit')
                     ->middleware('permission:customer.update|customers.manage')
                     ->name('adjust-credit');

@@ -123,6 +123,7 @@
     <script>
         window.appCurrency = { symbol: @json(\App\Support\Currency::symbol()), code: @json(\App\Support\Currency::code()) };
         @if (session('success')) Notiflix.Notify.success(@json(session('success'))); @endif
+        @if (session('info')) Notiflix.Notify.info(@json(session('info'))); @endif
         @if (session('error')) Notiflix.Notify.failure(@json(session('error'))); @endif
         @if ($errors->any()) Notiflix.Notify.failure(@json($errors->first())); @endif
     </script>

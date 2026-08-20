@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\ChangeTenantStatusRequest;
 use App\Models\Tenant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class TenantController extends Controller
@@ -71,9 +72,21 @@ class TenantController extends Controller
     {
         $adminId = session('impersonator_id');
         $returnUrl = session('impersonator_return_url');
+        $wasCustomer = (bool) session('impersonating_customer');
+
+        if ($wasCustomer) {
+            Auth::guard('customer')->logout();
+            session()->forget(['impersonator_id', 'impersonator_return_url', 'impersonating_customer']);
+
+            if ($adminId && ! Auth::guard('web')->check()) {
+                Auth::guard('web')->loginUsingId($adminId);
+            }
+
+            return redirect($returnUrl ?: route('tenant.ecommerce.customers.index'));
+        }
 
         if ($adminId) {
-            auth()->loginUsingId($adminId);
+            Auth::guard('web')->loginUsingId($adminId);
             session()->forget(['impersonator_id', 'impersonator_return_url']);
         }
 
