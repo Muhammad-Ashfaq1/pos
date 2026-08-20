@@ -44,6 +44,14 @@ Defined in [routes/api.php](../routes/api.php); controllers in `app/Http/Control
 
 Guest routes are throttled (`throttle:10,1`).
 
+## Flutter app (`mobile-app/`)
+
+The customer mobile app lives in [`mobile-app/`](../mobile-app/) (same layout as Onsite: env scripts, feature-first `lib/`, gitignored build artifacts). It uses these token endpoints — not the web session.
+
+- Login: shop slug + email + password → `POST /login` → Sanctum Bearer token in `SharedPreferences`.
+- Splash restores the session with `GET /me`; home loads `GET /dashboard`.
+- Setup, routes, and demo credentials: [mobile-app/README.md](../mobile-app/README.md) and [mobile-app/docs/SETUP.md](../mobile-app/docs/SETUP.md).
+
 ## Web portal (session, server-rendered)
 
 The web portal uses the **same `/login` form as staff** — there is no separate customer login page and no shop code on the web. [`AuthController::loginSubmit`](../app/Http/Controllers/Auth/AuthController.php) tries the staff `web` guard first, then falls back to the `customer` session guard (`portal_enabled` only); a successful customer login redirects to `/portal`. Logout and the `/` root route are customer-guard aware.

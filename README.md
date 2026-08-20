@@ -12,6 +12,7 @@ For an architectural overview, request flow, RBAC matrix, module breakdown, and 
 - `stancl/tenancy` ^3.10 (single-database tenancy via `tenant_id` column scoping)
 - Blade + Tailwind 4 + Vite 7 (Vuexy admin template)
 - Node 20+ for the asset pipeline
+- Flutter customer app in [`mobile-app/`](mobile-app/) (Sanctum token API)
 
 ## Prerequisites
 
@@ -139,6 +140,7 @@ routes/                            web.php, auth.php, admin.php, tenant.php, emp
 database/migrations/               chronological schema
 database/seeders/                  DatabaseSeeder runs the rest in order
 resources/views/                   Blade templates by audience
+mobile-app/                        Flutter customer portal (login + home)
 config/permission.php              Spatie teams config (tenant-scoped roles)
 config/tenancy.php                 stancl/tenancy config (single-database mode)
 ```
@@ -153,6 +155,7 @@ Project documentation lives in [docs/](docs/):
 - [docs/rbac.md](docs/rbac.md) — roles, permissions, team scoping, role × permission matrix
 - [docs/modules.md](docs/modules.md) — every module: catalog, CRM, discounts, images, settings, POS panel
 - [docs/database.md](docs/database.md) — migrations and full schema reference
+- [mobile-app/README.md](mobile-app/README.md) — Flutter customer app setup and login
 
 ## Troubleshooting
 

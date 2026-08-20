@@ -23,7 +23,7 @@ The docs are ordered as a **journey** — the path a shop travels from first sig
 | 6 | [catalog.md](catalog.md) | **Stock the shop** — categories, sub-categories, product types, products, services (with BOM), discounts, discount groups, product images, dropdown APIs. |
 | 7 | [customers.md](customers.md) | **Know the customer** — customers (registered/walk-in/corporate) and their vehicles. |
 | 8 | [orders.md](orders.md) | **Sell** — the employee POS lifecycle end-to-end: cart → estimate → checkout → partial payments → invoices/receipts (print/PDF/email) → returns & refunds. |
-| 9 | [customer-portal.md](customer-portal.md) | **Customer portal** — Sanctum token API (reused by web + Flutter), tenant-scoped login/registration/invites, and the store-credit loyalty wallet (earn on paid visit, redeem at payment). |
+| 9 | [customer-portal.md](customer-portal.md) | **Customer portal** — Sanctum token API (reused by web + Flutter), tenant-scoped login/registration/invites, and the store-credit loyalty wallet (earn on paid visit, redeem at payment). Flutter app lives in [`mobile-app/`](../mobile-app/). |
 | 10 | [dashboards.md](dashboards.md) | **Analyse & oversee** — employee panel, tenant analytics dashboard, and the super-admin platform view. |
 | 11 | [reports.md](reports.md) | **Report & export** — the dynamic, filterable, Excel-exportable reports (sales/payments/products/customers) shared by the tenant portal and employee panel via one repository + report-definition layer. |
 | 12 | [pwa.md](pwa.md) | **Install as an app** — the Progressive Web App layer: manifest, service worker (caching + offline), install icons, and the shared `<head>` partial that makes every surface installable. |
