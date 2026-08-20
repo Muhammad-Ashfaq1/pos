@@ -9,6 +9,7 @@ use App\Models\Discount;
 use App\Models\DiscountGroup;
 use App\Models\Product;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\SubCategory;
 use App\Models\Vehicle;
 use App\Support\Currency;
@@ -38,6 +39,39 @@ class DropdownController extends Controller
 
         return response()->json([
             'results' => $categories->map(fn (Category $category) => [
+                'id' => $category->id,
+                'text' => $category->name,
+                'name' => $category->name,
+                'code' => $category->code,
+                'slug' => $category->slug,
+            ])->all(),
+            'pagination' => [
+                'more' => ($page * $perPage) < $total,
+            ],
+        ]);
+    }
+
+    public function serviceCategories(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->string('q')->toString());
+        $perPage = min((int) $request->integer('per_page', 20), 50);
+        $page = max((int) $request->integer('page', 1), 1);
+        $activeOnly = $request->boolean('active_only', false);
+
+        $query = ServiceCategory::query()
+            ->select(['id', 'name', 'code', 'slug'])
+            ->when($activeOnly, fn ($builder) => $builder->where('is_active', true))
+            ->search($search)
+            ->orderBy('name')
+            ->orderBy('id');
+
+        $total = (clone $query)->count();
+        $categories = $query
+            ->forPage($page, $perPage)
+            ->get();
+
+        return response()->json([
+            'results' => $categories->map(fn (ServiceCategory $category) => [
                 'id' => $category->id,
                 'text' => $category->name,
                 'name' => $category->name,
@@ -132,7 +166,7 @@ class DropdownController extends Controller
 
         $query = Service::query()
             ->with('category:id,name')
-            ->select(['id', 'category_id', 'name', 'code', 'standard_price', 'tax_percentage', 'is_active'])
+            ->select(['id', 'category_id', 'name', 'slug', 'standard_price', 'tax_percentage', 'is_active'])
             ->when($activeOnly, fn ($builder) => $builder->where('is_active', true))
             ->search($search)
             ->orderBy('name')
@@ -148,7 +182,8 @@ class DropdownController extends Controller
                 'id' => $service->id,
                 'text' => $this->serviceOptionText($service),
                 'name' => $service->name,
-                'code' => $service->code,
+                'slug' => $service->slug,
+                'code' => $service->slug,
                 'category_name' => $service->category?->name,
                 'standard_price' => (float) $service->standard_price,
                 'tax_percentage' => $service->tax_percentage !== null ? (float) $service->tax_percentage : 0.0,
@@ -312,10 +347,10 @@ class DropdownController extends Controller
 
     private function serviceOptionText(Service $service): string
     {
-        $code = filled($service->code) ? " ({$service->code})" : '';
+        $slug = filled($service->slug) ? " ({$service->slug})" : '';
         $price = Currency::format($service->standard_price);
 
-        return "{$service->name}{$code} - {$price}";
+        return "{$service->name}{$slug} - {$price}";
     }
 
     private function discountGroupPayload(?DiscountGroup $group): ?array

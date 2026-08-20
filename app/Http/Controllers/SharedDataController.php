@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Discount;
 use App\Models\Product;
+use App\Models\Service;
 use App\Models\SubCategory;
 use App\Support\Currency;
 use Illuminate\Http\JsonResponse;
@@ -63,14 +64,35 @@ class SharedDataController extends Controller
         $categoryId = $request->integer('category_id') ?: null;
 
         $query = Product::query()
-            ->with(['discount:id,name,code,discount_type,applies_to,value,max_discount_amount,is_active,starts_at,ends_at', 'primaryImage'])
+            ->with([
+                'discount:id,name,code,discount_type,applies_to,value,max_discount_amount,is_active,starts_at,ends_at',
+                'primaryImage',
+                'service:id,name,slug,standard_price,tax_percentage,category_id,is_active',
+                'service.category:id,name',
+            ])
             ->where('is_active', true)
             ->when($subCategoryId, fn ($q) => $q->where('sub_category_id', $subCategoryId))
             ->when($categoryId, fn ($q) => $q->where('category_id', $categoryId))
             ->when($search !== '', fn ($q) => $q->search($search))
             ->orderBy('name');
 
-        $products = $query->get(['id', 'name', 'sku', 'barcode', 'brand', 'unit', 'sale_price', 'tax_percentage', 'current_stock', 'track_inventory', 'product_type', 'sub_category_id', 'category_id', 'discount_id']);
+        $products = $query->get([
+            'id',
+            'name',
+            'sku',
+            'barcode',
+            'brand',
+            'unit',
+            'sale_price',
+            'tax_percentage',
+            'current_stock',
+            'track_inventory',
+            'product_type',
+            'sub_category_id',
+            'category_id',
+            'discount_id',
+            'service_id',
+        ]);
 
         $subCategoryMeta = null;
         if ($subCategoryId) {
@@ -113,12 +135,33 @@ class SharedDataController extends Controller
             ->get(['id', 'category_id', 'name', 'code', 'slug']);
 
         $products = Product::query()
-            ->with(['discount:id,name,code,discount_type,applies_to,value,max_discount_amount,is_active,starts_at,ends_at', 'primaryImage'])
+            ->with([
+                'discount:id,name,code,discount_type,applies_to,value,max_discount_amount,is_active,starts_at,ends_at',
+                'primaryImage',
+                'service:id,name,slug,standard_price,tax_percentage,category_id,is_active',
+                'service.category:id,name',
+            ])
             ->where('is_active', true)
             ->search($search)
             ->orderBy('name')
             ->limit(40)
-            ->get(['id', 'name', 'sku', 'barcode', 'brand', 'unit', 'sale_price', 'tax_percentage', 'current_stock', 'track_inventory', 'product_type', 'sub_category_id', 'category_id', 'discount_id']);
+            ->get([
+                'id',
+                'name',
+                'sku',
+                'barcode',
+                'brand',
+                'unit',
+                'sale_price',
+                'tax_percentage',
+                'current_stock',
+                'track_inventory',
+                'product_type',
+                'sub_category_id',
+                'category_id',
+                'discount_id',
+                'service_id',
+            ]);
 
         return response()->json([
             'categories' => $categories->map(fn (Category $c) => $this->mapCategory($c))->all(),
@@ -166,9 +209,29 @@ class SharedDataController extends Controller
             'product_type' => $p->product_type,
             'sub_category_id' => $p->sub_category_id,
             'category_id' => $p->category_id,
+            'service_id' => $p->service_id,
+            'service' => $this->mapLinkedService($p->service),
             'image_url' => $p->primaryImage?->url,
             'discount' => $this->mapDiscount($p->discount),
             'type' => 'product',
+        ];
+    }
+
+    private function mapLinkedService(?Service $service): ?array
+    {
+        if (! $service || ! $service->is_active) {
+            return null;
+        }
+
+        return [
+            'id' => $service->id,
+            'name' => $service->name,
+            'text' => $service->name,
+            'slug' => $service->slug,
+            'code' => $service->slug,
+            'category_name' => $service->category?->name,
+            'standard_price' => (float) $service->standard_price,
+            'tax_percentage' => $service->tax_percentage !== null ? (float) $service->tax_percentage : 0.0,
         ];
     }
 

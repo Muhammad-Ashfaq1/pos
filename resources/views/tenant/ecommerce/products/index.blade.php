@@ -67,6 +67,7 @@
         window.categoryDropdownUrl = @json($categoriesDropdownUrl);
         window.subCategoryDropdownUrl = @json($subCategoriesDropdownUrl);
         window.discountDropdownUrl = @json($discountDropdownUrl);
+        window.serviceDropdownUrl = @json($servicesDropdownUrl);
         window.productTypes = @json($productTypes);
     </script>
     <script src="{{ asset('assets/js/tenant/e-com/products.js') }}?v={{ filemtime(public_path('assets/js/tenant/e-com/products.js')) }}"></script>

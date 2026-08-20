@@ -8,14 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Category extends Model
+class ServiceCategory extends Model
 {
     use BelongsToTenant;
 
     protected $fillable = [
         'name',
         'slug',
-        'code',
         'description',
         'sort_order',
         'is_active',
@@ -41,14 +40,9 @@ class Category extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    public function subCategories(): HasMany
+    public function services(): HasMany
     {
-        return $this->hasMany(SubCategory::class);
-    }
-
-    public function products(): HasMany
-    {
-        return $this->hasMany(Product::class);
+        return $this->hasMany(Service::class, 'category_id');
     }
 
     public function scopeSearch(Builder $query, ?string $term): Builder

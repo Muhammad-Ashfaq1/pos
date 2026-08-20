@@ -77,6 +77,13 @@ class SaveProductRequest extends FormRequest
                         ->where('applies_to', Discount::APPLIES_TO_ITEM)
                 ),
             ],
+            'service_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('services', 'id')->where(
+                    fn ($query) => $query->where('tenant_id', $tenantId)
+                ),
+            ],
             'product_type_id' => [
                 'required',
                 'integer',
@@ -235,6 +242,7 @@ class SaveProductRequest extends FormRequest
             'category_id.exists' => 'The selected category was not found for this shop.',
             'sub_category_id.exists' => 'The selected sub category was not found for this shop.',
             'discount_id.exists' => 'Please select a valid item discount for this shop.',
+            'service_id.exists' => 'The selected service was not found for this shop.',
             'product_type_id.required' => 'Please select a product type.',
             'product_type_id.exists' => 'Please select a valid product type.',
             'name.required' => 'Please enter a product name.',

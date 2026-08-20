@@ -131,7 +131,8 @@ class OrdersRepository implements OrderRepositoryInterface
                         'id' => $serviceId,
                         'name' => $name,
                         'text' => $name,
-                        'code' => $fee['code'] ?? null,
+                        'slug' => $fee['slug'] ?? ($fee['code'] ?? null),
+                        'code' => $fee['code'] ?? ($fee['slug'] ?? null),
                         'standard_price' => $isCatalogService ? $amount : 0.0,
                         'tax_percentage' => $taxPercentage,
                         'is_active' => true,
@@ -930,7 +931,7 @@ class OrdersRepository implements OrderRepositoryInterface
             ->values();
 
         $services = Service::query()
-            ->select(['id', 'name', 'code', 'standard_price', 'tax_percentage'])
+            ->select(['id', 'name', 'slug', 'standard_price', 'tax_percentage'])
             ->whereIn('id', $serviceIds->all())
             ->where('is_active', true)
             ->get()
@@ -957,7 +958,8 @@ class OrdersRepository implements OrderRepositoryInterface
                     'type' => 'service',
                     'service_id' => $service->id,
                     'name' => $service->name,
-                    'code' => $service->code,
+                    'slug' => $service->slug,
+                    'code' => $service->slug,
                     'amount' => $amount,
                     'tax_percentage' => (float) ($service->tax_percentage ?? 0),
                 ];
@@ -979,7 +981,8 @@ class OrdersRepository implements OrderRepositoryInterface
                 'type' => 'manual',
                 'service_id' => $service?->id,
                 'name' => $name !== '' ? $name : ($service?->name ?? 'Manual Service Fee'),
-                'code' => $service?->code,
+                'slug' => $service?->slug,
+                'code' => $service?->slug,
                 'service_name' => $service?->name,
                 'amount' => $amount,
                 'tax_percentage' => (float) ($service?->tax_percentage ?? 0),

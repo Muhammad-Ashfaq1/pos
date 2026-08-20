@@ -167,6 +167,19 @@
     return 'data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-primary" title="' + safeTitle + '"';
   };
 
+  const slugify = function (value, maxLength) {
+    const limit = typeof maxLength === 'number' ? maxLength : 170;
+
+    return String(value || '')
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, limit);
+  };
+
   const helpers = ensureHelpers();
   helpers.addLoaderToModalHeader = addLoaderToModalHeader;
   helpers.removeLoaderFromModalHeader = removeLoaderFromModalHeader;
@@ -176,6 +189,8 @@
   helpers.makeModalsStatic = makeModalsStatic;
   helpers.initToolTip = initToolTip;
   helpers.getTooltipAttributes = getTooltipAttributes;
+  helpers.slugify = slugify;
+  window.appSlugify = slugify;
 
   /**
    * Active shop currency symbol from layouts (window.appCurrency).

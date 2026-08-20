@@ -12,6 +12,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductType;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\ServiceProduct;
 use App\Models\SubCategory;
 use App\Models\Tenant;
@@ -120,24 +121,39 @@ class TenantCatalogSeeder extends Seeder
     ];
 
     private const SERVICES_BY_CATEGORY = [
-        'Engine Oils' => [
-            ['name' => 'Standard Oil Change',     'duration' => 30, 'price' => 49.99,  'reminder_days' => 90,  'mileage' => 5000,  'products' => [['name' => 'Castrol GTX 10W-40',         'qty' => 4, 'unit' => 'liter', 'required' => true], ['name' => 'K&N Oil Filter HP-1004', 'qty' => 1, 'unit' => 'piece', 'required' => true]]],
-            ['name' => 'Full Synthetic Oil Change', 'duration' => 45, 'price' => 89.99, 'reminder_days' => 180, 'mileage' => 10000, 'products' => [['name' => 'Mobil 1 5W-30 Full Synthetic', 'qty' => 4, 'unit' => 'liter', 'required' => true], ['name' => 'K&N Oil Filter HP-1004', 'qty' => 1, 'unit' => 'piece', 'required' => true]]],
+        'Oil Change' => [
+            'code' => 'OIL',
+            'services' => [
+                ['name' => 'Standard Oil Change',     'duration' => 30, 'price' => 49.99,  'reminder_days' => 90,  'mileage' => 5000,  'products' => [['name' => 'Castrol GTX 10W-40',         'qty' => 4, 'unit' => 'liter', 'required' => true], ['name' => 'K&N Oil Filter HP-1004', 'qty' => 1, 'unit' => 'piece', 'required' => true]]],
+                ['name' => 'Full Synthetic Oil Change', 'duration' => 45, 'price' => 89.99, 'reminder_days' => 180, 'mileage' => 10000, 'products' => [['name' => 'Mobil 1 5W-30 Full Synthetic', 'qty' => 4, 'unit' => 'liter', 'required' => true], ['name' => 'K&N Oil Filter HP-1004', 'qty' => 1, 'unit' => 'piece', 'required' => true]]],
+            ],
         ],
-        'Filters' => [
-            ['name' => 'Air Filter Replacement',  'duration' => 15, 'price' => 24.99, 'reminder_days' => 365, 'mileage' => 15000, 'products' => [['name' => 'Bosch Premium Air Filter',   'qty' => 1, 'unit' => 'piece', 'required' => true]]],
-            ['name' => 'Cabin Filter Replacement', 'duration' => 20, 'price' => 29.99, 'reminder_days' => 365, 'mileage' => 15000, 'products' => [['name' => 'Mann Cabin Filter CU 26 009', 'qty' => 1, 'unit' => 'piece', 'required' => true]]],
+        'Filter Replacement' => [
+            'code' => 'FLT',
+            'services' => [
+                ['name' => 'Air Filter Replacement',  'duration' => 15, 'price' => 24.99, 'reminder_days' => 365, 'mileage' => 15000, 'products' => [['name' => 'Bosch Premium Air Filter',   'qty' => 1, 'unit' => 'piece', 'required' => true]]],
+                ['name' => 'Cabin Filter Replacement', 'duration' => 20, 'price' => 29.99, 'reminder_days' => 365, 'mileage' => 15000, 'products' => [['name' => 'Mann Cabin Filter CU 26 009', 'qty' => 1, 'unit' => 'piece', 'required' => true]]],
+            ],
         ],
-        'Brakes' => [
-            ['name' => 'Brake Pad Replacement',   'duration' => 90, 'price' => 149.99, 'reminder_days' => null, 'mileage' => 50000, 'products' => [['name' => 'Brembo Front Brake Pads',    'qty' => 1, 'unit' => 'set',   'required' => true]]],
-            ['name' => 'Brake Fluid Flush',       'duration' => 45, 'price' => 79.99, 'reminder_days' => 730, 'mileage' => null,  'products' => [['name' => 'DOT 4 Brake Fluid 1L',       'qty' => 2, 'unit' => 'liter', 'required' => true]]],
+        'Brake Service' => [
+            'code' => 'BRK',
+            'services' => [
+                ['name' => 'Brake Pad Replacement',   'duration' => 90, 'price' => 149.99, 'reminder_days' => null, 'mileage' => 50000, 'products' => [['name' => 'Brembo Front Brake Pads',    'qty' => 1, 'unit' => 'set',   'required' => true]]],
+                ['name' => 'Brake Fluid Flush',       'duration' => 45, 'price' => 79.99, 'reminder_days' => 730, 'mileage' => null,  'products' => [['name' => 'DOT 4 Brake Fluid 1L',       'qty' => 2, 'unit' => 'liter', 'required' => true]]],
+            ],
         ],
-        'Batteries' => [
-            ['name' => 'Battery Test & Replace',  'duration' => 30, 'price' => 39.99, 'reminder_days' => null, 'mileage' => null,  'products' => [['name' => 'Exide 12V 60Ah Premium',     'qty' => 1, 'unit' => 'piece', 'required' => false]]],
+        'Battery Service' => [
+            'code' => 'BAT',
+            'services' => [
+                ['name' => 'Battery Test & Replace',  'duration' => 30, 'price' => 39.99, 'reminder_days' => null, 'mileage' => null,  'products' => [['name' => 'Exide 12V 60Ah Premium',     'qty' => 1, 'unit' => 'piece', 'required' => false]]],
+            ],
         ],
-        'Tires' => [
-            ['name' => 'Tire Rotation',           'duration' => 30, 'price' => 24.99, 'reminder_days' => 180, 'mileage' => 10000, 'products' => []],
-            ['name' => 'Wheel Alignment',         'duration' => 60, 'price' => 89.99, 'reminder_days' => null, 'mileage' => 20000, 'products' => []],
+        'Tire Service' => [
+            'code' => 'TIR',
+            'services' => [
+                ['name' => 'Tire Rotation',           'duration' => 30, 'price' => 24.99, 'reminder_days' => 180, 'mileage' => 10000, 'products' => []],
+                ['name' => 'Wheel Alignment',         'duration' => 60, 'price' => 89.99, 'reminder_days' => null, 'mileage' => 20000, 'products' => []],
+            ],
         ],
     ];
 
@@ -429,22 +445,45 @@ class TenantCatalogSeeder extends Seeder
 
     private function seedServices(Tenant $tenant, ?int $adminId): void
     {
-        foreach (self::SERVICES_BY_CATEGORY as $catName => $services) {
-            $category = Category::withoutTenantScope()
+        foreach (self::SERVICES_BY_CATEGORY as $catName => $categoryData) {
+            $code = $categoryData['code'];
+            $slug = Str::slug($catName);
+            $services = $categoryData['services'];
+
+            $category = ServiceCategory::withoutTenantScope()
                 ->where('tenant_id', $tenant->id)
-                ->where('slug', Str::slug($catName))
+                ->where('code', $code)
                 ->first();
 
             if (! $category) {
-                continue;
+                $category = new ServiceCategory;
+                $category->tenant_id = $tenant->id;
+                $category->name = $catName;
+                $category->slug = $slug;
+                $category->code = $code;
+                $category->description = "{$catName} services";
+                $category->sort_order = 0;
+                $category->is_active = true;
+                $category->created_by = $adminId;
+                $category->updated_by = $adminId;
+                $category->save();
+            } else {
+                $category->name = $catName;
+                $category->slug = $slug;
+                $category->description = "{$catName} services";
+                $category->updated_by = $adminId;
+                $category->save();
             }
 
             foreach ($services as $idx => $s) {
-                $code = sprintf('SVC-%s-%03d', $category->code, $idx + 1);
+                $serviceSlug = Str::slug(sprintf('svc-%s-%03d', $category->code ?: $category->slug, $idx + 1));
 
                 $service = Service::withoutTenantScope()
                     ->where('tenant_id', $tenant->id)
-                    ->where('code', $code)
+                    ->where(function ($query) use ($serviceSlug, $s): void {
+                        $query->where('slug', $serviceSlug)
+                            ->orWhere('name', $s['name']);
+                    })
                     ->first();
 
                 if (! $service) {
@@ -452,7 +491,7 @@ class TenantCatalogSeeder extends Seeder
                     $service->tenant_id = $tenant->id;
                     $service->category_id = $category->id;
                     $service->name = $s['name'];
-                    $service->code = $code;
+                    $service->slug = $serviceSlug;
                     $service->description = "{$s['name']} service";
                     $service->standard_price = $s['price'];
                     $service->estimated_duration_minutes = $s['duration'];
@@ -462,6 +501,10 @@ class TenantCatalogSeeder extends Seeder
                     $service->requires_technician = true;
                     $service->is_active = true;
                     $service->created_by = $adminId;
+                    $service->updated_by = $adminId;
+                    $service->save();
+                } elseif (! $service->slug) {
+                    $service->slug = $serviceSlug;
                     $service->updated_by = $adminId;
                     $service->save();
                 }

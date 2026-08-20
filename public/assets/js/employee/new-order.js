@@ -38,6 +38,9 @@
     let isHydratingSavedCart = false;
     let cartPersistenceReady = false;
     let cartSaveTimer = null;
+    let serviceFeeRowSeed = null;
+    let serviceFeeEditFallback = null;
+    let pendingServiceFeeEdit = null;
     let paymentAmountInput = '';
     let paymentMethod = '';
 
@@ -374,9 +377,11 @@
         return readSelectSelections($select)[0] || null;
     }
 
-    function setSelectSelections($select, selections) {
+    function setSelectSelections($select, selections, options) {
         if (!$select.length) return;
 
+        options = options || {};
+        const silent = Boolean(options.silent);
         const isMultiple = $select.prop('multiple');
         const normalized = Array.isArray(selections)
             ? selections.filter(function (selection) { return selection && selection.id; })
@@ -384,8 +389,8 @@
 
         if (!normalized.length) {
             $select.val(isMultiple ? [] : null);
-            if ($select.data('select2')) {
-                $select.trigger('change.select2');
+            if (!silent) {
+                $select.trigger('change');
             }
             return;
         }
@@ -393,6 +398,7 @@
         const ids = [];
         normalized.forEach(function (selection) {
             const id = String(selection.id);
+            const label = selection.text || selection.name || id;
             ids.push(id);
 
             const $existing = $select.find('option').filter(function () {
@@ -400,18 +406,19 @@
             }).first();
 
             if ($existing.length) {
-                $existing.text(selection.text || id);
+                $existing.text(label);
+                $existing.prop('selected', true);
                 $existing.data('selection', selection);
             } else {
-                const option = new Option(selection.text || id, selection.id, false, false);
+                const option = new Option(label, selection.id, true, true);
                 $(option).data('selection', selection);
                 $select.append(option);
             }
         });
 
         $select.val(isMultiple ? ids : ids[0]);
-        if ($select.data('select2')) {
-            $select.trigger('change.select2');
+        if (!silent) {
+            $select.trigger('change');
         }
     }
 
@@ -427,9 +434,19 @@
     }
 
     function readServiceFeeSelections() {
-        return readSelectSelections($('#order_service_filter')).filter(function (service) {
+        const selected = readSelectSelections($('#order_service_filter')).filter(function (service) {
             return service && service.id;
         });
+
+        if (selected.length) {
+            return selected;
+        }
+
+        if (serviceFeeEditFallback && serviceFeeEditFallback.id) {
+            return [serviceFeeEditFallback];
+        }
+
+        return [];
     }
 
     function saveActiveOrderMeta() {
@@ -466,9 +483,14 @@
         if (!order || !$customerSelect.length) return null;
 
         let raw = null;
-        if ($customerSelect.data('select2')) {
-            raw = ($customerSelect.select2('data') || [])[0] || null;
+        try {
+            if ($customerSelect.data('select2')) {
+                raw = ($customerSelect.select2('data') || [])[0] || null;
+            }
+        } catch (error) {
+            raw = null;
         }
+
         if (!raw || !raw.id) {
             raw = readSelectSelection($customerSelect);
         }
@@ -487,8 +509,9 @@
             merged.credit_balance = previous.credit_balance;
         }
 
+        // Only update order state — do not write back to the select.
+        // setSelectSelection() triggers change → this function again → stack overflow.
         order.customer = customerSelectionFromData(merged);
-        setSelectSelection($customerSelect, order.customer);
         return order.customer;
     }
 
@@ -510,7 +533,7 @@
             const row = (response && response.results && response.results[0]) || null;
             if (row && String(row.id) === String(order.customer.id)) {
                 order.customer = customerSelectionFromData(Object.assign({}, order.customer, row));
-                setSelectSelection($('#customer_type_filter'), order.customer);
+                setSelectSelections($('#customer_type_filter'), [order.customer], { silent: true });
             }
 
             return order;
@@ -647,6 +670,7 @@
             $card.attr('data-image', item.image_url || '');
             $card.attr('data-discount', encodePayload(item.discount || null));
             $card.attr('data-tax-percentage', item.tax_percentage || 0);
+            $card.attr('data-service', encodePayload(item.service || null));
         }
 
         return $col[0].outerHTML;
@@ -671,7 +695,8 @@
             + '       data-track-inventory="' + (item.track_inventory ? '1' : '0') + '" '
             + '       data-image="' + (item.image_url || '') + '" '
             + '       data-discount="' + encodePayload(item.discount || null) + '" '
-            + '       data-tax-percentage="' + (item.tax_percentage || 0) + '">'
+            + '       data-tax-percentage="' + (item.tax_percentage || 0) + '" '
+            + '       data-service="' + encodePayload(item.service || null) + '">'
             + '    <div class="card-body p-3">'
             + '      <div class="d-flex align-items-center gap-3 mb-3">'
             + '        <div class="avatar avatar-lg flex-shrink-0">'
@@ -741,7 +766,8 @@
             + '       data-track-inventory="' + (trackInventory ? '1' : '0') + '"'
             + '       data-image="' + escape(item.image_url || '') + '"'
             + '       data-discount="' + encodePayload(item.discount || null) + '"'
-            + '       data-tax-percentage="' + (item.tax_percentage || 0) + '">'
+            + '       data-tax-percentage="' + (item.tax_percentage || 0) + '"'
+            + '       data-service="' + encodePayload(item.service || null) + '">'
             + '    <div class="pos-product-head">'
             + '      <div class="pos-product-image product-image-container">'
             + '        <i class="ti tabler-photo product-default-icon' + (hasImage ? ' d-none' : '') + '"></i>'
@@ -900,6 +926,8 @@
                     image_url: product.image_url || '',
                     discount: product.discount || null,
                     tax_percentage: product.tax_percentage || 0,
+                    service_id: product.service_id || null,
+                    service: product.service || null,
                 });
             } else {
                 renderCards($grid, [], 'No products found.');
@@ -955,6 +983,7 @@
                 image_url: $card.attr('data-image') || '',
                 discount: decodePayload($card.attr('data-discount') || ''),
                 tax_percentage: parseFloat($card.attr('data-tax-percentage')) || 0,
+                service: decodePayload($card.attr('data-service') || ''),
             });
         }
     });
@@ -1056,6 +1085,7 @@
         const image_url = $card.attr('data-image') || '';
         const discount = decodePayload($card.attr('data-discount') || '');
         const tax_percentage = parseFloat($card.attr('data-tax-percentage')) || 0;
+        const service = decodePayload($card.attr('data-service') || '');
         const qty = parseInt($card.find('.product-qty-input').val(), 10) || 1;
 
         if (track_inventory && stock <= 0) {
@@ -1079,11 +1109,70 @@
             track_inventory: track_inventory,
             image_url: image_url,
             discount: discount,
-            tax_percentage: tax_percentage
+            tax_percentage: tax_percentage,
+            service: service
         }, qty);
     });
 
     // ─── Cart (database-backed draft) ──────────────────────────────────
+
+    function linkedServiceSnapshot(service) {
+        if (!service || !service.id) {
+            return null;
+        }
+
+        return {
+            id: service.id,
+            name: service.name || service.text || '',
+            text: service.text || service.name || '',
+            code: service.code || service.slug || '',
+            slug: service.slug || service.code || '',
+            category_name: service.category_name || '',
+            standard_price: serviceStandardPrice(service),
+            tax_percentage: taxPercentage(service)
+        };
+    }
+
+    function ensureOrderServiceFromProduct(product) {
+        const snapshot = linkedServiceSnapshot(product ? product.service : null);
+
+        if (!snapshot) {
+            return false;
+        }
+
+        const order = ensureActiveOrder();
+        order.serviceFees = orderServiceFees(order);
+
+        const serviceKey = String(snapshot.id);
+        const alreadyAdded = order.serviceFees.some(function (fee) {
+            return serviceFeeServiceKey(fee) === serviceKey;
+        });
+
+        if (alreadyAdded) {
+            return false;
+        }
+
+        // Order-only snapshot: edits here never update the catalog service record.
+        order.serviceFees.push({
+            service: {
+                id: snapshot.id,
+                name: snapshot.name,
+                text: snapshot.text || snapshot.name,
+                code: snapshot.code || snapshot.slug || '',
+                slug: snapshot.slug || snapshot.code || '',
+                category_name: snapshot.category_name || '',
+                standard_price: snapshot.standard_price,
+                tax_percentage: snapshot.tax_percentage
+            },
+            title: snapshot.name || 'Service',
+            amount: Number(snapshot.standard_price) || 0,
+            tax_percentage: snapshot.tax_percentage,
+            source: 'product',
+            source_product_id: product.id || null
+        });
+
+        return true;
+    }
 
     function addToCart(product, qty) {
         const cart = ensureActiveOrder().items;
@@ -1118,7 +1207,10 @@
                 track_inventory: track_inventory
             });
         }
+
+        ensureOrderServiceFromProduct(product);
         renderCart();
+        renderServiceFeeLines();
         scheduleDraftCartSave();
     }
 
@@ -1285,7 +1377,7 @@
         return fees
             .map(normalizedServiceFeeLine)
             .filter(function (fee) {
-                return fee.amount > 0 || fee.percentage > 0;
+                return fee.amount > 0 || fee.percentage > 0 || serviceFeeServiceKey(fee) !== '';
             });
     }
 
@@ -1591,28 +1683,27 @@
 
         const lines = [];
         fees.forEach(function (fee) {
-            const service = fee.service || {};
-            const servicePrice = serviceStandardPrice(service);
+            const service = fee.service && fee.service.id ? fee.service : {};
             const feeAmount = serviceFeeAmountForTotals(fee, totals.productNet);
 
-            if (service.id && servicePrice > 0) {
-                lines.push({
-                    type: 'service',
-                    service_id: service.id,
-                    name: serviceName(service) || 'Service Price',
-                    amount: servicePrice
-                });
+            // One charge line per order fee (matches cart totals). Always manual so
+            // order-only amount/title edits are saved — backend "service" type overwrites
+            // amount with live catalog standard_price.
+            if (feeAmount <= 0) {
+                return;
             }
 
-            if (feeAmount > 0) {
-                lines.push({
-                    type: 'manual',
-                    service_id: service.id || null,
-                    name: fee.title || serviceName(service) || 'Manual Service Fee',
-                    amount: roundMoney(feeAmount)
-                });
-            }
+            lines.push({
+                type: 'manual',
+                service_id: service.id || null,
+                name: fee.title || serviceName(service) || 'Service Fee',
+                amount: roundMoney(feeAmount)
+            });
         });
+
+        if (!lines.length) {
+            return null;
+        }
 
         return {
             title: 'Service Charges',
@@ -1890,6 +1981,46 @@
             + '</div>';
     }
 
+    function renderServiceFeeBreakdowns(options) {
+        const totals = options.totals || {};
+        const serviceFees = options.serviceFees || [];
+        const normalizedFees = options.normalizedFees || normalizedServiceFees(serviceFees);
+        const $section = $(options.sectionSelector);
+        const $breakdowns = $(options.breakdownsSelector);
+        const titleSuffix = options.titleSuffix || '';
+
+        $section.toggleClass('d-none', totals.serviceFee <= 0);
+        $breakdowns.empty();
+
+        if (totals.serviceFee <= 0) {
+            $breakdowns.addClass('d-none');
+            return;
+        }
+
+        $(options.titleSelector).text(serviceFeeSummaryTitle(serviceFees) + titleSuffix);
+        $(options.amountSelector).text('+' + formatMoney(totals.serviceFee));
+
+        const serviceFeeItems = [];
+        normalizedFees.forEach(function (fee) {
+            const feeAmount = serviceFeeAmountForTotals(fee, totals.productNet);
+            if (feeAmount > 0) {
+                serviceFeeItems.push({
+                    label: serviceFeeLabel(fee),
+                    amount: feeAmount
+                });
+            }
+        });
+
+        if (serviceFeeItems.length > 0) {
+            $breakdowns.html(serviceFeeItems.map(function (item) {
+                return renderBreakdownHtml(item.label, item.amount);
+            }).join('')).removeClass('d-none');
+            return;
+        }
+
+        $breakdowns.addClass('d-none');
+    }
+
     function getTaxTypeLabel(type) {
         if (type === 'Product') return 'Product Tax';
         if (type === 'Service' || type === 'Service Fee') return 'Service Tax';
@@ -1907,35 +2038,15 @@
         $('.summary-discount-lines').toggleClass('d-none', totals.discount <= 0);
         $('.summary-discount').text('-' + formatMoney(totals.discount));
 
-        // Service Fee & Breakdowns
-        $('.summary-service-fee-row').toggleClass('d-none', totals.serviceFee <= 0);
-        const $serviceFeeBreakdowns = $('.summary-service-fee-breakdowns');
-        $serviceFeeBreakdowns.empty();
-        if (totals.serviceFee > 0) {
-            $('.summary-service-fee-title').text(serviceFeeSummaryTitle(serviceFees));
-            $('.summary-service-fee').text('+' + formatMoney(totals.serviceFee));
-
-            const serviceFeeItems = [];
-            normalizedFees.forEach(function (fee) {
-                const feeAmount = serviceFeeAmountForTotals(fee, totals.productNet);
-                if (feeAmount > 0) {
-                    serviceFeeItems.push({
-                        label: serviceFeeLabel(fee),
-                        amount: feeAmount
-                    });
-                }
-            });
-
-            if (serviceFeeItems.length > 0) {
-                $serviceFeeBreakdowns.html(serviceFeeItems.map(function (item) {
-                    return renderBreakdownHtml(item.label, item.amount);
-                }).join('')).removeClass('d-none');
-            } else {
-                $serviceFeeBreakdowns.addClass('d-none');
-            }
-        } else {
-            $serviceFeeBreakdowns.addClass('d-none');
-        }
+        renderServiceFeeBreakdowns({
+            totals: totals,
+            serviceFees: serviceFees,
+            normalizedFees: normalizedFees,
+            sectionSelector: '.summary-service-fee-row',
+            breakdownsSelector: '.summary-service-fee-breakdowns',
+            titleSelector: '.summary-service-fee-title',
+            amountSelector: '.summary-service-fee'
+        });
 
         // 3. Discount & Breakdowns
         const $discountBreakdowns = $('.summary-discount-breakdowns');
@@ -2023,17 +2134,29 @@
 
         $('.summary-total').text(formatMoney(totals.total));
         $('.btn-pay .text-warning:first').text(formatMoney(totals.total));
-        $('.btn-pay').prop('disabled', !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder);
-        $('.btn-pay .small').text(isSavingOrder ? 'Saving...' : 'Pay');
-        $('.btn-save-estimate').prop('disabled', !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder);
-        $('.btn-draft-print, .btn-draft-pdf, .btn-draft-share').prop('disabled', !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder);
-        $('.btn-save-invoice, .btn-save-send-invoice').prop(
-            'disabled',
-            !order || order.items.length === 0 || totals.orderSubtotal <= 0 || isSavingOrder
-        );
+        syncPayButtonState(order, totals);
         renderCustomerDiscountBanner(totals);
         renderDiscountDrawer();
         refreshOrderDropdown();
+    }
+
+    function orderCanProceed(order, totals) {
+        return !!(order && order.items.length > 0 && totals.orderSubtotal > 0 && !isSavingOrder);
+    }
+
+    function syncPayButtonState(order, totals) {
+        // Keep Pay clickable so blocked actions can show a toast.
+        // Native `disabled` swallows clicks and looks broken.
+        const canPay = orderCanProceed(order, totals);
+
+        $('.btn-pay')
+            .prop('disabled', false)
+            .toggleClass('is-pay-disabled', !canPay)
+            .attr('aria-disabled', canPay ? 'false' : 'true');
+        $('.btn-pay .small').text(isSavingOrder ? 'Saving...' : 'Pay');
+        $('.btn-save-estimate').prop('disabled', !canPay);
+        $('.btn-draft-print, .btn-draft-pdf, .btn-draft-share').prop('disabled', !canPay);
+        $('.btn-save-invoice, .btn-save-send-invoice').prop('disabled', !canPay);
     }
 
     function cartTotals() {
@@ -2124,7 +2247,7 @@
         const amountDue = roundMoney(Math.max(amountDueAfterGiftCard - storeCreditApplied, 0));
         const remaining = Math.max(amountDue - amount, 0);
         const changeDue = Math.max(amount - amountDue, 0);
-        const canCheckout = order && order.items.length > 0 && totals.orderSubtotal > 0 && !isSavingOrder;
+        const canCheckout = orderCanProceed(order, totals);
 
         if (order && roundMoney(order.creditsApplied || 0) !== storeCreditApplied) {
             order.creditsApplied = storeCreditApplied;
@@ -2172,35 +2295,16 @@
         $('[data-cart-utility="reward"]').toggleClass('is-active', rewardIsEligible);
 
         // Service Fee & Breakdowns
-        const $serviceFeeSection = $('.payment-service-fee-section');
-        const $serviceFeeBreakdowns = $('.payment-service-fee-breakdowns');
-        $serviceFeeSection.toggleClass('d-none', totals.serviceFee <= 0);
-        $serviceFeeBreakdowns.empty();
-        if (totals.serviceFee > 0) {
-            $('.payment-service-fee-title').text(serviceFeeSummaryTitle(serviceFees) + ':');
-            $('.payment-service-fee').text('+' + formatMoney(totals.serviceFee));
-
-            const serviceFeeItems = [];
-            normalizedFees.forEach(function (fee) {
-                const feeAmount = serviceFeeAmountForTotals(fee, totals.productNet);
-                if (feeAmount > 0) {
-                    serviceFeeItems.push({
-                        label: serviceFeeLabel(fee),
-                        amount: feeAmount
-                    });
-                }
-            });
-
-            if (serviceFeeItems.length > 0) {
-                $serviceFeeBreakdowns.html(serviceFeeItems.map(function (item) {
-                    return renderBreakdownHtml(item.label, item.amount);
-                }).join('')).removeClass('d-none');
-            } else {
-                $serviceFeeBreakdowns.addClass('d-none');
-            }
-        } else {
-            $serviceFeeBreakdowns.addClass('d-none');
-        }
+        renderServiceFeeBreakdowns({
+            totals: totals,
+            serviceFees: serviceFees,
+            normalizedFees: normalizedFees,
+            sectionSelector: '.payment-service-fee-section',
+            breakdownsSelector: '.payment-service-fee-breakdowns',
+            titleSelector: '.payment-service-fee-title',
+            amountSelector: '.payment-service-fee',
+            titleSuffix: ':'
+        });
 
         // 3. Discount & Breakdowns
         const $discountSection = $('.payment-discount-section');
@@ -2317,12 +2421,19 @@
         syncCustomerSelectionFromSelect();
 
         const order = getActiveOrder();
+
+        // Open payment UI immediately — do not wait on credit-balance AJAX
+        // (a slow/hung dropdown request made Pay look broken).
+        paymentAmountInput = '';
+        paymentMethod = '';
+        renderPaymentScreen();
+        $('.order-entry-screen').addClass('d-none');
+        $('.order-payment-screen').removeClass('d-none');
+
         ensureCustomerCreditBalance(order).always(function () {
-            paymentAmountInput = '';
-            paymentMethod = '';
-            renderPaymentScreen();
-            $('.order-entry-screen').addClass('d-none');
-            $('.order-payment-screen').removeClass('d-none');
+            if (!$('.order-payment-screen').hasClass('d-none')) {
+                renderPaymentScreen();
+            }
         });
     }
 
@@ -2423,10 +2534,28 @@
         markSelectInvalid($('#order_service_filter'), false);
     }
 
+    function pruneBrokenServiceFees(order) {
+        if (!order) return false;
+
+        const fees = orderServiceFees(order);
+        const cleanedFees = fees.filter(function (fee) {
+            const amount = roundMoney(fee ? fee.amount : 0);
+            const hasService = !!(fee && fee.service && fee.service.id);
+
+            return !(amount > 0 && !hasService);
+        });
+
+        if (cleanedFees.length === fees.length) {
+            return false;
+        }
+
+        order.serviceFees = cleanedFees;
+        return true;
+    }
+
     function validateOrderForSave() {
         const order = getActiveOrder();
         const $customerSelect = $('#customer_type_filter');
-        const $vehicleSelect = $('#add_vehicle_filter');
 
         clearOrderValidation();
 
@@ -2435,19 +2564,17 @@
             return false;
         }
 
-        if (!$customerSelect.val()) {
+        syncCustomerSelectionFromSelect();
+
+        if (!order.customer || !order.customer.id) {
             markSelectInvalid($customerSelect, true);
             notifyOrder('error', 'Please select a customer before saving the order.');
             return false;
         }
 
-        const totals = cartTotals();
-        const invalidFee = normalizedServiceFees(orderServiceFees(order)).find(function (fee) {
-            return !fee.service || !fee.service.id;
-        });
-        if ((totals.servicePrice > 0 || totals.serviceFee > 0) && invalidFee) {
-            notifyOrder('error', 'Please select a service before applying the service fee.');
-            return false;
+        if (pruneBrokenServiceFees(order)) {
+            renderServiceFeeLines();
+            updateSummary();
         }
 
         return true;
@@ -2475,7 +2602,7 @@
         if (order.items.length === 0) return null;
 
         const serviceFees = orderServiceFees(order);
-        const serviceFeeDetails = serviceFeeDetailsPayload(orderServiceFees(order), totals);
+        const serviceFeeDetails = serviceFeeDetailsPayload(serviceFees, totals);
         const giftCard = orderAppliedCard(order, 'gift');
         const rewardCard = orderAppliedCard(order, 'reward');
         const discountCard = orderAppliedCard(order, 'discount');
@@ -2738,8 +2865,22 @@
         }
     });
 
-    $(document).on('click', '.btn-pay', function () {
-        if (isSavingOrder || !validateOrderForSave()) return;
+    $(document).on('click', '.btn-pay', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (isSavingOrder) {
+            return;
+        }
+
+        if (!orderCanProceed(getActiveOrder(), cartTotals())) {
+            notifyOrder('error', 'Add items with a total greater than zero before paying.');
+            return;
+        }
+
+        if (!validateOrderForSave()) {
+            return;
+        }
 
         openPaymentScreen();
     });
@@ -3410,8 +3551,8 @@
         const meta = [];
         const standardPrice = serviceStandardPrice(service);
 
-        if (service.code) {
-            meta.push(service.code);
+        if (service.code || service.slug) {
+            meta.push(service.code || service.slug);
         }
 
         if (service.category_name) {
@@ -3434,8 +3575,14 @@
         if (!$rows.length) return;
 
         const order = getActiveOrder();
-        const services = readServiceFeeSelections();
-        const stagedState = selectedServiceFeeRowState();
+        let services = readServiceFeeSelections();
+
+        if (!services.length && serviceFeeEditFallback && serviceFeeEditFallback.id) {
+            services = [serviceFeeEditFallback];
+        }
+
+        const stagedState = Object.assign({}, selectedServiceFeeRowState(), serviceFeeRowSeed || {});
+        serviceFeeRowSeed = null;
 
         if (services.length === 0) {
             $rows.html('<div class="selected-service-fee-empty"><span class="text-muted small">No service selected</span></div>');
@@ -3514,6 +3661,8 @@
     }
 
     function clearServiceFeeForm() {
+        serviceFeeRowSeed = null;
+        serviceFeeEditFallback = null;
         setSelectSelections($('#order_service_filter'), []);
         renderSelectedServiceFeeRows();
         markSelectInvalid($('#order_service_filter'), false);
@@ -3521,7 +3670,7 @@
 
     function renderServiceFeeLines() {
         const order = getActiveOrder();
-        const fees = normalizedServiceFees(order ? orderServiceFees(order) : []);
+        const fees = orderServiceFees(order).map(normalizedServiceFeeLine);
         const $lines = $('#service_fee_lines');
 
         if (!$lines.length) return;
@@ -3538,11 +3687,14 @@
                 + '<div class="service-fee-item">'
                 + '<div class="min-w-0">'
                 + '<span class="service-fee-item-name">' + escape(serviceFeeLabel(fee)) + '</span>'
-                + '<span class="service-fee-item-type">' + escape(serviceText) + '</span>'
+                + '<span class="service-fee-item-type">' + escape(serviceText) + ' · this order only</span>'
                 + '</div>'
-                + '<div class="d-flex align-items-center gap-2">'
+                + '<div class="d-flex align-items-center gap-1">'
                 + '<span class="service-fee-item-amount">' + formatMoney(fee.amount) + '</span>'
-                + '<button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill remove-service-fee-line" data-service-fee-index="' + index + '" title="Remove fee">'
+                + '<button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill edit-service-fee-line" data-service-fee-index="' + index + '" title="Edit for this order">'
+                + '<i class="ti tabler-edit"></i>'
+                + '</button>'
+                + '<button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill remove-service-fee-line" data-service-fee-index="' + index + '" title="Remove from this order">'
                 + '<i class="ti tabler-trash text-danger"></i>'
                 + '</button>'
                 + '</div>'
@@ -3619,6 +3771,13 @@
             });
 
             if (existingIndex >= 0) {
+                const previous = order.serviceFees[existingIndex] || {};
+                if (previous.source && !nextFee.source) {
+                    nextFee.source = previous.source;
+                }
+                if (previous.source_product_id && !nextFee.source_product_id) {
+                    nextFee.source_product_id = previous.source_product_id;
+                }
                 order.serviceFees.splice(existingIndex, 1, nextFee);
             } else {
                 order.serviceFees.push(nextFee);
@@ -3678,6 +3837,94 @@
         scheduleDraftCartSave();
     });
 
+    function applyPendingServiceFeeEdit(edit) {
+        if (!edit || !edit.service || !edit.service.id) {
+            return;
+        }
+
+        const service = Object.assign({}, edit.service, {
+            text: edit.service.text || edit.service.name || String(edit.service.id),
+            name: edit.service.name || edit.service.text || String(edit.service.id)
+        });
+        const serviceId = String(service.id);
+
+        serviceFeeEditFallback = service;
+        serviceFeeRowSeed = {};
+        serviceFeeRowSeed[serviceId] = {
+            title: edit.title || service.name || 'Service',
+            amount: edit.amount
+        };
+
+        setSelectSelections($('#order_service_filter'), [service], { silent: true });
+        if ($('#order_service_filter').data('select2')) {
+            $('#order_service_filter').trigger('change');
+        }
+
+        renderSelectedServiceFeeRows();
+
+        const $row = $('#selected_service_fee_rows .selected-service-fee-row').filter(function () {
+            return String($(this).data('service-id')) === serviceId;
+        }).first();
+
+        if ($row.length) {
+            $row.find('.selected-service-fee-title').val(edit.title || service.name || 'Service');
+            $row.find('.selected-service-fee-amount').val(edit.amount);
+            window.setTimeout(function () {
+                $row.find('.selected-service-fee-amount').trigger('focus').trigger('select');
+            }, 80);
+        }
+
+        renderServiceFeeLines();
+    }
+
+    function openOrderServiceFeeEditor(index) {
+        const order = getActiveOrder();
+        if (!order) return;
+
+        const fees = orderServiceFees(order).map(normalizedServiceFeeLine);
+        const fee = fees[index];
+
+        if (!fee || !fee.service || !fee.service.id) {
+            notifyOrder('error', 'Unable to edit this service on the order.');
+            return;
+        }
+
+        const snapshot = linkedServiceSnapshot(fee.service);
+        if (!snapshot) {
+            notifyOrder('error', 'Unable to edit this service on the order.');
+            return;
+        }
+
+        const edit = {
+            service: snapshot,
+            title: fee.title || serviceFeeLabel(fee),
+            amount: roundMoney(fee.amount).toFixed(2)
+        };
+
+        const offcanvasEl = document.getElementById('offcanvasServiceFee');
+        if (!offcanvasEl || !window.bootstrap || !window.bootstrap.Offcanvas) {
+            return;
+        }
+
+        const instance = window.bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
+        const alreadyOpen = offcanvasEl.classList.contains('show');
+
+        if (alreadyOpen) {
+            applyPendingServiceFeeEdit(edit);
+            return;
+        }
+
+        pendingServiceFeeEdit = edit;
+        instance.show();
+    }
+
+    $(document).on('click', '.edit-service-fee-line', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        const index = Number($(this).data('service-fee-index'));
+        openOrderServiceFeeEditor(index);
+    });
+
     // ─── Boot ──────────────────────────────────────────────────────────
 
     $(function () {
@@ -3687,8 +3934,17 @@
         loadCategories('');
         initSelect2();
 
-        $('#offcanvasServiceFee').on('show.bs.offcanvas', function () {
-            fillServiceFeeForm();
+        $('#offcanvasServiceFee').on('show.bs.offcanvas shown.bs.offcanvas', function (event) {
+            if (!pendingServiceFeeEdit) {
+                if (event.type === 'show') {
+                    fillServiceFeeForm();
+                }
+                return;
+            }
+
+            const edit = pendingServiceFeeEdit;
+            pendingServiceFeeEdit = null;
+            applyPendingServiceFeeEdit(edit);
         });
         $('#offcanvasDiscount').on('show.bs.offcanvas', function () {
             renderDiscountDrawer();

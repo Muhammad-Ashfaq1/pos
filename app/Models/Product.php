@@ -34,6 +34,7 @@ class Product extends Model
         'sub_category_id',
         'product_type_id',
         'discount_id',
+        'service_id',
         'product_type',
         'name',
         'slug',
@@ -62,6 +63,7 @@ class Product extends Model
             'sub_category_id' => 'integer',
             'product_type_id' => 'integer',
             'discount_id' => 'integer',
+            'service_id' => 'integer',
             'cost_price' => 'decimal:2',
             'sale_price' => 'decimal:2',
             'tax_percentage' => 'decimal:2',
@@ -104,6 +106,11 @@ class Product extends Model
     public function discount(): BelongsTo
     {
         return $this->belongsTo(Discount::class);
+    }
+
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class);
     }
 
     public function creator(): BelongsTo

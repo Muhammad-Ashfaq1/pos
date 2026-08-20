@@ -4,6 +4,7 @@ namespace App\Http\Requests\Tenant\Services;
 
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
@@ -16,7 +17,12 @@ class SaveServiceRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $slugSource = $this->filled('slug')
+            ? (string) $this->input('slug')
+            : (string) $this->input('name', '');
+
         $this->merge([
+            'slug' => Str::slug($slugSource) ?: null,
             'mappings' => array_values($this->input('mappings', [])),
         ]);
     }
@@ -37,7 +43,7 @@ class SaveServiceRequest extends FormRequest
             'category_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('categories', 'id')->where(
+                Rule::exists('service_categories', 'id')->where(
                     fn ($query) => $query->where('tenant_id', $tenantId)
                 ),
             ],
@@ -49,20 +55,14 @@ class SaveServiceRequest extends FormRequest
                     ->where(fn ($query) => $query->where('tenant_id', $tenantId))
                     ->ignore($serviceId),
             ],
-            'code' => [
+            'slug' => [
                 'nullable',
                 'string',
-                'max:50',
-                Rule::unique('services', 'code')
-                    ->where(fn ($query) => $query->where('tenant_id', $tenantId))
-                    ->ignore($serviceId),
+                'max:170',
             ],
             'description' => ['nullable', 'string', 'max:2000'],
             'standard_price' => ['required', 'numeric', 'min:0'],
-            'estimated_duration_minutes' => ['nullable', 'integer', 'min:0'],
             'tax_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'reminder_interval_days' => ['nullable', 'integer', 'min:0'],
-            'mileage_interval' => ['nullable', 'integer', 'min:0'],
             'requires_technician' => ['required', 'boolean'],
             'is_active' => ['required', 'boolean'],
             'mappings' => ['nullable', 'array'],
@@ -76,6 +76,7 @@ class SaveServiceRequest extends FormRequest
             'mappings.*.quantity' => ['nullable', 'integer', 'min:1'],
             'mappings.*.unit' => ['nullable', 'string', 'max:50'],
             'mappings.*.is_required' => ['required', 'boolean'],
+            'code' => ['prohibited'],
             'tenant_id' => ['prohibited'],
             'created_by' => ['prohibited'],
             'updated_by' => ['prohibited'],
@@ -121,25 +122,18 @@ class SaveServiceRequest extends FormRequest
     {
         return [
             'id.exists' => 'The selected service was not found for this shop.',
-            'category_id.exists' => 'The selected category was not found for this shop.',
+            'category_id.exists' => 'The selected service category was not found for this shop.',
             'name.required' => 'Please enter a service name.',
             'name.max' => 'The service name may not be greater than 150 characters.',
             'name.unique' => 'This service name already exists for this shop.',
-            'code.max' => 'The service code may not be greater than 50 characters.',
-            'code.unique' => 'This service code already exists for this shop.',
+            'slug.max' => 'The service slug may not be greater than 170 characters.',
             'description.max' => 'The description may not be greater than 2000 characters.',
             'standard_price.required' => 'Please enter a standard price.',
             'standard_price.numeric' => 'The standard price must be numeric.',
             'standard_price.min' => 'The standard price must be zero or greater.',
-            'estimated_duration_minutes.integer' => 'Estimated duration must be a whole number.',
-            'estimated_duration_minutes.min' => 'Estimated duration must be zero or greater.',
             'tax_percentage.numeric' => 'Tax percentage must be numeric.',
             'tax_percentage.min' => 'Tax percentage must be zero or greater.',
             'tax_percentage.max' => 'Tax percentage may not be greater than 100.',
-            'reminder_interval_days.integer' => 'Reminder interval must be a whole number.',
-            'reminder_interval_days.min' => 'Reminder interval must be zero or greater.',
-            'mileage_interval.integer' => 'Mileage interval must be a whole number.',
-            'mileage_interval.min' => 'Mileage interval must be zero or greater.',
             'mappings.*.product_id.exists' => 'The selected product was not found for this shop.',
             'mappings.*.quantity.integer' => 'Mapped quantity must be a whole number.',
             'mappings.*.quantity.min' => 'Mapped quantity must be at least 1.',

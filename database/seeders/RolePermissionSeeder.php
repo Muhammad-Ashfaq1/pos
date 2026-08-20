@@ -14,6 +14,9 @@ class RolePermissionSeeder extends Seeder
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
+        // Seed against global (null-team) role templates.
+        setPermissionsTeamId(null);
+
         Role::findByName(User::SUPER_ADMIN)->syncPermissions(
             Permission::query()->where('guard_name', 'web')->get()
         );
@@ -47,6 +50,10 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('service.create', 'web'),
             Permission::findByName('service.update', 'web'),
             Permission::findByName('service.delete', 'web'),
+            Permission::findByName('service-category.view', 'web'),
+            Permission::findByName('service-category.create', 'web'),
+            Permission::findByName('service-category.update', 'web'),
+            Permission::findByName('service-category.delete', 'web'),
             Permission::findByName('services.view', 'web'),
             Permission::findByName('services.manage', 'web'),
             Permission::findByName('inventory.view', 'web'),
@@ -92,6 +99,7 @@ class RolePermissionSeeder extends Seeder
             Permission::findByName('product.view', 'web'),
             Permission::findByName('products.view', 'web'),
             Permission::findByName('service.view', 'web'),
+            Permission::findByName('service-category.view', 'web'),
             Permission::findByName('services.view', 'web'),
             Permission::findByName('inventory.view', 'web'),
             Permission::findByName('pos.bill', 'web'),

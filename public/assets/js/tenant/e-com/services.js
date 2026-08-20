@@ -10,7 +10,10 @@
   const $formCategory = $('#service_category_id');
   const $filterCategory = $('#service_filter_category');
   const $mappingsTableBody = $('#serviceMappingsTable tbody');
+  const $name = $('#service_name');
+  const $slug = $('#service_slug');
   let serviceTable = null;
+  let slugLocked = false;
 
   const serviceEditUrl = function (serviceId) {
     if (!window.serviceEditUrlTemplate) {
@@ -32,6 +35,20 @@
     if (typeof window.appNotify === 'function') {
       window.appNotify(type, message);
     }
+  };
+
+  const slugify = function (value) {
+    return (window.appSlugify || window.Helpers && window.Helpers.slugify || function (raw) {
+      return String(raw || '');
+    })(value);
+  };
+
+  const syncSlugFromName = function () {
+    if (slugLocked) {
+      return;
+    }
+
+    $slug.val(slugify($name.val()));
   };
 
   const alignCreateButtonWithSearch = function (table, actionsSelector) {
@@ -321,6 +338,8 @@
     $('#service_standard_price').val('0.00');
     $('#service_is_active').prop('checked', true);
     $('#service_requires_technician').prop('checked', false);
+    $slug.val('');
+    slugLocked = false;
     ensureSelectOption($formCategory, null, null);
     renderMappingRows([]);
     $('#serviceModalLabel').text('Add Service');
@@ -331,14 +350,12 @@
   const fillForm = function (service) {
     $('#service_id').val(service.id);
     ensureSelectOption($formCategory, service.category_id, service.category_name);
-    $('#service_name').val(service.name);
-    $('#service_code').val(service.code);
+    $name.val(service.name);
+    $slug.val(service.slug || slugify(service.name));
+    slugLocked = true;
     $('#service_description').val(service.description);
     $('#service_standard_price').val(service.standard_price);
-    $('#service_estimated_duration_minutes').val(service.estimated_duration_minutes);
     $('#service_tax_percentage').val(service.tax_percentage);
-    $('#service_reminder_interval_days').val(service.reminder_interval_days);
-    $('#service_mileage_interval').val(service.mileage_interval);
     $('#service_is_active').prop('checked', Boolean(service.is_active));
     $('#service_requires_technician').prop('checked', Boolean(service.requires_technician));
     renderMappingRows(Array.isArray(service.mappings) ? service.mappings : []);
@@ -391,8 +408,9 @@
           required: true,
           maxlength: 150
         },
-        code: {
-          maxlength: 50
+        slug: {
+          required: true,
+          maxlength: 170
         },
         description: {
           maxlength: 2000
@@ -402,22 +420,10 @@
           number: true,
           min: 0
         },
-        estimated_duration_minutes: {
-          number: true,
-          min: 0
-        },
         tax_percentage: {
           number: true,
           min: 0,
           max: 100
-        },
-        reminder_interval_days: {
-          number: true,
-          min: 0
-        },
-        mileage_interval: {
-          number: true,
-          min: 0
         }
       },
       errorElement: 'div',
@@ -483,7 +489,7 @@
       layout: {
         topStart: {
           search: {
-            placeholder: 'Search by name, code, description or category',
+            placeholder: 'Search by name, slug, description or category',
             text: '_INPUT_',
             className: 'form-control'
           }
@@ -533,21 +539,15 @@
           }
         },
         {
-          data: 'code',
+          data: 'slug',
           render: function (data) {
-            return escapeHtml(data || '—');
+            return '<code>' + escapeHtml(data || '—') + '</code>';
           }
         },
         {
           data: 'standard_price',
           render: function (data) {
             return '<span class="text-nowrap">' + money(data) + '</span>';
-          }
-        },
-        {
-          data: 'estimated_duration_minutes',
-          render: function (data) {
-            return data ? '<span class="text-nowrap">' + escapeHtml(String(data)) + ' min</span>' : '—';
           }
         },
         {
@@ -742,10 +742,25 @@
     });
   };
 
+  const bindSlugGeneration = function () {
+    $name.on('input', function () {
+      if ($('#service_id').val()) {
+        return;
+      }
+
+      slugLocked = false;
+      syncSlugFromName();
+    });
+  };
+
   const bindSaveForm = function (validator) {
     $form.on('submit', function (event) {
       event.preventDefault();
       resetValidationState();
+
+      if (!slugLocked || !$slug.val()) {
+        syncSlugFromName();
+      }
 
       if (validator && !$form.valid()) {
         return;
@@ -771,11 +786,17 @@
         })
         .fail(function (xhr) {
           if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
-            if (xhr.responseJSON.errors.id) {
-              showAlert('error', xhr.responseJSON.errors.id[0]);
+            const errors = xhr.responseJSON.errors;
+
+            if (errors.id) {
+              showAlert('error', errors.id[0]);
             }
 
-            appendServerErrors(xhr.responseJSON.errors, validator);
+            if (errors.name && errors.name[0]) {
+              showAlert('error', errors.name[0]);
+            }
+
+            appendServerErrors(errors, validator);
             return;
           }
 
@@ -849,6 +870,7 @@
     initDataTable();
     bindFilters();
     bindMappingRows();
+    bindSlugGeneration();
     bindModalActions(validator);
     bindSaveForm(validator);
     bindDeleteButton();
