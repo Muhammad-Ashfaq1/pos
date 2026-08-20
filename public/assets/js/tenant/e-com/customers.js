@@ -78,6 +78,14 @@
         '</button>';
     }
 
+    if (row.impersonate_portal_url) {
+      html +=
+        '<a href="' + escapeHtml(row.impersonate_portal_url) + '" class="btn btn-sm btn-icon btn-text-warning impersonate-btn" ' +
+        'title="Impersonate ' + escapeHtml(row.name) + '" data-name="' + escapeHtml(row.name) + '">' +
+        '<i class="ti tabler-user-check"></i>' +
+        '</a>';
+    }
+
     if (row.can_delete && row.delete_url) {
       html +=
         '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect delete-customer-btn" ' +
@@ -304,6 +312,31 @@
     });
   };
 
+  const bindImpersonateActions = function () {
+    $(document).on('click', '.impersonate-btn', function (e) {
+      e.preventDefault();
+
+      const name = $(this).data('name') || 'this customer';
+      const href = $(this).attr('href');
+
+      if (!href) {
+        return;
+      }
+
+      Swal.fire({
+        title: 'Impersonate User?',
+        text: 'You will be logged in as "' + name + '". You can stop impersonation from the sidebar.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, impersonate',
+      }).then(function (result) {
+        if (result.isConfirmed) {
+          window.location.href = href;
+        }
+      });
+    });
+  };
+
   $(function () {
     if (typeof window.CustomerManager === 'function') {
       customerManager = new window.CustomerManager({
@@ -319,5 +352,6 @@
     bindFilters();
     bindEditActions();
     bindDeleteActions();
+    bindImpersonateActions();
   });
 })(window.jQuery);

@@ -38,6 +38,7 @@ final class CustomerVehicleSurface
                 'customers_save' => $customerPrefix.'save',
                 'customers_destroy' => $customerPrefix.'destroy',
                 'customers_invite_portal' => $customerPrefix.'invite-portal',
+                'customers_impersonate_portal' => $customerPrefix.'impersonate-portal',
                 'customers_adjust_credit' => $customerPrefix.'adjust-credit',
                 'customers_credit_history' => $customerPrefix.'credit-history',
                 'vehicles_index' => $vehiclePrefix.'index',

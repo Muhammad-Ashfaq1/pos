@@ -12,6 +12,63 @@ body.customer-portal-page {
     color: #111827;
 }
 
+/* Same pill as employee portal impersonation banner */
+.customer-portal-page .impersonation-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    color: #92400e;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.customer-portal-page .impersonation-banner > i {
+    font-size: 1.1rem;
+    color: #d97706;
+}
+
+.customer-portal-page .impersonation-banner-text {
+    white-space: nowrap;
+}
+
+.customer-portal-page .impersonation-banner-text strong {
+    font-weight: 700;
+}
+
+.customer-portal-page .impersonation-banner-stop {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    background: #d97706;
+    color: #fff !important;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: background-color 0.15s ease;
+}
+
+.customer-portal-page .impersonation-banner-stop:hover {
+    background: #b45309;
+    color: #fff !important;
+}
+
+.customer-portal-page .impersonation-banner-stop i {
+    font-size: 0.95rem;
+}
+
+@media (max-width: 767px) {
+    .customer-portal-page .impersonation-banner-text {
+        display: none;
+    }
+}
+
 :root,
 [data-bs-theme='light'] {
     --bs-primary: #312e81;
