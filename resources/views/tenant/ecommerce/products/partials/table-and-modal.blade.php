@@ -92,6 +92,22 @@
                                 <div class="invalid-feedback"></div>
                             </div>
                         </div>
+                        <div class="col-md-4">
+                            <label for="product_service_id" class="form-label">Service</label>
+                            <div class="position-relative">
+                                <select
+                                    id="product_service_id"
+                                    name="service_id"
+                                    class="form-select service-select2"
+                                    data-placeholder="Select a service (optional)"
+                                    data-allow-clear="true"
+                                    data-dropdown-parent="#productModal"
+                                >
+                                    <option value=""></option>
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
 
                         <div class="col-md-4">
                             <label for="product_name" class="form-label">Name <span class="text-danger">*</span></label>

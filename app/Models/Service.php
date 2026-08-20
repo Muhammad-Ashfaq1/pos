@@ -16,7 +16,7 @@ class Service extends Model
     protected $fillable = [
         'category_id',
         'name',
-        'code',
+        'slug',
         'description',
         'standard_price',
         'estimated_duration_minutes',
@@ -45,7 +45,12 @@ class Service extends Model
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(ServiceCategory::class, 'category_id');
+    }
+
+    public function linkedProducts(): HasMany
+    {
+        return $this->hasMany(Product::class, 'service_id');
     }
 
     public function serviceProducts(): HasMany
@@ -81,7 +86,7 @@ class Service extends Model
         return $query->where(function (Builder $builder) use ($term): void {
             $builder
                 ->where('name', 'like', "%{$term}%")
-                ->orWhere('code', 'like', "%{$term}%")
+                ->orWhere('slug', 'like', "%{$term}%")
                 ->orWhere('description', 'like', "%{$term}%")
                 ->orWhereHas('category', function (Builder $categoryQuery) use ($term): void {
                     $categoryQuery->where('name', 'like', "%{$term}%");

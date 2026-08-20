@@ -84,6 +84,14 @@
             'label' => 'Services',
             'icon' => 'tabler-tool',
             'items' => collect([
+                $user?->can('service-category.view')
+                    ? [
+                        'label' => 'Service Categories',
+                        'route' => 'tenant.ecommerce.service-categories.index',
+                        'pattern' => 'tenant.ecommerce.service-categories.*',
+                        'icon' => 'tabler-category-2',
+                    ]
+                    : null,
                 $user?->can('service.view')
                     ? [
                         'label' => 'Services',

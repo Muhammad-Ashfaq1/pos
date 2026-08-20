@@ -39,12 +39,12 @@ class ServiceController extends Controller
             'category_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('categories', 'id')->where(
+                Rule::exists('service_categories', 'id')->where(
                     fn ($query) => $query->where('tenant_id', app(TenantContext::class)->id())
                 ),
             ],
             'requires_technician' => ['nullable', Rule::in(['1', '0'])],
-            'sort' => ['nullable', Rule::in(['latest', 'name', 'category', 'price_low_high', 'duration_low_high'])],
+            'sort' => ['nullable', Rule::in(['latest', 'name', 'category', 'price_low_high'])],
             'columns' => ['nullable', 'array'],
             'columns.*.data' => ['nullable', 'string'],
             'order' => ['nullable', 'array'],

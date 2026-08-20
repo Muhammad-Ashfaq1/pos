@@ -16,6 +16,7 @@ use App\Http\Controllers\Tenant\ImageController;
 use App\Http\Controllers\Tenant\ProductController;
 use App\Http\Controllers\Tenant\ProductTypeController;
 use App\Http\Controllers\Tenant\RolesPermissionsController;
+use App\Http\Controllers\Tenant\ServiceCategoryController;
 use App\Http\Controllers\Tenant\ServiceController;
 use App\Http\Controllers\Tenant\ShopSettingsController;
 use App\Http\Controllers\Tenant\SubCategoryController;
@@ -138,8 +139,11 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                     ->controller(DropdownController::class)
                     ->group(function () {
                         Route::get('/categories', 'categories')
-                            ->middleware('permission:category.view|category.create|category.update|subcategory.view|subcategory.create|subcategory.update|product.view|product.create|product.update|products.view|products.manage|service.view|service.create|service.update')
+                            ->middleware('permission:category.view|category.create|category.update|subcategory.view|subcategory.create|subcategory.update|product.view|product.create|product.update|products.view|products.manage')
                             ->name('categories');
+                        Route::get('/service-categories', 'serviceCategories')
+                            ->middleware('permission:service-category.view|service-category.create|service-category.update|service.view|service.create|service.update')
+                            ->name('service-categories');
                         Route::get('/sub-categories', 'subCategories')
                             ->middleware('permission:subcategory.view|subcategory.create|subcategory.update|product.view|product.create|product.update|products.view|products.manage')
                             ->name('subcategories');
@@ -147,7 +151,7 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                             ->middleware('permission:product.view|product.create|product.update|products.view|products.manage|service.view|service.create|service.update')
                             ->name('products');
                         Route::get('/services', 'services')
-                            ->middleware('permission:service.view|service.create|service.update|orders.create|pos.bill')
+                            ->middleware('permission:service.view|service.create|service.update|orders.create|pos.bill|product.view|product.create|product.update|products.view|products.manage')
                             ->name('services');
                         Route::get('/discounts', 'discounts')
                             ->middleware('permission:discount.manage|discount.apply_item|product.create|product.update|products.manage')
@@ -235,6 +239,24 @@ Route::middleware(['auth', 'verified', 'active.user', 'tenant.init', 'tenant.app
                             ->name('save');
                         Route::delete('/{product}', 'destroy')
                             ->middleware('permission:product.delete|products.manage')
+                            ->name('destroy');
+                    });
+
+                Route::prefix('service-categories')
+                    ->name('service-categories.')
+                    ->controller(ServiceCategoryController::class)
+                    ->group(function () {
+                        Route::get('/', 'index')
+                            ->middleware('permission:service-category.view')
+                            ->name('index');
+                        Route::get('/listing', 'listing')
+                            ->middleware('permission:service-category.view')
+                            ->name('listing');
+                        Route::post('/save', 'save')
+                            ->middleware('permission:service-category.create|service-category.update')
+                            ->name('save');
+                        Route::delete('/{serviceCategory}', 'destroy')
+                            ->middleware('permission:service-category.delete')
                             ->name('destroy');
                     });
 

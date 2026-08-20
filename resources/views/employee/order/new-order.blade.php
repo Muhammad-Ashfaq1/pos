@@ -188,8 +188,9 @@
                                     </div>
                                     <div class="col-6">
                                         <button
-                                            class="btn btn-primary w-100 h-100 fw-bold d-flex flex-column align-items-center cursor-pointer justify-content-center py-2 btn-pay"
-                                            disabled>
+                                            type="button"
+                                            class="btn btn-primary w-100 h-100 fw-bold d-flex flex-column align-items-center cursor-pointer justify-content-center py-2 btn-pay is-pay-disabled"
+                                            aria-disabled="true">
                                             <div class="fs-5 text-warning">@money(0)</div>
                                             <div class="small fw-semibold text-warning">Pay</div>
                                         </button>

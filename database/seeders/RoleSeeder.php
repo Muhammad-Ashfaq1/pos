@@ -24,11 +24,11 @@ class RoleSeeder extends Seeder
             User::CUSTOMER,
         ];
 
+        // Global template roles use null team_id so RolePermissionSeeder can find them.
+        setPermissionsTeamId(null);
+
         foreach ($roles as $role) {
-            Role::firstOrCreate([
-                'name' => $role,
-                'guard_name' => 'web',
-            ]);
+            Role::findOrCreate($role, 'web');
         }
     }
 }

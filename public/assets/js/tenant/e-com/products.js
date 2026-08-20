@@ -10,6 +10,7 @@
   const $formCategory = $('#product_category_id');
   const $formSubCategory = $('#product_sub_category_id');
   const $formDiscount = $('#product_discount_id');
+  const $formService = $('#product_service_id');
   const $filterCategory = $('#product_filter_category');
   const $filterSubCategory = $('#product_filter_sub_category');
   const $trackInventoryToggle = $('#product_track_inventory_toggle');
@@ -413,6 +414,48 @@
     });
   };
 
+  const initServiceSelect = function ($element) {
+    if (typeof $.fn.select2 !== 'function' || !$element.length || $element.data('select2')) {
+      return;
+    }
+
+    const dropdownParentSelector = $element.data('dropdown-parent');
+
+    if (!dropdownParentSelector && !$element.parent().hasClass('position-relative')) {
+      $element.wrap('<div class="position-relative"></div>');
+    }
+
+    $element.select2({
+      dropdownParent: dropdownParentSelector ? $(dropdownParentSelector) : $element.parent(),
+      placeholder: $element.data('placeholder'),
+      allowClear: Boolean($element.data('allow-clear')),
+      ajax: {
+        global: false, // table/dropdown has its own indicator — skip the global overlay
+        url: window.serviceDropdownUrl,
+        delay: 250,
+        dataType: 'json',
+        data: function (params) {
+          return {
+            q: params.term || '',
+            page: params.page || 1,
+            active_only: 1
+          };
+        },
+        processResults: function (response, params) {
+          params.page = params.page || 1;
+
+          return {
+            results: response.results || [],
+            pagination: response.pagination || { more: false }
+          };
+        }
+      }
+    }).on('change', function () {
+      setSelect2ErrorState($element, false);
+      $element.closest('.position-relative').find('.invalid-feedback').text('');
+    });
+  };
+
   const clearSubCategorySelect = function ($select) {
     $select.val(null).trigger('change');
     $select.find('option').not(':first').remove();
@@ -433,6 +476,7 @@
     ensureSelectOption($formCategory, null, null);
     clearSubCategorySelect($formSubCategory);
     ensureSelectOption($formDiscount, null, null);
+    ensureSelectOption($formService, null, null);
     if (mediaManager) {
       mediaManager.reset();
     }
@@ -448,6 +492,7 @@
     ensureSelectOption($formCategory, product.category_id, product.category_name);
     ensureSelectOption($formSubCategory, product.sub_category_id, product.sub_category_name);
     ensureSelectOption($formDiscount, product.discount_id, product.discount_label || product.discount_name);
+    ensureSelectOption($formService, product.service_id, product.service_label || product.service_name);
     $('#product_type').val(String(product.product_type_id || '')).trigger('change');
     $('#product_name').val(product.name);
     $('#product_sku').val(product.sku);
@@ -1038,6 +1083,7 @@
       return $formCategory.val();
     });
     initDiscountSelect($formDiscount);
+    initServiceSelect($formService);
     initSubCategorySelect($filterSubCategory, function () {
       return $filterCategory.val();
     });

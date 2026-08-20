@@ -3,9 +3,10 @@
 namespace App\Repositories;
 
 use App\Actions\Tenant\Services\SyncServiceProductsAction;
-use App\Models\Category;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Repositories\Interface\ServiceRepositoryInterface;
+use App\Repositories\Support\Concerns\HandlesCatalogSlugs;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -14,6 +15,8 @@ use Illuminate\View\View;
 
 class ServicesRepository implements ServiceRepositoryInterface
 {
+    use HandlesCatalogSlugs;
+
     public function __construct(
         private readonly SyncServiceProductsAction $syncServiceProductsAction
     ) {}
@@ -23,7 +26,7 @@ class ServicesRepository implements ServiceRepositoryInterface
         return view('tenant.ecommerce.services.index', [
             'listingUrl' => route('tenant.ecommerce.services.listing'),
             'editUrlTemplate' => route('tenant.ecommerce.services.edit', ['service' => '__SERVICE__']),
-            'categoriesDropdownUrl' => route('tenant.ecommerce.dropdowns.categories'),
+            'categoriesDropdownUrl' => route('tenant.ecommerce.dropdowns.service-categories'),
             'productsDropdownUrl' => route('tenant.ecommerce.dropdowns.products'),
         ]);
     }
@@ -33,19 +36,25 @@ class ServicesRepository implements ServiceRepositoryInterface
         $isUpdate = $service !== null;
         $userId = $user?->getAuthIdentifier();
 
+        unset($data['code']);
+
+        $data['slug'] = $this->makeUniqueSlug(
+            Service::class,
+            $data['slug'] ?? $data['name'] ?? '',
+            $service?->id,
+            'service'
+        );
+
         $service = DB::transaction(function () use ($data, $service, $isUpdate, $userId): Service {
             $payload = [
                 'category_id' => $data['category_id'] ?? null,
                 'name' => $data['name'],
-                'code' => $data['code'] ?? null,
+                'slug' => $data['slug'],
                 'description' => $data['description'] ?? null,
                 'standard_price' => $this->normalizeMoney($data['standard_price']),
-                'estimated_duration_minutes' => $data['estimated_duration_minutes'] ?? null,
                 'tax_percentage' => $data['tax_percentage'] !== null && $data['tax_percentage'] !== ''
                     ? $this->normalizeMoney($data['tax_percentage'])
                     : null,
-                'reminder_interval_days' => $data['reminder_interval_days'] ?? null,
-                'mileage_interval' => $data['mileage_interval'] ?? null,
                 'is_active' => (bool) $data['is_active'],
                 'requires_technician' => (bool) $data['requires_technician'],
             ];
@@ -150,16 +159,15 @@ class ServicesRepository implements ServiceRepositoryInterface
 
         $sortableColumns = [
             'category_name' => fn (Builder $builder, string $direction) => $builder->orderBy(
-                Category::query()
+                ServiceCategory::query()
                     ->select('name')
-                    ->whereColumn('categories.id', 'services.category_id')
+                    ->whereColumn('service_categories.id', 'services.category_id')
                     ->limit(1),
                 $direction
             ),
             'name' => fn (Builder $builder, string $direction) => $builder->orderBy('name', $direction),
-            'code' => fn (Builder $builder, string $direction) => $builder->orderBy('code', $direction),
+            'slug' => fn (Builder $builder, string $direction) => $builder->orderBy('slug', $direction),
             'standard_price' => fn (Builder $builder, string $direction) => $builder->orderBy('standard_price', $direction),
-            'estimated_duration_minutes' => fn (Builder $builder, string $direction) => $builder->orderBy('estimated_duration_minutes', $direction),
             'created_at' => fn (Builder $builder, string $direction) => $builder->orderBy('created_at', $direction),
         ];
 
@@ -174,7 +182,6 @@ class ServicesRepository implements ServiceRepositoryInterface
             'category' => $sortableColumns['category_name']($query, 'asc'),
             'name' => $query->orderBy('name')->orderBy('id'),
             'price_low_high' => $query->orderBy('standard_price')->orderBy('name')->orderBy('id'),
-            'duration_low_high' => $query->orderBy('estimated_duration_minutes')->orderBy('name')->orderBy('id'),
             default => $query->latest(),
         };
     }
@@ -193,13 +200,10 @@ class ServicesRepository implements ServiceRepositoryInterface
             'category_id' => $service->category_id,
             'category_name' => $service->category?->name,
             'name' => $service->name,
-            'code' => $service->code,
+            'slug' => $service->slug,
             'description' => $service->description,
             'standard_price' => (string) $service->standard_price,
-            'estimated_duration_minutes' => $service->estimated_duration_minutes,
             'tax_percentage' => $service->tax_percentage !== null ? (string) $service->tax_percentage : null,
-            'reminder_interval_days' => $service->reminder_interval_days,
-            'mileage_interval' => $service->mileage_interval,
             'is_active' => $service->is_active,
             'requires_technician' => $service->requires_technician,
             'status_label' => $service->is_active ? 'Active' : 'Inactive',

@@ -41,6 +41,7 @@ class ProductsRepository implements ProductRepositoryInterface
             'categoriesDropdownUrl' => route('tenant.ecommerce.dropdowns.categories'),
             'subCategoriesDropdownUrl' => route('tenant.ecommerce.dropdowns.subcategories'),
             'discountDropdownUrl' => route('tenant.ecommerce.dropdowns.discounts'),
+            'servicesDropdownUrl' => route('tenant.ecommerce.dropdowns.services'),
             'productTypes' => ProductType::query()
                 ->where('is_active', true)
                 ->orderBy('sort_order')
@@ -89,6 +90,7 @@ class ProductsRepository implements ProductRepositoryInterface
             $data['category_id'] = $data['category_id'] ?: null;
             $data['sub_category_id'] = $data['sub_category_id'] ?: null;
             $data['discount_id'] = ! empty($data['discount_id']) ? (int) $data['discount_id'] : null;
+            $data['service_id'] = ! empty($data['service_id']) ? (int) $data['service_id'] : null;
             $data['product_type_id'] = ! empty($data['product_type_id']) ? (int) $data['product_type_id'] : null;
             // Keep the legacy `product_type` string in sync with the selected type's
             // slug so the POS feeds and dropdowns that still read it keep working.
@@ -121,6 +123,7 @@ class ProductsRepository implements ProductRepositoryInterface
                 'subCategory:id,name',
                 'productType:id,name',
                 'discount:id,name,code,discount_type,value',
+                'service:id,name,slug',
                 'primaryImage',
                 'images',
             ]);
@@ -162,6 +165,7 @@ class ProductsRepository implements ProductRepositoryInterface
                 'subCategory:id,name',
                 'productType:id,name',
                 'discount:id,name,code,discount_type,value',
+                'service:id,name,slug',
                 'primaryImage',
             ])
             ->search($search)
@@ -266,6 +270,7 @@ class ProductsRepository implements ProductRepositoryInterface
             'subCategory:id,name',
             'productType:id,name',
             'discount:id,name,code,discount_type,value',
+            'service:id,name,slug',
             'primaryImage',
             'images',
         ]);
@@ -284,10 +289,15 @@ class ProductsRepository implements ProductRepositoryInterface
             'category_id' => $product->category_id,
             'sub_category_id' => $product->sub_category_id,
             'discount_id' => $product->discount_id,
+            'service_id' => $product->service_id,
             'category_name' => $product->category?->name,
             'sub_category_name' => $product->subCategory?->name,
             'discount_name' => $product->discount?->name,
             'discount_label' => $this->discountLabel($product->discount),
+            'service_name' => $product->service?->name,
+            'service_label' => $product->service
+                ? trim($product->service->name.($product->service->slug ? ' ('.$product->service->slug.')' : ''))
+                : null,
             'product_type_id' => $product->product_type_id,
             'product_type' => $product->product_type,
             'product_type_label' => $product->productType?->name

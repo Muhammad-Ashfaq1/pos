@@ -28,7 +28,7 @@
                 </button>
                 <div class="dropdown-menu dropdown-menu-end p-3" style="min-width: 340px;">
                     <div class="mb-3">
-                        <label for="service_filter_category" class="form-label">Category</label>
+                        <label for="service_filter_category" class="form-label">Service Category</label>
                         <select
                             id="service_filter_category"
                             class="form-select category-select2"
@@ -79,7 +79,6 @@
                             <option value="category">Category A-Z</option>
                             <option value="name">Name A-Z</option>
                             <option value="price_low_high">Price Low-High</option>
-                            <option value="duration_low_high">Duration Low-High</option>
                         </select>
                     </div>
                 </div>
@@ -108,9 +107,8 @@
                         <th>#</th>
                         <th>Category</th>
                         <th>Service</th>
-                        <th>Code</th>
+                        <th>Slug</th>
                         <th>Price</th>
-                        <th>Duration</th>
                         <th>Mapped Products</th>
                         <th>Technician</th>
                         <th>Status</th>
@@ -138,13 +136,13 @@
                     <div class="modal-body">
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label for="service_category_id" class="form-label">Category</label>
+                                <label for="service_category_id" class="form-label">Service Category</label>
                                 <div class="position-relative">
                                     <select
                                         id="service_category_id"
                                         name="category_id"
                                         class="form-select category-select2"
-                                        data-placeholder="Select a category"
+                                        data-placeholder="Select category (optional)"
                                         data-allow-clear="true"
                                         data-dropdown-parent="#serviceModal"
                                     ></select>
@@ -157,9 +155,19 @@
                                 <div class="invalid-feedback"></div>
                             </div>
                             <div class="col-md-4">
-                                <label for="service_code" class="form-label">Code</label>
-                                <input type="text" class="form-control" id="service_code" name="code" maxlength="50">
+                                <label for="service_slug" class="form-label">Slug <span class="text-danger">*</span></label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="service_slug"
+                                    name="slug"
+                                    maxlength="170"
+                                    readonly
+                                    tabindex="-1"
+                                    autocomplete="off"
+                                >
                                 <div class="invalid-feedback"></div>
+                                <div class="form-text">Auto generated from name.</div>
                             </div>
 
                             <div class="col-md-12">
@@ -168,33 +176,17 @@
                                 <div class="invalid-feedback"></div>
                             </div>
 
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label for="service_standard_price" class="form-label">Standard Price <span class="text-danger">*</span></label>
                                 <input type="number" step="0.01" min="0" class="form-control" id="service_standard_price" name="standard_price" value="0.00">
                                 <div class="invalid-feedback"></div>
                             </div>
-                            <div class="col-md-3">
-                                <label for="service_estimated_duration_minutes" class="form-label">Duration (Minutes)</label>
-                                <input type="number" min="0" class="form-control" id="service_estimated_duration_minutes" name="estimated_duration_minutes">
-                                <div class="invalid-feedback"></div>
-                            </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label for="service_tax_percentage" class="form-label">Tax %</label>
                                 <input type="number" step="0.01" min="0" max="100" class="form-control" id="service_tax_percentage" name="tax_percentage">
                                 <div class="invalid-feedback"></div>
                             </div>
-                            <div class="col-md-3">
-                                <label for="service_reminder_interval_days" class="form-label">Reminder Days</label>
-                                <input type="number" min="0" class="form-control" id="service_reminder_interval_days" name="reminder_interval_days">
-                                <div class="invalid-feedback"></div>
-                            </div>
-
-                            <div class="col-md-3">
-                                <label for="service_mileage_interval" class="form-label">Mileage Interval</label>
-                                <input type="number" min="0" class="form-control" id="service_mileage_interval" name="mileage_interval">
-                                <div class="invalid-feedback"></div>
-                            </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label class="form-label d-block">Technician Required</label>
                                 <input type="hidden" name="requires_technician" value="0">
                                 <div class="form-check form-switch mt-2">
@@ -203,7 +195,7 @@
                                 </div>
                                 <div class="invalid-feedback d-block"></div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label class="form-label d-block">Status</label>
                                 <input type="hidden" name="is_active" value="0">
                                 <div class="form-check form-switch mt-2">
