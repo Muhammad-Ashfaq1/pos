@@ -71,6 +71,7 @@ Lake-theme primary `#696CFF` matches web `pos-theme-lake`. Inter via `google_fon
 | `app_radius.dart` | Corner radii |
 | `app_shadows.dart` | Card shadows |
 | `app_theme.dart` | `AppTheme.light()` Material 3 + transitions |
+| `app_glass.dart` | Glass cards matching web `pos-glass-card` |
 
 ## Package / platform
 

@@ -21,11 +21,13 @@ class ApiClient {
   Future<Map<String, dynamic>> get(
     String path, {
     bool auth = true,
+    Map<String, String>? query,
   }) {
     return _send(
       method: 'GET',
       path: path,
       auth: auth,
+      query: query,
     );
   }
 
@@ -46,9 +48,13 @@ class ApiClient {
     required String method,
     required String path,
     Map<String, dynamic>? body,
+    Map<String, String>? query,
     required bool auth,
   }) async {
-    final uri = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.prefix}$path');
+    var uri = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.prefix}$path');
+    if (query != null && query.isNotEmpty) {
+      uri = uri.replace(queryParameters: query);
+    }
     final headers = <String, String>{
       'Accept': 'application/json',
       'Content-Type': 'application/json',

@@ -29,6 +29,7 @@ Reuse these before adding new primitives.
 | `AppTextField` / `AppPasswordField` | `app_text_field.dart` | Status-aware fields |
 | `AppLogo` / `DottedLoader` | `app_logo.dart` | Brand mark + splash spinner |
 | `AppAuthHeader` | `app_controls.dart` | Auth title + subtitle |
+| `AppGlassCard` / `AppGlassStat` / `AppGlassBackdrop` | `app_glass.dart` | Web-matching glass surfaces (`pos-tone-*`) |
 
 ## API / session
 

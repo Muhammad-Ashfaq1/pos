@@ -13,7 +13,11 @@ class AppColors {
   static const Color warning = Color(0xFFFFCC00);
 
   static const Color white = Color(0xFFFFFFFF);
-  static const Color background = Color(0xFFFFFFFF);
+  static const Color page = Color(0xFFF5F6FB);
+  static const Color pageWash = Color(0xFFFAFAFD);
+  static const Color info = Color(0xFF03C3EC);
+  static const Color warningOrange = Color(0xFFFF9F43);
+  static const Color secondaryTone = Color(0xFFA8AABC);
   static const Color surface = Color(0xFFF7F8FA);
   static const Color inputFill = Color(0xFFF9F9FB);
 

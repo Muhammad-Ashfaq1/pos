@@ -167,6 +167,59 @@ class CustomerPortalCreditTest extends TestCase
             ->assertJsonCount(1, 'data');
     }
 
+    public function test_dashboard_payload_includes_overview_cards(): void
+    {
+        $tenant = $this->makeTenant('shop-a');
+        app(TenantContext::class)->initialize($tenant);
+        $customer = $this->makeCustomer($tenant, [
+            'credit_balance' => 20,
+            'total_visits' => 2,
+            'lifetime_value' => 80,
+            'last_visit_at' => now()->subDay(),
+        ]);
+        app(CreditService::class)->earn($customer, 10.0, null, 'Seed');
+
+        Vehicle::query()->create([
+            'tenant_id' => $tenant->id,
+            'customer_id' => $customer->id,
+            'plate_number' => 'OLV-2019',
+            'make' => 'Toyota',
+            'model' => 'Corolla',
+            'year' => 2019,
+            'is_default' => true,
+        ]);
+
+        $token = $customer->createToken('test')->plainTextToken;
+
+        $this->getJson('/api/v1/customer/dashboard', [
+            'Authorization' => 'Bearer '.$token,
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.customer.email', 'jane@example.com')
+            ->assertJsonPath('data.stats.vehicles_count', 1)
+            ->assertJsonPath('data.stats.visits', 2)
+            ->assertJsonCount(1, 'data.vehicles')
+            ->assertJsonCount(1, 'data.recent_credits')
+            ->assertJsonStructure([
+                'data' => [
+                    'credit' => [
+                        'balance',
+                        'balance_label',
+                        'can_redeem',
+                        'unlock_progress',
+                        'remaining_to_unlock_label',
+                    ],
+                    'stats' => [
+                        'average_spend_label',
+                        'open_orders_count',
+                        'paid_orders_count',
+                        'last_visit_at_label',
+                    ],
+                    'recent_orders',
+                ],
+            ]);
+    }
+
     public function test_customer_signs_in_through_the_shared_login_and_reaches_the_portal(): void
     {
         $tenant = $this->makeTenant('shop-a');

@@ -38,6 +38,7 @@ Defined in [routes/api.php](../routes/api.php); controllers in `app/Http/Control
 | POST | `/reset-password` | guest | Set password from invite/reset token |
 | POST | `/logout` | token | Revoke current token |
 | GET | `/me` / PATCH `/me` | token | Profile + balance |
+| GET | `/dashboard` | token | Overview payload (web + Flutter): customer, credit, stats, vehicles, recent credits, recent orders |
 | GET | `/orders` / `/orders/{id}` | token | Service history (detail reuses `OrdersRepository::details()`) |
 | GET | `/credits` | token | Wallet balance + ledger |
 | GET | `/vehicles` | token | Customer vehicles |

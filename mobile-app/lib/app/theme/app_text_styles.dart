@@ -60,6 +60,21 @@ class AppTextStyles {
         height: 1.35,
       );
 
+  static TextStyle get statLabel => GoogleFonts.inter(
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.5,
+        color: AppColors.textSecondary,
+      );
+
+  static TextStyle get heroValue => GoogleFonts.inter(
+        fontSize: 32,
+        fontWeight: FontWeight.w800,
+        height: 1.1,
+        letterSpacing: -0.4,
+        color: AppColors.textPrimary,
+      );
+
   static TextStyle get label => GoogleFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.w600,

@@ -8,7 +8,10 @@ class DashboardRepository {
   final ApiClient api;
 
   Future<CustomerDashboard> fetch() async {
-    final payload = await api.get('/dashboard');
+    final payload = await api.get(
+      '/dashboard',
+      query: const {'recent_limit': '5'},
+    );
     final data = payload['data'];
     if (data is! Map<String, dynamic>) {
       throw const ApiException(message: 'Unexpected dashboard response.');

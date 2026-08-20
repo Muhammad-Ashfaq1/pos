@@ -35,4 +35,10 @@ Login field errors map Laravel 422 `errors.shop` / `errors.email` / `errors.pass
 
 ## Home
 
-Pull-to-refresh `GET /dashboard`: store-credit wallet, visits / lifetime spend, recent orders. Unauthenticated (401) returns to login.
+Glass dashboard (`pos-glass` tones) via `GET /dashboard?recent_limit=8`:
+
+- Profile strip, store-credit hero (unlock progress)
+- Stats: visits, lifetime spend, avg visit, last visit, loyalty points, vehicles
+- Vehicles on file, recent credit ledger, recent visits (vehicle, items, credit earned)
+
+Unauthenticated (401) returns to login. Pull-to-refresh reloads.
