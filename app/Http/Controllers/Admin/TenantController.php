@@ -76,7 +76,7 @@ class TenantController extends Controller
 
         if ($wasCustomer) {
             Auth::guard('customer')->logout();
-            session()->forget(['impersonator_id', 'impersonator_return_url', 'impersonating_customer']);
+            session()->forget(['impersonator_id', 'impersonator_return_url', 'impersonating_customer', 'customer_api_token']);
 
             if ($adminId && ! Auth::guard('web')->check()) {
                 Auth::guard('web')->loginUsingId($adminId);

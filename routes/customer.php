@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Route;
 | Customer Portal (web)
 |--------------------------------------------------------------------------
 |
-| Customers sign in through the same /login form as staff (the customer guard
-| is tried as a fallback there) and land here. These pages are server-rendered
-| and session-authenticated, exactly like the rest of the app. The Flutter app
-| uses the token API in routes/api.php instead.
+| Pages are thin Blade shells. Customer data is loaded via axios from
+| /api/v1/customer/* — the same JSON API the Flutter app will use.
+| Session auth (login / staff impersonate) gets a Sanctum Bearer token
+| from GET portal/api-token.
 |
 */
 
@@ -22,6 +22,7 @@ Route::prefix('portal')->name('customer.')->controller(PortalController::class)-
 
     // Authenticated portal (session customer guard + tenancy scoping).
     Route::middleware(['auth:customer', 'customer.tenant.init'])->group(function (): void {
+        Route::get('/api-token', 'apiToken')->name('api-token');
         Route::get('/', 'dashboard')->name('dashboard');
         Route::get('/orders', 'orders')->name('orders');
         Route::get('/orders/{order}', 'showOrder')->whereNumber('order')->name('orders.show');

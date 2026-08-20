@@ -136,6 +136,7 @@ class CustomerController extends Controller
             'impersonator_return_url' => CustomerVehicleSurface::route('customers_index'),
             'impersonating_customer' => true,
         ]);
+        session()->forget('customer_api_token');
 
         Auth::guard('customer')->login($customer);
 

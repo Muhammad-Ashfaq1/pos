@@ -3,14 +3,12 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
-use App\Models\CustomerCreditTransaction;
 use App\Models\Order;
-use App\Models\Vehicle;
 use App\Repositories\Interface\OrderRepositoryInterface;
-use App\Services\CreditService;
 use App\Services\CustomerPortalService;
 use App\Support\Currency;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -18,10 +16,9 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
- * Server-rendered customer portal. Customers reach these pages by signing in
- * through the shared /login form (customer guard) — there is no separate login
- * page. Tenancy is initialised by the customer.tenant.init middleware, so the
- * BelongsToTenant scope keeps every query within the customer's shop.
+ * Customer portal pages are thin shells — all customer data is loaded from
+ * /api/v1/customer/* (same endpoints the Flutter app will use). Session login
+ * / impersonation issues a Sanctum Bearer token via apiToken() for axios.
  */
 class PortalController extends Controller
 {
@@ -30,55 +27,49 @@ class PortalController extends Controller
         return $request->user() ?? auth('customer')->user();
     }
 
-    public function dashboard(Request $request): View
+    /**
+     * Issue (or reuse) a Sanctum token for the session-authenticated customer
+     * so the portal JS can call the same API routes as Flutter.
+     */
+    public function apiToken(Request $request): JsonResponse
     {
         $customer = $this->customer($request);
-        $credits = app(CreditService::class);
-        $creditMinRedeemBalance = $credits->minRedeemBalance();
-        $creditCanRedeem = $credits->canRedeem($customer, $creditMinRedeemBalance);
 
-        $recentOrders = Order::query()
-            ->where('customer_id', $customer->getKey())
-            ->where('status', '!=', Order::STATUS_ESTIMATE)
-            ->with('vehicle:id,year,make,model,plate_number')
-            ->withCount('items')
-            ->latest()
-            ->limit(5)
-            ->get();
+        if (! $customer) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
 
-        return view('customer.dashboard', compact(
-            'customer',
-            'recentOrders',
-            'creditMinRedeemBalance',
-            'creditCanRedeem',
-        ));
+        if ($existing = session('customer_api_token')) {
+            return response()->json([
+                'token' => $existing,
+                'token_type' => 'Bearer',
+            ]);
+        }
+
+        $customer->tokens()->where('name', 'web-portal')->delete();
+        $token = $customer->createToken('web-portal')->plainTextToken;
+        session(['customer_api_token' => $token]);
+
+        return response()->json([
+            'token' => $token,
+            'token_type' => 'Bearer',
+        ]);
     }
 
-    public function orders(Request $request): View
+    public function dashboard(): View
     {
-        $customer = $this->customer($request);
-
-        $orders = Order::query()
-            ->where('customer_id', $customer->getKey())
-            ->where('status', '!=', Order::STATUS_ESTIMATE)
-            ->withCount('items')
-            ->latest()
-            ->paginate(15);
-
-        return view('customer.orders', compact('customer', 'orders'));
+        return view('customer.dashboard');
     }
 
-    public function showOrder(Request $request, int $order, OrderRepositoryInterface $orders): View
+    public function orders(): View
     {
-        $customer = $this->customer($request);
+        return view('customer.orders');
+    }
 
-        $model = Order::query()
-            ->where('customer_id', $customer->getKey())
-            ->findOrFail($order);
-
+    public function showOrder(int $order): View
+    {
         return view('customer.order-show', [
-            'customer' => $customer,
-            'order' => $orders->details($model),
+            'orderId' => $order,
         ]);
     }
 
@@ -104,55 +95,15 @@ class PortalController extends Controller
         return $pdf->download("invoice-{$model->order_number}.pdf");
     }
 
-    public function credits(Request $request): View
+    public function credits(): View
     {
-        $customer = $this->customer($request);
-        $type = trim((string) $request->query('type', ''));
-        $allowedTypes = [
-            CustomerCreditTransaction::TYPE_EARN,
-            CustomerCreditTransaction::TYPE_REDEEM,
-            CustomerCreditTransaction::TYPE_ADJUST,
-            CustomerCreditTransaction::TYPE_EXPIRE,
-        ];
-
-        $transactions = CustomerCreditTransaction::query()
-            ->where('customer_id', $customer->getKey())
-            ->when(
-                in_array($type, $allowedTypes, true),
-                fn ($query) => $query->where('type', $type)
-            )
-            ->with('order:id,order_number')
-            ->latest()
-            ->paginate(20)
-            ->withQueryString();
-
-        $credits = app(CreditService::class);
-        $creditMinRedeemBalance = $credits->minRedeemBalance();
-        $creditCanRedeem = $credits->canRedeem($customer, $creditMinRedeemBalance);
-
-        return view('customer.credits', compact(
-            'customer',
-            'transactions',
-            'type',
-            'creditMinRedeemBalance',
-            'creditCanRedeem',
-        ));
+        return view('customer.credits');
     }
 
-    public function vehicles(Request $request): View
+    public function vehicles(): View
     {
-        $customer = $this->customer($request);
-
-        $vehicles = Vehicle::query()
-            ->where('customer_id', $customer->getKey())
-            ->orderByDesc('is_default')
-            ->orderBy('id')
-            ->get();
-
-        return view('customer.vehicles', compact('customer', 'vehicles'));
+        return view('customer.vehicles');
     }
-
-    // ── Public set-password (invite / forgot links) ───────────────────────────
 
     public function reset(Request $request): View
     {

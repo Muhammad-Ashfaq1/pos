@@ -128,6 +128,24 @@
         @if ($errors->any()) Notiflix.Notify.failure(@json($errors->first())); @endif
     </script>
     <script src="{{ asset('assets/js/app-helpers.js') }}?v={{ filemtime(public_path('assets/js/app-helpers.js')) }}"></script>
+    @auth('customer')
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+        <script>
+            window.customerApiConfig = {
+                baseUrl: @json(url('/api/v1/customer')),
+                tokenUrl: @json(route('customer.api-token')),
+                routes: {
+                    orderShow: @json(url('/portal/orders/__ID__')),
+                    orderPdf: @json(url('/portal/orders/__ID__/pdf')),
+                    orders: @json(route('customer.orders')),
+                    credits: @json(route('customer.credits')),
+                    vehicles: @json(route('customer.vehicles')),
+                    dashboard: @json(route('customer.dashboard'))
+                }
+            };
+        </script>
+        <script src="{{ asset('assets/js/customer/api.js') }}?v={{ filemtime(public_path('assets/js/customer/api.js')) }}"></script>
+    @endauth
     @stack('page-script')
 </body>
 </html>
