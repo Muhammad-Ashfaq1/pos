@@ -1,11 +1,10 @@
 @php
     $user = auth()->user();
     $isSuperAdmin = $user?->isSuperAdmin();
-    $isEmployee = $user?->isEmployee();
-    $contextLabel = $isSuperAdmin ? 'Central Admin' : ($isEmployee ? 'Employee Panel' : 'Tenant Workspace');
-    $contextName = $isSuperAdmin
-        ? config('app.name', 'Oil Change POS')
-        : $user?->tenant?->display_name ?? 'Shop Workspace';
+    $contextLabel = $isSuperAdmin
+        ? 'Central Admin'
+        : ($user?->tenant?->display_name ?? config('app.name', 'Oil Change POS'));
+    $contextName = $isSuperAdmin ? config('app.name', 'Oil Change POS') : null;
 @endphp
 
 <nav class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
@@ -19,7 +18,9 @@
     <div class="navbar-nav-right d-flex align-items-center justify-content-between w-100" id="navbar-collapse">
         <div>
             <h6 class="mb-0">{{ $contextLabel }}</h6>
-            <small class="text-muted">{{ $contextName }}</small>
+            @if ($contextName)
+                <small class="text-muted">{{ $contextName }}</small>
+            @endif
         </div>
 
         <ul class="navbar-nav flex-row align-items-center gap-3 ms-auto">

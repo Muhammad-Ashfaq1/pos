@@ -280,7 +280,7 @@
 /* ── Glass modal ────────────────────────────────────────────────────── */
 
 .pos-listing .pos-listing-modal .modal-content {
-    overflow: visible;
+    overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.85);
     border-radius: var(--pos-glass-radius, 1rem);
     background-color: rgba(255, 255, 255, 0.92);
@@ -298,54 +298,83 @@
         inset 0 1px 1.5px rgba(255, 255, 255, 0.95);
 }
 
+/*
+ * Vuexy absolutely positions .modal-header .btn-close (inset top/end), which
+ * clips against the glass card radius. Keep the close button in normal flex
+ * flow at the top-right, fully inside the header padding.
+ */
 .pos-listing .pos-listing-modal .modal-header {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 1.15rem 1.35rem;
+    padding: 1.25rem 1.5rem;
     border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.1);
     background: transparent;
-    border-top-left-radius: inherit;
-    border-top-right-radius: inherit;
 }
 
 .pos-listing .pos-listing-modal .modal-header .modal-title {
     margin: 0;
-    padding-inline-end: 0.5rem;
-}
-
-.pos-listing .pos-listing-modal .modal-header .btn-close {
-    margin: 0 0 0 auto;
-    padding: 0.5rem;
-    box-sizing: content-box;
-    opacity: 0.65;
-}
-
-.pos-listing .pos-listing-modal .modal-header .btn-close:hover,
-.pos-listing .pos-listing-modal .modal-header .btn-close:focus {
-    opacity: 1;
-    box-shadow: none;
-}
-
-.pos-listing .pos-listing-modal .modal-title {
+    padding: 0;
     font-weight: 600;
     color: var(--bs-heading-color, var(--bs-body-color));
 }
 
+.pos-listing .pos-listing-modal .modal-header .btn-close {
+    --bs-btn-close-color: #444050;
+    --bs-btn-close-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23444050'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414'/%3e%3c/svg%3e");
+    --bs-btn-close-opacity: 1;
+    --bs-btn-close-hover-opacity: 1;
+    --bs-btn-close-focus-opacity: 1;
+    position: static !important;
+    inset: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    flex-shrink: 0;
+    width: 0.75rem;
+    height: 0.75rem;
+    margin: 0 0 0 auto !important;
+    padding: 0.5rem !important;
+    box-sizing: content-box;
+    border-radius: 0.5rem;
+    background-color: rgba(var(--bs-primary-rgb), 0.12);
+    background-image: var(--bs-btn-close-bg);
+    background-position: center;
+    background-size: 0.7rem auto;
+    background-repeat: no-repeat;
+    filter: none;
+    transform: none !important;
+    opacity: 1;
+}
+
+.pos-listing .pos-listing-modal .modal-header .btn-close:hover,
+.pos-listing .pos-listing-modal .modal-header .btn-close:focus {
+    --bs-btn-close-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%237367F0'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414'/%3e%3c/svg%3e");
+    background-color: rgba(var(--bs-primary-rgb), 0.2);
+    background-image: var(--bs-btn-close-bg);
+    opacity: 1;
+    transform: none !important;
+    box-shadow: none;
+}
+
+[data-bs-theme='dark'] .pos-listing .pos-listing-modal .modal-header .btn-close {
+    --bs-btn-close-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23e7e3fc'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414'/%3e%3c/svg%3e");
+    background-color: rgba(var(--bs-primary-rgb), 0.22);
+    background-image: var(--bs-btn-close-bg);
+}
+
 .pos-listing .pos-listing-modal .modal-body {
-    padding: 1.25rem 1.35rem;
+    padding: 1.25rem 1.5rem;
     background: transparent;
-    border-radius: 0;
-    overflow: visible;
 }
 
 .pos-listing .pos-listing-modal .modal-footer {
-    padding: 1rem 1.35rem;
+    padding: 1rem 1.5rem 1.25rem;
     border-top: 1px solid rgba(var(--bs-primary-rgb), 0.1);
     background: rgba(var(--bs-primary-rgb), 0.03);
-    border-bottom-left-radius: inherit;
-    border-bottom-right-radius: inherit;
 }
 
 .pos-listing .pos-listing-modal .form-label {
