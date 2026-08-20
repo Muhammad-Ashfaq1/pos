@@ -41,6 +41,8 @@ Dependency flows downward only: screen → kit → vendor.
 | `public/assets/js/pos-theme.js` + `partials/_theme-prepaint` + `App\Support\AppTheme` | Theme engine |
 | `public/assets/css/pos-menu.css` | Sidebar sub-item icons |
 | `public/assets/css/pos-responsive.css` | Shared mobile fixes (loaded last) |
+| `public/assets/css/pos-listing.css` + `js/pos-listing-toolbar.js` + `partials/pos-listing-assets` | Glass DataTables listing chrome (toolbar, table, modal) — see [pos-listing.md](pos-listing.md) |
+| `public/assets/css/pos-navbar.css` | Glass detached navbar + account dropdown |
 | `resources/views/components/settings/*` | Self-saving settings tab shells |
 
 ---
@@ -152,3 +154,7 @@ destructive actions.
 - [ ] Icons `aria-hidden`; icon-only controls labelled
 - [ ] Check light variant, `dark`, and `high-contrast`
 - [ ] Check at 991 / 767 / 575 px
+
+### DataTables listing pages
+
+For ecommerce (and similar) index tables, follow **[pos-listing.md](pos-listing.md)** — glass panel, toolbar, Vuexy `badge rounded bg-label-*`, outline row actions. Do not invent a one-off card layout.

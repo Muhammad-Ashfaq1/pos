@@ -16,6 +16,7 @@ Route (routes/tenant.php, gated by 'permission:…')
 Shared conventions across every module on this page:
 
 - **Listings are AJAX.** Each resource has an `index` route (page chrome) and a `listing` route (DataTable JSON); both carry the same `permission:` middleware.
+- **Glass listing UI.** Index pages use the shared kit in [pos-listing.md](pos-listing.md) (Categories / Discounts are the reference). Port remaining modules the same way — UI only; keep listing JSON contracts.
 - **One save endpoint.** `POST /save` handles create (no `id`) and update (with `id`); the controller branches on `id`.
 - **Slugs auto-generate.** Categories, sub-categories, and products use [`HandlesCatalogSlugs`](../app/Repositories/Support/Concerns/HandlesCatalogSlugs.php) — slug built from `name` when absent, unique per tenant.
 - **`created_by`/`updated_by`** filled by the repository from `auth()->id()`.
