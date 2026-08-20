@@ -83,25 +83,32 @@
     gap: 0.75rem;
 }
 
-/* Avatar trigger — glass chip matching theme switcher */
+/* Avatar — Vuexy circular, no square chip */
 .pos-navbar-avatar-trigger {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.2rem;
-    border-radius: 0.75rem;
-    background-color: rgba(var(--bs-primary-rgb), 0.1);
-    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    line-height: 0;
 }
 
 .pos-navbar-avatar-trigger:hover,
 .pos-navbar-avatar-trigger[aria-expanded='true'] {
-    background-color: rgba(var(--bs-primary-rgb), 0.18);
+    background: transparent;
+}
+
+.pos-navbar-avatar,
+.pos-navbar-avatar img,
+.pos-navbar-avatar .avatar-initial {
+    border-radius: 50% !important;
 }
 
 .pos-navbar-avatar {
-    width: 2.25rem;
-    height: 2.25rem;
+    width: 2.375rem;
+    height: 2.375rem;
+    overflow: hidden;
     box-shadow:
         0 0 0 2px rgba(255, 255, 255, 0.95),
         0 0 0 3px rgba(var(--bs-primary-rgb), 0.28);
@@ -111,6 +118,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
 }
 
 .pos-navbar-avatar--lg {
@@ -119,26 +127,37 @@
     flex-shrink: 0;
 }
 
-/* Account dropdown — same glass recipe as the bar */
+/* Keep the online status dot outside the image clip */
+.pos-navbar-avatar.avatar-online {
+    overflow: visible;
+}
+
+.pos-navbar-avatar.avatar-online img,
+.pos-navbar-avatar.avatar-online .avatar-initial {
+    overflow: hidden;
+    border-radius: 50% !important;
+}
+
+/* Account dropdown — glass rim, opaque enough to hide page content behind */
 .pos-navbar-dropdown {
     --pos-tone-rgb: var(--bs-primary-rgb);
     min-width: 16.5rem;
     padding: 0.5rem;
     margin-top: 0.5rem !important;
-    border: 1px solid rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.9);
     border-radius: var(--pos-glass-radius, 1rem);
-    background-color: rgba(255, 255, 255, 0.78);
+    background-color: rgba(255, 255, 255, 0.96);
     background-image: linear-gradient(
         135deg,
-        rgba(var(--pos-tone-rgb), 0.1) 0%,
-        rgba(var(--pos-tone-rgb), 0.02) 50%,
-        rgba(255, 255, 255, 0.25) 100%
+        rgba(var(--pos-tone-rgb), 0.08) 0%,
+        rgba(255, 255, 255, 0.98) 48%,
+        rgba(255, 255, 255, 1) 100%
     );
-    -webkit-backdrop-filter: blur(20px) saturate(170%);
-    backdrop-filter: blur(20px) saturate(170%);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
     box-shadow:
         0 16px 36px -14px rgba(var(--pos-tone-rgb), 0.38),
-        0 2px 6px rgba(47, 43, 61, 0.06),
+        0 2px 6px rgba(47, 43, 61, 0.08),
         inset 0 1px 1.5px rgba(255, 255, 255, 0.95);
 }
 
@@ -235,7 +254,7 @@
 }
 
 [data-bs-theme='dark'] .pos-navbar-avatar-trigger {
-    background-color: rgba(var(--bs-primary-rgb), 0.18);
+    background: transparent;
 }
 
 [data-bs-theme='dark'] .pos-navbar-avatar {
@@ -246,13 +265,15 @@
 
 [data-bs-theme='dark'] .pos-navbar-dropdown {
     border-color: rgba(255, 255, 255, 0.14);
-    background-color: rgba(37, 41, 60, 0.92);
+    background-color: rgba(37, 41, 60, 0.98);
     background-image: linear-gradient(
         135deg,
-        rgba(var(--pos-tone-rgb), 0.2) 0%,
-        rgba(var(--pos-tone-rgb), 0.06) 50%,
-        rgba(255, 255, 255, 0.02) 100%
+        rgba(var(--pos-tone-rgb), 0.16) 0%,
+        rgba(37, 41, 60, 0.98) 50%,
+        rgba(37, 41, 60, 1) 100%
     );
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
     box-shadow:
         0 16px 40px -16px rgba(0, 0, 0, 0.8),
         inset 0 1px 0 rgba(255, 255, 255, 0.08);
