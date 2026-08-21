@@ -1,4 +1,4 @@
-<div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true"
+<div class="modal fade pos-listing-modal" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true"
     data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
