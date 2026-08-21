@@ -1,4 +1,4 @@
-<div class="modal fade" id="vehicleModal" tabindex="-1" aria-labelledby="vehicleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade pos-listing-modal" id="vehicleModal" tabindex="-1" aria-labelledby="vehicleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
             <form id="vehicleForm" action="{{ $vehicleSaveUrl ?? route('tenant.ecommerce.vehicles.save') }}" method="POST" novalidate>
