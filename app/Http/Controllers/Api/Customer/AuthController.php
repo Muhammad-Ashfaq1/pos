@@ -9,7 +9,6 @@ use App\Services\CustomerPortalService;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
@@ -23,21 +22,21 @@ class AuthController extends Controller
     public function login(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'shop' => ['required', 'string'],
+            'shop' => ['nullable', 'string'],
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
             'device_name' => ['nullable', 'string', 'max:120'],
         ]);
 
-        $tenant = $this->portal->findTenantBySlug($data['shop']);
+        $customer = $this->portal->authenticatePortalLogin(
+            $data['shop'] ?? null,
+            $data['email'],
+            $data['password'],
+        );
+
+        $tenant = $customer->tenant ?? $customer->tenant()->first();
 
         if (! $tenant) {
-            throw ValidationException::withMessages(['shop' => 'Shop not found.']);
-        }
-
-        $customer = $this->portal->findCustomerForLogin($tenant, $data['email']);
-
-        if (! $customer || ! $customer->hasPortalAccess() || ! Hash::check($data['password'], $customer->password)) {
             throw ValidationException::withMessages([
                 'email' => 'The provided credentials are incorrect.',
             ]);

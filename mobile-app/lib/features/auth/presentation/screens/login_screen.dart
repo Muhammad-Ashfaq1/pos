@@ -18,42 +18,27 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _shopController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _shopFocus = FocusNode();
   final _emailFocus = FocusNode();
   final _passwordFocus = FocusNode();
 
   bool _loading = false;
   bool _showWelcome = false;
-  String? _shopMessage;
   String? _emailMessage;
   String? _passwordMessage;
-  AppFieldStatus _shopStatus = AppFieldStatus.normal;
   AppFieldStatus _emailStatus = AppFieldStatus.normal;
   AppFieldStatus _passwordStatus = AppFieldStatus.normal;
 
   @override
   void initState() {
     super.initState();
-    final remembered = AppServices.session.shopSlug;
-    if (remembered != null && remembered.isNotEmpty) {
-      _shopController.text = remembered;
-    }
-    _shopFocus.addListener(_syncFocus);
     _emailFocus.addListener(_syncFocus);
     _passwordFocus.addListener(_syncFocus);
   }
 
   void _syncFocus() {
     setState(() {
-      if (_shopFocus.hasFocus) {
-        _shopStatus = AppFieldStatus.focused;
-        _showWelcome = true;
-      } else if (_shopStatus == AppFieldStatus.focused) {
-        _shopStatus = AppFieldStatus.normal;
-      }
       if (_emailFocus.hasFocus) {
         _emailStatus = AppFieldStatus.focused;
         _showWelcome = true;
@@ -71,22 +56,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    _shopController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _shopFocus.dispose();
     _emailFocus.dispose();
     _passwordFocus.dispose();
     super.dispose();
   }
 
   void _clearFieldErrors() {
-    _shopMessage = null;
     _emailMessage = null;
     _passwordMessage = null;
-    if (_shopStatus == AppFieldStatus.error) {
-      _shopStatus = AppFieldStatus.focused;
-    }
     if (_emailStatus == AppFieldStatus.error) {
       _emailStatus = AppFieldStatus.focused;
     }
@@ -96,17 +75,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _signIn() async {
-    final shop = _shopController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
     var hasError = false;
     setState(() {
-      if (shop.isEmpty) {
-        _shopStatus = AppFieldStatus.error;
-        _shopMessage = 'Enter your shop code';
-        hasError = true;
-      }
       if (email.isEmpty) {
         _emailStatus = AppFieldStatus.error;
         _emailMessage = 'Enter your email';
@@ -123,9 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
 
     try {
-      await AppServices.session.rememberShop(shop);
       await AppServices.auth.login(
-        shop: shop,
         email: email,
         password: password,
       );
@@ -139,14 +110,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        final shopError = error.fieldError('shop');
         final emailError = error.fieldError('email');
         final passwordError = error.fieldError('password');
 
-        if (shopError != null) {
-          _shopStatus = AppFieldStatus.error;
-          _shopMessage = shopError;
-        }
         if (emailError != null) {
           _emailStatus = AppFieldStatus.error;
           _emailMessage = emailError;
@@ -155,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
           _passwordStatus = AppFieldStatus.error;
           _passwordMessage = passwordError;
         }
-        if (shopError == null && emailError == null && passwordError == null) {
+        if (emailError == null && passwordError == null) {
           _emailStatus = AppFieldStatus.error;
           _passwordStatus = AppFieldStatus.error;
           _emailMessage = error.message;
@@ -207,30 +173,10 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Sign in to your shop account',
+                'Sign in with your email and password',
                 style: AppTextStyles.bodySecondary,
               ),
               const SizedBox(height: AppSpacing.xl),
-              AppTextField(
-                controller: _shopController,
-                focusNode: _shopFocus,
-                hintText: 'Shop code',
-                prefixIcon: Icons.storefront_outlined,
-                textInputAction: TextInputAction.next,
-                textCapitalization: TextCapitalization.none,
-                autocorrect: false,
-                enableSuggestions: false,
-                keyboardType: TextInputType.text,
-                status: _shopStatus,
-                message: _shopMessage,
-                onChanged: (_) {
-                  setState(() {
-                    _showWelcome = true;
-                    _clearFieldErrors();
-                  });
-                },
-              ),
-              const SizedBox(height: AppSpacing.md),
               AppTextField(
                 controller: _emailController,
                 focusNode: _emailFocus,
@@ -274,13 +220,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 label: 'Sign In',
                 isLoading: _loading,
                 onPressed: _signIn,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              Text(
-                'Use the shop code from your invite or visit. '
-                'The same email can exist at more than one shop.',
-                style: AppTextStyles.bodySmall,
-                textAlign: TextAlign.center,
               ),
             ],
           ),

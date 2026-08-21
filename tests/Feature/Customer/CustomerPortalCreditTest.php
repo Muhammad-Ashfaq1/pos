@@ -139,9 +139,20 @@ class CustomerPortalCreditTest extends TestCase
         $response->assertOk()->assertJsonPath('data.credit_balance', 30);
         $this->assertNotEmpty($response->json('token'));
 
+        // Email + password (no shop) also works — same contract as the web form.
+        $this->postJson('/api/v1/customer/login', [
+            'email' => 'shared@example.com',
+            'password' => 'secret123',
+        ])->assertOk()->assertJsonPath('data.email', 'shared@example.com');
+
         // Wrong password is rejected.
         $this->postJson('/api/v1/customer/login', [
             'shop' => 'shop-a',
+            'email' => 'shared@example.com',
+            'password' => 'wrong-password',
+        ])->assertStatus(422);
+
+        $this->postJson('/api/v1/customer/login', [
             'email' => 'shared@example.com',
             'password' => 'wrong-password',
         ])->assertStatus(422);

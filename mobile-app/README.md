@@ -50,7 +50,6 @@ Windows: Android only. iOS needs macOS + Xcode + Apple signing.
 
 | Field | Value |
 |-------|--------|
-| Shop code | `al-rukn-al-thaki` |
 | Email | `olivia@obtainsolutions.com` |
 | Password | `password` |
 

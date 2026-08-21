@@ -175,11 +175,11 @@ Output: `build/app/outputs/flutter-apk/app-release.apk`
 
 After `php artisan migrate --seed` (see [customer-portal.md](../../docs/customer-portal.md)):
 
-| Email | Shop code | Password |
-|-------|-----------|----------|
-| `olivia@obtainsolutions.com` | `al-rukn-al-thaki` | `password` |
-| `marcus@obtainsolutions.com` | `al-rukn-al-thaki` | `password` |
-| `priya@obtainsolutions.com` | `al-rukn-al-thaki` | `password` |
+| Email | Password |
+|-------|----------|
+| `olivia@obtainsolutions.com` | `password` |
+| `marcus@obtainsolutions.com` | `password` |
+| `priya@obtainsolutions.com` | `password` |
 
 ## Common failures
 
@@ -189,7 +189,6 @@ After `php artisan migrate --seed` (see [customer-portal.md](../../docs/customer
 | Gradle hangs in Cursor | Both | Real `GRADLE_USER_HOME` via env script |
 | Login: could not reach the shop | Both | Laravel not running, or wrong `API_BASE_URL` |
 | Android emulator login fails | Android | Use `10.0.2.2:8000`, not `localhost` or `pos.test` |
-| Shop not found | Both | Use the tenant **slug** (e.g. `al-rukn-al-thaki`) |
 | Black screen from home icon | iOS | Install **release** build, not debug |
 | Untrusted developer | iOS | Settings → VPN & Device Management → Trust |
 

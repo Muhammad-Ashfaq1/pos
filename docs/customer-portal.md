@@ -21,7 +21,7 @@ Store credit is **monetary** and lives on `customers.credit_balance`. Every chan
 
 `Customer` is now an `Authenticatable` with `HasApiTokens`. Login is **per shop** because the same email may exist at multiple shops:
 
-- A guest request includes `shop` = the tenant slug. The API resolves the tenant (central, unscoped), finds that tenant's customer, verifies the password + `portal_enabled`, then issues a Sanctum Bearer token.
+- A guest request can include `shop` = the tenant slug. If `shop` is omitted, the API finds the portal account by email + password (same as the web `/login` form). The API then issues a Sanctum Bearer token.
 - Authenticated requests run through [`InitializeTenancyForCustomer`](../app/Http/Middleware/InitializeTenancyForCustomer.php) (`customer.tenant.init`), which initializes tenancy from the token's customer so `BelongsToTenant` scopes every query to that shop.
 
 Account creation supports **both** self-registration (`POST /register`) and staff **invite** (toggle in the customer form → emailed set-password link). Invites and forgot-password share a hashed, expiring token on the customer row, issued by [`CustomerPortalService`](../app/Services/CustomerPortalService.php).
@@ -32,7 +32,7 @@ Defined in [routes/api.php](../routes/api.php); controllers in `app/Http/Control
 
 | Method | Endpoint | Auth | Purpose |
 |--------|----------|------|---------|
-| POST | `/login` | guest | Token login (`shop`, `email`, `password`) |
+| POST | `/login` | guest | Token login (`email`, `password`; optional `shop`) |
 | POST | `/register` | guest | Self-registration |
 | POST | `/forgot-password` | guest | Email a reset link |
 | POST | `/reset-password` | guest | Set password from invite/reset token |
@@ -49,7 +49,7 @@ Guest routes are throttled (`throttle:10,1`).
 
 The customer mobile app lives in [`mobile-app/`](../mobile-app/) (same layout as Onsite: env scripts, feature-first `lib/`, gitignored build artifacts). It uses these token endpoints — not the web session.
 
-- Login: shop slug + email + password → `POST /login` → Sanctum Bearer token in `SharedPreferences`.
+- Login: email + password → `POST /login` → Sanctum Bearer token in `SharedPreferences`.
 - Splash restores the session with `GET /me`; home loads `GET /dashboard`.
 - Setup, routes, and demo credentials: [mobile-app/README.md](../mobile-app/README.md) and [mobile-app/docs/SETUP.md](../mobile-app/docs/SETUP.md).
 

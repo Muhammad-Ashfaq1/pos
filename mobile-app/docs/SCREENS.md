@@ -20,7 +20,7 @@ Splash
   ├─ valid Sanctum token (GET /me) → Home (fadeReplace)
   └─ no / invalid token           → Login (fadeReplace)
 
-Login (shop + email + password)
+Login (email + password)
   └─ POST /login → Home (fadeReplace)
 
 Forgot password (shop + email)
@@ -29,9 +29,7 @@ Forgot password (shop + email)
 Home → Sign out → POST /logout → Login (fadeReplace)
 ```
 
-Shop code is the tenant **slug**. It is remembered locally after a successful attempt so the next visit can skip retyping it.
-
-Login field errors map Laravel 422 `errors.shop` / `errors.email` / `errors.password`.
+Login field errors map Laravel 422 `errors.email` / `errors.password`.
 
 ## Home
 

@@ -40,7 +40,7 @@ Same endpoints as the web customer portal. Bearer token from `POST /login`.
 
 | Method | Path | Auth |
 |--------|------|------|
-| POST | `/login` | guest (`shop`, `email`, `password`, `device_name`) |
+| POST | `/login` | guest (`email`, `password`, `device_name`) |
 | POST | `/forgot-password` | guest |
 | POST | `/logout` | Bearer |
 | GET | `/me` | Bearer |

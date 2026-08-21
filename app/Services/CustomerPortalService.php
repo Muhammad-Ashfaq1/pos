@@ -37,6 +37,58 @@ class CustomerPortalService
     }
 
     /**
+     * Resolve a portal customer for API login. `shop` is optional: when omitted
+     * (Flutter / email-only), the matching portal account is found by email +
+     * password. When several shops share the email, the most recently visited
+     * account whose password matches wins.
+     */
+    public function authenticatePortalLogin(?string $shopSlug, string $email, string $password): Customer
+    {
+        if (filled($shopSlug)) {
+            $tenant = $this->findTenantBySlug($shopSlug);
+
+            if (! $tenant) {
+                throw ValidationException::withMessages(['shop' => 'Shop not found.']);
+            }
+
+            $customer = $this->findCustomerForLogin($tenant, $email);
+
+            if (! $this->credentialsMatch($customer, $password)) {
+                throw ValidationException::withMessages([
+                    'email' => 'The provided credentials are incorrect.',
+                ]);
+            }
+
+            return $customer;
+        }
+
+        $candidates = Customer::withoutTenantScope()
+            ->where('email', $email)
+            ->where('portal_enabled', true)
+            ->with('tenant')
+            ->orderByDesc('last_visit_at')
+            ->orderByDesc('id')
+            ->get();
+
+        foreach ($candidates as $customer) {
+            if ($this->credentialsMatch($customer, $password)) {
+                return $customer;
+            }
+        }
+
+        throw ValidationException::withMessages([
+            'email' => 'The provided credentials are incorrect.',
+        ]);
+    }
+
+    private function credentialsMatch(?Customer $customer, string $password): bool
+    {
+        return $customer !== null
+            && $customer->hasPortalAccess()
+            && Hash::check($password, $customer->password);
+    }
+
+    /**
      * Public self-registration. Creates a new portal-enabled customer for the
      * shop, or claims an existing record that has no portal login yet.
      */

@@ -11,12 +11,10 @@ class AuthRepository {
   final AuthSession session;
 
   Future<Customer> login({
-    required String shop,
     required String email,
     required String password,
   }) async {
     final payload = await api.post('/login', body: {
-      'shop': shop,
       'email': email,
       'password': password,
       'device_name': ApiConfig.deviceName,
@@ -29,7 +27,11 @@ class AuthRepository {
     }
 
     final customer = Customer.fromJson(data);
-    await session.save(token: token, shopSlug: shop, customer: customer);
+    await session.save(
+      token: token,
+      shopSlug: customer.shop?.slug ?? '',
+      customer: customer,
+    );
     return customer;
   }
 

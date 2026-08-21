@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 | customer's shop by the customer.tenant.init middleware.
 |
 | Auth (guest):
-|   POST /api/v1/customer/login            { shop, email, password, device_name? }
+|   POST /api/v1/customer/login            { email, password, device_name?, shop? }
 |   POST /api/v1/customer/register         { shop, name, email, phone?, password, password_confirmation }
 |   POST /api/v1/customer/forgot-password  { shop, email }
 |   POST /api/v1/customer/reset-password   { shop, email, token, password, password_confirmation }
