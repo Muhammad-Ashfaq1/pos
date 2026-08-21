@@ -46,74 +46,78 @@
     </ul>
 
     {{-- Filter toolbar: search · date range · filters · reset --}}
-    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-        <div class="input-group" style="width: 200px;">
-            <span class="input-group-text"><i class="ti tabler-search"></i></span>
-            <input type="search" id="report-search" class="form-control" placeholder="Search…" aria-label="Search records">
-        </div>
+    <div class="{{ $isEmployee ? '' : 'pos-glass-card pos-tone-secondary pos-settings-panel mb-3' }}">
+        <div class="{{ $isEmployee ? '' : 'card-body py-3' }}">
+            <div class="d-flex flex-wrap align-items-center gap-2{{ $isEmployee ? ' mb-3' : '' }}">
+                <div class="input-group" style="width: 200px;">
+                    <span class="input-group-text"><i class="ti tabler-search"></i></span>
+                    <input type="search" id="report-search" class="form-control" placeholder="Search…" aria-label="Search records">
+                </div>
 
-        <div style="width: 160px;">
-            <select id="report-period" class="form-select report-filter" data-placeholder="Date Range" aria-label="Date Range">
-                @foreach($periodLabels as $value => $label)
-                    <option value="{{ $value }}" @selected($value === 'month')>{{ $label }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="report-custom-range d-none" style="width: 150px;">
-            <input type="text" id="report-start" class="form-control report-filter app-datepicker" placeholder="YYYY-MM-DD" aria-label="From date" autocomplete="off">
-        </div>
-        <div class="report-custom-range d-none" style="width: 150px;">
-            <input type="text" id="report-end" class="form-control report-filter app-datepicker" placeholder="YYYY-MM-DD" aria-label="To date" autocomplete="off">
-        </div>
-
-        @if(count($dateColumns) > 1)
-            <div style="width: 150px;">
-                <select id="report-date-column" class="form-select report-filter" data-placeholder="Filter Date By" aria-label="Filter Date By">
-                    @foreach($dateColumns as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-        @endif
-
-        @foreach($filters as $filter)
-            <div style="width: 150px;">
-                @if($filter['type'] === 'select')
-                    <select id="report-filter-{{ $filter['key'] }}" class="form-select report-filter" data-filter-key="{{ $filter['key'] }}" data-placeholder="{{ $filter['label'] }}" aria-label="{{ $filter['label'] }}">
-                        <option value="">{{ $filter['label'] }}: All</option>
-                        @foreach(($filter['options'] ?? []) as $optValue => $optLabel)
-                            <option value="{{ $optValue }}">{{ $optLabel }}</option>
+                <div style="width: 160px;">
+                    <select id="report-period" class="form-select report-filter" data-placeholder="Date Range" aria-label="Date Range">
+                        @foreach($periodLabels as $value => $label)
+                            <option value="{{ $value }}" @selected($value === 'month')>{{ $label }}</option>
                         @endforeach
                     </select>
-                @elseif($filter['type'] === 'boolean')
-                    <select id="report-filter-{{ $filter['key'] }}" class="form-select report-filter" data-filter-key="{{ $filter['key'] }}" data-placeholder="{{ $filter['label'] }}" aria-label="{{ $filter['label'] }}">
-                        <option value="">{{ $filter['label'] }}: All</option>
-                        <option value="1">Yes</option>
-                    </select>
-                @else
-                    <input type="number" step="any" id="report-filter-{{ $filter['key'] }}" class="form-control report-filter" data-filter-key="{{ $filter['key'] }}" placeholder="{{ $filter['label'] }}" aria-label="{{ $filter['label'] }}">
-                @endif
-            </div>
-        @endforeach
+                </div>
 
-        <div class="d-flex flex-wrap gap-2 ms-lg-auto">
-            <button type="button" id="report-reset" class="btn btn-label-secondary">
-                <i class="ti tabler-refresh me-1"></i> Reset Filters
-            </button>
-            <a href="#" id="report-export" class="btn btn-primary disabled" aria-disabled="true" tabindex="-1">
-                <i class="ti tabler-download me-1"></i> Download Report
-            </a>
+                <div class="report-custom-range d-none" style="width: 150px;">
+                    <input type="text" id="report-start" class="form-control report-filter app-datepicker" placeholder="YYYY-MM-DD" aria-label="From date" autocomplete="off">
+                </div>
+                <div class="report-custom-range d-none" style="width: 150px;">
+                    <input type="text" id="report-end" class="form-control report-filter app-datepicker" placeholder="YYYY-MM-DD" aria-label="To date" autocomplete="off">
+                </div>
+
+                @if(count($dateColumns) > 1)
+                    <div style="width: 150px;">
+                        <select id="report-date-column" class="form-select report-filter" data-placeholder="Filter Date By" aria-label="Filter Date By">
+                            @foreach($dateColumns as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+
+                @foreach($filters as $filter)
+                    <div style="width: 150px;">
+                        @if($filter['type'] === 'select')
+                            <select id="report-filter-{{ $filter['key'] }}" class="form-select report-filter" data-filter-key="{{ $filter['key'] }}" data-placeholder="{{ $filter['label'] }}" aria-label="{{ $filter['label'] }}">
+                                <option value="">{{ $filter['label'] }}: All</option>
+                                @foreach(($filter['options'] ?? []) as $optValue => $optLabel)
+                                    <option value="{{ $optValue }}">{{ $optLabel }}</option>
+                                @endforeach
+                            </select>
+                        @elseif($filter['type'] === 'boolean')
+                            <select id="report-filter-{{ $filter['key'] }}" class="form-select report-filter" data-filter-key="{{ $filter['key'] }}" data-placeholder="{{ $filter['label'] }}" aria-label="{{ $filter['label'] }}">
+                                <option value="">{{ $filter['label'] }}: All</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        @else
+                            <input type="number" step="any" id="report-filter-{{ $filter['key'] }}" class="form-control report-filter" data-filter-key="{{ $filter['key'] }}" placeholder="{{ $filter['label'] }}" aria-label="{{ $filter['label'] }}">
+                        @endif
+                    </div>
+                @endforeach
+
+                <div class="d-flex flex-wrap gap-2 ms-lg-auto">
+                    <button type="button" id="report-reset" class="btn btn-label-secondary">
+                        <i class="ti tabler-refresh me-1"></i> Reset Filters
+                    </button>
+                    <a href="#" id="report-export" class="btn btn-primary disabled" aria-disabled="true" tabindex="-1">
+                        <i class="ti tabler-download me-1"></i> Download Report
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
     {{-- Summary strip (populated via AJAX) --}}
     <div class="mb-3" id="report-summary"></div>
 
-    <div class="{{ $isEmployee ? 'pos-glass-card pos-tone-primary' : 'card' }}">
+    <div class="{{ $isEmployee ? 'pos-glass-card pos-tone-primary' : 'pos-glass-card pos-tone-secondary pos-settings-panel' }}">
         <div class="card-datatable table-responsive pt-0">
             <table class="reports-datatable table table-hover align-middle">
-                <thead class="bg-label-primary">
+                <thead>
                     <tr>
                         <th>#</th>
                         @foreach($columns as $column)
