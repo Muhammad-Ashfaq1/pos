@@ -52,19 +52,9 @@
   };
 
   const alignCreateButtonWithSearch = function (table, actionsSelector) {
-    const $actions = $(actionsSelector);
-    if (!table || !$actions.length || typeof table.table !== 'function') {
-      return;
+    if (window.PosListingToolbar && typeof window.PosListingToolbar.align === 'function') {
+      window.PosListingToolbar.align(table, actionsSelector);
     }
-
-    const $topStart = $(table.table().container()).find('.dt-layout-start').first();
-    if (!$topStart.length) {
-      return;
-    }
-
-    $topStart.addClass('w-100 d-flex justify-content-between align-items-center gap-2 flex-wrap');
-    $actions.removeClass('ms-auto');
-    $topStart.append($actions);
   };
 
   const escapeHtml = function (value) {
@@ -276,8 +266,8 @@
           '<div class="invalid-feedback d-block"></div>' +
         '</td>' +
         '<td class="text-center">' +
-          '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect remove-service-mapping-row">' +
-            '<i class="icon-base ti tabler-trash icon-md text-danger"></i>' +
+          '<button type="button" class="btn btn-sm btn-icon btn-outline-danger remove-service-mapping-row">' +
+            '<i class="icon-base ti tabler-trash"></i>' +
           '</button>' +
         '</td>' +
       '</tr>';
@@ -375,19 +365,19 @@
 
     if (row.can_update) {
       html +=
-        '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect edit-service-btn" ' +
+        '<button type="button" class="btn btn-sm btn-icon btn-outline-primary edit-service-btn" ' +
         'data-id="' + row.id + '" ' +
         'data-edit-url="' + escapeHtml(row.edit_url || serviceEditUrl(row.id)) + '" ' + tooltipAttrs('Edit') + '>' +
-        '<i class="icon-base ti tabler-edit icon-md"></i>' +
+        '<i class="icon-base ti tabler-edit"></i>' +
         '</button>';
     }
 
     if (row.can_delete && row.delete_url) {
       html +=
-        '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect delete-service-btn" ' +
+        '<button type="button" class="btn btn-sm btn-icon btn-outline-danger delete-service-btn" ' +
         'data-url="' + row.delete_url + '" ' +
         'data-name="' + escapeHtml(row.name) + '" ' + tooltipAttrs('Delete') + '>' +
-        '<i class="icon-base ti tabler-trash icon-md text-danger"></i>' +
+        '<i class="icon-base ti tabler-trash"></i>' +
         '</button>';
     }
 
@@ -553,7 +543,7 @@
         {
           data: 'mapped_products_count',
           render: function (data) {
-            return '<span class="badge bg-label-info">' + escapeHtml(String(data || 0)) + '</span>';
+            return '<span class="badge rounded bg-label-info">' + escapeHtml(String(data || 0)) + '</span>';
           }
         },
         {
@@ -561,7 +551,7 @@
           orderable: false,
           searchable: false,
           render: function (data, type, row) {
-            return '<span class="badge ' + row.requires_technician_badge_class + '">' + escapeHtml(row.requires_technician_label) + '</span>';
+            return '<span class="badge rounded ' + row.requires_technician_badge_class + '">' + escapeHtml(row.requires_technician_label) + '</span>';
           }
         },
         {
@@ -569,7 +559,7 @@
           orderable: false,
           searchable: false,
           render: function (data, type, row) {
-            return '<span class="badge ' + row.status_badge_class + '">' + escapeHtml(row.status_label) + '</span>';
+            return '<span class="badge rounded ' + row.status_badge_class + '">' + escapeHtml(row.status_label) + '</span>';
           }
         },
         {
@@ -817,45 +807,30 @@
       const deleteUrl = $button.data('url');
       const name = $button.data('name');
 
-      Swal.fire({
+      if (!window.PosConfirm || typeof window.PosConfirm.open !== 'function') {
+        return;
+      }
+
+      window.PosConfirm.open({
         title: 'Delete service?',
-        text: 'This will remove "' + name + '" and its product mappings from the tenant catalog.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, delete it',
-        cancelButtonText: 'Cancel',
-        customClass: {
-          confirmButton: 'btn btn-danger me-2',
-          cancelButton: 'btn btn-label-secondary'
-        },
-        buttonsStyling: false
-      }).then(function (result) {
-        if (!result.isConfirmed) {
-          return;
-        }
-
-        $button.prop('disabled', true);
-        if (window.appLoading && typeof window.appLoading.show === 'function') {
-          window.appLoading.show('Deleting service...');
-        }
-
-        $.ajax({
-          url: deleteUrl,
-          method: 'DELETE'
-        })
-          .done(function (response) {
-            reloadTable();
-            showAlert('success', response.message || 'Service deleted successfully.');
-          })
-          .fail(function (xhr) {
-            showAlert('error', xhr.responseJSON?.message || 'Unable to delete service.');
-          })
-          .always(function () {
-            $button.prop('disabled', false);
-            if (window.appLoading && typeof window.appLoading.hide === 'function') {
-              window.appLoading.hide(200);
+        message: 'This will remove "' + name + '" and its product mappings from the tenant catalog.',
+        confirmText: 'Yes, delete it',
+        cancelText: 'Cancel',
+        tone: 'danger',
+        onConfirm: function () {
+          return $.ajax({
+            url: deleteUrl,
+            method: 'DELETE'
+          }).then(
+            function (response) {
+              reloadTable();
+              showAlert('success', response.message || 'Service deleted successfully.');
+            },
+            function (xhr) {
+              throw new Error((xhr.responseJSON && xhr.responseJSON.message) || 'Unable to delete service.');
             }
-          });
+          );
+        }
       });
     });
   };

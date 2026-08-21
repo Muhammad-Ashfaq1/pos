@@ -71,6 +71,12 @@
         background-color 0.25s ease-in-out, transform 0.25s ease-in-out;
 }
 
+/* Forms / settings: overflow:hidden clips headings and input labels. */
+.pos-glass-card.pos-glass-card--scrollable,
+.pos-glass-card.pos-settings-panel {
+    overflow: visible;
+}
+
 /* The soft orb bleeding off the top-right corner. Decorative, and a
    pseudo-element so it is invisible to assistive technology by construction. */
 .pos-glass-card::after {

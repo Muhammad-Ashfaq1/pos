@@ -17,7 +17,7 @@
 
             <div class="row">
                 <div class="col-12">
-                    <div class="card">
+                    <div class="pos-glass-card pos-tone-secondary pos-settings-panel">
                         <div class="card-body">
                             @if(isset($partial))
                                 @include($partial)

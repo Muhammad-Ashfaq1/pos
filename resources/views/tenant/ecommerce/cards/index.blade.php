@@ -2,6 +2,10 @@
 
 @section('title', $activeModule['title'] ?? 'Cards')
 
+@push('styles')
+    @include('partials.pos-listing-assets')
+@endpush
+
 @section('content')
     @php
         $singular = $activeModule['singular'];
@@ -95,127 +99,133 @@
         </style>
     @endonce
 
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
-        <div class="d-flex align-items-center gap-2" id="cardTableActions">
-            <div class="dropdown">
-                <button
-                    type="button"
-                    class="btn btn-label-secondary btn-icon"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    title="Filters"
-                >
-                    <i class="ti tabler-filter"></i>
-                </button>
-                <div class="dropdown-menu dropdown-menu-end p-3" style="min-width: 320px;">
-                    <div class="mb-3">
-                        <label for="card_status" class="form-label">Status</label>
-                        <select
-                            id="card_status"
-                            class="form-select filter-control select2"
-                            data-placeholder="All statuses"
-                            data-allow-clear="false"
-                            data-minimum-results-for-search="Infinity"
-                        >
-                            <option value="">All</option>
-                            <option value="1">Active</option>
-                            <option value="0">Inactive</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="card_sort" class="form-label">Sort By</label>
-                        <select
-                            id="card_sort"
-                            class="form-select filter-control select2"
-                            data-placeholder="Sort cards"
-                            data-allow-clear="false"
-                            data-minimum-results-for-search="Infinity"
-                        >
-                            <option value="latest">Latest</option>
-                            <option value="name">Name A-Z</option>
-                            <option value="value_high_low">Value High-Low</option>
-                            <option value="valid_until">Valid Until</option>
-                        </select>
+    <div class="pos-listing">
+        <div class="pos-glass-card pos-tone-secondary pos-listing-panel">
+            <div class="pos-listing-toolbar">
+                <h4 class="pos-listing-title">{{ $activeModule['title'] ?? 'Cards' }}</h4>
+                <div class="pos-listing-search-slot" aria-hidden="true"></div>
+                <div class="pos-listing-toolbar-tools">
+                    <div class="pos-listing-toolbar-actions" id="cardTableActions">
+                        <div class="dropdown">
+                            <button
+                                type="button"
+                                class="btn btn-label-secondary btn-icon"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                                title="Filters"
+                            >
+                                <i class="ti tabler-filter"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end p-3" style="min-width: 320px;">
+                                <div class="mb-3">
+                                    <label for="card_status" class="form-label">Status</label>
+                                    <select
+                                        id="card_status"
+                                        class="form-select filter-control select2"
+                                        data-placeholder="All statuses"
+                                        data-allow-clear="false"
+                                        data-minimum-results-for-search="Infinity"
+                                    >
+                                        <option value="">All</option>
+                                        <option value="1">Active</option>
+                                        <option value="0">Inactive</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="card_sort" class="form-label">Sort By</label>
+                                    <select
+                                        id="card_sort"
+                                        class="form-select filter-control select2"
+                                        data-placeholder="Sort cards"
+                                        data-allow-clear="false"
+                                        data-minimum-results-for-search="Infinity"
+                                    >
+                                        <option value="latest">Latest</option>
+                                        <option value="name">Name A-Z</option>
+                                        <option value="value_high_low">Value High-Low</option>
+                                        <option value="valid_until">Valid Until</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        @can('create', \App\Models\Card::class)
+                            <button
+                                type="button"
+                                class="btn btn-primary"
+                                id="addCardBtn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#cardModal"
+                            >
+                                <i class="ti tabler-plus me-1"></i>
+                                Add {{ $singular }}
+                            </button>
+                        @endcan
                     </div>
                 </div>
             </div>
 
-            @can('create', \App\Models\Card::class)
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    id="addCardBtn"
-                    data-bs-toggle="modal"
-                    data-bs-target="#cardModal"
-                >
-                    <i class="ti tabler-plus me-1"></i>
-                    Add {{ $singular }}
-                </button>
-            @endcan
+            <div class="card-datatable table-responsive pos-listing-table pt-0">
+                <table class="cards-datatables table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Card</th>
+                            <th>Value</th>
+                            <th>Min. Spend</th>
+                            <th>Products</th>
+                            <th>Valid Until</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
-    </div>
 
-    <div class="card">
-        <div class="card-datatable table-responsive pt-0">
-            <table class="cards-datatables table">
-                <thead class="bg-label-primary">
-                    <tr>
-                        <th>#</th>
-                        <th>Card</th>
-                        <th>Value</th>
-                        <th>Min. Spend</th>
-                        <th>Products</th>
-                        <th>Valid Until</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                        <th class="text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
+        <div class="modal fade pos-listing-modal" id="cardModal" tabindex="-1" aria-labelledby="cardModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <form id="cardForm" action="{{ $saveUrl }}" method="POST" novalidate>
+                        @csrf
+                        <input type="hidden" name="id" id="card_id">
+                        <input type="hidden" name="card_type" id="card_type" value="{{ $cardType }}">
 
-    <div class="modal fade" id="cardModal" tabindex="-1" aria-labelledby="cardModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <form id="cardForm" action="{{ $saveUrl }}" method="POST" novalidate>
-                    @csrf
-                    <input type="hidden" name="id" id="card_id">
-                    <input type="hidden" name="card_type" id="card_type" value="{{ $cardType }}">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="cardModalLabel">Add {{ $singular }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
 
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="cardModalLabel">Add {{ $singular }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
+                        <div class="modal-body">
+                            <x-cards.form-fields
+                                :card-type="$cardType"
+                                :products="$products"
+                                id-prefix="card"
+                                modal-id="cardModal"
+                                :currency-symbol="\App\Support\Currency::symbol()"
+                                :discount-types="$discountTypes"
+                                :show-status="true"
+                                :value-label="$valueLabel"
+                                :discount-select2="true"
+                            />
+                        </div>
 
-                    <div class="modal-body">
-                        <x-cards.form-fields
-                            :card-type="$cardType"
-                            :products="$products"
-                            id-prefix="card"
-                            modal-id="cardModal"
-                            :currency-symbol="\App\Support\Currency::symbol()"
-                            :discount-types="$discountTypes"
-                            :show-status="true"
-                            :value-label="$valueLabel"
-                            :discount-select2="true"
-                        />
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button
-                            type="submit"
-                            class="btn btn-primary"
-                            id="cardSubmitBtn"
-                            data-create-text="Save {{ $singular }}"
-                            data-update-text="Update {{ $singular }}"
-                        >
-                            Save {{ $singular }}
-                        </button>
-                    </div>
-                </form>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                                id="cardSubmitBtn"
+                                data-create-text="Save {{ $singular }}"
+                                data-update-text="Update {{ $singular }}"
+                            >
+                                Save {{ $singular }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -230,6 +240,7 @@
         window.cardSingular = @json($singular);
         window.currencySymbol = @json(\App\Support\Currency::symbol());
     </script>
+    <script src="{{ asset('assets/js/pos-listing-toolbar.js') }}?v={{ filemtime(public_path('assets/js/pos-listing-toolbar.js')) }}"></script>
     <script src="{{ asset('assets/js/cards-form.js') }}?v={{ filemtime(public_path('assets/js/cards-form.js')) }}"></script>
     <script src="{{ asset('assets/js/tenant/e-com/cards.js') }}?v={{ filemtime(public_path('assets/js/tenant/e-com/cards.js')) }}"></script>
 @endsection
