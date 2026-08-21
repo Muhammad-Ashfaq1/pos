@@ -6,15 +6,17 @@
     $isEmployeeSurface = ! empty($isEmployeeSurface) || ($layout ?? '') === 'layouts.employee-portal';
 @endphp
 
-@if ($isEmployeeSurface)
-    @push('styles')
+@push('styles')
+    @if ($isEmployeeSurface)
         <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}" />
         <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}" />
         <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css') }}" />
         <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css') }}" />
         <link rel="stylesheet" href="{{ asset('assets/vendor/libs/dropzone/dropzone.css') }}" />
-    @endpush
-@endif
+    @else
+        @include('partials.pos-listing-assets')
+    @endif
+@endpush
 
 @section('content')
     @if ($isEmployeeSurface)
@@ -35,28 +37,48 @@
             @include('tenant.ecommerce.products.partials.table-and-modal', [
                 'productTypes' => $productTypes,
                 'saveUrl' => $saveUrl,
+                'isEmployeeSurface' => true,
             ])
         </div>
     @else
-        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
-            <div class="d-flex align-items-center gap-2" id="productTableActions">
-                @include('tenant.ecommerce.products.partials.toolbar-actions', [
+        <div class="pos-listing">
+            <div class="pos-glass-card pos-tone-secondary pos-listing-panel">
+                <div class="pos-listing-toolbar">
+                    <h4 class="pos-listing-title">Products</h4>
+                    <div class="pos-listing-search-slot" aria-hidden="true"></div>
+                    <div class="pos-listing-toolbar-tools">
+                        <div class="pos-listing-toolbar-actions" id="productTableActions">
+                            @include('tenant.ecommerce.products.partials.toolbar-actions', [
+                                'productTypes' => $productTypes,
+                                'showInventoryFilter' => true,
+                            ])
+                        </div>
+                    </div>
+                </div>
+
+                @include('tenant.ecommerce.products.partials.table-and-modal', [
                     'productTypes' => $productTypes,
-                    'showInventoryFilter' => true,
+                    'saveUrl' => $saveUrl,
+                    'isEmployeeSurface' => false,
+                    'renderModal' => false,
                 ])
             </div>
-        </div>
 
-        @include('tenant.ecommerce.products.partials.table-and-modal', [
-            'productTypes' => $productTypes,
-            'saveUrl' => $saveUrl,
-        ])
+            @include('tenant.ecommerce.products.partials.table-and-modal', [
+                'productTypes' => $productTypes,
+                'saveUrl' => $saveUrl,
+                'isEmployeeSurface' => false,
+                'renderTable' => false,
+            ])
+        </div>
     @endif
 @endsection
 
 @push('page-script')
     @if ($isEmployeeSurface)
         <script src="{{ asset('assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js') }}"></script>
+    @else
+        <script src="{{ asset('assets/js/pos-listing-toolbar.js') }}?v={{ filemtime(public_path('assets/js/pos-listing-toolbar.js')) }}"></script>
     @endif
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"></script>
     <script src="{{ asset('assets/vendor/libs/dropzone/dropzone.js') }}"></script>
