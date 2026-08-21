@@ -1,15 +1,7 @@
-@php
-    $listingTableOnly = ! empty($listingTableOnly);
-    $listingModalOnly = ! empty($listingModalOnly);
-    $showListingTable = ! $listingModalOnly;
-    $showListingModal = ! $listingTableOnly;
-@endphp
-
-@if ($showListingTable)
-<div class="{{ ! empty($isEmployeeSurface) ? 'pos-glass-card pos-tone-primary' : '' }}">
-    <div class="card-datatable table-responsive {{ empty($isEmployeeSurface) ? 'pos-listing-table' : '' }} pt-0">
-        <table class="products-datatables table table-hover align-middle">
-            <thead>
+<div class="{{ ! empty($isEmployeeSurface) ? 'pos-glass-card pos-tone-primary' : 'card' }}">
+    <div class="card-datatable table-responsive pt-0">
+        <table class="products-datatables table">
+            <thead class="bg-label-primary">
                 <tr>
                     <th>#</th>
                     <th>Image</th>
@@ -30,10 +22,8 @@
         </table>
     </div>
 </div>
-@endif
 
-@if ($showListingModal)
-<div class="modal fade pos-listing-modal" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
             <form id="productForm" action="{{ $saveUrl }}" method="POST" novalidate>
@@ -270,4 +260,3 @@
         </div>
     </div>
 </div>
-@endif

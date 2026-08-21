@@ -33,9 +33,19 @@
   };
 
   const alignCreateButtonWithSearch = function (table, actionsSelector) {
-    if (window.PosListingToolbar && typeof window.PosListingToolbar.align === 'function') {
-      window.PosListingToolbar.align(table, actionsSelector);
+    const $actions = $(actionsSelector);
+    if (!table || !$actions.length || typeof table.table !== 'function') {
+      return;
     }
+
+    const $topStart = $(table.table().container()).find('.dt-layout-start').first();
+    if (!$topStart.length) {
+      return;
+    }
+
+    $topStart.addClass('w-100 d-flex justify-content-between align-items-center gap-2 flex-wrap');
+    $actions.removeClass('ms-auto');
+    $topStart.append($actions);
   };
 
   const escapeHtml = function (value) {
@@ -207,17 +217,17 @@
 
     if (row.can_update) {
       html +=
-        '<button type="button" class="btn btn-sm btn-icon btn-outline-primary edit-card-btn" ' +
+        '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect edit-card-btn" ' +
         'data-id="' + row.id + '" data-edit-url="' + escapeHtml(row.edit_url || cardEditUrl(row.id)) + '" ' + tooltipAttrs('Edit') + '>' +
-        '<i class="icon-base ti tabler-edit"></i>' +
+        '<i class="icon-base ti tabler-edit icon-md"></i>' +
         '</button>';
     }
 
     if (row.can_delete && row.delete_url) {
       html +=
-        '<button type="button" class="btn btn-sm btn-icon btn-outline-danger delete-card-btn" ' +
+        '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect delete-card-btn" ' +
         'data-url="' + row.delete_url + '" data-name="' + escapeHtml(row.name) + '" ' + tooltipAttrs('Delete') + '>' +
-        '<i class="icon-base ti tabler-trash"></i>' +
+        '<i class="icon-base ti tabler-trash icon-md text-danger"></i>' +
         '</button>';
     }
 
@@ -380,7 +390,7 @@
           data: null,
           orderable: false,
           render: function (data, type, row) {
-            return '<span class="badge rounded ' + row.status_badge_class + '">' + escapeHtml(row.status_label) + '</span>';
+            return '<span class="badge ' + row.status_badge_class + '">' + escapeHtml(row.status_label) + '</span>';
           }
         },
         {
@@ -545,32 +555,45 @@
       const url = $(this).data('url');
       const name = $(this).data('name') || 'this ' + cardSingular.toLowerCase();
 
-      if (!window.PosConfirm || typeof window.PosConfirm.open !== 'function') {
-        return;
-      }
-
-      window.PosConfirm.open({
+      Swal.fire({
         title: 'Delete ' + cardSingular + '?',
-        message: 'This action will permanently remove ' + name + '.',
-        confirmText: 'Yes, delete it',
-        cancelText: 'Cancel',
-        tone: 'danger',
-        onConfirm: function () {
-          return $.ajax({
-            url: url,
-            method: 'DELETE'
-          }).then(
-            function (response) {
-              showAlert('success', response.message || cardSingular + ' deleted successfully.');
-              if (cardTable) {
-                cardTable.ajax.reload(null, false);
-              }
-            },
-            function (xhr) {
-              throw new Error((xhr.responseJSON && xhr.responseJSON.message) || 'Unable to delete card.');
-            }
-          );
+        text: 'This action will permanently remove ' + name + '.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it',
+        cancelButtonText: 'Cancel',
+        customClass: {
+          confirmButton: 'btn btn-danger me-2',
+          cancelButton: 'btn btn-label-secondary'
+        },
+        buttonsStyling: false
+      }).then(function (result) {
+        if (!result.isConfirmed) {
+          return;
         }
+
+        if (window.appLoading && typeof window.appLoading.show === 'function') {
+          window.appLoading.show('Deleting card...');
+        }
+
+        $.ajax({
+          url: url,
+          method: 'DELETE'
+        })
+          .done(function (response) {
+            showAlert('success', response.message || cardSingular + ' deleted successfully.');
+            if (cardTable) {
+              cardTable.ajax.reload(null, false);
+            }
+          })
+          .fail(function (xhr) {
+            showAlert('error', xhr.responseJSON?.message || 'Unable to delete card.');
+          })
+          .always(function () {
+            if (window.appLoading && typeof window.appLoading.hide === 'function') {
+              window.appLoading.hide(200);
+            }
+          });
       });
     });
   };

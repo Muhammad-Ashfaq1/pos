@@ -46,7 +46,7 @@ class SaveServiceCategoryRequest extends FormRequest
                     ->where(fn ($query) => $query->where('tenant_id', $tenantId))
                     ->ignore($categoryId),
             ],
-            
+            // Same as product categories: slug is normalized here, uniqueness enforced in repository.
             'slug' => [
                 'nullable',
                 'string',

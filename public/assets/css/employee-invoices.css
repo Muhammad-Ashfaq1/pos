@@ -142,10 +142,7 @@
     border: 1px solid rgba(99, 102, 241, 0.18) !important;
     border-radius: 0.75rem;
     overflow-x: auto;
-    overflow-y: hidden;
-    display: block;
-    width: 100%;
-    -webkit-overflow-scrolling: touch;
+    overflow-y: visible;
     background: rgba(255, 255, 255, 0.55) !important;
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
@@ -154,30 +151,10 @@
     z-index: 1;
 }
 
-.employee-invoices-table-wrap::-webkit-scrollbar {
-    height: 8px;
-}
-
-.employee-invoices-table-wrap::-webkit-scrollbar-track {
-    background: rgba(241, 245, 249, 0.6);
-    border-radius: 4px;
-}
-
-.employee-invoices-table-wrap::-webkit-scrollbar-thumb {
-    background: rgba(99, 102, 241, 0.35);
-    border-radius: 4px;
-}
-
-.employee-invoices-table-wrap::-webkit-scrollbar-thumb:hover {
-    background: rgba(99, 102, 241, 0.6);
-}
-
 .employee-invoices-table {
-    min-width: 1680px;
+    min-width: 1100px;
     margin-bottom: 0;
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
 }
 
 .employee-invoices-table thead th {
@@ -185,13 +162,15 @@
     top: 0;
     z-index: 1;
     white-space: nowrap;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.74rem;
+    font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--bs-secondary-color);
-    background: transparent !important;
-    border-bottom: 1px solid rgba(var(--pos-tone-rgb, var(--bs-secondary-rgb)), 0.18) !important;
+    color: #3730a3;
+    background: rgba(241, 245, 249, 0.85) !important;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(99, 102, 241, 0.18) !important;
     padding: 0.85rem 0.85rem;
 }
 
@@ -333,8 +312,8 @@
 }
 
 [data-bs-theme="dark"] .employee-invoices-table thead th {
-    color: var(--bs-secondary-color);
-    background: transparent !important;
+    color: #c7d2fe;
+    background: rgba(43, 44, 64, 0.9) !important;
 }
 
 [data-bs-theme="dark"] .employee-invoices-table tbody td {

@@ -12,13 +12,8 @@ Reference implementations:
 | Discount groups | `resources/views/tenant/ecommerce/discounts/group/index.blade.php` | `public/assets/js/tenant/discount-groups.js` |
 | Sub-categories | `…/sub-categories/index.blade.php` | `…/subcategories.js` |
 | Product types | `…/product-types/index.blade.php` | `…/product-types.js` |
-| Products | `…/products/index.blade.php` (+ `partials/table-and-modal`) | `…/products.js` |
-| Services | `…/services/index.blade.php` | `…/services.js` |
-| Customers | `…/customers/index.blade.php` (+ `partials/listing-page`) | `…/customers.js` |
-| Vehicles | `…/vehicles/index.blade.php` (+ `partials/listing-page`) | `…/vehicles.js` |
-| Cards | `…/cards/index.blade.php` | `…/cards.js` |
 
-Still to port (same pattern): other ecommerce listings not listed above.
+Still to port (same pattern): products, services, customers, vehicles, cards, …
 
 ---
 

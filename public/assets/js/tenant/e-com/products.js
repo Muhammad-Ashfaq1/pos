@@ -43,9 +43,19 @@
   };
 
   const alignCreateButtonWithSearch = function (table, actionsSelector) {
-    if (window.PosListingToolbar && typeof window.PosListingToolbar.align === 'function') {
-      window.PosListingToolbar.align(table, actionsSelector);
+    const $actions = $(actionsSelector);
+    if (!table || !$actions.length || typeof table.table !== 'function') {
+      return;
     }
+
+    const $topStart = $(table.table().container()).find('.dt-layout-start').first();
+    if (!$topStart.length) {
+      return;
+    }
+
+    $topStart.addClass('w-100 d-flex justify-content-between align-items-center gap-2 flex-wrap');
+    $actions.removeClass('ms-auto');
+    $topStart.append($actions);
   };
 
   const escapeHtml = function (value) {
@@ -527,7 +537,7 @@
 
     if (row.can_update) {
       html +=
-        '<button type="button" class="btn btn-sm btn-icon btn-outline-primary edit-product-btn" ' +
+        '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect edit-product-btn" ' +
         'data-id="' + row.id + '" ' +
         'data-category-id="' + (row.category_id || '') + '" ' +
         'data-category-name="' + escapeHtml(row.category_name || '') + '" ' +
@@ -550,16 +560,16 @@
         'data-track-inventory="' + (row.track_inventory ? 1 : 0) + '" ' +
         'data-is-active="' + (row.is_active ? 1 : 0) + '" ' +
         'data-edit-url="' + escapeHtml(row.edit_url || productEditUrl(row.id)) + '" ' + tooltipAttrs('Edit') + '>' +
-        '<i class="icon-base ti tabler-edit"></i>' +
+        '<i class="icon-base ti tabler-edit icon-md"></i>' +
         '</button>';
     }
 
     if (row.can_delete && row.delete_url) {
       html +=
-        '<button type="button" class="btn btn-sm btn-icon btn-outline-danger delete-product-btn" ' +
+        '<button type="button" class="btn btn-icon btn-text-secondary rounded-pill waves-effect delete-product-btn" ' +
         'data-url="' + row.delete_url + '" ' +
         'data-name="' + escapeHtml(row.name) + '" ' + tooltipAttrs('Delete') + '>' +
-        '<i class="icon-base ti tabler-trash"></i>' +
+        '<i class="icon-base ti tabler-trash icon-md text-danger"></i>' +
         '</button>';
     }
 
@@ -770,7 +780,7 @@
         {
           data: 'product_type_label',
           render: function (data) {
-            return '<span class="badge rounded bg-label-info">' + escapeHtml(data) + '</span>';
+            return '<span class="badge bg-label-info">' + escapeHtml(data) + '</span>';
           }
         },
         {
@@ -796,7 +806,7 @@
           render: function (data, type, row) {
             return '<div class="text-nowrap">' +
               '<span class="d-block fw-medium">' + escapeHtml(toIntStock(row.current_stock)) + '</span>' +
-              '<small class="badge rounded ' + row.stock_badge_class + '">' + escapeHtml(row.stock_status_label) + '</small>' +
+              '<small class="badge ' + row.stock_badge_class + '">' + escapeHtml(row.stock_status_label) + '</small>' +
               '</div>';
           }
         },
@@ -805,7 +815,7 @@
           orderable: false,
           searchable: false,
           render: function (data, type, row) {
-            return '<span class="badge rounded ' + row.status_badge_class + '">' + escapeHtml(row.status_label) + '</span>';
+            return '<span class="badge ' + row.status_badge_class + '">' + escapeHtml(row.status_label) + '</span>';
           }
         },
         {
@@ -1022,30 +1032,45 @@
       const deleteUrl = $button.data('url');
       const name = $button.data('name');
 
-      if (!window.PosConfirm || typeof window.PosConfirm.open !== 'function') {
-        return;
-      }
-
-      window.PosConfirm.open({
+      Swal.fire({
         title: 'Delete product?',
-        message: 'This will remove "' + name + '" from the tenant catalog.',
-        confirmText: 'Yes, delete it',
-        cancelText: 'Cancel',
-        tone: 'danger',
-        onConfirm: function () {
-          return $.ajax({
-            url: deleteUrl,
-            method: 'DELETE'
-          }).then(
-            function (response) {
-              reloadTable();
-              showAlert('success', response.message || 'Product deleted successfully.');
-            },
-            function (xhr) {
-              throw new Error((xhr.responseJSON && xhr.responseJSON.message) || 'Unable to delete product.');
-            }
-          );
+        text: 'This will remove "' + name + '" from the tenant catalog.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it',
+        cancelButtonText: 'Cancel',
+        customClass: {
+          confirmButton: 'btn btn-danger me-2',
+          cancelButton: 'btn btn-label-secondary'
+        },
+        buttonsStyling: false
+      }).then(function (result) {
+        if (!result.isConfirmed) {
+          return;
         }
+
+        $button.prop('disabled', true);
+        if (window.appLoading && typeof window.appLoading.show === 'function') {
+          window.appLoading.show('Deleting product...');
+        }
+
+        $.ajax({
+          url: deleteUrl,
+          method: 'DELETE'
+        })
+          .done(function (response) {
+            reloadTable();
+            showAlert('success', response.message || 'Product deleted successfully.');
+          })
+          .fail(function (xhr) {
+            showAlert('error', xhr.responseJSON?.message || 'Unable to delete product.');
+          })
+          .always(function () {
+            $button.prop('disabled', false);
+            if (window.appLoading && typeof window.appLoading.hide === 'function') {
+              window.appLoading.hide(200);
+            }
+          });
       });
     });
   };
