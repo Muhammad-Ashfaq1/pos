@@ -27,7 +27,7 @@
             />
     @endif
 
-    <div class="account-settings-card{{ $isEmployeeAccountSettings ? ' pos-glass-card pos-tone-primary' : '' }}" id="account-settings"
+    <div class="account-settings-card{{ $isEmployeeAccountSettings ? ' pos-glass-card pos-tone-primary' : ' pos-glass-card pos-tone-secondary pos-settings-panel' }}" id="account-settings"
          data-profile-url="{{ route('account.profile') }}"
          data-password-url="{{ route('account.password') }}"
          data-active="{{ $accountSettingsActive ?? 'profile' }}">
