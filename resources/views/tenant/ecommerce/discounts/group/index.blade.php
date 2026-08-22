@@ -73,6 +73,7 @@
                                         ><i class="icon-base ti tabler-edit icon-md"></i></button>
                                         <button type="button" class="btn btn-sm btn-icon btn-outline-danger delete-discount-group"
                                             data-id="{{ $group->id }}"
+                                            data-title="{{ $group->name }}"
                                             data-url="{{ route('tenant.discounts.group.delete', $group->id) }}"
                                             title="Delete"
                                         ><i class="icon-base ti tabler-trash icon-md"></i></button>

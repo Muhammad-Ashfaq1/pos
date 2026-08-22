@@ -109,6 +109,7 @@ $(function () {
                             ><i class="icon-base ti tabler-edit icon-md"></i></button>
                             <button type="button" class="btn btn-sm btn-icon btn-outline-danger delete-discount-group"
                                 data-id="${response.data.id}"
+                                data-title="${response.data.name}"
                                 data-url="${$('#discount-groups-body').closest('table').data('delete-url-pattern').replace(':id', response.data.id)}"
                                 title="Delete"
                             ><i class="icon-base ti tabler-trash icon-md"></i></button>
@@ -229,7 +230,42 @@ $(function () {
 
     $(document).on('click', '.delete-discount-group', function () {
         const $this = $(this);
-        const id = $this.data('id');
+        const title = $this.data('title') || $this.data('name') || $this.closest('tr').find('td:first').text().trim();
+        const deleteUrl = $this.data('url');
+
+        if (window.PosConfirm && typeof window.PosConfirm.open === 'function') {
+            window.PosConfirm.open({
+                title: 'Delete discount group?',
+                message: 'This will remove "' + title + '" from discount groups.',
+                confirmText: 'Yes, delete it',
+                cancelText: 'Cancel',
+                tone: 'danger',
+                onConfirm: function () {
+                    return $.ajax({
+                        url: deleteUrl,
+                        type: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        }
+                    }).then(
+                        function (response) {
+                            if (discountGroupsTable) {
+                                discountGroupsTable.row($this.closest('tr')).remove().draw(false);
+                            } else {
+                                $this.closest('tr').remove();
+                            }
+                            if (typeof window.appNotify === 'function') {
+                                window.appNotify('success', response.message || 'Discount group deleted successfully.');
+                            }
+                        },
+                        function (xhr) {
+                            throw new Error((xhr.responseJSON && xhr.responseJSON.message) || 'Unable to delete discount group.');
+                        }
+                    );
+                }
+            });
+            return;
+        }
 
         if (typeof Swal !== 'undefined') {
             Swal.fire({
@@ -247,7 +283,7 @@ $(function () {
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: $this.data('url'),
+                        url: deleteUrl,
                         type: 'DELETE',
                         headers: {
                             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -259,7 +295,7 @@ $(function () {
                                 $this.closest('tr').remove();
                             }
                             if (typeof window.appNotify === 'function') {
-                                window.appNotify('success', response.message);
+                                window.appNotify('success', response.message || 'Discount group deleted successfully.');
                             }
                         }
                     });
