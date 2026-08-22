@@ -1,29 +1,63 @@
-<div class="{{ ! empty($isEmployeeSurface) ? 'pos-glass-card pos-tone-primary' : 'card' }}">
-    <div class="card-datatable table-responsive pt-0">
-        <table class="products-datatables table">
-            <thead class="bg-label-primary">
-                <tr>
-                    <th>#</th>
-                    <th>Image</th>
-                    <th>Category</th>
-                    <th>Sub Category</th>
-                    <th>Product</th>
-                    <th>Type</th>
-                    <th>SKU</th>
-                    <th>Brand</th>
-                    <th>Sale Price</th>
-                    <th>Stock</th>
-                    <th>Status</th>
-                    <th>Created</th>
-                    <th class="text-center">Actions</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
-</div>
+@php
+    $isEmployeeSurface = ! empty($isEmployeeSurface);
+    $renderTable = $renderTable ?? true;
+    $renderModal = $renderModal ?? true;
+@endphp
 
-<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+@if ($renderTable)
+    @if ($isEmployeeSurface)
+        <div class="pos-glass-card pos-tone-secondary pos-listing-panel">
+            <div class="card-datatable table-responsive pos-listing-table pt-0">
+                <table class="products-datatables table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Image</th>
+                            <th>Category</th>
+                            <th>Sub Category</th>
+                            <th>Product</th>
+                            <th>Type</th>
+                            <th>SKU</th>
+                            <th>Brand</th>
+                            <th>Sale Price</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    @else
+        <div class="card-datatable table-responsive pos-listing-table pt-0">
+            <table class="products-datatables table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Image</th>
+                        <th>Category</th>
+                        <th>Sub Category</th>
+                        <th>Product</th>
+                        <th>Type</th>
+                        <th>SKU</th>
+                        <th>Brand</th>
+                        <th>Sale Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    @endif
+@endif
+
+@if ($renderModal)
+<div class="modal fade pos-listing-modal" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
             <form id="productForm" action="{{ $saveUrl }}" method="POST" novalidate>
@@ -260,3 +294,4 @@
         </div>
     </div>
 </div>
+@endif

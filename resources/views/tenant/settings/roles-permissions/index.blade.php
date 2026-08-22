@@ -48,7 +48,7 @@
             </div>
 
             <div class="table-responsive">
-                <table class="table table-hover" id="rolesTable">
+                <table class="table table-hover align-middle" id="rolesTable">
                     <thead>
                         <tr>
                             <th>Role</th>
@@ -156,7 +156,7 @@
             </div>
 
             <div class="table-responsive">
-                <table class="table table-hover" id="staffTable">
+                <table class="table table-hover align-middle" id="staffTable">
                     <thead>
                         <tr>
                             <th>Name</th>

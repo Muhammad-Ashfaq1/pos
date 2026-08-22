@@ -68,7 +68,7 @@
     };
     const cls = map[invoice.status] || 'bg-label-secondary';
 
-    return '<span class="badge ' + cls + '">' + escapeHtml(invoice.status_label || invoice.status) + '</span>';
+    return '<span class="badge rounded ' + cls + '">' + escapeHtml(invoice.status_label || invoice.status) + '</span>';
   };
 
   const renderRows = function (invoices) {
@@ -86,28 +86,28 @@
     const html = invoices.map(function (invoice) {
       return [
         '<tr data-invoice-row data-show-url="' + escapeHtml(invoice.show_url) + '">',
-        '<td><span class="employee-invoices-id">' + escapeHtml(invoice.order_number) + '</span></td>',
+        '<td><span class="fw-bold text-primary">' + escapeHtml(invoice.order_number) + '</span></td>',
         '<td>' + escapeHtml(invoice.invoice_date_label) + '</td>',
         '<td>' + escapeHtml(invoice.due_date_label) + '</td>',
         '<td>' + escapeHtml(invoice.customer_name) + '</td>',
         '<td>' + escapeHtml(invoice.item_description) + '</td>',
-        '<td>' + escapeHtml(invoice.unit_price_label) + '</td>',
-        '<td>' + escapeHtml(invoice.quantity_label) + '</td>',
-        '<td>' + escapeHtml(invoice.tax_amount_label) + '</td>',
-        '<td>' + escapeHtml(invoice.total_amount_label) + '</td>',
-        '<td>' + escapeHtml(invoice.service_fee_amount_label) + '</td>',
-        '<td>' + escapeHtml(invoice.subtotal_amount_label) + '</td>',
-        '<td>' + escapeHtml(invoice.balance_due_label) + '</td>',
-        '<td>' + statusBadge(invoice) + '</td>',
-        '<td>',
-        '<button type="button" class="employee-invoices-action-btn" data-invoice-email',
+        '<td class="text-end">' + escapeHtml(invoice.unit_price_label) + '</td>',
+        '<td class="text-center">' + escapeHtml(invoice.quantity_label) + '</td>',
+        '<td class="text-end">' + escapeHtml(invoice.tax_amount_label) + '</td>',
+        '<td class="text-end">' + escapeHtml(invoice.total_amount_label) + '</td>',
+        '<td class="text-end">' + escapeHtml(invoice.service_fee_amount_label) + '</td>',
+        '<td class="text-end">' + escapeHtml(invoice.subtotal_amount_label) + '</td>',
+        '<td class="text-end">' + escapeHtml(invoice.balance_due_label) + '</td>',
+        '<td class="text-center">' + statusBadge(invoice) + '</td>',
+        '<td class="text-center">',
+        '<button type="button" class="btn btn-sm btn-icon btn-outline-primary" data-invoice-email',
         ' data-share-url="' + escapeHtml(invoice.share_url) + '"',
         ' data-email="' + escapeHtml(invoice.customer_email || '') + '"',
-        ' title="Send Email"><i class="ti tabler-mail"></i></button>',
+        ' title="Send Email"><i class="icon-base ti tabler-mail icon-md"></i></button>',
         '</td>',
-        '<td>',
-        '<a class="employee-invoices-action-btn" href="' + escapeHtml(invoice.print_url) + '" target="_blank" rel="noopener" title="Print"',
-        ' data-invoice-print><i class="ti tabler-printer"></i></a>',
+        '<td class="text-center">',
+        '<a class="btn btn-sm btn-icon btn-outline-secondary" href="' + escapeHtml(invoice.print_url) + '" target="_blank" rel="noopener" title="Print"',
+        ' data-invoice-print><i class="icon-base ti tabler-printer icon-md"></i></a>',
         '</td>',
         '</tr>'
       ].join('');
