@@ -46,8 +46,8 @@
     </ul>
 
     {{-- Filter toolbar: search · date range · filters · reset --}}
-    <div class="{{ $isEmployee ? '' : 'pos-glass-card pos-tone-secondary pos-settings-panel mb-3' }}">
-        <div class="{{ $isEmployee ? '' : 'card-body py-3' }}">
+    <div class="{{ $isEmployee ? '' : 'pos-glass-card pos-tone-secondary mb-3 overflow-hidden' }}">
+        <div class="{{ $isEmployee ? '' : 'card-body p-3 p-md-4' }}">
             <div class="d-flex flex-wrap align-items-center gap-2{{ $isEmployee ? ' mb-3' : '' }}">
                 <div class="input-group" style="width: 200px;">
                     <span class="input-group-text"><i class="ti tabler-search"></i></span>
@@ -99,7 +99,7 @@
                     </div>
                 @endforeach
 
-                <div class="d-flex flex-wrap gap-2 ms-lg-auto">
+                <div class="d-flex flex-wrap gap-2 ms-auto">
                     <button type="button" id="report-reset" class="btn btn-label-secondary">
                         <i class="ti tabler-refresh me-1"></i> Reset Filters
                     </button>
