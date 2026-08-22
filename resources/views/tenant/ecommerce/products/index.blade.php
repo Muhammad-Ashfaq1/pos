@@ -8,14 +8,12 @@
 
 @push('styles')
     @if ($isEmployeeSurface)
-        <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}" />
         <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}" />
         <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css') }}" />
         <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css') }}" />
         <link rel="stylesheet" href="{{ asset('assets/vendor/libs/dropzone/dropzone.css') }}" />
-    @else
-        @include('partials.pos-listing-assets')
     @endif
+    @include('partials.pos-listing-assets')
 @endpush
 
 @section('content')
@@ -34,11 +32,13 @@
                 </x-slot:actions>
             </x-employee.page-header>
 
-            @include('tenant.ecommerce.products.partials.table-and-modal', [
-                'productTypes' => $productTypes,
-                'saveUrl' => $saveUrl,
-                'isEmployeeSurface' => true,
-            ])
+            <div class="pos-listing">
+                @include('tenant.ecommerce.products.partials.table-and-modal', [
+                    'productTypes' => $productTypes,
+                    'saveUrl' => $saveUrl,
+                    'isEmployeeSurface' => true,
+                ])
+            </div>
         </div>
     @else
         <div class="pos-listing">

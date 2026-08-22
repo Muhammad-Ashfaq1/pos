@@ -6,10 +6,10 @@
 
 @if ($renderTable)
     @if ($isEmployeeSurface)
-        <div class="pos-glass-card pos-tone-primary">
-            <div class="card-datatable table-responsive pt-0">
-                <table class="products-datatables table">
-                    <thead class="bg-label-primary">
+        <div class="pos-glass-card pos-tone-secondary pos-listing-panel">
+            <div class="card-datatable table-responsive pos-listing-table pt-0">
+                <table class="products-datatables table table-hover align-middle">
+                    <thead>
                         <tr>
                             <th>#</th>
                             <th>Image</th>
@@ -57,7 +57,7 @@
 @endif
 
 @if ($renderModal)
-<div class="modal fade{{ $isEmployeeSurface ? '' : ' pos-listing-modal' }}" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade pos-listing-modal" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
             <form id="productForm" action="{{ $saveUrl }}" method="POST" novalidate>
