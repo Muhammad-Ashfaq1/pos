@@ -488,48 +488,36 @@
 
   const bindDeleteActions = function () {
     $(document).on('click', '.delete-discount-btn', function () {
-      const url = $(this).data('url');
-      const name = $(this).data('name') || 'this discount';
+      const $button = $(this);
+      const deleteUrl = $button.data('url');
+      const name = $button.data('name');
 
-      Swal.fire({
-        title: 'Delete Discount?',
-        text: 'This action will permanently remove ' + name + '.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, delete it',
-        cancelButtonText: 'Cancel',
-        customClass: {
-          confirmButton: 'btn btn-danger me-2',
-          cancelButton: 'btn btn-label-secondary'
-        },
-        buttonsStyling: false
-      }).then(function (result) {
-        if (!result.isConfirmed) {
-          return;
-        }
+      if (!window.PosConfirm || typeof window.PosConfirm.open !== 'function') {
+        return;
+      }
 
-        if (window.appLoading && typeof window.appLoading.show === 'function') {
-          window.appLoading.show('Deleting discount...');
-        }
-
-        $.ajax({
-          url: url,
-          method: 'DELETE'
-        })
-          .done(function (response) {
-            showAlert('success', response.message || 'Discount deleted successfully.');
-            if (discountTable) {
-              discountTable.ajax.reload(null, false);
+      window.PosConfirm.open({
+        title: 'Delete discount?',
+        message: 'This will remove "' + name + '" from the tenant catalog.',
+        confirmText: 'Yes, delete it',
+        cancelText: 'Cancel',
+        tone: 'danger',
+        onConfirm: function () {
+          return $.ajax({
+            url: deleteUrl,
+            method: 'DELETE'
+          }).then(
+            function (response) {
+              if (discountTable) {
+                discountTable.ajax.reload(null, false);
+              }
+              showAlert('success', response.message || 'Discount deleted successfully.');
+            },
+            function (xhr) {
+              throw new Error((xhr.responseJSON && xhr.responseJSON.message) || 'Unable to delete discount.');
             }
-          })
-          .fail(function (xhr) {
-            showAlert('error', xhr.responseJSON?.message || 'Unable to delete discount.');
-          })
-          .always(function () {
-            if (window.appLoading && typeof window.appLoading.hide === 'function') {
-              window.appLoading.hide(200);
-            }
-          });
+          );
+        }
       });
     });
   };
