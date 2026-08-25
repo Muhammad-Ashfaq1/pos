@@ -214,13 +214,8 @@
     loadInvoices();
   }, 350));
 
-  $page.on('click', '[data-invoice-apply-filters]', function () {
+  $page.on('change', '[data-invoice-filter-control]', function () {
     readFiltersFromForm();
-    const offcanvasEl = document.getElementById('employeeInvoiceFilters');
-    if (offcanvasEl && window.bootstrap) {
-      const instance = window.bootstrap.Offcanvas.getInstance(offcanvasEl);
-      if (instance) instance.hide();
-    }
     loadInvoices();
   });
 

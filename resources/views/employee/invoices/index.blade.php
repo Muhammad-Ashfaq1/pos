@@ -35,16 +35,7 @@
                 </div>
                 <div class="pos-listing-toolbar-tools">
                     <div class="pos-listing-toolbar-actions" id="employeeInvoiceTableActions">
-                        <button
-                            type="button"
-                            class="btn btn-label-secondary btn-icon"
-                            data-bs-toggle="offcanvas"
-                            data-bs-target="#employeeInvoiceFilters"
-                            aria-controls="employeeInvoiceFilters"
-                            title="Filters"
-                        >
-                            <i class="ti tabler-filter"></i>
-                        </button>
+                        @include('employee.invoices.partials.filters')
                         <button
                             type="button"
                             class="btn btn-label-secondary btn-icon"
@@ -103,8 +94,6 @@
                 <button type="button" class="btn btn-outline-secondary btn-sm" data-invoice-next disabled>Next</button>
             </div>
         </div>
-
-        @include('employee.invoices.partials.filters')
 
         <div class="modal fade pos-listing-modal" id="invoiceShareModal" tabindex="-1" aria-labelledby="invoiceShareModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">

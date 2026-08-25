@@ -245,19 +245,6 @@
     z-index: 1;
 }
 
-/* Glass Drawer Offcanvas */
-.employee-invoice-filters-drawer {
-    width: min(22rem, 100vw);
-    background: rgba(255, 255, 255, 0.85) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    backdrop-filter: blur(20px) saturate(160%);
-    border-left: 1px solid rgba(99, 102, 241, 0.2) !important;
-}
-
-.employee-invoice-filters-drawer .offcanvas-body {
-    min-height: 100%;
-}
-
 /* Glass Share Modal */
 #invoiceShareModal .modal-content {
     border-radius: 0.75rem;
@@ -361,15 +348,9 @@
     color: #e2e8f0;
 }
 
-[data-bs-theme="dark"] .employee-invoice-filters-drawer {
-    background: rgba(37, 41, 60, 0.88) !important;
-    border-left-color: rgba(255, 255, 255, 0.12) !important;
-}
-
 [data-bs-theme="dark"] #invoiceShareModal .modal-content {
     background: rgba(37, 41, 60, 0.92) !important;
     border-color: rgba(255, 255, 255, 0.12) !important;
 }
-
 
 
