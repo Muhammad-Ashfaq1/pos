@@ -10,7 +10,6 @@
   const $name = $('#name');
   const $slug = $('#slug');
   let serviceCategoryTable = null;
-  let slugLocked = false;
 
   $.ajaxSetup({
     headers: {
@@ -26,18 +25,8 @@
     }
   };
 
-  const slugify = function (value) {
-    return (window.appSlugify || window.Helpers && window.Helpers.slugify || function (raw) {
-      return String(raw || '');
-    })(value);
-  };
-
   const syncSlugFromName = function () {
-    if (slugLocked) {
-      return;
-    }
-
-    $slug.val(slugify($name.val()));
+    $slug.val(window.appSlugify($name.val()));
   };
 
   const alignServiceCategoryActionsWithSearch = function (table) {
@@ -74,7 +63,6 @@
     $('#sort_order').val(0);
     $('#is_active').prop('checked', true);
     $slug.val('');
-    slugLocked = false;
     $('#serviceCategoryModalLabel').text('Add Service Category');
     setSubmitButtonState(false);
     resetValidationState();
@@ -83,8 +71,7 @@
   const fillForm = function ($button) {
     $('#service_category_id').val($button.data('id'));
     $name.val($button.data('name'));
-    $slug.val($button.data('slug') || slugify($button.data('name')));
-    slugLocked = true;
+    $slug.val($button.data('slug') || window.appSlugify($button.data('name')));
     $('#description').val($button.data('description'));
     $('#sort_order').val($button.data('sort-order'));
     $('#is_active').prop('checked', String($button.data('is-active')) === '1');
@@ -313,11 +300,7 @@
 
   const bindSlugGeneration = function () {
     $name.on('input', function () {
-      if ($('#service_category_id').val()) {
-        return;
-      }
-
-      slugLocked = false;
+      // Keep the read-only slug in sync for both new and existing categories.
       syncSlugFromName();
     });
   };
@@ -355,7 +338,7 @@
       event.preventDefault();
       resetValidationState();
 
-      if (!slugLocked || !$slug.val()) {
+      if (!$slug.val()) {
         syncSlugFromName();
       }
 
