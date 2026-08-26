@@ -10,6 +10,7 @@
                             type="button"
                             class="btn btn-label-secondary btn-icon"
                             data-bs-toggle="dropdown"
+                            data-bs-auto-close="outside"
                             aria-expanded="false"
                             title="Filters"
                         >
