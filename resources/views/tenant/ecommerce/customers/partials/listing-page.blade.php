@@ -46,8 +46,6 @@
                                 >
                                     <option value="latest">Latest</option>
                                     <option value="name">Name A-Z</option>
-                                    <option value="visits_high_low">Visits High-Low</option>
-                                    <option value="value_high_low">Lifetime Value High-Low</option>
                                 </select>
                             </div>
                         </div>
@@ -80,8 +78,6 @@
                         @if($vehicleRequired)
                             <th>Vehicles</th>
                         @endif
-                        <th>Visits</th>
-                        <th>Lifetime Value</th>
                         <th>Last Visit</th>
                         <th class="text-center">Actions</th>
                     </tr>

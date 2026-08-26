@@ -12,7 +12,7 @@
                 </div>
 
                 <div class="modal-body">
-                    <div class="row mb-5 p-0">
+                    <div class="row g-3 mb-4 p-0">
                         <div class="col">
                             <label for="customer_type" class="form-label">Customer Type <span
                                     class="text-danger">*</span></label>
@@ -55,7 +55,7 @@
                         </div>
                     </div>
 
-                    <div class="row mb-5">
+                    <div class="row g-3 mb-4">
                         <div class="col-md-4">
                             <label for="customer_email" class="form-label">Email</label>
                             <input type="email" class="form-control" id="customer_email" name="email"
@@ -76,38 +76,26 @@
                         </div>
                     </div>
 
-                    <div class="col-md-12 mb-5">
+                    <div class="col-md-12 mb-4">
                         <label for="customer_address" class="form-label">Address</label>
                         <textarea class="form-control" id="customer_address" name="address" rows="3" maxlength="1000"></textarea>
                         <div class="invalid-feedback"></div>
                     </div>
 
-                    <div class="col-md-12 mb-5">
+                    <div class="col-md-12 mb-4">
                         <label for="customer_notes" class="form-label">Notes</label>
                         <textarea class="form-control" id="customer_notes" name="notes" rows="3" maxlength="2000"></textarea>
                         <div class="invalid-feedback"></div>
                     </div>
 
-                    <div class="row mb-5">
-                        <div class="col-md-3">
-                            <label for="customer_total_visits" class="form-label">Total Visits</label>
-                            <input type="number" min="0" class="form-control" id="customer_total_visits"
-                                name="total_visits" value="0">
-                            <div class="invalid-feedback"></div>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="customer_lifetime_value" class="form-label">Lifetime Value</label>
-                            <input type="number" step="0.01" class="form-control" id="customer_lifetime_value"
-                                name="lifetime_value" value="0.00">
-                            <div class="invalid-feedback"></div>
-                        </div>
-                        <div class="col-md-3">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
                             <label for="customer_loyalty_points_balance" class="form-label">Loyalty Points</label>
                             <input type="number" min="0" class="form-control"
                                 id="customer_loyalty_points_balance" name="loyalty_points_balance" value="0">
                             <div class="invalid-feedback"></div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-6">
                             <label for="customer_credit_balance" class="form-label">Credit Balance</label>
                             <input type="number" step="0.01" class="form-control" id="customer_credit_balance"
                                 name="credit_balance" value="0.00">

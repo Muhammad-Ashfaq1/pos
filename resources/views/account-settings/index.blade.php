@@ -8,9 +8,7 @@
 @endphp
 
 @push('styles')
-    @if ($isEmployeeAccountSettings)
-        <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}">
-    @endif
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/account-settings.css') }}?v={{ filemtime(public_path('assets/css/account-settings.css')) }}">
     @if ($isEmployeeAccountSettings)
         <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}">
@@ -27,29 +25,40 @@
             />
     @endif
 
+<<<<<<< Updated upstream
     <div class="account-settings-card{{ $isEmployeeAccountSettings ? ' pos-glass-card pos-tone-primary' : ' pos-glass-card pos-tone-secondary pos-settings-panel' }}" id="account-settings"
          data-profile-url="{{ route('account.profile') }}"
          data-password-url="{{ route('account.password') }}"
          data-active="{{ $accountSettingsActive ?? 'profile' }}">
         @include('account-settings.partials.nav')
+=======
+    <div class="account-settings-shell">
+        <div class="account-settings-card pos-glass-card pos-tone-secondary"
+             id="account-settings"
+             data-profile-url="{{ route('account.profile') }}"
+             data-password-url="{{ route('account.password') }}"
+             data-active="{{ $accountSettingsActive ?? 'profile' }}">
+            @include('account-settings.partials.nav')
+>>>>>>> Stashed changes
 
-        <div class="account-settings-panel"
-             data-panel="profile"
-             @if (($accountSettingsActive ?? 'profile') !== 'profile') hidden @endif>
-            @include('account-settings.partials.profile-form')
-            @if (auth()->user() instanceof \App\Models\User)
-                @include('partials._theme-picker')
-            @endif
+            <div class="account-settings-panel"
+                 data-panel="profile"
+                 @if (($accountSettingsActive ?? 'profile') !== 'profile') hidden @endif>
+                @include('account-settings.partials.profile-form')
+                @if (auth()->user() instanceof \App\Models\User)
+                    @include('partials._theme-picker')
+                @endif
 
-            @if (auth()->user()?->isEmployee())
-                @include('account-settings.partials.workspace-form')
-            @endif
-        </div>
+                @if (auth()->user()?->isEmployee())
+                    @include('account-settings.partials.workspace-form')
+                @endif
+            </div>
 
-        <div class="account-settings-panel"
-             data-panel="password"
-             @if (($accountSettingsActive ?? '') !== 'password') hidden @endif>
-            @include('account-settings.partials.password-form')
+            <div class="account-settings-panel"
+                 data-panel="password"
+                 @if (($accountSettingsActive ?? '') !== 'password') hidden @endif>
+                @include('account-settings.partials.password-form')
+            </div>
         </div>
     </div>
 
@@ -153,33 +162,7 @@
             if (firstInvalid) firstInvalid.focus();
         }
 
-        // Password visibility toggles
-        root.querySelectorAll('.form-password-toggle').forEach((container) => {
-            const toggleBtn = container.querySelector('.input-group-text');
-            const input = container.querySelector('input');
-            const icon = container.querySelector('i');
-            if (!input || !toggleBtn || !icon) return;
-
-            const toggleVisibility = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    icon.classList.remove('tabler-eye-off');
-                    icon.classList.add('tabler-eye');
-                } else {
-                    input.type = 'password';
-                    icon.classList.remove('tabler-eye');
-                    icon.classList.add('tabler-eye-off');
-                }
-            };
-
-            toggleBtn.addEventListener('click', toggleVisibility);
-            icon.addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleVisibility(e);
-            }, true);
-        });
+        // Password visibility: Helpers.initPasswordToggle() (main.js) owns .form-password-toggle
 
         // Profile form validation
         const profileForm = document.getElementById('account-profile-form');

@@ -127,8 +127,6 @@ class CustomersRepository implements CustomerRepositoryInterface
             'address' => $this->normalizeNullableString($data['address'] ?? null),
             'notes' => $this->normalizeNullableString($data['notes'] ?? null),
             'date_of_birth' => $data['date_of_birth'] ?? null,
-            'total_visits' => (int) ($data['total_visits'] ?? 0),
-            'lifetime_value' => $this->normalizeMoney($data['lifetime_value'] ?? 0),
             'loyalty_points_balance' => (int) ($data['loyalty_points_balance'] ?? 0),
             'credit_balance' => $this->normalizeMoney($data['credit_balance'] ?? 0),
             'last_visit_at' => $data['last_visit_at'] ?? null,

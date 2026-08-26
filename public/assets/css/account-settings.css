@@ -1,76 +1,79 @@
 /* ==========================================================================
-   Account Settings — Profile & Password Card UI
+   Account Settings — Profile & Password (glass UI, matches Categories/Dashboard)
    ========================================================================== */
 
 :root {
-    --as-card-bg: #ffffff;
-    --as-card-border: #e5e7eb;
-    --as-card-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-    --as-tab-border: #e5e7eb;
-    --as-tab-color: #6b7280;
-    --as-tab-active-color: #2563eb;
-    --as-avatar-bg: #eef2ff;
-    --as-avatar-initial: #2563eb;
-    --as-title-color: #1f2937;
-    --as-subtitle-color: #9ca3af;
-    --as-label-color: #374151;
-    --as-control-bg: #ffffff;
-    --as-control-border: #e5e7eb;
-    --as-control-color: #111827;
-    --as-control-placeholder: #9ca3af;
-    --as-control-focus-border: #2563eb;
-    --as-control-focus-ring: rgba(37, 99, 235, 0.12);
-    --as-control-disabled-bg: #f9fafb;
-    --as-control-disabled-color: #6b7280;
-    --as-btn-bg: #2563eb;
-    --as-btn-hover-bg: #1d4ed8;
+    --as-accent: #7367f0;
+    --as-accent-rgb: 115, 103, 240;
+    --as-tab-color: #6f6b7d;
+    --as-tab-active-color: var(--as-accent);
+    --as-avatar-bg: rgba(var(--as-accent-rgb), 0.12);
+    --as-avatar-initial: var(--as-accent);
+    --as-title-color: var(--bs-heading-color, #444050);
+    --as-subtitle-color: #6f6b7d;
+    --as-label-color: var(--bs-heading-color, #444050);
+    --as-control-bg: rgba(255, 255, 255, 0.78);
+    --as-control-border: rgba(var(--as-accent-rgb), 0.18);
+    --as-control-color: var(--bs-body-color, #6f6b7d);
+    --as-control-placeholder: #a8aaae;
+    --as-control-focus-border: rgba(var(--as-accent-rgb), 0.55);
+    --as-control-focus-ring: rgba(var(--as-accent-rgb), 0.12);
+    --as-control-disabled-bg: rgba(168, 170, 174, 0.12);
+    --as-control-disabled-color: #a8aaae;
+    --as-btn-bg: var(--as-accent);
+    --as-btn-hover-bg: #675dd8;
+    --as-section-border: rgba(var(--as-accent-rgb), 0.12);
 }
 
 [data-bs-theme="dark"] {
-    --as-card-bg: #2f3349;
-    --as-card-border: #434968;
-    --as-card-shadow: 0 8px 24px rgba(15, 20, 34, 0.35);
-    --as-tab-border: #434968;
-    --as-tab-color: #a1acb8;
+    --as-tab-color: #b0acc7;
     --as-tab-active-color: #7367f0;
-    --as-avatar-bg: #25293c;
-    --as-avatar-initial: #7367f0;
-    --as-title-color: #cfd3ec;
-    --as-subtitle-color: #7983a5;
-    --as-label-color: #b6bee3;
-    --as-control-bg: #25293c;
-    --as-control-border: #434968;
-    --as-control-color: #cfd3ec;
-    --as-control-placeholder: #7983a5;
-    --as-control-focus-border: #7367f0;
-    --as-control-focus-ring: rgba(115, 103, 240, 0.2);
-    --as-control-disabled-bg: #2f3349;
+    --as-avatar-bg: rgba(var(--as-accent-rgb), 0.18);
+    --as-avatar-initial: #cfc8e3;
+    --as-title-color: #e7e3fc;
+    --as-subtitle-color: #b0acc7;
+    --as-label-color: #cfc8e3;
+    --as-control-bg: rgba(255, 255, 255, 0.06);
+    --as-control-border: rgba(255, 255, 255, 0.14);
+    --as-control-color: #e7e3fc;
+    --as-control-placeholder: #b0acc7;
+    --as-control-focus-border: rgba(var(--as-accent-rgb), 0.55);
+    --as-control-focus-ring: rgba(var(--as-accent-rgb), 0.2);
+    --as-control-disabled-bg: rgba(255, 255, 255, 0.04);
     --as-control-disabled-color: #7983a5;
     --as-btn-bg: #7367f0;
     --as-btn-hover-bg: #675dd8;
+    --as-section-border: rgba(255, 255, 255, 0.1);
 }
 
-.account-settings-card {
-    background: var(--as-card-bg);
-    border: 1px solid var(--as-card-border);
-    border-radius: 16px;
-    box-shadow: var(--as-card-shadow);
+.account-settings-shell {
+    width: 100%;
+}
+
+.account-settings-card.pos-glass-card {
+    position: relative;
+    z-index: 1;
     padding: 1.75rem 2rem 2rem;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+    overflow: visible;
+}
+
+.account-settings-card.pos-glass-card > * {
+    position: relative;
+    z-index: 1;
 }
 
 .account-settings-tabs {
     display: flex;
-    gap: 1.75rem;
+    gap: 1.5rem;
     list-style: none;
     padding: 0;
-    margin: 0 0 1.75rem;
-    border-bottom: 1px solid var(--as-tab-border);
+    margin: 0 0 1.5rem;
+    border-bottom: 1px solid var(--as-section-border);
 }
 
 .account-settings-tabs a {
     display: inline-block;
-    padding: 0 0 0.9rem;
+    padding: 0 0 0.85rem;
     color: var(--as-tab-color);
     font-size: 0.95rem;
     font-weight: 500;
@@ -98,7 +101,7 @@
     display: flex;
     align-items: center;
     gap: 1.5rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.75rem;
 }
 
 .account-settings-avatar {
@@ -112,8 +115,15 @@
     overflow: hidden;
     cursor: pointer;
     margin: 0;
-    border: 1px solid var(--as-card-border);
+    border: 1px solid rgba(var(--as-accent-rgb), 0.22);
+    box-shadow: 0 8px 20px -12px rgba(var(--as-accent-rgb), 0.45);
     flex-shrink: 0;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.account-settings-avatar:hover {
+    border-color: rgba(var(--as-accent-rgb), 0.45);
+    box-shadow: 0 10px 24px -10px rgba(var(--as-accent-rgb), 0.55);
 }
 
 .account-settings-avatar img {
@@ -153,20 +163,20 @@
 }
 
 .account-settings-form .form-label {
-    font-weight: 500;
+    font-weight: 600;
     color: var(--as-label-color);
     margin-bottom: 0.4rem;
     font-size: 0.9rem;
 }
 
 .account-settings-form .required-mark {
-    color: #ef4444;
+    color: #ea5455;
 }
 
 .account-settings-form .form-control {
     background-color: var(--as-control-bg);
     border: 1px solid var(--as-control-border);
-    border-radius: 8px;
+    border-radius: 0.5rem;
     min-height: 44px;
     box-shadow: none !important;
     color: var(--as-control-color);
@@ -190,7 +200,7 @@
 /* Password fields (input-group-merge) */
 .account-settings-form .input-group {
     border: 1px solid var(--as-control-border);
-    border-radius: 8px;
+    border-radius: 0.5rem;
     overflow: hidden;
     background-color: var(--as-control-bg);
     min-height: 44px;
@@ -222,11 +232,19 @@
     cursor: pointer;
 }
 
+/* Hide browser native password-reveal (Edge/Chrome) — we use Tabler eye only */
+.account-settings-form input[type="password"]::-ms-reveal,
+.account-settings-form input[type="password"]::-ms-clear,
+.account-settings-form input[type="text"]::-ms-reveal,
+.account-settings-form input[type="text"]::-ms-clear {
+    display: none;
+}
+
 /* Invalid state */
 .account-settings-form .input-group.is-invalid,
 .account-settings-form .input-group:has(.form-control.is-invalid) {
-    border-color: #ef4444;
-    box-shadow: 0 0 0 0.15rem rgba(239, 68, 68, 0.12);
+    border-color: #ea5455;
+    box-shadow: 0 0 0 0.15rem rgba(234, 84, 85, 0.12);
 }
 
 .account-settings-form .input-group.is-invalid .form-control,
@@ -240,14 +258,14 @@
 }
 
 .account-settings-form .form-control.is-invalid:not(.input-group .form-control) {
-    border-color: #ef4444;
+    border-color: #ea5455;
 }
 
 .account-settings-form .account-field-error {
     display: none;
     margin-top: 0.35rem;
     font-size: 0.8125rem;
-    color: #ef4444;
+    color: #ea5455;
 }
 
 .account-settings-form .account-field-error.is-visible {
@@ -274,12 +292,12 @@
     background-color: var(--as-btn-bg) !important;
     border-color: var(--as-btn-bg) !important;
     color: #fff !important;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     font-weight: 600;
     padding: 0.6rem 1.35rem;
     min-height: 42px;
-    box-shadow: none;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
+    box-shadow: 0 6px 16px -8px rgba(var(--as-accent-rgb), 0.55);
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .account-settings-actions .btn-primary:hover,
@@ -287,10 +305,38 @@
     background-color: var(--as-btn-hover-bg) !important;
     border-color: var(--as-btn-hover-bg) !important;
     color: #fff !important;
+    box-shadow: 0 8px 20px -8px rgba(var(--as-accent-rgb), 0.65);
+}
+
+/* Nested Appearance / Navigation sections inside the glass card */
+.account-settings-card [data-pos-theme-picker].card,
+.account-settings-card [data-nav-mode-picker].card {
+    margin-top: 1.5rem;
+    border: 1px solid var(--as-section-border);
+    border-radius: 0.85rem;
+    background: rgba(255, 255, 255, 0.45);
+    box-shadow: none;
+}
+
+[data-bs-theme="dark"] .account-settings-card [data-pos-theme-picker].card,
+[data-bs-theme="dark"] .account-settings-card [data-nav-mode-picker].card {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.account-settings-card [data-pos-theme-picker] .card-body,
+.account-settings-card [data-nav-mode-picker] .card-body {
+    padding: 1.15rem 1.25rem;
+}
+
+.account-settings-card [data-pos-theme-picker] h5,
+.account-settings-card [data-nav-mode-picker] h5 {
+    color: var(--as-title-color);
+    font-weight: 700;
 }
 
 @media (max-width: 767.98px) {
-    .account-settings-card {
+    .account-settings-card.pos-glass-card {
         padding: 1.25rem;
     }
 

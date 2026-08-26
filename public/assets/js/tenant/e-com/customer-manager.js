@@ -154,8 +154,6 @@
     this.$form.find('#customer_id').val('');
     this.$form.find('#customer_type').val('registered').trigger('change');
     this.$form.find('#customer_discount_group').val('').trigger('change');
-    this.$form.find('#customer_total_visits').val(0);
-    this.$form.find('#customer_lifetime_value').val('0.00');
     this.$form.find('#customer_loyalty_points_balance').val(0);
     this.$form.find('#customer_credit_balance').val('0.00');
     this.$form.find('#customerModalLabel').text('Add Customer');
@@ -191,8 +189,6 @@
     this.$form.find('#customer_last_visit_at').val(customer.last_visit_at_form);
     this.$form.find('#customer_address').val(customer.address);
     this.$form.find('#customer_notes').val(customer.notes);
-    this.$form.find('#customer_total_visits').val(customer.total_visits);
-    this.$form.find('#customer_lifetime_value').val(customer.lifetime_value);
     this.$form.find('#customer_loyalty_points_balance').val(customer.loyalty_points_balance);
     this.$form.find('#customer_credit_balance').val(customer.credit_balance);
     this.$form.find('#customerModalLabel').text('Edit Customer');
@@ -241,8 +237,6 @@
         email: { email: true, maxlength: 150 },
         address: { maxlength: 1000 },
         notes: { maxlength: 2000 },
-        total_visits: { number: true, min: 0 },
-        lifetime_value: { number: true },
         loyalty_points_balance: { number: true, min: 0 },
         credit_balance: { number: true }
       },
