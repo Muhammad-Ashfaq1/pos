@@ -122,9 +122,6 @@ class DiscountsRepository implements DiscountRepositoryInterface
                 ? (int) $data['usage_limit']
                 : null,
             'is_active' => (bool) ($data['is_active'] ?? false),
-            'is_combinable' => (bool) ($data['is_combinable'] ?? false),
-            'requires_reason' => (bool) ($data['requires_reason'] ?? false),
-            'requires_manager_approval' => (bool) ($data['requires_manager_approval'] ?? false),
         ];
     }
 
@@ -200,11 +197,6 @@ class DiscountsRepository implements DiscountRepositoryInterface
             'is_active' => $discount->is_active,
             'status_label' => $discount->is_active ? 'Active' : 'Inactive',
             'status_badge_class' => $discount->is_active ? 'bg-label-success' : 'bg-label-secondary',
-            'is_combinable' => $discount->is_combinable,
-            'combinable_label' => $discount->is_combinable ? 'Combinable' : 'Exclusive',
-            'combinable_badge_class' => $discount->is_combinable ? 'bg-label-info' : 'bg-label-warning',
-            'requires_reason' => $discount->requires_reason,
-            'requires_manager_approval' => $discount->requires_manager_approval,
             'created_at' => $discount->created_at?->format('d M Y'),
             'can_update' => $user?->can('update', $discount) ?? false,
             'can_delete' => $user?->can('delete', $discount) ?? false,

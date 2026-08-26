@@ -103,9 +103,6 @@
     $('#discount_type').val('fixed').trigger('change');
     $('#discount_applies_to').val('bill').trigger('change');
     $('#discount_is_active').prop('checked', true);
-    $('#discount_is_combinable').prop('checked', true);
-    $('#discount_requires_reason').prop('checked', false);
-    $('#discount_requires_manager_approval').prop('checked', false);
     $('#discountModalLabel').text('Add Discount');
     setSubmitButtonState(false);
     resetValidationState();
@@ -125,9 +122,6 @@
     $('#discount_ends_at').val(discount.ends_at);
     $('#discount_usage_limit').val(discount.usage_limit);
     $('#discount_is_active').prop('checked', Boolean(discount.is_active));
-    $('#discount_is_combinable').prop('checked', Boolean(discount.is_combinable));
-    $('#discount_requires_reason').prop('checked', Boolean(discount.requires_reason));
-    $('#discount_requires_manager_approval').prop('checked', Boolean(discount.requires_manager_approval));
     $('#discountModalLabel').text('Edit Discount');
     setSubmitButtonState(false);
     resetValidationState();
@@ -306,21 +300,6 @@
             let html = '<div><span class="fw-semibold">' + escapeHtml(data || '—') + '</span>';
             if (row.max_discount_amount_label) {
               html += '<div class="small text-muted">Cap: ' + escapeHtml(row.max_discount_amount_label) + '</div>';
-            }
-            html += '</div>';
-            return html;
-          }
-        },
-        {
-          data: null,
-          render: function (data, type, row) {
-            let html = '<div class="d-flex flex-column gap-1">';
-            html += '<span class="badge rounded ' + row.combinable_badge_class + '">' + escapeHtml(row.combinable_label) + '</span>';
-            if (row.requires_reason) {
-              html += '<span class="badge rounded bg-label-secondary">Reason Required</span>';
-            }
-            if (row.requires_manager_approval) {
-              html += '<span class="badge rounded bg-label-danger">Manager Approval</span>';
             }
             html += '</div>';
             return html;
