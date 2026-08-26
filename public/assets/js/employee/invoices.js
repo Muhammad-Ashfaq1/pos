@@ -118,18 +118,36 @@
 
   const updatePagination = function (pagination) {
     const $wrap = $page.find('[data-invoice-pagination]');
-    if (!pagination || pagination.last_page <= 1) {
+    if (!pagination || !pagination.total) {
       $wrap.addClass('d-none');
       return;
     }
 
-    state.last_page = pagination.last_page;
+    state.last_page = pagination.last_page || 1;
+    state.page = pagination.current_page || state.page;
+    state.per_page = pagination.per_page || state.per_page;
+
+    const firstItem = pagination.total
+      ? ((pagination.current_page - 1) * pagination.per_page) + 1
+      : 0;
+    const lastItem = Math.min(
+      pagination.current_page * pagination.per_page,
+      pagination.total
+    );
+
     $wrap.removeClass('d-none');
     $page.find('[data-invoice-page-label]').text(
-      'Page ' + pagination.current_page + ' of ' + pagination.last_page + ' (' + pagination.total + ')'
+      'Showing ' + firstItem + ' to ' + lastItem + ' of ' + pagination.total + ' entries'
     );
-    $page.find('[data-invoice-prev]').prop('disabled', pagination.current_page <= 1);
-    $page.find('[data-invoice-next]').prop('disabled', !pagination.has_more);
+    $page.find('[data-invoice-current-page]').text(String(pagination.current_page));
+    $page.find('[data-invoice-per-page]').val(String(pagination.per_page));
+
+    const atFirst = pagination.current_page <= 1;
+    const atLast = !pagination.has_more;
+    $page.find('[data-invoice-prev]').prop('disabled', atFirst);
+    $page.find('[data-invoice-next]').prop('disabled', atLast);
+    $page.find('[data-invoice-prev-item]').toggleClass('disabled', atFirst);
+    $page.find('[data-invoice-next-item]').toggleClass('disabled', atLast);
   };
 
   let listRequest = null;
@@ -224,14 +242,22 @@
   });
 
   $page.on('click', '[data-invoice-prev]', function () {
-    if (state.page <= 1) return;
+    if ($(this).prop('disabled') || state.page <= 1) return;
     state.page -= 1;
     loadInvoices();
   });
 
   $page.on('click', '[data-invoice-next]', function () {
-    if (state.page >= state.last_page) return;
+    if ($(this).prop('disabled') || state.page >= state.last_page) return;
     state.page += 1;
+    loadInvoices();
+  });
+
+  $page.on('change', '[data-invoice-per-page]', function () {
+    const val = parseInt($(this).val(), 10);
+    if (!val || val === state.per_page) return;
+    state.per_page = val;
+    state.page = 1;
     loadInvoices();
   });
 

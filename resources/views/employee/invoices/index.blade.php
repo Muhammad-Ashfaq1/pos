@@ -88,10 +88,37 @@
                 <span class="text-muted">No invoices found.</span>
             </div>
 
-            <div class="employee-invoices-pagination d-none p-3 border-top" data-invoice-pagination>
-                <button type="button" class="btn btn-outline-secondary btn-sm" data-invoice-prev disabled>Previous</button>
-                <span class="mx-3 small text-muted" data-invoice-page-label></span>
-                <button type="button" class="btn btn-outline-secondary btn-sm" data-invoice-next disabled>Next</button>
+            {{-- Not "dt-length": admin layouts.app dashboards-analytics.js adds mb-md-6 to .dt-length --}}
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mx-3 my-2 employee-invoices-pagination d-none" data-invoice-pagination>
+                <div class="d-flex align-items-center gap-2 employee-invoices-pagination-meta">
+                    <div class="employee-invoices-info" data-invoice-page-label>Showing 0 to 0 of 0 entries</div>
+                    <div class="employee-invoices-length">
+                        <select class="form-select" data-invoice-per-page aria-label="Invoices per page">
+                            <option value="10">10</option>
+                            <option value="20" selected>20</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                </div>
+                <nav aria-label="Invoice pagination">
+                    <ul class="pagination mb-0">
+                        <li class="page-item" data-invoice-prev-item>
+                            <button type="button" class="page-link" data-invoice-prev aria-label="Previous page">
+                                <i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>
+                            </button>
+                        </li>
+                        <li class="page-item active" aria-current="page">
+                            <span class="page-link" data-invoice-current-page>1</span>
+                        </li>
+                        <li class="page-item" data-invoice-next-item>
+                            <button type="button" class="page-link" data-invoice-next aria-label="Next page">
+                                <i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
 
