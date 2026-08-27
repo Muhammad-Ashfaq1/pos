@@ -19,6 +19,7 @@
     removedInputName: 'removed_image_ids[]'
   }) : null;
   let productTable = null;
+  let stockRefreshSequence = 0;
 
   const productEditUrl = function (productId) {
     if (!window.productEditUrlTemplate) {
@@ -98,6 +99,7 @@
   const $stockAdjustmentPlus = $('#product_stock_adjustment_plus');
   const $stockAdjustmentMinus = $('#product_stock_adjustment_minus');
   const $stockAdjustmentError = $('#product_stock_adjustment_error');
+  const $stockAdjustmentWarning = $('#product_stock_adjustment_warning');
   const $stockNow = $('#product_stock_now');
   const $stockPreview = $('#product_stock_preview');
 
@@ -151,15 +153,29 @@
   };
 
   const clampStockQuantity = function () {
-    const max = Number($stockAdjustmentQty.attr('max') || 0);
     let qty = Number($stockAdjustmentQty.val() || 0);
     if (!Number.isFinite(qty) || qty < 0) qty = 0;
+    const max = Number($stockAdjustmentQty.attr('max') || 0);
     if (qty > max) qty = max;
     $stockAdjustmentQty.val(qty);
     return qty;
   };
 
-  const refreshCurrentStockFromServer = function () {
+  const updateStockAdjustmentMessage = function () {
+    const mode = $stockAdjustmentMode.val() || 'none';
+    const baseline = getCurrentStockBaseline();
+    const quantity = Number($stockAdjustmentQty.val() || 0);
+    const exceedsLimit = mode === 'subtract' && quantity > baseline;
+    const zeroStock = mode === 'subtract' && (baseline === 0 || quantity === baseline);
+
+    $stockAdjustmentWarning
+      .toggleClass('d-none', exceedsLimit || !zeroStock)
+      .text(baseline === 0
+        ? 'Stock is 0, so this product is not available for orders.'
+        : 'Stock will be 0, so this product will not be available for orders.');
+  };
+
+  const refreshCurrentStockFromServer = function (isCurrent) {
     const productId = $('#product_id').val();
     if (!productId) return $.Deferred().resolve().promise();
 
@@ -170,10 +186,12 @@
 
     return $.ajax({ url: editUrl, method: 'GET' })
       .done(function (response) {
+        if (!isCurrent()) return;
         const fresh = response?.data?.current_stock;
         if (fresh !== undefined) setStockBaseline(fresh);
       })
       .fail(function () {
+        if (!isCurrent()) return;
         $stockAdjustmentError.text('Could not refresh current stock. Please try again.');
       });
   };
@@ -181,20 +199,34 @@
   const onStockModeChange = function () {
     const mode = $stockAdjustmentMode.val() || 'none';
     const enabled = mode === 'add' || mode === 'subtract';
+    const refreshingStock = mode === 'subtract';
+    const refreshSequence = ++stockRefreshSequence;
+    const isCurrent = function () {
+      return refreshSequence === stockRefreshSequence
+        && ($stockAdjustmentMode.val() || 'none') === mode;
+    };
 
-    $stockAdjustmentQty.prop('disabled', !enabled).val(0);
-    $stockAdjustmentPlus.prop('disabled', !enabled);
-    $stockAdjustmentMinus.prop('disabled', !enabled);
+    $stockAdjustmentQty.prop('disabled', !enabled || refreshingStock).val(0);
+    $stockAdjustmentPlus.prop('disabled', !enabled || refreshingStock);
+    $stockAdjustmentMinus.prop('disabled', !enabled || refreshingStock);
     $stockAdjustmentError.text('');
 
     const continueWith = function () {
+      if (!isCurrent()) return;
+
+      const outOfStockForSubtraction = mode === 'subtract' && getCurrentStockBaseline() === 0;
+
+      $stockAdjustmentQty.prop('disabled', !enabled || outOfStockForSubtraction);
+      $stockAdjustmentPlus.prop('disabled', !enabled || outOfStockForSubtraction);
+      $stockAdjustmentMinus.prop('disabled', !enabled || outOfStockForSubtraction);
       setStepperLimits();
       clampStockQuantity();
       recomputeStockPreview();
+      updateStockAdjustmentMessage();
     };
 
     if (mode === 'subtract') {
-      refreshCurrentStockFromServer().always(continueWith);
+      refreshCurrentStockFromServer(isCurrent).always(continueWith);
       return;
     }
 
@@ -211,7 +243,9 @@
     $stockAdjustmentPlus.prop('disabled', true);
     $stockAdjustmentMinus.prop('disabled', true);
     $stockAdjustmentError.text('');
+    $stockAdjustmentWarning.addClass('d-none').text('');
     setStepperLimits();
+    updateStockAdjustmentMessage();
   };
 
   const hideStockAdjustmentWidget = function () {
@@ -222,6 +256,7 @@
     $stockAdjustmentPlus.prop('disabled', true);
     $stockAdjustmentMinus.prop('disabled', true);
     $stockAdjustmentError.text('');
+    $stockAdjustmentWarning.addClass('d-none').text('');
     $('#product_current_stock').removeData('baseline');
   };
 
@@ -631,8 +666,7 @@
         },
         stock_adjustment_quantity: {
           digits: true,
-          min: 0,
-          max: 9999
+          min: 0
         }
       },
       errorElement: 'div',
@@ -653,11 +687,23 @@
           setSelect2ErrorState($element, false);
         }
       },
+      success: function (_, element) {
+        if ($(element).is('#product_stock_adjustment_quantity')) {
+          $stockAdjustmentError.text('');
+          updateStockAdjustmentMessage();
+        }
+      },
       errorPlacement: function (error, element) {
         const $element = $(element);
 
         if ($element.hasClass('select2-hidden-accessible')) {
           $element.closest('.position-relative').find('.invalid-feedback').first().text(error.text());
+          return;
+        }
+
+        if ($element.is('#product_stock_adjustment_quantity')) {
+          $('#product_stock_adjustment_error').text(error.text());
+          $stockAdjustmentWarning.addClass('d-none');
           return;
         }
 
@@ -864,6 +910,7 @@
     $stockAdjustmentQty.on('input change', function () {
       clampStockQuantity();
       recomputeStockPreview();
+      updateStockAdjustmentMessage();
     });
 
     $stockAdjustmentPlus.on('click', function () {
@@ -872,6 +919,7 @@
       const qty = Math.min(max, Number($stockAdjustmentQty.val() || 0) + 1);
       $stockAdjustmentQty.val(qty);
       recomputeStockPreview();
+      updateStockAdjustmentMessage();
     });
 
     $stockAdjustmentMinus.on('click', function () {
@@ -879,6 +927,7 @@
       const qty = Math.max(0, Number($stockAdjustmentQty.val() || 0) - 1);
       $stockAdjustmentQty.val(qty);
       recomputeStockPreview();
+      updateStockAdjustmentMessage();
     });
   };
 

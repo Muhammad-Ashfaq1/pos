@@ -25,13 +25,6 @@
             />
     @endif
 
-<<<<<<< Updated upstream
-    <div class="account-settings-card{{ $isEmployeeAccountSettings ? ' pos-glass-card pos-tone-primary' : ' pos-glass-card pos-tone-secondary pos-settings-panel' }}" id="account-settings"
-         data-profile-url="{{ route('account.profile') }}"
-         data-password-url="{{ route('account.password') }}"
-         data-active="{{ $accountSettingsActive ?? 'profile' }}">
-        @include('account-settings.partials.nav')
-=======
     <div class="account-settings-shell">
         <div class="account-settings-card pos-glass-card pos-tone-secondary"
              id="account-settings"
@@ -39,7 +32,6 @@
              data-password-url="{{ route('account.password') }}"
              data-active="{{ $accountSettingsActive ?? 'profile' }}">
             @include('account-settings.partials.nav')
->>>>>>> Stashed changes
 
             <div class="account-settings-panel"
                  data-panel="profile"

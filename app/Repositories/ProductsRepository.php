@@ -375,7 +375,8 @@ class ProductsRepository implements ProductRepositoryInterface
             return $this->normalizeStock($fallback);
         }
 
-        $delta = max(0, min(9999, (int) round((float) $quantity)));
+        $maximum = $mode === 'subtract' ? $currentStock : 9999;
+        $delta = max(0, min($maximum, (int) round((float) $quantity)));
 
         $next = $mode === 'add'
             ? $currentStock + $delta
