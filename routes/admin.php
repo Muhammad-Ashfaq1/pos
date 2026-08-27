@@ -11,6 +11,8 @@ Route::middleware(['web', 'auth', 'verified', 'active.user', 'central.user', 'su
     ->group(function () {
         Route::get('/dashboard', DashboardController::class)->name('dashboard');
         Route::get('/shops', [TenantController::class, 'index'])->name('shops.index');
+        Route::get('/shops/{tenant}/edit', [TenantController::class, 'edit'])->name('shops.edit');
+        Route::post('/shops/save', [TenantController::class, 'save'])->name('shops.save');
 
         Route::post('/shops/{tenant}/status/{action}', [TenantController::class, 'changeStatus'])->name('shops.status.change');
 

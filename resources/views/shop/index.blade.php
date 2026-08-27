@@ -105,14 +105,17 @@
 
     <div class="col-12">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
                     <h5 class="card-title mb-1">Shop Directory</h5>
                     <p class="text-muted mb-0">Central admin view across all registered tenants</p>
                 </div>
-                <div class="d-flex flex-wrap gap-2">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
                     <span class="badge bg-label-warning">Pending {{ $pendingCount }}</span>
                     <span class="badge bg-label-success">Approved {{ $approvedCount }}</span>
+                    <button type="button" class="btn btn-primary btn-sm ms-1 me-1" id="addShopBtn" data-bs-toggle="modal" data-bs-target="#shopSaveModal">
+                        <i class="icon-base ti tabler-plus me-1"></i>Add Shop
+                    </button>
                     @if ($suspendedCount > 0)
                         <span class="badge bg-label-secondary">Suspended {{ $suspendedCount }}</span>
                     @endif
@@ -145,43 +148,111 @@
     </div>
 </div>
 
-<div class="modal fade" id="shopActionModal" tabindex="-1" aria-labelledby="shopActionModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+{{-- Add / Edit Shop Modal --}}
+<div class="modal fade" id="shopSaveModal" tabindex="-1" aria-labelledby="shopModalTitle" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <div>
-                    <h5 class="modal-title" id="shopActionModalLabel">Edit Shop</h5>
-                    <p class="text-muted mb-0 small">Review shop details and choose the next action.</p>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="rounded bg-label-primary p-3 mb-3">
-                    <div class="fw-semibold fs-5" id="modalShopName">-</div>
-                    <div class="text-muted small" id="modalShopOwner">-</div>
+            <form id="shopSaveForm" action="{{ route('admin.shops.save') }}" method="POST" novalidate>
+                @csrf
+                <input type="hidden" name="id" id="shop_id">
+
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="shopModalTitle">Add New Shop</h5>
+                        <p class="text-muted mb-0 small" id="shopModalSubtitle">Fill in the mandatory and optional details for this shop.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="border rounded p-3 h-100">
-                            <div class="text-muted text-uppercase small fw-semibold mb-1">Owner Email</div>
-                            <div id="modalShopEmail">-</div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        {{-- Mandatory Fields --}}
+                        <div class="col-md-6">
+                            <label for="shop_owner_name" class="form-label">Owner Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="shop_owner_name" name="owner_name" required maxlength="150">
+                            <div class="invalid-feedback"></div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="border rounded p-3 h-100">
-                            <div class="text-muted text-uppercase small fw-semibold mb-1">Current Status</div>
-                            <div id="modalShopStatus"></div>
+
+                        <div class="col-md-6">
+                            <label for="shop_owner_email" class="form-label">Owner Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="shop_owner_email" name="owner_email" required maxlength="150">
+                            <div class="invalid-feedback"></div>
                         </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="border rounded p-3">
-                            <div class="text-muted text-uppercase small fw-semibold mb-1">Available Actions</div>
-                            <div class="d-flex flex-wrap gap-2" id="modalActionButtons"></div>
+
+                        <div class="col-md-6">
+                            <label for="shop_password" class="form-label">Password <span class="text-danger" id="shop_password_star">*</span></label>
+                            <input type="password" class="form-control" id="shop_password" name="password" minlength="8">
+                            <small class="form-text text-muted d-none" id="shopPasswordHelp">Leave blank to keep existing password.</small>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="shop_name_input" class="form-label">Shop Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="shop_name_input" name="shop_name" required maxlength="150">
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="shop_status_select" class="form-label">Shop Status <span class="text-danger">*</span></label>
+                            <select class="form-select" id="shop_status_select" name="status" required>
+                                @foreach(\App\Enums\TenantStatus::cases() as $tenantStatus)
+                                    <option value="{{ $tenantStatus->value }}">{{ $tenantStatus->label() }}</option>
+                                @endforeach
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="shop_website_url" class="form-label">Website URL <small class="text-muted">(Optional)</small></label>
+                            <input type="url" class="form-control" id="shop_website_url" name="website_url" placeholder="https://example.com" maxlength="255">
+                            <small class="form-text text-muted">Must start with http:// or https://</small>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        {{-- Optional Fields --}}
+                        <div class="col-md-6">
+                            <label for="shop_business_type" class="form-label">Business Type <small class="text-muted">(Optional)</small></label>
+                            <input type="text" class="form-control" id="shop_business_type" name="business_type" placeholder="e.g. Auto Garage, Oil Center" maxlength="100">
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="shop_phone" class="form-label">Phone <small class="text-muted">(Optional)</small></label>
+                            <input type="text" class="form-control" id="shop_phone" name="phone" placeholder="+1 555 000 0000" maxlength="50">
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="shop_country" class="form-label">Country <small class="text-muted">(Optional)</small></label>
+                            <input type="text" class="form-control" id="shop_country" name="country" placeholder="e.g. United States" maxlength="100">
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="shop_state" class="form-label">State <small class="text-muted">(Optional)</small></label>
+                            <input type="text" class="form-control" id="shop_state" name="state" placeholder="e.g. California" maxlength="100">
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="shop_city" class="form-label">City <small class="text-muted">(Optional)</small></label>
+                            <input type="text" class="form-control" id="shop_city" name="city" placeholder="e.g. Los Angeles" maxlength="100">
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="shop_address" class="form-label">Address <small class="text-muted">(Optional)</small></label>
+                            <input type="text" class="form-control" id="shop_address" name="address" placeholder="123 Main St, Suite 100" maxlength="255">
+                            <div class="invalid-feedback"></div>
                         </div>
                     </div>
                 </div>
-            </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="shopSubmitBtn">Save Shop</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -189,11 +260,17 @@
 @endsection
 
 @section('scripts')
-
 <script>
 $(document).ready(function () {
-    const $shopActionModal = $('#shopActionModal');
-    const shopActionModal = $shopActionModal.length ? bootstrap.Modal.getOrCreateInstance($shopActionModal[0]) : null;
+    const $shopSaveModal = $('#shopSaveModal');
+    const getModalInstance = function () {
+        if (!$shopSaveModal.length) return null;
+        if (window.bootstrap && window.bootstrap.Modal) {
+            return window.bootstrap.Modal.getOrCreateInstance($shopSaveModal[0]);
+        }
+        return null;
+    };
+    const $form = $('#shopSaveForm');
 
     const datatableOptions = {
         responsive: true,
@@ -209,152 +286,138 @@ $(document).ready(function () {
         ]
     };
 
-    const buildActionButton = function (shopId, action, label, btnClass, icon) {
-        return `
-            <button type="button" class="btn ${btnClass} btn-sm action-btn" data-id="${shopId}" data-action="${action}">
-                <i class="icon-base ti ${icon} me-1"></i>${label}
-            </button>
-        `;
-    };
-
-    const populateShopActionModal = function ($button) {
-        const shopId = $button.data('id');
-        const shopName = $button.data('shop-name');
-        const ownerName = $button.data('owner-name');
-        const ownerEmail = $button.data('owner-email');
-        const status = $button.data('status');
-        const statusText = $button.data('status-text');
-        const badgeClass = $button.data('badge-class');
-        let actionsHtml = '';
-
-        if (status === 'approved') {
-            actionsHtml = buildActionButton(shopId, 'suspend', 'Suspend Shop', 'btn-warning', 'tabler-player-pause');
-        } else if (status === 'pending') {
-            actionsHtml =
-                buildActionButton(shopId, 'approve', 'Approve', 'btn-success', 'tabler-check') +
-                buildActionButton(shopId, 'reject', 'Reject', 'btn-danger', 'tabler-x');
-        } else if (status === 'rejected') {
-            actionsHtml = buildActionButton(shopId, 'approve', 'Approve', 'btn-success', 'tabler-refresh');
-        } else if (status === 'suspended') {
-            actionsHtml = buildActionButton(shopId, 'reactivate', 'Reactivate', 'btn-success', 'tabler-rotate-clockwise');
-        }
-
-        $('#modalShopName').text(shopName || '-');
-        $('#modalShopOwner').text(ownerName ? `Owner: ${ownerName}` : 'Owner not available');
-        $('#modalShopEmail').text(ownerEmail || '-');
-        $('#modalShopStatus').html(`<span class="badge ${badgeClass}">${statusText}</span>`);
-        $('#modalActionButtons').html(actionsHtml || '<span class="text-muted">No actions available.</span>');
-    };
+    let shopTable = $('#shop-table').DataTable(datatableOptions);
 
     const reinitializeShopTable = function () {
         shopTable.destroy();
-
         $('#shop-table-body').load(location.href + ' #shop-table-body>*', function () {
             shopTable = $('#shop-table').DataTable(datatableOptions);
         });
     };
 
-    const promptReasonIfNeeded = function (action, callback) {
-        if (! ['reject', 'suspend'].includes(action)) {
-            callback('');
-            return;
-        }
-
-        Swal.fire({
-            title: action === 'reject' ? 'Reject shop?' : 'Suspend shop?',
-            input: 'textarea',
-            inputLabel: 'Reason',
-            inputPlaceholder: 'Add a short audit note',
-            inputAttributes: {
-                'aria-label': 'Reason'
-            },
-            showCancelButton: true,
-            confirmButtonText: 'Continue',
-            inputValidator: (value) => !value ? 'A reason is required.' : undefined
-        }).then((result) => {
-            if (result.isConfirmed) {
-                callback(result.value);
-            }
-        });
+    const clearFormErrors = function () {
+        $form.find('.is-invalid').removeClass('is-invalid');
+        $form.find('.invalid-feedback').text('');
     };
 
-    const submitShopAction = function (button, reason = '') {
-        let $button = $(button);
-        let id = $button.data('id');
-        let action = $button.data('action');
-        let token = $('meta[name="csrf-token"]').attr('content');
-
-        $.ajax({
-           url: '/admin/shops/' + id + '/status/' + action,
-            type: 'POST',
-            data: {
-                _token: token,
-                reason: reason
-            },
-            success: function (response) {
-
-                if (response.success) {
-
-                    if (typeof window.appNotify === 'function') {
-                        window.appNotify('success', response.message);
-                    }
-
-                    if (shopActionModal) {
-                        shopActionModal.hide();
-                    }
-
-                    reinitializeShopTable();
-
-                    let row = $button.closest('tr');
-                    let badge = row.find('.status-badge');
-
-                    badge
-                        .removeClass('bg-success bg-danger bg-warning bg-secondary')
-                        .addClass(response.badge_class)
-                        .text(response.status_text);
-                }
-            },
-            error: function (xhr) {
-                console.log(xhr.responseText);
-                if (typeof window.appNotify === 'function') {
-                    window.appNotify('error', xhr.responseJSON?.message || 'Action failed.');
-                }
-            }
-        });
+    const resetShopForm = function () {
+        $form[0].reset();
+        $('#shop_id').val('');
+        clearFormErrors();
+        $('#shopModalTitle').text('Add New Shop');
+        $('#shopModalSubtitle').text('Fill in the mandatory and optional details for this shop.');
+        $('#shopSubmitBtn').text('Save Shop');
+        $('#shop_password_star').removeClass('d-none');
+        $('#shopPasswordHelp').addClass('d-none');
     };
 
-    let shopTable = $('#shop-table').DataTable(datatableOptions);
-
-    // =========================
-    // ACTION BUTTONS (AJAX)
-    // =========================
-    $(document).on('click', '.action-btn', function (e) {
-        e.preventDefault();
-        let $button = $(this);
-        let action = $button.data('action');
-
-        promptReasonIfNeeded(action, function (reason) {
-            submitShopAction($button, reason);
-        });
+    $('#addShopBtn').on('click', function () {
+        resetShopForm();
+        const modal = getModalInstance();
+        if (modal) modal.show();
     });
 
     $(document).on('click', '.edit-shop-btn', function (e) {
         e.preventDefault();
+        const shopId = $(this).data('id');
+        resetShopForm();
 
-        populateShopActionModal($(this));
+        $('#shopModalTitle').text('Edit Shop');
+        $('#shopModalSubtitle').text('Update details for this shop.');
+        $('#shopSubmitBtn').text('Update Shop');
+        $('#shop_password_star').addClass('d-none');
+        $('#shopPasswordHelp').removeClass('d-none');
 
-        if (shopActionModal) {
-            shopActionModal.show();
+        if (window.appLoading && typeof window.appLoading.show === 'function') {
+            window.appLoading.show('Loading shop...');
         }
+
+        $.ajax({
+            url: '/admin/shops/' + shopId + '/edit',
+            method: 'GET'
+        })
+        .done(function (response) {
+            if (response.success && response.data) {
+                const data = response.data;
+                $('#shop_id').val(data.id);
+                $('#shop_owner_name').val(data.owner_name);
+                $('#shop_owner_email').val(data.owner_email);
+                $('#shop_name_input').val(data.shop_name);
+                $('#shop_status_select').val(data.status);
+                $('#shop_website_url').val(data.website_url);
+                $('#shop_business_type').val(data.business_type);
+                $('#shop_country').val(data.country);
+                $('#shop_state').val(data.state);
+                $('#shop_city').val(data.city);
+                $('#shop_phone').val(data.phone);
+                $('#shop_address').val(data.address);
+
+                const modal = getModalInstance();
+                if (modal) modal.show();
+            }
+        })
+        .fail(function (xhr) {
+            if (typeof window.appNotify === 'function') {
+                window.appNotify('error', xhr.responseJSON?.message || 'Unable to load shop details.');
+            }
+        })
+        .always(function () {
+            if (window.appLoading && typeof window.appLoading.hide === 'function') {
+                window.appLoading.hide(200);
+            }
+        });
+    });
+
+    $form.on('submit', function (e) {
+        e.preventDefault();
+        clearFormErrors();
+
+        const websiteUrl = $('#shop_website_url').val().trim();
+        if (websiteUrl !== '' && ! /^https?:\/\//i.test(websiteUrl)) {
+            $('#shop_website_url').addClass('is-invalid');
+            $('#shop_website_url').siblings('.invalid-feedback').text('Website URL must start with http:// or https://');
+            return;
+        }
+
+        const $submitBtn = $('#shopSubmitBtn');
+        $submitBtn.prop('disabled', true);
+
+        $.ajax({
+            url: $form.attr('action'),
+            method: 'POST',
+            data: $form.serialize()
+        })
+        .done(function (response) {
+            if (response.success) {
+                if (typeof window.appNotify === 'function') {
+                    window.appNotify('success', response.message);
+                }
+                const modal = getModalInstance();
+                if (modal) modal.hide();
+                reinitializeShopTable();
+            }
+        })
+        .fail(function (xhr) {
+            if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+                const errors = xhr.responseJSON.errors;
+                $.each(errors, function (field, messages) {
+                    const $input = $form.find('[name="' + field + '"]');
+                    if ($input.length) {
+                        $input.addClass('is-invalid');
+                        $input.siblings('.invalid-feedback').text(messages[0]);
+                    }
+                });
+            } else if (typeof window.appNotify === 'function') {
+                window.appNotify('error', xhr.responseJSON?.message || 'Save failed.');
+            }
+        })
+        .always(function () {
+            $submitBtn.prop('disabled', false);
+        });
     });
 });
 
-
-// =========================
-// IMPERSONATE CONFIRMATION
-// =========================
 function confirmImpersonate(shopId) {
-
     Swal.fire({
         title: 'Impersonate Shop?',
         text: "You will sign in as this shop admin",
@@ -364,13 +427,10 @@ function confirmImpersonate(shopId) {
         cancelButtonColor: '#d33',
         confirmButtonText: 'Yes, Continue'
     }).then((result) => {
-
         if (result.isConfirmed) {
             window.location.href = '/admin/shops/impersonate/' + shopId;
         }
     });
 }
-
 </script>
-
 @endsection
