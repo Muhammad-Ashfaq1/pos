@@ -122,7 +122,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($requests as $demoRequest)
+                        @foreach ($requests as $demoRequest)
                             @php $status = $demoRequest->status; @endphp
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
@@ -158,11 +158,7 @@
                                     </button>
                                 </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center text-muted py-4">No demo requests yet.</td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>

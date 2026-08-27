@@ -1,4 +1,4 @@
-@forelse($shops as $index => $shop)
+@foreach($shops as $index => $shop)
 @php($status = $shop->status instanceof \App\Enums\TenantStatus ? $shop->status->value : $shop->status)
 <tr>
     <td>{{ $index + 1 }}</td>
@@ -101,19 +101,4 @@
         </div>
     </td>
 </tr>
-
-@empty
-<tr>
-    <td colspan="7" class="text-center py-5">
-        <div class="d-flex flex-column align-items-center justify-content-center">
-            <span class="avatar avatar-xl mb-3">
-                <span class="avatar-initial rounded bg-label-primary">
-                    <i class="icon-base ti tabler-building-store icon-lg"></i>
-                </span>
-            </span>
-            <h6 class="mb-1">No shops found</h6>
-            <p class="text-muted mb-0">New tenant registrations will appear here for review.</p>
-        </div>
-    </td>
-</tr>
-@endforelse
+@endforeach

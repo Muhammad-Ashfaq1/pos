@@ -200,6 +200,7 @@ $(document).ready(function () {
         processing: true,
         order: [],
         language: {
+            emptyTable: 'No shops found',
             search: '',
             searchPlaceholder: 'Search shops, owners, or email'
         },
