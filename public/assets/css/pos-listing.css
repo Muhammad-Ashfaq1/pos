@@ -196,6 +196,7 @@
 
 /* Row action cluster */
 .pos-listing .pos-listing-table .btn-icon.btn-outline-primary,
+.pos-listing .pos-listing-table .btn-icon.btn-outline-success,
 .pos-listing .pos-listing-table .btn-icon.btn-outline-danger,
 .pos-listing .pos-listing-table .btn-icon.btn-outline-secondary {
     width: 2rem;
@@ -230,14 +231,35 @@
     --bs-btn-active-border-color: rgb(var(--bs-danger-rgb));
 }
 
+.pos-listing .pos-listing-table .btn-icon.btn-outline-success {
+    --bs-btn-color: rgb(var(--bs-success-rgb));
+    --bs-btn-border-color: rgba(var(--bs-success-rgb), 0.32);
+    --bs-btn-bg: rgba(var(--bs-success-rgb), 0.06);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: rgb(var(--bs-success-rgb));
+    --bs-btn-hover-border-color: rgb(var(--bs-success-rgb));
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: rgb(var(--bs-success-rgb));
+    --bs-btn-active-border-color: rgb(var(--bs-success-rgb));
+}
+
 .pos-listing .pos-listing-table .btn-icon.btn-outline-primary:hover,
 .pos-listing .pos-listing-table .btn-icon.btn-outline-primary:focus-visible,
 .pos-listing .pos-listing-table .btn-icon.btn-outline-primary:active,
+.pos-listing .pos-listing-table .btn-icon.btn-outline-success:hover,
+.pos-listing .pos-listing-table .btn-icon.btn-outline-success:focus-visible,
+.pos-listing .pos-listing-table .btn-icon.btn-outline-success:active,
 .pos-listing .pos-listing-table .btn-icon.btn-outline-danger:hover,
 .pos-listing .pos-listing-table .btn-icon.btn-outline-danger:focus-visible,
 .pos-listing .pos-listing-table .btn-icon.btn-outline-danger:active {
     color: #fff;
     box-shadow: 0 4px 12px -6px rgba(var(--pos-listing-accent-rgb), 0.45);
+}
+
+.pos-listing .pos-listing-table .btn-icon.btn-outline-success:hover,
+.pos-listing .pos-listing-table .btn-icon.btn-outline-success:focus-visible,
+.pos-listing .pos-listing-table .btn-icon.btn-outline-success:active {
+    box-shadow: 0 4px 12px -6px rgba(var(--bs-success-rgb), 0.45);
 }
 
 .pos-listing .pos-listing-table .btn-icon.btn-outline-danger:hover,
@@ -249,6 +271,9 @@
 .pos-listing .pos-listing-table .btn-icon.btn-outline-primary:hover .icon-base,
 .pos-listing .pos-listing-table .btn-icon.btn-outline-primary:focus-visible .icon-base,
 .pos-listing .pos-listing-table .btn-icon.btn-outline-primary:active .icon-base,
+.pos-listing .pos-listing-table .btn-icon.btn-outline-success:hover .icon-base,
+.pos-listing .pos-listing-table .btn-icon.btn-outline-success:focus-visible .icon-base,
+.pos-listing .pos-listing-table .btn-icon.btn-outline-success:active .icon-base,
 .pos-listing .pos-listing-table .btn-icon.btn-outline-danger:hover .icon-base,
 .pos-listing .pos-listing-table .btn-icon.btn-outline-danger:focus-visible .icon-base,
 .pos-listing .pos-listing-table .btn-icon.btn-outline-danger:active .icon-base {
