@@ -112,7 +112,6 @@
             <div class="pos-glass-card pos-tone-secondary pos-listing-panel">
                 <div class="pos-listing-toolbar">
                     <h4 class="pos-listing-title">Shop Directory</h4>
-<<<<<<< Updated upstream
                     <div class="pos-listing-search-slot">
                         <div class="dt-search">
                             <input
@@ -124,9 +123,6 @@
                             >
                         </div>
                     </div>
-=======
-                    <div class="pos-listing-search-slot" aria-hidden="true"></div>
->>>>>>> Stashed changes
                     <div class="pos-listing-toolbar-tools">
                         <div class="pos-listing-toolbar-actions d-flex flex-wrap gap-2 align-items-center" id="shopTableActions">
                             <span class="badge bg-label-warning">Pending {{ $pendingCount }}</span>
@@ -160,10 +156,7 @@
                                 <th>Email</th>
                                 <th>Phone</th>
                                 <th>Shop</th>
-<<<<<<< Updated upstream
                                 <th>Plan & Expiry</th>
-=======
->>>>>>> Stashed changes
                                 <th>Status</th>
                                 <th class="text-center">Impersonate</th>
                                 <th class="text-center">Actions</th>
@@ -228,7 +221,6 @@
                                     </div>
 
                                     <div class="col-md-6">
-<<<<<<< Updated upstream
                                         <label for="shop_plan_id" class="form-label">Subscription Plan</label>
                                         <select class="form-select" id="shop_plan_id" name="plan_id">
                                             <option value="">No plan</option>
@@ -249,8 +241,6 @@
                                     </div>
 
                                     <div class="col-md-6">
-=======
->>>>>>> Stashed changes
                                         <label for="shop_website_url" class="form-label">Website URL</label>
                                         <input type="url" class="form-control" id="shop_website_url" name="website_url" placeholder="https://example.com" maxlength="255">
                                         <small class="form-text text-muted">Must start with http:// or https://</small>

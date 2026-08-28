@@ -8,7 +8,6 @@
     <td>{{ $phone ?: '—' }}</td>
     <td class="fw-semibold">{{ $shop->display_name ?: '—' }}</td>
     <td>
-<<<<<<< Updated upstream
         @if($shop->plan)
             <span class="badge bg-label-primary mb-1">{{ $shop->plan->name }}</span>
             @if($shop->plan_expires_at)
@@ -21,25 +20,11 @@
     <td>
         <span class="badge bg-{{ $shop->status->badgeClass() }}">
             {{ $shop->status->label() }}
-=======
-        <span class="badge bg-{{ $shop->status->badgeClass() }}">
-            {{ ucfirst($status) }}
->>>>>>> Stashed changes
         </span>
     </td>
     <td class="text-center">
         @if($status === 'approved')
-<<<<<<< Updated upstream
             <button type="button" class="btn btn-sm btn-icon btn-label-warning shop-impersonate-btn" data-id="{{ $shop->id }}" data-shop-name="{{ $shop->display_name ?: 'this shop' }}" title="Impersonate">
-=======
-            <button
-                type="button"
-                class="btn btn-sm btn-icon btn-label-warning shop-impersonate-btn"
-                data-id="{{ $shop->id }}"
-                data-shop-name="{{ $shop->display_name ?: 'this shop' }}"
-                title="Impersonate"
-            >
->>>>>>> Stashed changes
                 <i class="icon-base ti tabler-login-2"></i>
             </button>
         @else
@@ -49,7 +34,6 @@
     <td class="text-center">
         <div class="d-inline-flex gap-1">
             @if($status === 'pending')
-<<<<<<< Updated upstream
                 <button type="button" class="btn btn-sm btn-icon btn-outline-success shop-action-btn" data-id="{{ $shop->id }}" data-action="approve" title="Approve"><i class="icon-base ti tabler-check"></i></button>
                 <button type="button" class="btn btn-sm btn-icon btn-outline-danger shop-action-btn" data-id="{{ $shop->id }}" data-action="reject" title="Reject"><i class="icon-base ti tabler-x"></i></button>
             @endif
@@ -65,74 +49,6 @@
             @endif
             @if($status === 'suspended')
                 <button type="button" class="btn btn-sm btn-icon btn-outline-success shop-action-btn" data-id="{{ $shop->id }}" data-action="reactivate" title="Reactivate"><i class="icon-base ti tabler-rotate-clockwise"></i></button>
-=======
-                <button
-                    type="button"
-                    class="btn btn-sm btn-icon btn-outline-success shop-action-btn"
-                    data-id="{{ $shop->id }}"
-                    data-action="approve"
-                    title="Approve"
-                >
-                    <i class="icon-base ti tabler-check"></i>
-                </button>
-                <button
-                    type="button"
-                    class="btn btn-sm btn-icon btn-outline-danger shop-action-btn"
-                    data-id="{{ $shop->id }}"
-                    data-action="reject"
-                    title="Reject"
-                >
-                    <i class="icon-base ti tabler-x"></i>
-                </button>
-            @endif
-
-            @if($status === 'approved')
-                <button
-                    type="button"
-                    class="btn btn-sm btn-icon btn-outline-primary edit-shop-btn"
-                    data-id="{{ $shop->id }}"
-                    title="Edit"
-                >
-                    <i class="icon-base ti tabler-edit"></i>
-                </button>
-            @endif
-
-            @if($status === 'inactive')
-                <button
-                    type="button"
-                    class="btn btn-sm btn-icon btn-outline-success shop-action-btn shop-activate-btn"
-                    data-id="{{ $shop->id }}"
-                    data-action="approve"
-                    data-context="inactive"
-                    title="Activate"
-                >
-                    <i class="icon-base ti tabler-power"></i>
-                </button>
-            @endif
-
-            @if($status === 'rejected')
-                <button
-                    type="button"
-                    class="btn btn-sm btn-icon btn-outline-success shop-action-btn"
-                    data-id="{{ $shop->id }}"
-                    data-action="approve"
-                    title="Approve"
-                >
-                    <i class="icon-base ti tabler-check"></i>
-                </button>
-            @endif
-
-            @if($status === 'suspended')
-                <button
-                    type="button"
-                    class="btn btn-sm btn-icon btn-outline-success shop-action-btn"
-                    data-id="{{ $shop->id }}"
-                    data-action="reactivate"
-                    title="Reactivate"
-                >
-                    <i class="icon-base ti tabler-rotate-clockwise"></i>
-                </button>
->>>>>>> Stashed changes
             @endif
         </div>
     </td>
