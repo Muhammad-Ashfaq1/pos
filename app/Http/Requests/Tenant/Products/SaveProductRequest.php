@@ -127,7 +127,7 @@ class SaveProductRequest extends FormRequest
             'minimum_stock_level' => ['nullable', 'integer', 'min:0'],
             'reorder_level' => ['nullable', 'integer', 'min:0'],
             'stock_adjustment_mode' => ['nullable', Rule::in(['none', 'add', 'subtract'])],
-            'stock_adjustment_quantity' => ['nullable', 'integer', 'min:0', 'max:9999'],
+            'stock_adjustment_quantity' => ['nullable', 'integer', 'min:0'],
             'track_inventory' => ['required', 'boolean'],
             'is_active' => ['required', 'boolean'],
             'images' => ['nullable', 'array', 'max:20'],
@@ -150,7 +150,10 @@ class SaveProductRequest extends FormRequest
     {
         $validator->after(function (Validator $validator): void {
             $product = $this->filled('id')
-                ? Product::query()->with('images')->find($this->integer('id'))
+                ? Product::query()
+                    ->with('images')
+                    ->where('tenant_id', app(TenantContext::class)->id())
+                    ->find($this->integer('id'))
                 : null;
 
             if ($this->filled('sub_category_id') && $this->filled('category_id')) {
@@ -162,6 +165,27 @@ class SaveProductRequest extends FormRequest
                 if (! $belongsToCategory) {
                     $validator->errors()->add('sub_category_id', 'The selected sub category does not belong to the selected category.');
                 }
+            }
+
+            $stockAdjustmentMode = $this->input('stock_adjustment_mode');
+            $stockAdjustmentQuantity = (int) $this->input('stock_adjustment_quantity', 0);
+
+            if ($stockAdjustmentMode === 'add' && $stockAdjustmentQuantity > 9999) {
+                $validator->errors()->add(
+                    'stock_adjustment_quantity',
+                    'You can add at most 9999 units in a single adjustment.'
+                );
+            }
+
+            if (
+                $product
+                && $stockAdjustmentMode === 'subtract'
+                && $stockAdjustmentQuantity > (int) $product->current_stock
+            ) {
+                $validator->errors()->add(
+                    'stock_adjustment_quantity',
+                    'You can subtract up to '.$product->current_stock.' units from the current stock.'
+                );
             }
 
             $removedImageIds = collect($this->input('removed_image_ids', []))
@@ -261,7 +285,6 @@ class SaveProductRequest extends FormRequest
             'images.*.max' => 'Each image may not be greater than 5 MB.',
             'stock_adjustment_mode.in' => 'The stock adjustment mode is invalid.',
             'stock_adjustment_quantity.integer' => 'The stock adjustment must be a whole number.',
-            'stock_adjustment_quantity.max' => 'You can add at most 9999 units in a single adjustment.',
             'stock_adjustment_quantity.min' => 'The stock adjustment cannot be negative.',
             'opening_stock.integer' => 'Opening stock must be a whole number.',
             'current_stock.integer' => 'Current stock must be a whole number.',

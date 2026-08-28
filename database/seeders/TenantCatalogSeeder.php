@@ -710,9 +710,6 @@ class TenantCatalogSeeder extends Seeder
             $discount->ends_at = now()->addMonths(6);
             $discount->usage_limit = 1000;
             $discount->is_active = true;
-            $discount->is_combinable = false;
-            $discount->requires_reason = false;
-            $discount->requires_manager_approval = ($d['type'] === Discount::TYPE_FIXED);
             $discount->created_by = $adminId;
             $discount->updated_by = $adminId;
             $discount->save();

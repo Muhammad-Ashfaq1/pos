@@ -19,6 +19,7 @@
                                 type="button"
                                 class="btn btn-label-secondary btn-icon"
                                 data-bs-toggle="dropdown"
+                                data-bs-auto-close="outside"
                                 aria-expanded="false"
                                 title="Filters"
                             >
@@ -112,7 +113,6 @@
                             <th>Type</th>
                             <th>Applies To</th>
                             <th>Value</th>
-                            <th>Rules</th>
                             <th>Schedule</th>
                             <th>Status</th>
                             <th>Created</th>
@@ -211,33 +211,6 @@
                                     <div class="form-check form-switch mt-2">
                                         <input class="form-check-input" type="checkbox" role="switch" id="discount_is_active" name="is_active" value="1" checked>
                                         <label class="form-check-label" for="discount_is_active">Active</label>
-                                    </div>
-                                    <div class="invalid-feedback d-block"></div>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label d-block">Combinable</label>
-                                    <input type="hidden" name="is_combinable" value="0">
-                                    <div class="form-check form-switch mt-2">
-                                        <input class="form-check-input" type="checkbox" role="switch" id="discount_is_combinable" name="is_combinable" value="1" checked>
-                                        <label class="form-check-label" for="discount_is_combinable">Allowed</label>
-                                    </div>
-                                    <div class="invalid-feedback d-block"></div>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label d-block">Requires Reason</label>
-                                    <input type="hidden" name="requires_reason" value="0">
-                                    <div class="form-check form-switch mt-2">
-                                        <input class="form-check-input" type="checkbox" role="switch" id="discount_requires_reason" name="requires_reason" value="1">
-                                        <label class="form-check-label" for="discount_requires_reason">Required</label>
-                                    </div>
-                                    <div class="invalid-feedback d-block"></div>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label d-block">Manager Approval</label>
-                                    <input type="hidden" name="requires_manager_approval" value="0">
-                                    <div class="form-check form-switch mt-2">
-                                        <input class="form-check-input" type="checkbox" role="switch" id="discount_requires_manager_approval" name="requires_manager_approval" value="1">
-                                        <label class="form-check-label" for="discount_requires_manager_approval">Required</label>
                                     </div>
                                     <div class="invalid-feedback d-block"></div>
                                 </div>

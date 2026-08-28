@@ -139,15 +139,7 @@
       });
     }
 
-    columns.push(
-      { data: 'total_visits' },
-      {
-        data: 'lifetime_value',
-        render: function (data) {
-          return '<span class="text-nowrap">' + money(data) + '</span>';
-        }
-      },
-      {
+    columns.push({
         data: 'last_visit_at_label',
         render: function (data) {
           return '<span class="text-nowrap">' + escapeHtml(data || '—') + '</span>';

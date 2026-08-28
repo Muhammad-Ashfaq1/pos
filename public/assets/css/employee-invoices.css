@@ -237,25 +237,88 @@
     transform: translateY(-1px);
 }
 
-.employee-invoices-pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.employee-invoices-pagination:not(.d-none) {
     position: relative;
     z-index: 1;
+    padding-block: 0.25rem 0.75rem;
 }
 
-/* Glass Drawer Offcanvas */
-.employee-invoice-filters-drawer {
-    width: min(22rem, 100vw);
-    background: rgba(255, 255, 255, 0.85) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    backdrop-filter: blur(20px) saturate(160%);
-    border-left: 1px solid rgba(99, 102, 241, 0.2) !important;
+.employee-invoices-page .employee-invoices-pagination-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.employee-invoice-filters-drawer .offcanvas-body {
-    min-height: 100%;
+.employee-invoices-page .employee-invoices-info {
+    margin: 0;
+    padding: 0;
+    color: var(--bs-secondary-color);
+    font-size: 0.8125rem;
+    line-height: 1.375;
+    white-space: nowrap;
+}
+
+.employee-invoices-page .employee-invoices-length {
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+
+.employee-invoices-page .employee-invoices-length .form-select {
+    display: inline-block;
+    width: auto;
+    min-width: 4rem;
+    margin: 0;
+    background-color: rgba(255, 255, 255, 0.72);
+    border-color: rgba(var(--pos-tone-rgb, var(--bs-secondary-rgb)), 0.22);
+    box-shadow: none;
+    vertical-align: middle;
+}
+
+.employee-invoices-page .employee-invoices-length .form-select:focus {
+    border-color: rgba(var(--bs-primary-rgb), 0.55);
+    box-shadow: 0 0 0 0.15rem rgba(var(--bs-primary-rgb), 0.12);
+}
+
+.employee-invoices-page .pagination {
+    gap: 0.25rem;
+    margin-bottom: 0;
+}
+
+.employee-invoices-page .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 2rem;
+    padding: 0 0.55rem;
+    border: 1px solid rgba(var(--pos-tone-rgb, var(--bs-secondary-rgb)), 0.18);
+    border-radius: 0.5rem !important;
+    background-color: rgba(255, 255, 255, 0.55);
+    color: var(--bs-heading-color, var(--bs-body-color));
+    box-shadow: none;
+}
+
+.employee-invoices-page .page-link:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    border-color: rgba(var(--bs-primary-rgb), 0.35);
+    color: rgb(var(--bs-primary-rgb));
+}
+
+.employee-invoices-page .page-item.active .page-link {
+    background-color: rgba(var(--bs-primary-rgb), 0.16);
+    border-color: rgba(var(--bs-primary-rgb), 0.4);
+    color: rgb(var(--bs-primary-rgb));
+    font-weight: 600;
+}
+
+.employee-invoices-page .page-item.disabled .page-link,
+.employee-invoices-page .page-link:disabled {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(var(--pos-tone-rgb, var(--bs-secondary-rgb)), 0.1);
+    color: var(--bs-secondary-color);
+    opacity: 0.65;
+    pointer-events: none;
 }
 
 /* Glass Share Modal */
@@ -361,15 +424,29 @@
     color: #e2e8f0;
 }
 
-[data-bs-theme="dark"] .employee-invoice-filters-drawer {
-    background: rgba(37, 41, 60, 0.88) !important;
-    border-left-color: rgba(255, 255, 255, 0.12) !important;
-}
-
 [data-bs-theme="dark"] #invoiceShareModal .modal-content {
     background: rgba(37, 41, 60, 0.92) !important;
     border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
+[data-bs-theme="dark"] .employee-invoices-page .employee-invoices-info {
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .employee-invoices-page .employee-invoices-length .form-select {
+    background-color: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .employee-invoices-page .page-link {
+    background-color: rgba(255, 255, 255, 0.06);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .employee-invoices-page .page-item.active .page-link {
+    background-color: rgba(var(--bs-primary-rgb), 0.22);
+    color: #fff;
+}
 
 

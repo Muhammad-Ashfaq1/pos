@@ -239,37 +239,40 @@
                                     → New: <strong id="product_stock_preview" class="text-primary">0</strong>)
                                 </small>
                             </label>
-                            <div class="d-flex gap-2">
+                            <div class="d-flex align-items-start gap-2 flex-nowrap stock-adjustment-controls">
                                 <select
                                     id="product_stock_adjustment_mode"
                                     name="stock_adjustment_mode"
                                     class="form-select"
-                                    style="max-width: 140px;">
+                                    style="flex: 0 0 140px; width: 140px;">
                                     <option value="none" selected>No change</option>
                                     <option value="add">Add</option>
                                     <option value="subtract">Subtract</option>
                                 </select>
 
-                                <div class="input-group flex-grow-1">
-                                    <button type="button" class="btn btn-outline-secondary" id="product_stock_adjustment_minus" disabled>
-                                        <i class="ti tabler-minus"></i>
-                                    </button>
-                                    <input
-                                        type="number"
-                                        step="1"
-                                        min="0"
-                                        max="9999"
-                                        class="form-control text-center"
-                                        id="product_stock_adjustment_quantity"
-                                        name="stock_adjustment_quantity"
-                                        value="0"
-                                        disabled>
-                                    <button type="button" class="btn btn-outline-secondary" id="product_stock_adjustment_plus" disabled>
-                                        <i class="ti tabler-plus"></i>
-                                    </button>
+                                <div class="flex-grow-1" style="min-width: 0;">
+                                    <div class="input-group">
+                                        <button type="button" class="btn btn-outline-secondary" id="product_stock_adjustment_minus" disabled>
+                                            <i class="ti tabler-minus"></i>
+                                        </button>
+                                        <input
+                                            type="number"
+                                            step="1"
+                                            min="0"
+                                            max="9999"
+                                            class="form-control text-center"
+                                            id="product_stock_adjustment_quantity"
+                                            name="stock_adjustment_quantity"
+                                            value="0"
+                                            disabled>
+                                        <button type="button" class="btn btn-outline-secondary" id="product_stock_adjustment_plus" disabled>
+                                            <i class="ti tabler-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="invalid-feedback d-block" id="product_stock_adjustment_error"></div>
+                                    <div class="form-text text-warning d-none" id="product_stock_adjustment_warning"></div>
                                 </div>
                             </div>
-                            <div class="invalid-feedback d-block" id="product_stock_adjustment_error"></div>
                         </div>
                         <div class="col-md-3">
                             <label for="product_minimum_stock_level" class="form-label">Minimum Stock</label>

@@ -37,9 +37,6 @@ class Discount extends Model
         'ends_at',
         'usage_limit',
         'is_active',
-        'is_combinable',
-        'requires_reason',
-        'requires_manager_approval',
         'created_by',
         'updated_by',
     ];
@@ -53,9 +50,6 @@ class Discount extends Model
             'ends_at' => 'datetime',
             'usage_limit' => 'integer',
             'is_active' => 'boolean',
-            'is_combinable' => 'boolean',
-            'requires_reason' => 'boolean',
-            'requires_manager_approval' => 'boolean',
         ];
     }
 

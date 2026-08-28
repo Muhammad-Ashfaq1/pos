@@ -54,9 +54,6 @@ class SaveDiscountRequest extends FormRequest
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
             'usage_limit' => ['nullable', 'integer', 'min:1'],
             'is_active' => ['required', 'boolean'],
-            'is_combinable' => ['required', 'boolean'],
-            'requires_reason' => ['required', 'boolean'],
-            'requires_manager_approval' => ['required', 'boolean'],
             'tenant_id' => ['prohibited'],
             'created_by' => ['prohibited'],
             'updated_by' => ['prohibited'],
@@ -74,12 +71,6 @@ class SaveDiscountRequest extends FormRequest
                     $validator->errors()->add('value', 'Percentage discounts may not be greater than 100.');
                 }
 
-                if (
-                    $this->input('applies_to') === Discount::APPLIES_TO_CUSTOMER_PROFILE
-                    && $this->boolean('requires_manager_approval')
-                ) {
-                    $validator->errors()->add('requires_manager_approval', 'Customer profile discounts should not require manager approval by default.');
-                }
             },
         ];
     }
