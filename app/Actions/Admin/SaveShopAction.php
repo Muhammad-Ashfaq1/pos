@@ -3,6 +3,7 @@
 namespace App\Actions\Admin;
 
 use App\Enums\TenantStatus;
+use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -28,6 +29,7 @@ class SaveShopAction
 
             $statusEnum = TenantStatus::tryFrom($statusValue) ?? TenantStatus::Pending;
             $allowsLogin = $statusEnum->allowsLogin();
+            $planId = ! empty($payload['plan_id']) ? (int) $payload['plan_id'] : null;
 
             $tenantData = [
                 'name' => $payload['shop_name'],
@@ -47,6 +49,8 @@ class SaveShopAction
                 'city' => $payload['city'] ?? null,
                 'address' => $payload['address'] ?? null,
                 'status' => $statusEnum->value,
+                'plan_id' => $planId,
+                'plan_expires_at' => $this->resolvePlanExpiry($payload, $tenant, $planId),
             ];
 
             if ($isUpdate) {
@@ -73,7 +77,6 @@ class SaveShopAction
                 $tenant = Tenant::create($tenantData);
             }
 
-            // Sync or create Tenant Admin User
             $adminUser = $tenant->adminUser ?: User::query()
                 ->where('tenant_id', $tenant->id)
                 ->where('role', User::TENANT_ADMIN)
@@ -103,7 +106,7 @@ class SaveShopAction
 
             $adminUser->assignPrimaryRole(User::TENANT_ADMIN, $tenant->id);
 
-            return $tenant->fresh(['adminUser']);
+            return $tenant->fresh(['adminUser', 'plan']);
         });
 
         return [
@@ -111,5 +114,28 @@ class SaveShopAction
             'message' => $isUpdate ? 'Shop details updated successfully.' : 'Shop created successfully.',
             'data' => $tenant,
         ];
+    }
+
+    private function resolvePlanExpiry(array $payload, ?Tenant $tenant, ?int $planId): ?string
+    {
+        if (! $planId) {
+            return null;
+        }
+
+        if (! empty($payload['plan_expires_at'])) {
+            return (string) $payload['plan_expires_at'];
+        }
+
+        $plan = Plan::query()->find($planId);
+
+        if (! $plan) {
+            return $tenant?->plan_expires_at?->toDateString();
+        }
+
+        if (! $tenant || (int) $tenant->plan_id !== $planId) {
+            return now()->addDays($plan->duration_days)->toDateString();
+        }
+
+        return $tenant->plan_expires_at?->toDateString();
     }
 }

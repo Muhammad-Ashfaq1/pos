@@ -28,6 +28,12 @@
             'icon' => 'tabler-building-store',
         ],
         [
+            'label' => 'Plans',
+            'route' => 'admin.plans.index',
+            'pattern' => 'admin.plans.*',
+            'icon' => 'tabler-credit-card',
+        ],
+        [
             'label' => 'Demo Requests',
             'route' => 'admin.demo-requests.index',
             'pattern' => 'admin.demo-requests.*',

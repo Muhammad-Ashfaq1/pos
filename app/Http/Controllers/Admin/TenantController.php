@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\Admin\ChangeTenantStatusAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ChangeTenantStatusRequest;
+use App\Models\Plan;
 use App\Models\Tenant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -22,11 +23,13 @@ class TenantController extends Controller
         $this->authorize('viewAny', Tenant::class);
 
         $shops = Tenant::query()
-            ->with('adminUser')
+            ->with(['adminUser', 'plan'])
             ->latest()
             ->get();
 
-        return view('shop.index', compact('shops'));
+        $plans = Plan::query()->active()->orderBy('name')->get(['id', 'name', 'duration_days']);
+
+        return view('shop.index', compact('shops', 'plans'));
     }
 
     public function edit(Tenant $tenant): JsonResponse
@@ -50,6 +53,8 @@ class TenantController extends Controller
                 'city' => $tenant->city ?? '',
                 'phone' => $tenant->owner_phone ?: $tenant->phone ?: '',
                 'address' => $tenant->address ?? '',
+                'plan_id' => $tenant->plan_id,
+                'plan_expires_at' => $tenant->plan_expires_at?->format('Y-m-d'),
             ],
         ]);
     }

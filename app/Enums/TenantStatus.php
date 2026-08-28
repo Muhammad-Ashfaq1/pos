@@ -12,7 +12,10 @@ enum TenantStatus: string
 
     public function label(): string
     {
-        return ucfirst($this->value);
+        return match ($this) {
+            self::Approved => 'Active',
+            default => ucfirst($this->value),
+        };
     }
 
     public function allowsLogin(): bool

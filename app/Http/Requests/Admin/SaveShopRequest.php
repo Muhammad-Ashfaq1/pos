@@ -51,6 +51,8 @@ class SaveShopRequest extends FormRequest
             'city' => ['nullable', 'string', 'max:100'],
             'phone' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'string', 'max:255'],
+            'plan_id' => ['nullable', 'integer', 'exists:plans,id'],
+            'plan_expires_at' => ['nullable', 'date'],
         ];
     }
 

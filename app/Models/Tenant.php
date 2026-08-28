@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\TenantStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Stancl\Tenancy\Contracts\Tenant as TenantContract;
@@ -88,6 +89,8 @@ class Tenant extends Model implements TenantContract
         'state',
         'country',
         'status',
+        'plan_id',
+        'plan_expires_at',
         'approved_by',
         'approved_at',
         'rejected_at',
@@ -112,6 +115,7 @@ class Tenant extends Model implements TenantContract
         'rejected_at' => 'datetime',
         'suspended_at' => 'datetime',
         'onboarding_completed_at' => 'datetime',
+        'plan_expires_at' => 'date',
         'settings' => 'array',
     ];
 
@@ -195,6 +199,11 @@ class Tenant extends Model implements TenantContract
     public function adminUser(): HasOne
     {
         return $this->hasOne(User::class)->where('role', User::TENANT_ADMIN);
+    }
+
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(Plan::class);
     }
 
     protected function displayName(): Attribute

@@ -156,6 +156,7 @@
                                 <th>Email</th>
                                 <th>Phone</th>
                                 <th>Shop</th>
+                                <th>Plan & Expiry</th>
                                 <th>Status</th>
                                 <th class="text-center">Impersonate</th>
                                 <th class="text-center">Actions</th>
@@ -216,6 +217,26 @@
                                                 <option value="{{ $tenantStatus->value }}">{{ $tenantStatus->label() }}</option>
                                             @endforeach
                                         </select>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="shop_plan_id" class="form-label">Subscription Plan</label>
+                                        <select class="form-select" id="shop_plan_id" name="plan_id">
+                                            <option value="">No plan</option>
+                                            @foreach($plans as $plan)
+                                                @php($planDuration = $plan->duration_type ?? \App\Enums\PlanDuration::tryFromDays((int) $plan->duration_days))
+                                                <option value="{{ $plan->id }}" data-duration="{{ $planDuration->days() }}">
+                                                    {{ $plan->name }} ({{ $planDuration->label() }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="shop_plan_expires_at" class="form-label">Plan Expiry</label>
+                                        <input type="text" class="form-control app-datepicker" id="shop_plan_expires_at" name="plan_expires_at" placeholder="YYYY-MM-DD" autocomplete="off">
                                         <div class="invalid-feedback"></div>
                                     </div>
 

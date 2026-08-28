@@ -33,6 +33,16 @@ class ChangeTenantStatusAction
             'is_active' => true,
             'message' => 'Shop reactivated successfully.',
         ],
+        'activate' => [
+            'status' => TenantStatus::Approved,
+            'is_active' => true,
+            'message' => 'Shop activated successfully.',
+        ],
+        'deactivate' => [
+            'status' => TenantStatus::Inactive,
+            'is_active' => false,
+            'message' => 'Shop deactivated successfully.',
+        ],
     ];
 
     public function execute(Tenant $tenant, string $action, ?string $reason = null): array

@@ -65,6 +65,29 @@
 
   const $searchInput = $('#shopTableSearch');
 
+  const formatDate = function (date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return year + '-' + month + '-' + day;
+  };
+
+  const applySelectedPlanExpiry = function () {
+    const $selected = $('#shop_plan_id option:selected');
+    const duration = parseInt($selected.data('duration'), 10);
+    if (!$selected.val() || !duration) {
+      return;
+    }
+    const expiry = new Date();
+    expiry.setDate(expiry.getDate() + duration);
+    const formatted = formatDate(expiry);
+    if (window.AppDatepicker && typeof window.AppDatepicker.set === 'function') {
+      window.AppDatepicker.set('#shop_plan_expires_at', formatted);
+      return;
+    }
+    $('#shop_plan_expires_at').val(formatted);
+  };
+
   const bindShopSearch = function () {
     $searchInput.off('input.shopSearch').on('input.shopSearch', function () {
       if (shopTable) {
@@ -74,7 +97,10 @@
   };
 
   const datatableOptions = {
-    responsive: true,
+    // Keep every management column available at high browser zoom. The surrounding
+    // responsive container supplies horizontal scrolling instead of collapsing
+    // columns into a details row.
+    responsive: false,
     processing: true,
     order: [],
     pageLength: 10,
@@ -102,7 +128,7 @@
       searchPlaceholder: 'Search shops'
     },
     columnDefs: [
-      { orderable: false, targets: [5, 6, 7] }
+      { orderable: false, targets: [7, 8] }
     ]
   };
 
@@ -140,6 +166,8 @@
     $('#shopSubmitBtn').text($('#shopSubmitBtn').data('create-text') || 'Save Shop');
     $('#shop_password_star').removeClass('d-none');
     $('#shopPasswordHelp').addClass('d-none');
+    $('#shop_plan_id').val('');
+    $('#shop_plan_expires_at').val('');
   };
 
   const notify = function (type, message) {
@@ -209,8 +237,20 @@
     });
   };
 
-  $('#addShopBtn').on('click', function () {
-    resetShopForm();
+  $('#addShopBtn').on('click', resetShopForm);
+
+  $('#shop_plan_id').on('change', function () {
+    if (!$(this).val()) {
+      $('#shop_plan_expires_at').val('');
+      return;
+    }
+    applySelectedPlanExpiry();
+  });
+
+  $shopSaveModal.on('shown.bs.modal', function () {
+    if (window.AppDatepicker && typeof window.AppDatepicker.init === 'function') {
+      window.AppDatepicker.init($shopSaveModal[0]);
+    }
   });
 
   $(document).on('click', '.edit-shop-btn', function (e) {
@@ -249,6 +289,12 @@
         $('#shop_city').val(data.city);
         $('#shop_phone').val(data.phone);
         $('#shop_address').val(data.address);
+        $('#shop_plan_id').val(data.plan_id || '');
+        if (window.AppDatepicker && typeof window.AppDatepicker.set === 'function') {
+          window.AppDatepicker.set('#shop_plan_expires_at', data.plan_expires_at || '');
+        } else {
+          $('#shop_plan_expires_at').val(data.plan_expires_at || '');
+        }
 
         const modal = getModalInstance();
         if (modal) {
