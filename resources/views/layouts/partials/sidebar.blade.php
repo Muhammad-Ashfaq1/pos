@@ -333,6 +333,20 @@
             margin-top: auto;
         }
 
+        #layout-menu.layout-menu-super-admin {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #layout-menu.layout-menu-super-admin .menu-inner.menu-layout-column {
+            flex: 1 1 auto;
+            min-height: calc(100dvh - 4.5rem);
+        }
+
+        #layout-menu .menu-sidebar-bottom {
+            margin-top: auto;
+        }
+
         #layout-menu .menu-copyright {
             pointer-events: none;
         }
@@ -352,7 +366,7 @@
     </style>
 @endonce
 
-<aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+<aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme{{ $isSuperAdmin ? ' layout-menu-super-admin' : '' }}">
     <div class="app-brand demo">
         <a href="{{ route($homeRoute) }}" class="app-brand-link">
             @include('layouts.partials.shop-brand')
@@ -423,8 +437,17 @@
             @endif
         @endif
 
+        @php
+            $stopImpersonationPinClass = session()->has('impersonator_id')
+                ? ($isSuperAdmin || ! $settingsMenuItem ? 'menu-sidebar-bottom' : '')
+                : '';
+            $copyrightPinClass = $isSuperAdmin
+                ? (session()->has('impersonator_id') ? '' : 'menu-sidebar-bottom')
+                : ((! $settingsMenuItem && ! session()->has('impersonator_id')) ? 'menu-item-settings-bottom' : '');
+        @endphp
+
         @if (session()->has('impersonator_id'))
-            <li class="menu-item {{ $settingsMenuItem ? '' : 'menu-item-settings-bottom' }}">
+            <li class="menu-item {{ $stopImpersonationPinClass }}">
                 <a href="{{ route('admin.impersonate.stop') }}" class="menu-link text-warning">
                     <i class="menu-icon icon-base ti tabler-user-x"></i>
                     <div>Stop Impersonation</div>
@@ -432,7 +455,7 @@
             </li>
         @endif
 
-        <li class="menu-item menu-copyright {{ ($settingsMenuItem || session()->has('impersonator_id')) ? '' : 'menu-item-settings-bottom' }}">
+        <li class="menu-item menu-copyright {{ $copyrightPinClass }}">
             <div class="menu-link">
                 <div>&copy; {{ now()->year }} {{ config('app.name', 'AutoServe') }}</div>
             </div>
