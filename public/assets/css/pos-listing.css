@@ -114,6 +114,10 @@
     display: none !important;
 }
 
+.pos-listing .pos-listing-panel .dt-container > .dt-layout-row:has(.dt-search) {
+    display: none !important;
+}
+
 .pos-listing .pos-listing-table {
     position: relative;
     z-index: 1;
