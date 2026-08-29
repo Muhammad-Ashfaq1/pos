@@ -17,6 +17,16 @@ class TenantPolicy
         return $user->can('tenant.approvals.manage');
     }
 
+    public function create(User $user): bool
+    {
+        return $user->can('tenant.approvals.manage');
+    }
+
+    public function update(User $user, Tenant $tenant): bool
+    {
+        return $user->can('tenant.approvals.manage');
+    }
+
     public function impersonate(User $user, Tenant $tenant): bool
     {
         return $user->can('tenant.impersonate');

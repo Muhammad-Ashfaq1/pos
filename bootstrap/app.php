@@ -46,6 +46,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant.approved' => EnsureTenantIsApproved::class,
             'customer.tenant.init' => InitializeTenancyForCustomer::class,
             'account.context' => InitializeAccountContext::class,
+            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

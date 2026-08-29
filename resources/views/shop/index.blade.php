@@ -2,6 +2,10 @@
 
 @section('title', 'Shop List')
 
+@push('styles')
+    @include('partials.pos-listing-assets')
+@endpush
+
 @section('content')
 @php
     $resolveStatus = fn ($shop) => $shop->status instanceof \App\Enums\TenantStatus ? $shop->status->value : $shop->status;
@@ -104,272 +108,208 @@
     </div>
 
     <div class="col-12">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="card-title mb-1">Shop Directory</h5>
-                    <p class="text-muted mb-0">Central admin view across all registered tenants</p>
+        <div class="pos-listing">
+            <div class="pos-glass-card pos-tone-secondary pos-listing-panel">
+                <div class="pos-listing-toolbar">
+                    <h4 class="pos-listing-title">Shop Directory</h4>
+                    <div class="pos-listing-search-slot">
+                        <div class="dt-search">
+                            <input
+                                type="search"
+                                id="shopTableSearch"
+                                class="form-control"
+                                placeholder="Search shops"
+                                autocomplete="off"
+                            >
+                        </div>
+                    </div>
+                    <div class="pos-listing-toolbar-tools">
+                        <div class="pos-listing-toolbar-actions d-flex flex-wrap gap-2 align-items-center" id="shopTableActions">
+                            <span class="badge bg-label-warning">Pending {{ $pendingCount }}</span>
+                            <span class="badge bg-label-success">Approved {{ $approvedCount }}</span>
+                            @if ($suspendedCount > 0)
+                                <span class="badge bg-label-secondary">Suspended {{ $suspendedCount }}</span>
+                            @endif
+                            @if ($rejectedCount > 0)
+                                <span class="badge bg-label-danger">Rejected {{ $rejectedCount }}</span>
+                            @endif
+                            <button
+                                type="button"
+                                class="btn btn-primary"
+                                id="addShopBtn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#shopSaveModal"
+                            >
+                                <i class="ti tabler-plus me-1"></i>
+                                Add Shop
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div class="d-flex flex-wrap gap-2">
-                    <span class="badge bg-label-warning">Pending {{ $pendingCount }}</span>
-                    <span class="badge bg-label-success">Approved {{ $approvedCount }}</span>
-                    @if ($suspendedCount > 0)
-                        <span class="badge bg-label-secondary">Suspended {{ $suspendedCount }}</span>
-                    @endif
-                    @if ($rejectedCount > 0)
-                        <span class="badge bg-label-danger">Rejected {{ $rejectedCount }}</span>
-                    @endif
+
+                <div class="card-datatable table-responsive pos-listing-table pt-0">
+                    <table class="shops-datatables table table-hover align-middle mb-0" id="shop-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Owner</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Shop</th>
+                                <th>Plan & Expiry</th>
+                                <th>Status</th>
+                                <th class="text-center">Impersonate</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shop-table-body">
+                            @include('shop.data-table')
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <div class="card-datatable table-responsive pt-0">
-                <table class="datatables-basic table" id="shop-table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Owner</th>
-                            <th>Contact</th>
-                            <th>Shop</th>
-                            <th>Status</th>
-                            <th>Impersonate</th>
-                            <th class="text-center">Action</th>
-                        </tr>
-                    </thead>
+            <div class="modal fade pos-listing-modal" id="shopSaveModal" tabindex="-1" aria-labelledby="shopModalTitle" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <form id="shopSaveForm" action="{{ route('admin.shops.save') }}" method="POST" novalidate>
+                            @csrf
+                            <input type="hidden" name="id" id="shop_id">
 
-                    <tbody id="shop-table-body">
-                        @include('shop.data-table')
-                    </tbody>
-                </table>
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="shopModalTitle">Add Shop</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+
+                            <div class="modal-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="shop_owner_name" class="form-label">Owner Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="shop_owner_name" name="owner_name" maxlength="150">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="shop_owner_email" class="form-label">Owner Email <span class="text-danger">*</span></label>
+                                        <input type="email" class="form-control" id="shop_owner_email" name="owner_email" maxlength="150">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="shop_password" class="form-label">
+                                            Password <span class="text-danger" id="shop_password_star">*</span>
+                                        </label>
+                                        <input type="password" class="form-control" id="shop_password" name="password" minlength="8">
+                                        <small class="form-text text-muted d-none" id="shopPasswordHelp">Leave blank to keep the current password.</small>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="shop_name_input" class="form-label">Shop Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="shop_name_input" name="shop_name" maxlength="150">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="shop_status_select" class="form-label">Status <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="shop_status_select" name="status">
+                                            @foreach(\App\Enums\TenantStatus::cases() as $tenantStatus)
+                                                <option value="{{ $tenantStatus->value }}">{{ $tenantStatus->label() }}</option>
+                                            @endforeach
+                                        </select>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="shop_plan_id" class="form-label">Subscription Plan</label>
+                                        <select class="form-select" id="shop_plan_id" name="plan_id">
+                                            <option value="">No plan</option>
+                                            @foreach($plans as $plan)
+                                                @php($planDuration = $plan->duration_type ?? \App\Enums\PlanDuration::tryFromDays((int) $plan->duration_days))
+                                                <option value="{{ $plan->id }}" data-duration="{{ $planDuration->days() }}">
+                                                    {{ $plan->name }} ({{ $planDuration->label() }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="shop_plan_expires_at" class="form-label">Plan Expiry</label>
+                                        <input type="text" class="form-control app-datepicker" id="shop_plan_expires_at" name="plan_expires_at" placeholder="YYYY-MM-DD" autocomplete="off">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="shop_website_url" class="form-label">Website URL</label>
+                                        <input type="url" class="form-control" id="shop_website_url" name="website_url" placeholder="https://example.com" maxlength="255">
+                                        <small class="form-text text-muted">Must start with http:// or https://</small>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="shop_business_type" class="form-label">Business Type</label>
+                                        <input type="text" class="form-control" id="shop_business_type" name="business_type" maxlength="100">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="shop_phone" class="form-label">Phone</label>
+                                        <input type="text" class="form-control" id="shop_phone" name="phone" maxlength="50">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="shop_country" class="form-label">Country</label>
+                                        <input type="text" class="form-control" id="shop_country" name="country" maxlength="100">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="shop_state" class="form-label">State</label>
+                                        <input type="text" class="form-control" id="shop_state" name="state" maxlength="100">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="shop_city" class="form-label">City</label>
+                                        <input type="text" class="form-control" id="shop_city" name="city" maxlength="100">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label for="shop_address" class="form-label">Address</label>
+                                        <input type="text" class="form-control" id="shop_address" name="address" maxlength="255">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary" id="shopSubmitBtn" data-create-text="Save Shop" data-update-text="Update Shop">
+                                    Save Shop
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<div class="modal fade" id="shopActionModal" tabindex="-1" aria-labelledby="shopActionModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div>
-                    <h5 class="modal-title" id="shopActionModalLabel">Edit Shop</h5>
-                    <p class="text-muted mb-0 small">Review shop details and choose the next action.</p>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="rounded bg-label-primary p-3 mb-3">
-                    <div class="fw-semibold fs-5" id="modalShopName">-</div>
-                    <div class="text-muted small" id="modalShopOwner">-</div>
-                </div>
-
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="border rounded p-3 h-100">
-                            <div class="text-muted text-uppercase small fw-semibold mb-1">Owner Email</div>
-                            <div id="modalShopEmail">-</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="border rounded p-3 h-100">
-                            <div class="text-muted text-uppercase small fw-semibold mb-1">Current Status</div>
-                            <div id="modalShopStatus"></div>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="border rounded p-3">
-                            <div class="text-muted text-uppercase small fw-semibold mb-1">Available Actions</div>
-                            <div class="d-flex flex-wrap gap-2" id="modalActionButtons"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 @endsection
 
 @section('scripts')
-
-<script>
-$(document).ready(function () {
-    const $shopActionModal = $('#shopActionModal');
-    const shopActionModal = $shopActionModal.length ? bootstrap.Modal.getOrCreateInstance($shopActionModal[0]) : null;
-
-    const datatableOptions = {
-        responsive: true,
-        processing: true,
-        order: [],
-        language: {
-            search: '',
-            searchPlaceholder: 'Search shops, owners, or email'
-        },
-        columnDefs: [
-            { orderable: false, targets: [4, 5, 6] }
-        ]
-    };
-
-    const buildActionButton = function (shopId, action, label, btnClass, icon) {
-        return `
-            <button type="button" class="btn ${btnClass} btn-sm action-btn" data-id="${shopId}" data-action="${action}">
-                <i class="icon-base ti ${icon} me-1"></i>${label}
-            </button>
-        `;
-    };
-
-    const populateShopActionModal = function ($button) {
-        const shopId = $button.data('id');
-        const shopName = $button.data('shop-name');
-        const ownerName = $button.data('owner-name');
-        const ownerEmail = $button.data('owner-email');
-        const status = $button.data('status');
-        const statusText = $button.data('status-text');
-        const badgeClass = $button.data('badge-class');
-        let actionsHtml = '';
-
-        if (status === 'approved') {
-            actionsHtml = buildActionButton(shopId, 'suspend', 'Suspend Shop', 'btn-warning', 'tabler-player-pause');
-        } else if (status === 'pending') {
-            actionsHtml =
-                buildActionButton(shopId, 'approve', 'Approve', 'btn-success', 'tabler-check') +
-                buildActionButton(shopId, 'reject', 'Reject', 'btn-danger', 'tabler-x');
-        } else if (status === 'rejected') {
-            actionsHtml = buildActionButton(shopId, 'approve', 'Approve', 'btn-success', 'tabler-refresh');
-        } else if (status === 'suspended') {
-            actionsHtml = buildActionButton(shopId, 'reactivate', 'Reactivate', 'btn-success', 'tabler-rotate-clockwise');
-        }
-
-        $('#modalShopName').text(shopName || '-');
-        $('#modalShopOwner').text(ownerName ? `Owner: ${ownerName}` : 'Owner not available');
-        $('#modalShopEmail').text(ownerEmail || '-');
-        $('#modalShopStatus').html(`<span class="badge ${badgeClass}">${statusText}</span>`);
-        $('#modalActionButtons').html(actionsHtml || '<span class="text-muted">No actions available.</span>');
-    };
-
-    const reinitializeShopTable = function () {
-        shopTable.destroy();
-
-        $('#shop-table-body').load(location.href + ' #shop-table-body>*', function () {
-            shopTable = $('#shop-table').DataTable(datatableOptions);
-        });
-    };
-
-    const promptReasonIfNeeded = function (action, callback) {
-        if (! ['reject', 'suspend'].includes(action)) {
-            callback('');
-            return;
-        }
-
-        Swal.fire({
-            title: action === 'reject' ? 'Reject shop?' : 'Suspend shop?',
-            input: 'textarea',
-            inputLabel: 'Reason',
-            inputPlaceholder: 'Add a short audit note',
-            inputAttributes: {
-                'aria-label': 'Reason'
-            },
-            showCancelButton: true,
-            confirmButtonText: 'Continue',
-            inputValidator: (value) => !value ? 'A reason is required.' : undefined
-        }).then((result) => {
-            if (result.isConfirmed) {
-                callback(result.value);
-            }
-        });
-    };
-
-    const submitShopAction = function (button, reason = '') {
-        let $button = $(button);
-        let id = $button.data('id');
-        let action = $button.data('action');
-        let token = $('meta[name="csrf-token"]').attr('content');
-
-        $.ajax({
-           url: '/admin/shops/' + id + '/status/' + action,
-            type: 'POST',
-            data: {
-                _token: token,
-                reason: reason
-            },
-            success: function (response) {
-
-                if (response.success) {
-
-                    if (typeof window.appNotify === 'function') {
-                        window.appNotify('success', response.message);
-                    }
-
-                    if (shopActionModal) {
-                        shopActionModal.hide();
-                    }
-
-                    reinitializeShopTable();
-
-                    let row = $button.closest('tr');
-                    let badge = row.find('.status-badge');
-
-                    badge
-                        .removeClass('bg-success bg-danger bg-warning bg-secondary')
-                        .addClass(response.badge_class)
-                        .text(response.status_text);
-                }
-            },
-            error: function (xhr) {
-                console.log(xhr.responseText);
-                if (typeof window.appNotify === 'function') {
-                    window.appNotify('error', xhr.responseJSON?.message || 'Action failed.');
-                }
-            }
-        });
-    };
-
-    let shopTable = $('#shop-table').DataTable(datatableOptions);
-
-    // =========================
-    // ACTION BUTTONS (AJAX)
-    // =========================
-    $(document).on('click', '.action-btn', function (e) {
-        e.preventDefault();
-        let $button = $(this);
-        let action = $button.data('action');
-
-        promptReasonIfNeeded(action, function (reason) {
-            submitShopAction($button, reason);
-        });
-    });
-
-    $(document).on('click', '.edit-shop-btn', function (e) {
-        e.preventDefault();
-
-        populateShopActionModal($(this));
-
-        if (shopActionModal) {
-            shopActionModal.show();
-        }
-    });
-});
-
-
-// =========================
-// IMPERSONATE CONFIRMATION
-// =========================
-function confirmImpersonate(shopId) {
-
-    Swal.fire({
-        title: 'Impersonate Shop?',
-        text: "You will sign in as this shop admin",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#696cff',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, Continue'
-    }).then((result) => {
-
-        if (result.isConfirmed) {
-            window.location.href = '/admin/shops/impersonate/' + shopId;
-        }
-    });
-}
-
-</script>
-
+    <script>
+        window.adminShops = {
+            saveUrl: @json(route('admin.shops.save')),
+            editUrl: @json(url('/admin/shops/__ID__/edit')),
+            statusUrl: @json(url('/admin/shops/__ID__/status/__ACTION__')),
+            impersonateUrl: @json(url('/admin/shops/impersonate/__ID__')),
+            csrfToken: @json(csrf_token())
+        };
+    </script>
+    <script src="{{ asset('assets/js/pos-listing-toolbar.js') }}?v={{ filemtime(public_path('assets/js/pos-listing-toolbar.js')) }}"></script>
+    <script src="{{ asset('assets/js/admin/shops.js') }}?v={{ filemtime(public_path('assets/js/admin/shops.js')) }}"></script>
 @endsection

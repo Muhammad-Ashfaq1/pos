@@ -150,6 +150,32 @@ class AuthController extends Controller
             ->with('success', 'Email verified successfully. Your account now awaits super admin approval.');
     }
 
+    public function verifyNotice(Request $request): View|RedirectResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
+            return redirect()->intended(route($user->defaultDashboardRouteName()));
+        }
+
+        return view('auth.verify-notice');
+    }
+
+    public function sendVerificationEmail(Request $request): RedirectResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
+            return redirect()->intended(route($user->defaultDashboardRouteName()));
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        return back()->with('status', 'A new verification link has been sent to your email address.');
+    }
+
     public function logout(Request $request): RedirectResponse
     {
         Auth::logout();

@@ -7,6 +7,7 @@ use App\Exceptions\InvalidTenantStatusTransitionException;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Notifications\TenantStatusChangedNotification;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ChangeTenantStatusAction
@@ -32,6 +33,16 @@ class ChangeTenantStatusAction
             'is_active' => true,
             'message' => 'Shop reactivated successfully.',
         ],
+        'activate' => [
+            'status' => TenantStatus::Approved,
+            'is_active' => true,
+            'message' => 'Shop activated successfully.',
+        ],
+        'deactivate' => [
+            'status' => TenantStatus::Inactive,
+            'is_active' => false,
+            'message' => 'Shop deactivated successfully.',
+        ],
     ];
 
     public function execute(Tenant $tenant, string $action, ?string $reason = null): array
@@ -48,7 +59,7 @@ class ChangeTenantStatusAction
             $tenant->forceFill([
                 'status' => $status->value,
                 'approved_at' => $status === TenantStatus::Approved ? now() : $tenant->approved_at,
-                'approved_by' => auth()->id(),
+                'approved_by' => Auth::id(),
                 'rejected_at' => $status === TenantStatus::Rejected ? now() : null,
                 'suspended_at' => $status === TenantStatus::Suspended ? now() : null,
                 'rejected_reason' => $status === TenantStatus::Rejected ? $reason : null,

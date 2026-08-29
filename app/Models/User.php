@@ -156,6 +156,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function assignPrimaryRole(string $role, ?int $tenantId = null): void
     {
         PermissionTeamScope::for($tenantId ?? 0, function () use ($role): void {
+            \Spatie\Permission\Models\Role::findOrCreate($role, 'web');
             $this->syncRoles([$role]);
         });
 

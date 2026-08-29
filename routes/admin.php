@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DemoRequestController;
+use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\TenantController;
 use Illuminate\Support\Facades\Route;
 
@@ -11,10 +12,17 @@ Route::middleware(['web', 'auth', 'verified', 'active.user', 'central.user', 'su
     ->group(function () {
         Route::get('/dashboard', DashboardController::class)->name('dashboard');
         Route::get('/shops', [TenantController::class, 'index'])->name('shops.index');
+        Route::get('/shops/{tenant}/edit', [TenantController::class, 'edit'])->name('shops.edit');
+        Route::post('/shops/save', [TenantController::class, 'save'])->name('shops.save');
 
         Route::post('/shops/{tenant}/status/{action}', [TenantController::class, 'changeStatus'])->name('shops.status.change');
 
         Route::get('/shops/impersonate/{tenant}', [TenantController::class, 'impersonate'])->name('shops.impersonate');
+
+        Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');
+        Route::get('/plans/listing', [PlanController::class, 'listing'])->name('plans.listing');
+        Route::post('/plans/save', [PlanController::class, 'save'])->name('plans.save');
+        Route::delete('/plans/{plan}', [PlanController::class, 'destroy'])->name('plans.destroy');
 
         Route::get('/demo-requests', [DemoRequestController::class, 'index'])->name('demo-requests.index');
         Route::post('/demo-requests/{demoRequest}/status', [DemoRequestController::class, 'updateStatus'])->name('demo-requests.status');

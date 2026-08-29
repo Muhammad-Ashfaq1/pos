@@ -10,6 +10,14 @@ enum TenantStatus: string
     case Suspended = 'suspended';
     case Inactive = 'inactive';
 
+    public function label(): string
+    {
+        return match ($this) {
+            self::Approved => 'Active',
+            default => ucfirst($this->value),
+        };
+    }
+
     public function allowsLogin(): bool
     {
         return $this === self::Approved;

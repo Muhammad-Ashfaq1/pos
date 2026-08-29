@@ -21,6 +21,13 @@ Route::middleware('guest')->controller(AuthController::class)->group(function ()
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    Route::get('/email/verify', [AuthController::class, 'verifyNotice'])
+        ->name('verification.notice');
+
+    Route::post('/email/verification-notification', [AuthController::class, 'sendVerificationEmail'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
 });
 
 Route::middleware(['auth:web,customer', 'account.context'])

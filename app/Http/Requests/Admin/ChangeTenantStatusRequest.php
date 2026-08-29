@@ -22,7 +22,7 @@ class ChangeTenantStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'action' => ['required', Rule::in(['approve', 'reject', 'suspend', 'reactivate'])],
+            'action' => ['required', Rule::in(['approve', 'reject', 'suspend', 'reactivate', 'activate', 'deactivate'])],
             'reason' => [
                 Rule::requiredIf(in_array($this->route('action'), ['reject', 'suspend'], true)),
                 'nullable',

@@ -31,12 +31,12 @@
       const $slot = $panel.find('.pos-listing-search-slot').first();
       const $search = $container.find('.dt-search').first();
 
-      if ($slot.length && $search.length && !$slot.find('.dt-search').length) {
+      if ($slot.length && $search.length) {
         $slot.removeAttr('aria-hidden').empty().append($search);
       }
 
-      // Hide the now-empty DataTables top chrome row
       $container.find('.dt-layout-row').first().addClass('is-pos-listing-top-moved');
+      $container.find('.dt-search').remove();
     }
   };
 })(jQuery);

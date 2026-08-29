@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\Admin\ChangeTenantStatusAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ChangeTenantStatusRequest;
+use App\Models\Plan;
 use App\Models\Tenant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -22,11 +23,56 @@ class TenantController extends Controller
         $this->authorize('viewAny', Tenant::class);
 
         $shops = Tenant::query()
-            ->with('adminUser')
+            ->with(['adminUser', 'plan'])
             ->latest()
             ->get();
 
-        return view('shop.index', compact('shops'));
+        $plans = Plan::query()->active()->orderBy('name')->get(['id', 'name', 'duration_days']);
+
+        return view('shop.index', compact('shops', 'plans'));
+    }
+
+    public function edit(Tenant $tenant): JsonResponse
+    {
+        $this->authorize('update', $tenant);
+
+        $tenant->loadMissing('adminUser');
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $tenant->id,
+                'owner_name' => $tenant->owner_name ?: $tenant->adminUser?->name ?: '',
+                'owner_email' => $tenant->owner_email ?: $tenant->email ?: $tenant->adminUser?->email ?: '',
+                'shop_name' => $tenant->display_name,
+                'status' => $tenant->status->value,
+                'website_url' => $tenant->website_url ?? '',
+                'business_type' => $tenant->business_type ?? '',
+                'country' => $tenant->country ?? '',
+                'state' => $tenant->state ?? '',
+                'city' => $tenant->city ?? '',
+                'phone' => $tenant->owner_phone ?: $tenant->phone ?: '',
+                'address' => $tenant->address ?? '',
+                'plan_id' => $tenant->plan_id,
+                'plan_expires_at' => $tenant->plan_expires_at?->format('Y-m-d'),
+            ],
+        ]);
+    }
+
+    public function save(\App\Http\Requests\Admin\SaveShopRequest $request, \App\Actions\Admin\SaveShopAction $action): JsonResponse
+    {
+        $validated = $request->validated();
+        $tenant = ! empty($validated['id']) ? Tenant::query()->findOrFail($validated['id']) : null;
+
+        if ($tenant) {
+            $this->authorize('update', $tenant);
+        } else {
+            $this->authorize('create', Tenant::class);
+        }
+
+        $result = $action->execute($validated, $tenant);
+
+        return response()->json($result);
     }
 
     public function changeStatus(ChangeTenantStatusRequest $request, Tenant $tenant, string $action): JsonResponse
