@@ -59,13 +59,15 @@
 
 /* Theme / menu icon chips — soft primary glass, same family as listing tools */
 .pos-navbar .layout-menu-toggle .nav-link,
-.pos-navbar #nav-theme {
+.pos-navbar #nav-theme,
+.pos-navbar .pos-workspace-fs-btn--navbar {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 2.25rem;
     height: 2.25rem;
     padding: 0;
+    border: 0;
     border-radius: 0.625rem;
     background-color: rgba(var(--bs-primary-rgb), 0.1);
     color: var(--bs-primary);
@@ -74,7 +76,9 @@
 
 .pos-navbar .layout-menu-toggle .nav-link:hover,
 .pos-navbar #nav-theme:hover,
-.pos-navbar #nav-theme[aria-expanded='true'] {
+.pos-navbar #nav-theme[aria-expanded='true'],
+.pos-navbar .pos-workspace-fs-btn--navbar:hover,
+.pos-navbar .pos-workspace-fs-btn--navbar[aria-pressed='true'] {
     background-color: rgba(var(--bs-primary-rgb), 0.18);
     color: var(--bs-primary);
 }
@@ -248,7 +252,8 @@
 }
 
 [data-bs-theme='dark'] .pos-navbar .layout-menu-toggle .nav-link,
-[data-bs-theme='dark'] .pos-navbar #nav-theme {
+[data-bs-theme='dark'] .pos-navbar #nav-theme,
+[data-bs-theme='dark'] .pos-navbar .pos-workspace-fs-btn--navbar {
     background-color: rgba(var(--bs-primary-rgb), 0.18);
     color: rgba(var(--bs-primary-rgb), 1);
 }

@@ -37,6 +37,11 @@
                     </div>
                 </li>
             @endif
+            @if (\App\Support\OrderSurface::isAdminWorkspace())
+                <li class="nav-item">
+                    @include('partials.workspace-fullscreen-button', ['variant' => 'navbar'])
+                </li>
+            @endif
             @include('layouts.partials.theme-switcher')
             <li class="nav-item dropdown pos-navbar-account">
                 <a class="nav-link dropdown-toggle hide-arrow p-0 pos-navbar-avatar-trigger" href="javascript:void(0);" data-bs-toggle="dropdown" aria-label="Account menu" aria-expanded="false">

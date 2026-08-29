@@ -35,6 +35,9 @@
                 </div>
                 <div class="pos-listing-toolbar-tools">
                     <div class="pos-listing-toolbar-actions" id="employeeInvoiceTableActions">
+                        @if(! $isEmployeeSurface)
+                            @include('partials.workspace-fullscreen-button', ['variant' => 'toolbar'])
+                        @endif
                         @include('employee.invoices.partials.filters')
                         <button
                             type="button"

@@ -63,6 +63,18 @@ final class OrderSurface
         ];
     }
 
+    /**
+     * Shared order/invoice screens mounted on the tenant admin layout
+     * (sidebar + navbar). These pages offer a workspace fullscreen toggle
+     * so an admin can match the employee panel's open canvas.
+     */
+    public static function isAdminWorkspace(?Request $request = null): bool
+    {
+        $name = (string) ($request ?? request())->route()?->getName();
+
+        return str($name)->is(['tenant.order.*', 'tenant.invoices.*']);
+    }
+
     public static function route(string $key, mixed $parameters = [], bool $absolute = true): string
     {
         $surface = self::fromRequest();

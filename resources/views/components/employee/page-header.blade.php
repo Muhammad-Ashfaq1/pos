@@ -4,7 +4,16 @@
     'backTitle' => 'Back',
 ])
 
-<div {{ $attributes->class(['employee-orders-heading', 'employee-orders-heading--with-actions' => isset($actions)]) }}>
+@php
+    $showWorkspaceFullscreen = \App\Support\OrderSurface::isAdminWorkspace();
+    $hasHeadingActions = isset($actions) || $showWorkspaceFullscreen;
+@endphp
+
+<div {{ $attributes->class([
+    'employee-orders-heading',
+    'employee-orders-heading--with-actions' => $hasHeadingActions,
+    'employee-orders-heading--workspace-fs' => $showWorkspaceFullscreen,
+]) }}>
     <div class="employee-orders-heading-main">
         <a href="{{ $backUrl }}" class="employee-orders-back-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $backTitle }}">
             <i class="ti tabler-arrow-left"></i>
@@ -12,9 +21,14 @@
         <h4 class="employee-orders-title">{{ $title }}</h4>
     </div>
 
-    @isset($actions)
+    @if ($hasHeadingActions)
         <div class="employee-orders-heading-actions">
-            {{ $actions }}
+            @isset($actions)
+                {{ $actions }}
+            @endisset
+            @if ($showWorkspaceFullscreen)
+                @include('partials.workspace-fullscreen-button')
+            @endif
         </div>
-    @endisset
+    @endif
 </div>
