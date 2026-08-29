@@ -110,3 +110,92 @@
         transition: none;
     }
 }
+
+/* ── Admin order workspace fullscreen ─────────────────────────────────
+ * Shared order/invoice pages keep the tenant sidebar by default. The
+ * maximize control hides the menu so the canvas matches the employee
+ * panel, while the navbar stays and stretches full-width like the
+ * employee header. The sidebar is still there, just not on screen. */
+html.pos-workspace-fullscreen .layout-menu,
+html.pos-workspace-fullscreen .menu-mobile-toggler,
+html.pos-workspace-fullscreen .layout-overlay,
+html.pos-workspace-fullscreen .content-footer,
+html.pos-workspace-fullscreen .drag-target,
+html.pos-workspace-fullscreen .layout-navbar .layout-menu-toggle {
+    display: none !important;
+}
+
+html.pos-workspace-fullscreen .layout-page {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-inline: 0 !important;
+}
+
+html.pos-workspace-fullscreen.layout-navbar-fixed .layout-navbar,
+html.pos-workspace-fullscreen.layout-navbar-fixed .layout-navbar.navbar-detached {
+    inset-inline-start: 0 !important;
+    inset-inline-end: auto !important;
+    inline-size: calc(100% - 3rem) !important;
+    max-inline-size: none !important;
+    max-width: none !important;
+}
+
+html.pos-workspace-fullscreen .content-wrapper > [class*="container-"] {
+    max-width: 100%;
+    width: 100%;
+}
+
+html.pos-workspace-fullscreen .pos-workspace-fs-enter {
+    display: none !important;
+}
+
+html.pos-workspace-fullscreen .pos-workspace-fs-exit {
+    display: inline-flex !important;
+}
+
+.pos-workspace-fs-btn .pos-workspace-fs-exit {
+    display: none;
+}
+
+@media (max-width: 1199.98px) {
+    html.pos-workspace-fullscreen.layout-navbar-fixed .layout-navbar.navbar-detached {
+        inline-size: calc(100% - 3rem) !important;
+    }
+
+    html.pos-workspace-fullscreen .content-wrapper > [class*="container-"] {
+        padding-inline: 1rem;
+    }
+}
+
+@media (max-width: 991.98px) {
+    html.pos-workspace-fullscreen.layout-navbar-fixed .layout-navbar.navbar-detached {
+        inline-size: calc(100% - 2rem) !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    html.pos-workspace-fullscreen .content-wrapper > [class*="container-"] {
+        padding-inline: 0.7rem;
+        padding-block-end: 0.85rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    html.pos-workspace-fullscreen .content-wrapper > [class*="container-"] {
+        padding-inline: 0.5rem;
+    }
+
+    html.pos-workspace-fullscreen.layout-navbar-fixed .layout-navbar.navbar-detached {
+        inline-size: calc(100% - 1rem) !important;
+        margin-inline: 0.5rem;
+    }
+
+    html.pos-workspace-fullscreen .employee-orders-heading {
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    html.pos-workspace-fullscreen .pos-navbar-org-name {
+        max-width: 12ch;
+    }
+}

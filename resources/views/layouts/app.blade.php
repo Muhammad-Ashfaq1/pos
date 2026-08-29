@@ -26,6 +26,7 @@
   $contentContainerClass = trim($__env->yieldContent('content_container_class')) ?: ($isEmployeePanel
       ? 'container-fluid flex-grow-1 container-p-y'
       : 'container-xxl flex-grow-1 container-p-y');
+  $isOrderWorkspace = \App\Support\OrderSurface::isAdminWorkspace();
 @endphp
 
 <!doctype html>
@@ -54,6 +55,11 @@
             document.documentElement.classList.remove('layout-menu-collapsed');
           }
         }
+        @if ($isOrderWorkspace)
+        if (localStorage.getItem('pos.workspaceFullscreen') === '1') {
+          document.documentElement.classList.add('pos-workspace-fullscreen', 'layout-without-menu');
+        }
+        @endif
       })();
     </script>
     <meta
@@ -216,6 +222,9 @@
     <script src="{{ asset('assets/js/session-notifications.js') }}"></script>
     <script src="{{ asset('assets/js/pos-table.js') }}?v={{ filemtime(public_path('assets/js/pos-table.js')) }}"></script>
     <script src="{{ asset('assets/js/pos-master-detail.js') }}?v={{ filemtime(public_path('assets/js/pos-master-detail.js')) }}"></script>
+    @if ($isOrderWorkspace)
+      <script src="{{ asset('assets/js/pos-workspace-fullscreen.js') }}?v={{ filemtime(public_path('assets/js/pos-workspace-fullscreen.js')) }}"></script>
+    @endif
     @stack('page-script')
     @yield('scripts')
 
