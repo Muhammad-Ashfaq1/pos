@@ -46,7 +46,7 @@
     </ul>
 
     {{-- Filter toolbar: search · date range · filters · reset --}}
-    <div class="{{ $isEmployee ? '' : 'pos-glass-card pos-tone-secondary mb-3 overflow-hidden' }}">
+    <div class="{{ $isEmployee ? '' : 'pos-glass-card pos-tone-secondary mb-3 pos-settings-panel' }}" style="position: relative; z-index: 10;">
         <div class="{{ $isEmployee ? '' : 'card-body p-3 p-md-4' }}">
             <div class="d-flex flex-wrap align-items-center gap-2{{ $isEmployee ? ' mb-3' : '' }}">
                 <div class="input-group" style="width: 200px;">
@@ -54,7 +54,7 @@
                     <input type="search" id="report-search" class="form-control" placeholder="Search…" aria-label="Search records">
                 </div>
 
-                <div style="width: 160px;">
+                <div style="width: 160px;" class="position-relative">
                     <select id="report-period" class="form-select report-filter" data-placeholder="Date Range" aria-label="Date Range">
                         @foreach($periodLabels as $value => $label)
                             <option value="{{ $value }}" @selected($value === 'month')>{{ $label }}</option>
@@ -70,7 +70,7 @@
                 </div>
 
                 @if(count($dateColumns) > 1)
-                    <div style="width: 150px;">
+                    <div style="width: 150px;" class="position-relative">
                         <select id="report-date-column" class="form-select report-filter" data-placeholder="Filter Date By" aria-label="Filter Date By">
                             @foreach($dateColumns as $value => $label)
                                 <option value="{{ $value }}">{{ $label }}</option>
@@ -80,7 +80,7 @@
                 @endif
 
                 @foreach($filters as $filter)
-                    <div style="width: 150px;">
+                    <div style="width: 150px;" class="position-relative">
                         @if($filter['type'] === 'select')
                             <select id="report-filter-{{ $filter['key'] }}" class="form-select report-filter" data-filter-key="{{ $filter['key'] }}" data-placeholder="{{ $filter['label'] }}" aria-label="{{ $filter['label'] }}">
                                 <option value="">{{ $filter['label'] }}: All</option>
