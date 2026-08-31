@@ -11,9 +11,20 @@ class PlansRepository
 {
     public function index(): View
     {
+        $totalPlans = Plan::query()->count();
+        $activePlans = Plan::query()->where('is_active', true)->count();
+        $inactivePlans = $totalPlans - $activePlans;
+        $subscribedShops = \App\Models\Tenant::query()->whereNotNull('plan_id')->count();
+
         return view('admin.plans.index', [
             'listingUrl' => route('admin.plans.listing'),
             'durations' => PlanDuration::cases(),
+            'stats' => [
+                'total' => $totalPlans,
+                'active' => $activePlans,
+                'inactive' => $inactivePlans,
+                'subscribed' => $subscribedShops,
+            ],
         ]);
     }
 

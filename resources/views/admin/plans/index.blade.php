@@ -9,20 +9,78 @@
 @section('content')
 <div class="row g-4">
     <div class="col-12">
-        <div class="card bg-label-primary">
-            <div class="card-body p-4">
-                <div class="row align-items-center">
-                    <div class="col-lg-8">
-                        <span class="badge bg-primary mb-3">SaaS Subscription Desk</span>
-                        <h3 class="mb-2">Manage SaaS Subscription Plans</h3>
-                        <p class="text-muted mb-0">
-                            Configure monthly and yearly pricing plans, trial periods, and feature packages for all registered shops.
-                        </p>
-                    </div>
-                    <div class="col-lg-4 text-center d-none d-lg-block">
-                        <img src="{{ asset('assets/img/illustrations/rocket.png') }}" alt="Subscription plans" class="img-fluid" style="max-height: 180px;">
-                    </div>
+        <div class="pos-glass-card pos-tone-primary">
+            <div class="pos-glass-intro">
+                <div class="pos-glass-intro-copy">
+                    <h4 class="pos-glass-intro-title">Manage SaaS Subscription Plans</h4>
+                    <p class="pos-glass-intro-subtitle">
+                        Configure monthly and yearly pricing plans, trial periods, and feature packages for all registered shops.
+                    </p>
                 </div>
+                <div class="pos-glass-intro-actions d-flex flex-wrap gap-2 align-items-center">
+                    <span class="pos-glass-pill pos-tone-primary">
+                        <i class="icon-base ti tabler-credit-card" aria-hidden="true"></i>
+                        {{ $stats['total'] }} plans
+                    </span>
+                    @if ($stats['active'] > 0)
+                        <span class="pos-glass-pill pos-tone-success">
+                            <i class="icon-base ti tabler-circle-check" aria-hidden="true"></i>
+                            {{ $stats['active'] }} active
+                        </span>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="pos-glass-card pos-tone-primary h-100">
+            <div class="pos-stat-body">
+                <div class="pos-stat-head">
+                    <span class="pos-stat-icon"><i class="icon-base ti tabler-credit-card" aria-hidden="true"></i></span>
+                    <h6 class="pos-stat-label">Total Plans</h6>
+                </div>
+                <p class="pos-stat-value">{{ $stats['total'] }}</p>
+                <p class="pos-stat-desc mb-0">Configured pricing tiers</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="pos-glass-card pos-tone-success h-100">
+            <div class="pos-stat-body">
+                <div class="pos-stat-head">
+                    <span class="pos-stat-icon"><i class="icon-base ti tabler-circle-check" aria-hidden="true"></i></span>
+                    <h6 class="pos-stat-label">Active Plans</h6>
+                </div>
+                <p class="pos-stat-value text-success">{{ $stats['active'] }}</p>
+                <p class="pos-stat-desc mb-0">Available for shop assignment</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="pos-glass-card pos-tone-secondary h-100">
+            <div class="pos-stat-body">
+                <div class="pos-stat-head">
+                    <span class="pos-stat-icon"><i class="icon-base ti tabler-archive" aria-hidden="true"></i></span>
+                    <h6 class="pos-stat-label">Inactive Plans</h6>
+                </div>
+                <p class="pos-stat-value text-muted">{{ $stats['inactive'] }}</p>
+                <p class="pos-stat-desc mb-0">Hidden from new assignments</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="pos-glass-card pos-tone-info h-100">
+            <div class="pos-stat-body">
+                <div class="pos-stat-head">
+                    <span class="pos-stat-icon"><i class="icon-base ti tabler-building-store" aria-hidden="true"></i></span>
+                    <h6 class="pos-stat-label">Active Subscriptions</h6>
+                </div>
+                <p class="pos-stat-value text-info">{{ $stats['subscribed'] }}</p>
+                <p class="pos-stat-desc mb-0">Shops on an assigned plan</p>
             </div>
         </div>
     </div>

@@ -17,92 +17,78 @@
 
 <div class="row g-4">
     <div class="col-12">
-        <div class="card bg-label-primary">
-            <div class="card-body p-4">
-                <div class="row align-items-center">
-                    <div class="col-lg-8">
-                        <span class="badge bg-primary mb-3">Tenant Review Desk</span>
-                        <h3 class="mb-2">Manage every shop from one approval console</h3>
-                        <p class="text-muted mb-0">
-                            Review registrations, impersonate approved tenants for support, and keep your SaaS onboarding queue moving without leaving this page.
-                        </p>
-                    </div>
-                    <div class="col-lg-4 text-center d-none d-lg-block">
-                        <img src="{{ asset('assets/img/illustrations/add-new-roles.png') }}" alt="Shop management" class="img-fluid" style="max-height: 180px;">
-                    </div>
+        <div class="pos-glass-card pos-tone-primary">
+            <div class="pos-glass-intro">
+                <div class="pos-glass-intro-copy">
+                    <h4 class="pos-glass-intro-title">Manage every shop from one approval console</h4>
+                    <p class="pos-glass-intro-subtitle">
+                        Review registrations, impersonate approved tenants for support, and keep your SaaS onboarding queue moving without leaving this page.
+                    </p>
+                </div>
+                <div class="pos-glass-intro-actions d-flex flex-wrap gap-2 align-items-center">
+                    <span class="pos-glass-pill pos-tone-primary">
+                        <i class="icon-base ti tabler-building-store" aria-hidden="true"></i>
+                        {{ $shops->count() }} shops
+                    </span>
+                    @if ($pendingCount > 0)
+                        <span class="pos-glass-pill pos-tone-warning">
+                            <i class="icon-base ti tabler-hourglass-high" aria-hidden="true"></i>
+                            {{ $pendingCount }} pending
+                        </span>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 
     <div class="col-xl-3 col-md-6">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <span class="text-muted text-uppercase small fw-semibold d-block mb-1">Total Shops</span>
-                        <h3 class="mb-0">{{ $shops->count() }}</h3>
-                    </div>
-                    <span class="avatar avatar-sm">
-                        <span class="avatar-initial rounded bg-label-primary">
-                            <i class="icon-base ti tabler-building-store"></i>
-                        </span>
-                    </span>
+        <div class="pos-glass-card pos-tone-primary h-100">
+            <div class="pos-stat-body">
+                <div class="pos-stat-head">
+                    <span class="pos-stat-icon"><i class="icon-base ti tabler-building-store" aria-hidden="true"></i></span>
+                    <h6 class="pos-stat-label">Total Shops</h6>
                 </div>
+                <p class="pos-stat-value">{{ $shops->count() }}</p>
+                <p class="pos-stat-desc mb-0">Platform-wide registrations</p>
             </div>
         </div>
     </div>
 
     <div class="col-xl-3 col-md-6">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <span class="text-muted text-uppercase small fw-semibold d-block mb-1">Pending Review</span>
-                        <h3 class="mb-0 text-warning">{{ $pendingCount }}</h3>
-                    </div>
-                    <span class="avatar avatar-sm">
-                        <span class="avatar-initial rounded bg-label-warning">
-                            <i class="icon-base ti tabler-hourglass-high"></i>
-                        </span>
-                    </span>
+        <div class="pos-glass-card pos-tone-warning h-100">
+            <div class="pos-stat-body">
+                <div class="pos-stat-head">
+                    <span class="pos-stat-icon"><i class="icon-base ti tabler-hourglass-high" aria-hidden="true"></i></span>
+                    <h6 class="pos-stat-label">Pending Review</h6>
                 </div>
+                <p class="pos-stat-value text-warning">{{ $pendingCount }}</p>
+                <p class="pos-stat-desc mb-0">Action needed — requires review</p>
             </div>
         </div>
     </div>
 
     <div class="col-xl-3 col-md-6">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <span class="text-muted text-uppercase small fw-semibold d-block mb-1">Approved</span>
-                        <h3 class="mb-0 text-success">{{ $approvedCount }}</h3>
-                    </div>
-                    <span class="avatar avatar-sm">
-                        <span class="avatar-initial rounded bg-label-success">
-                            <i class="icon-base ti tabler-circle-check"></i>
-                        </span>
-                    </span>
+        <div class="pos-glass-card pos-tone-success h-100">
+            <div class="pos-stat-body">
+                <div class="pos-stat-head">
+                    <span class="pos-stat-icon"><i class="icon-base ti tabler-circle-check" aria-hidden="true"></i></span>
+                    <h6 class="pos-stat-label">Approved</h6>
                 </div>
+                <p class="pos-stat-value text-success">{{ $approvedCount }}</p>
+                <p class="pos-stat-desc mb-0">Active tenant stores</p>
             </div>
         </div>
     </div>
 
     <div class="col-xl-3 col-md-6">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <span class="text-muted text-uppercase small fw-semibold d-block mb-1">Flagged</span>
-                        <h3 class="mb-0 text-danger">{{ $suspendedCount + $rejectedCount }}</h3>
-                    </div>
-                    <span class="avatar avatar-sm">
-                        <span class="avatar-initial rounded bg-label-danger">
-                            <i class="icon-base ti tabler-alert-triangle"></i>
-                        </span>
-                    </span>
+        <div class="pos-glass-card pos-tone-danger h-100">
+            <div class="pos-stat-body">
+                <div class="pos-stat-head">
+                    <span class="pos-stat-icon"><i class="icon-base ti tabler-alert-triangle" aria-hidden="true"></i></span>
+                    <h6 class="pos-stat-label">Flagged</h6>
                 </div>
+                <p class="pos-stat-value text-danger">{{ $suspendedCount + $rejectedCount }}</p>
+                <p class="pos-stat-desc mb-0">Suspended or rejected</p>
             </div>
         </div>
     </div>

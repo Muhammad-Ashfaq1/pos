@@ -13,92 +13,78 @@
 
 <div class="row g-4">
     <div class="col-12">
-        <div class="card bg-label-primary">
-            <div class="card-body p-4">
-                <div class="row align-items-center">
-                    <div class="col-lg-8">
-                        <span class="badge bg-primary mb-3">Lead Inbox</span>
-                        <h3 class="mb-2">Every "Request a Demo" lead in one place</h3>
-                        <p class="text-muted mb-0">
-                            Demo requests submitted from the public landing page land here in real time. Track each lead, update its status, and keep your sales follow-up organized.
-                        </p>
-                    </div>
-                    <div class="col-lg-4 text-center d-none d-lg-block">
-                        <img src="{{ asset('assets/img/illustrations/card-website-analytics-1.png') }}" alt="Demo requests" class="img-fluid" style="max-height: 170px;">
-                    </div>
+        <div class="pos-glass-card pos-tone-primary">
+            <div class="pos-glass-intro">
+                <div class="pos-glass-intro-copy">
+                    <h4 class="pos-glass-intro-title">Every "Request a Demo" lead in one place</h4>
+                    <p class="pos-glass-intro-subtitle">
+                        Demo requests submitted from the public landing page land here in real time. Track each lead, update its status, and keep your sales follow-up organized.
+                    </p>
+                </div>
+                <div class="pos-glass-intro-actions d-flex flex-wrap gap-2 align-items-center">
+                    <span class="pos-glass-pill pos-tone-primary">
+                        <i class="icon-base ti tabler-calendar-event" aria-hidden="true"></i>
+                        {{ $stats['total'] }} requests
+                    </span>
+                    @if ($stats['new'] > 0)
+                        <span class="pos-glass-pill pos-tone-warning">
+                            <i class="icon-base ti tabler-bell-ringing" aria-hidden="true"></i>
+                            {{ $stats['new'] }} new
+                        </span>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 
     <div class="col-xl-3 col-md-6">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <span class="text-muted text-uppercase small fw-semibold d-block mb-1">Total Requests</span>
-                        <h3 class="mb-0">{{ $stats['total'] }}</h3>
-                    </div>
-                    <span class="avatar avatar-sm">
-                        <span class="avatar-initial rounded bg-label-primary">
-                            <i class="icon-base ti tabler-calendar-event"></i>
-                        </span>
-                    </span>
+        <div class="pos-glass-card pos-tone-primary h-100">
+            <div class="pos-stat-body">
+                <div class="pos-stat-head">
+                    <span class="pos-stat-icon"><i class="icon-base ti tabler-calendar-event" aria-hidden="true"></i></span>
+                    <h6 class="pos-stat-label">Total Requests</h6>
                 </div>
+                <p class="pos-stat-value">{{ $stats['total'] }}</p>
+                <p class="pos-stat-desc mb-0">Platform demo submissions</p>
             </div>
         </div>
     </div>
 
     <div class="col-xl-3 col-md-6">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <span class="text-muted text-uppercase small fw-semibold d-block mb-1">New</span>
-                        <h3 class="mb-0 text-warning">{{ $stats['new'] }}</h3>
-                    </div>
-                    <span class="avatar avatar-sm">
-                        <span class="avatar-initial rounded bg-label-warning">
-                            <i class="icon-base ti tabler-bell-ringing"></i>
-                        </span>
-                    </span>
+        <div class="pos-glass-card pos-tone-warning h-100">
+            <div class="pos-stat-body">
+                <div class="pos-stat-head">
+                    <span class="pos-stat-icon"><i class="icon-base ti tabler-bell-ringing" aria-hidden="true"></i></span>
+                    <h6 class="pos-stat-label">New Leads</h6>
                 </div>
+                <p class="pos-stat-value text-warning">{{ $stats['new'] }}</p>
+                <p class="pos-stat-desc mb-0">Awaiting contact</p>
             </div>
         </div>
     </div>
 
     <div class="col-xl-3 col-md-6">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <span class="text-muted text-uppercase small fw-semibold d-block mb-1">Scheduled</span>
-                        <h3 class="mb-0 text-primary">{{ $stats['scheduled'] }}</h3>
-                    </div>
-                    <span class="avatar avatar-sm">
-                        <span class="avatar-initial rounded bg-label-primary">
-                            <i class="icon-base ti tabler-calendar-check"></i>
-                        </span>
-                    </span>
+        <div class="pos-glass-card pos-tone-info h-100">
+            <div class="pos-stat-body">
+                <div class="pos-stat-head">
+                    <span class="pos-stat-icon"><i class="icon-base ti tabler-calendar-check" aria-hidden="true"></i></span>
+                    <h6 class="pos-stat-label">Scheduled</h6>
                 </div>
+                <p class="pos-stat-value text-info">{{ $stats['scheduled'] }}</p>
+                <p class="pos-stat-desc mb-0">Demo meeting booked</p>
             </div>
         </div>
     </div>
 
     <div class="col-xl-3 col-md-6">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <span class="text-muted text-uppercase small fw-semibold d-block mb-1">Closed</span>
-                        <h3 class="mb-0 text-success">{{ $stats['closed'] }}</h3>
-                    </div>
-                    <span class="avatar avatar-sm">
-                        <span class="avatar-initial rounded bg-label-success">
-                            <i class="icon-base ti tabler-circle-check"></i>
-                        </span>
-                    </span>
+        <div class="pos-glass-card pos-tone-success h-100">
+            <div class="pos-stat-body">
+                <div class="pos-stat-head">
+                    <span class="pos-stat-icon"><i class="icon-base ti tabler-circle-check" aria-hidden="true"></i></span>
+                    <h6 class="pos-stat-label">Closed</h6>
                 </div>
+                <p class="pos-stat-value text-success">{{ $stats['closed'] }}</p>
+                <p class="pos-stat-desc mb-0">Completed / converted</p>
             </div>
         </div>
     </div>
