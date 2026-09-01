@@ -527,6 +527,19 @@
     box-shadow: 0 0 0 0.15rem rgba(var(--bs-primary-rgb), 0.12);
 }
 
+.pos-listing .pos-listing-modal .jquery-validate-error {
+    display: none !important;
+}
+
+.pos-listing .pos-listing-modal .is-invalid ~ .invalid-feedback,
+.pos-listing .pos-listing-modal .select2-container .select2-selection.is-invalid ~ .invalid-feedback {
+    display: block;
+}
+
+.pos-listing .pos-listing-modal .invalid-feedback.d-block {
+    display: block;
+}
+
 .pos-listing .pos-listing-modal .form-check-input:checked {
     background-color: rgb(var(--bs-primary-rgb));
     border-color: rgb(var(--bs-primary-rgb));
