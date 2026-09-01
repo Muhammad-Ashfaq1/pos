@@ -54,9 +54,34 @@
     $element.next('.select2').find('.select2-selection').toggleClass('is-invalid', invalid);
   };
 
+  const fieldFeedback = function ($field) {
+    if ($field.hasClass('select2-hidden-accessible')) {
+      return $field.closest('.position-relative').find('.invalid-feedback').first();
+    }
+    return $field.siblings('.invalid-feedback').first();
+  };
+
+  const applyFieldError = function (field, message) {
+    if (!message) {
+      return;
+    }
+
+    const $field = $form.find('[name="' + field + '"]').first();
+
+    if (! $field.length) {
+      return;
+    }
+
+    $field.addClass('is-invalid');
+    if ($field.hasClass('select2-hidden-accessible')) {
+      setSelect2ErrorState($field, true);
+    }
+    fieldFeedback($field).text(message).addClass('d-block').css('display', 'block');
+  };
+
   const resetValidationState = function () {
     $form.find('.is-invalid').removeClass('is-invalid');
-    $form.find('.invalid-feedback').text('');
+    $form.find('.invalid-feedback').text('').removeClass('d-block').css('display', '');
     setSelect2ErrorState($('#discount_type'), false);
     setSelect2ErrorState($('#discount_applies_to'), false);
   };
@@ -176,13 +201,20 @@
         usage_limit: { digits: true, min: 1 }
       },
       messages: {
-        name: { required: 'Please enter a discount name.' },
+        name: { required: 'Please enter a discount name.', maxlength: 'The discount name may not be greater than 150 characters.' },
+        code: { maxlength: 'The code may not be greater than 50 characters.' },
+        description: { maxlength: 'The description may not be greater than 2000 characters.' },
         discount_type: { required: 'Please select a discount type.' },
         applies_to: { required: 'Please select where this discount applies.' },
-        value: { required: 'Please enter a discount value.' }
+        value: { required: 'Please enter a discount value.', number: 'The discount value must be numeric.', min: 'The discount value must be greater than zero.' },
+        max_discount_amount: { number: 'The maximum discount amount must be numeric.', min: 'The maximum discount amount must be zero or greater.' },
+        usage_limit: { digits: 'The usage limit must be a whole number.', min: 'The usage limit must be at least 1.' }
       },
       errorElement: 'div',
-      errorClass: 'invalid-feedback',
+      errorClass: 'jquery-validate-error',
+      errorPlacement: function (error, element) {
+        applyFieldError($(element).attr('name'), error.text());
+      },
       highlight: function (element) {
         const $element = $(element);
         $element.addClass('is-invalid');
@@ -191,26 +223,12 @@
         }
       },
       unhighlight: function (element) {
-        const $element = $(element);
-        $element.removeClass('is-invalid');
-        if ($element.hasClass('select2-hidden-accessible')) {
-          setSelect2ErrorState($element, false);
+        const $field = $(element);
+        $field.removeClass('is-invalid');
+        if ($field.hasClass('select2-hidden-accessible')) {
+          setSelect2ErrorState($field, false);
         }
-      },
-      errorPlacement: function (error, element) {
-        const $element = $(element);
-        if ($element.hasClass('select2-hidden-accessible')) {
-          $element.closest('.position-relative').find('.invalid-feedback').first().text(error.text());
-          return;
-        }
-
-        const $feedback = $element.siblings('.invalid-feedback').first();
-        if ($feedback.length) {
-          $feedback.text(error.text());
-          return;
-        }
-
-        error.insertAfter(element);
+        fieldFeedback($field).text('').removeClass('d-block').css('display', '');
       }
     });
   };
@@ -350,24 +368,7 @@
     Object.entries(errors || {}).forEach(function (entry) {
       const field = entry[0];
       const message = Array.isArray(entry[1]) ? entry[1][0] : entry[1];
-      const $element = $form.find('[name="' + field + '"]');
-
-      if (!$element.length) {
-        return;
-      }
-
-      $element.addClass('is-invalid');
-
-      if ($element.hasClass('select2-hidden-accessible')) {
-        setSelect2ErrorState($element, true);
-        $element.closest('.position-relative').find('.invalid-feedback').first().text(message);
-        return;
-      }
-
-      const $feedback = $element.siblings('.invalid-feedback').first();
-      if ($feedback.length) {
-        $feedback.text(message);
-      }
+      applyFieldError(field, message);
     });
   };
 
