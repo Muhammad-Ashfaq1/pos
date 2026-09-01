@@ -73,9 +73,34 @@
     $element.next('.select2').find('.select2-selection').toggleClass('is-invalid', invalid);
   };
 
+  VehicleManager.prototype.fieldFeedback = function ($field) {
+    if ($field.hasClass('select2-hidden-accessible')) {
+      return $field.closest('.position-relative').find('.invalid-feedback').first();
+    }
+    return $field.siblings('.invalid-feedback').first();
+  };
+
+  VehicleManager.prototype.applyFieldError = function (field, message) {
+    if (!message) {
+      return;
+    }
+
+    const $field = this.$form.find('[name="' + field + '"]').first();
+
+    if (! $field.length) {
+      return;
+    }
+
+    $field.addClass('is-invalid');
+    if ($field.hasClass('select2-hidden-accessible')) {
+      this.setSelect2ErrorState($field, true);
+    }
+    this.fieldFeedback($field).text(message).addClass('d-block').css('display', 'block');
+  };
+
   VehicleManager.prototype.resetValidationState = function () {
     this.$form.find('.is-invalid').removeClass('is-invalid');
-    this.$form.find('.invalid-feedback').text('');
+    this.$form.find('.invalid-feedback').text('').removeClass('d-block').css('display', '');
     this.setSelect2ErrorState(this.$form.find('.select2, .customer-select2'), false);
   };
 
@@ -152,11 +177,24 @@
       },
       messages: {
         customer_id: { required: 'Please select a customer.' },
-        inline_customer_name: { required: 'Please enter walk-in customer details.' },
-        plate_number: { required: 'Please enter a plate number.' }
+        inline_customer_name: { required: 'Please enter walk-in customer details.', maxlength: 'Customer name may not be greater than 150 characters.' },
+        inline_customer_phone: { maxlength: 'Phone number may not be greater than 30 characters.' },
+        inline_customer_email: { email: 'Please enter a valid email address.', maxlength: 'Email may not be greater than 150 characters.' },
+        inline_customer_address: { maxlength: 'Address may not be greater than 1000 characters.' },
+        plate_number: { required: 'Please enter a plate number.', maxlength: 'Plate number may not be greater than 50 characters.' },
+        registration_number: { maxlength: 'Registration number may not be greater than 80 characters.' },
+        make: { maxlength: 'Make may not be greater than 100 characters.' },
+        model: { maxlength: 'Model may not be greater than 100 characters.' },
+        year: { number: 'Year must be numeric.', min: 'Year must be 1900 or greater.' },
+        color: { maxlength: 'Color may not be greater than 50 characters.' },
+        engine_type: { maxlength: 'Engine type may not be greater than 80 characters.' },
+        odometer: { number: 'Odometer must be numeric.', min: 'Odometer cannot be negative.' }
       },
       errorElement: 'div',
-      errorClass: 'invalid-feedback',
+      errorClass: 'jquery-validate-error',
+      errorPlacement: function (error, element) {
+        _this.applyFieldError($(element).attr('name'), error.text());
+      },
       highlight: function (element) {
         const $element = $(element);
         $element.addClass('is-invalid');
@@ -165,19 +203,12 @@
         }
       },
       unhighlight: function (element) {
-        const $element = $(element);
-        $element.removeClass('is-invalid');
-        if ($element.hasClass('select2-hidden-accessible')) {
-          _this.setSelect2ErrorState($element, false);
+        const $field = $(element);
+        $field.removeClass('is-invalid');
+        if ($field.hasClass('select2-hidden-accessible')) {
+          _this.setSelect2ErrorState($field, false);
         }
-      },
-      errorPlacement: function (error, element) {
-        const $element = $(element);
-        if ($element.hasClass('select2-hidden-accessible')) {
-          $element.closest('.position-relative').find('.invalid-feedback').first().text(error.text());
-          return;
-        }
-        error.insertAfter(element);
+        _this.fieldFeedback($field).text('').removeClass('d-block').css('display', '');
       }
     });
   };
@@ -257,17 +288,16 @@
     Object.entries(errors || {}).forEach(function (entry) {
       const field = entry[0];
       const message = Array.isArray(entry[1]) ? entry[1][0] : entry[1];
-      const $element = _this.$form.find('[name="' + field + '"]');
-      if (!$element.length) return;
-      $element.addClass('is-invalid');
-      if ($element.hasClass('select2-hidden-accessible')) {
-        _this.setSelect2ErrorState($element, true);
-        $element.closest('.position-relative').find('.invalid-feedback').first().text(message);
-      } else {
-        const $feedback = $element.siblings('.invalid-feedback').first();
-        if ($feedback.length) $feedback.text(message);
-      }
+      _this.applyFieldError(field, message);
     });
+
+    if (this.validator) {
+      this.validator.showErrors(Object.fromEntries(
+        Object.entries(errors || {}).map(function (entry) {
+          return [entry[0], Array.isArray(entry[1]) ? entry[1][0] : entry[1]];
+        })
+      ));
+    }
   };
 
   window.VehicleManager = VehicleManager;
