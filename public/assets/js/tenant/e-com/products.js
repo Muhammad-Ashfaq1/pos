@@ -260,12 +260,45 @@
     $('#product_current_stock').removeData('baseline');
   };
 
+  const fieldFeedback = function ($field) {
+    if ($field.hasClass('select2-hidden-accessible')) {
+      return $field.closest('.position-relative').find('.invalid-feedback').first();
+    }
+    return $field.siblings('.invalid-feedback').first();
+  };
+
+  const applyFieldError = function (field, message) {
+    if (!message) {
+      return;
+    }
+
+    const $field = $form.find('[name="' + field + '"]').first();
+
+    if (! $field.length) {
+      return;
+    }
+
+    $field.addClass('is-invalid');
+    if ($field.hasClass('select2-hidden-accessible')) {
+      setSelect2ErrorState($field, true);
+    }
+
+    if ($field.is('#product_stock_adjustment_quantity')) {
+      $('#product_stock_adjustment_error').text(message);
+      $stockAdjustmentWarning.addClass('d-none');
+      return;
+    }
+
+    fieldFeedback($field).text(message).addClass('d-block').css('display', 'block');
+  };
+
   const resetValidationState = function () {
     $form.find('.is-invalid').removeClass('is-invalid');
-    $form.find('.invalid-feedback').text('');
+    $form.find('.invalid-feedback').text('').removeClass('d-block').css('display', '');
     setSelect2ErrorState($formCategory, false);
     setSelect2ErrorState($formSubCategory, false);
     setSelect2ErrorState($formDiscount, false);
+    setSelect2ErrorState($formService, false);
   };
 
   const ensureSelectOption = function ($select, id, text) {
@@ -669,8 +702,70 @@
           min: 0
         }
       },
+      messages: {
+        product_type_id: {
+          required: 'Please select a product type.'
+        },
+        name: {
+          required: 'Please enter a product name.',
+          maxlength: 'The product name may not be greater than 150 characters.'
+        },
+        sku: {
+          maxlength: 'The SKU may not be greater than 80 characters.'
+        },
+        barcode: {
+          maxlength: 'The barcode may not be greater than 80 characters.'
+        },
+        brand: {
+          maxlength: 'The brand may not be greater than 120 characters.'
+        },
+        unit: {
+          maxlength: 'The unit may not be greater than 50 characters.'
+        },
+        description: {
+          maxlength: 'The description may not be greater than 2000 characters.'
+        },
+        cost_price: {
+          required: 'Please enter a cost price.',
+          number: 'Cost price must be numeric.',
+          min: 'Cost price cannot be negative.'
+        },
+        sale_price: {
+          required: 'Please enter a sale price.',
+          number: 'Sale price must be numeric.',
+          min: 'Sale price cannot be negative.'
+        },
+        tax_percentage: {
+          number: 'Tax percentage must be numeric.',
+          min: 'Tax percentage cannot be negative.',
+          max: 'Tax percentage cannot exceed 100%.'
+        },
+        opening_stock: {
+          digits: 'Opening stock must be a whole number.',
+          min: 'Opening stock cannot be negative.'
+        },
+        current_stock: {
+          digits: 'Current stock must be a whole number.',
+          min: 'Current stock cannot be negative.'
+        },
+        minimum_stock_level: {
+          digits: 'Minimum stock level must be a whole number.',
+          min: 'Minimum stock level cannot be negative.'
+        },
+        reorder_level: {
+          digits: 'Reorder level must be a whole number.',
+          min: 'Reorder level cannot be negative.'
+        },
+        stock_adjustment_quantity: {
+          digits: 'Stock adjustment must be a whole number.',
+          min: 'Stock adjustment cannot be negative.'
+        }
+      },
       errorElement: 'div',
-      errorClass: 'invalid-feedback',
+      errorClass: 'jquery-validate-error',
+      errorPlacement: function (error, element) {
+        applyFieldError($(element).attr('name'), error.text());
+      },
       highlight: function (element) {
         const $element = $(element);
         $element.addClass('is-invalid');
@@ -680,41 +775,20 @@
         }
       },
       unhighlight: function (element) {
-        const $element = $(element);
-        $element.removeClass('is-invalid');
+        const $field = $(element);
+        $field.removeClass('is-invalid');
 
-        if ($element.hasClass('select2-hidden-accessible')) {
-          setSelect2ErrorState($element, false);
+        if ($field.hasClass('select2-hidden-accessible')) {
+          setSelect2ErrorState($field, false);
         }
+
+        fieldFeedback($field).text('').removeClass('d-block').css('display', '');
       },
       success: function (_, element) {
         if ($(element).is('#product_stock_adjustment_quantity')) {
           $stockAdjustmentError.text('');
           updateStockAdjustmentMessage();
         }
-      },
-      errorPlacement: function (error, element) {
-        const $element = $(element);
-
-        if ($element.hasClass('select2-hidden-accessible')) {
-          $element.closest('.position-relative').find('.invalid-feedback').first().text(error.text());
-          return;
-        }
-
-        if ($element.is('#product_stock_adjustment_quantity')) {
-          $('#product_stock_adjustment_error').text(error.text());
-          $stockAdjustmentWarning.addClass('d-none');
-          return;
-        }
-
-        const $feedback = $element.siblings('.invalid-feedback').first();
-
-        if ($feedback.length) {
-          $feedback.text(error.text());
-          return;
-        }
-
-        error.insertAfter(element);
       }
     });
   };
@@ -1046,11 +1120,17 @@
         })
         .fail(function (xhr) {
           if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
-            if (xhr.responseJSON.errors.id) {
-              showAlert('error', xhr.responseJSON.errors.id[0]);
+            const errors = xhr.responseJSON.errors;
+
+            Object.entries(errors).forEach(function (entry) {
+              applyFieldError(entry[0], entry[1][0]);
+            });
+
+            if (errors.id) {
+              showAlert('error', errors.id[0]);
             }
 
-            appendServerErrors(xhr.responseJSON.errors, validator);
+            appendServerErrors(errors, validator);
             return;
           }
 
