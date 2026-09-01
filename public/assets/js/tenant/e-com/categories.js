@@ -46,9 +46,28 @@
     $submitButton.prop('disabled', false).text(defaultText);
   };
 
+  const fieldFeedback = function ($field) {
+    return $field.siblings('.invalid-feedback').first();
+  };
+
+  const applyFieldError = function (field, message) {
+    if (!message) {
+      return;
+    }
+
+    const $field = $form.find('[name="' + field + '"]').first();
+
+    if (! $field.length) {
+      return;
+    }
+
+    $field.addClass('is-invalid');
+    fieldFeedback($field).text(message).addClass('d-block');
+  };
+
   const resetValidationState = function () {
     $form.find('.is-invalid').removeClass('is-invalid');
-    $form.find('.invalid-feedback').text('');
+    $form.find('.invalid-feedback').text('').removeClass('d-block');
   };
 
   const resetForm = function () {
@@ -155,22 +174,23 @@
         }
       },
       errorElement: 'div',
-      errorClass: 'invalid-feedback',
+      errorClass: 'jquery-validate-error',
+      errorPlacement: function (error, element) {
+        applyFieldError(element.attr('name'), error.text());
+      },
       highlight: function (element) {
         $(element).addClass('is-invalid');
       },
       unhighlight: function (element) {
-        $(element).removeClass('is-invalid');
+        const $field = $(element);
+        $field.removeClass('is-invalid');
+        fieldFeedback($field).text('').removeClass('d-block');
       },
-      errorPlacement: function (error, element) {
-        const $feedback = element.siblings('.invalid-feedback').first();
-
-        if ($feedback.length) {
-          $feedback.text(error.text());
-          return;
-        }
-
-        error.insertAfter(element);
+      success: function (label, element) {
+        const $field = $(element);
+        $field.removeClass('is-invalid');
+        fieldFeedback($field).text('').removeClass('d-block');
+        label.remove();
       }
     });
   };
@@ -363,16 +383,22 @@
         })
         .fail(function (xhr) {
           if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
-            if (xhr.responseJSON.errors.id) {
-              showAlert('error', xhr.responseJSON.errors.id[0]);
-            }
+            const errors = xhr.responseJSON.errors;
+
+            Object.entries(errors).forEach(function (entry) {
+              applyFieldError(entry[0], entry[1][0]);
+            });
 
             if (validator) {
               validator.showErrors(Object.fromEntries(
-                Object.entries(xhr.responseJSON.errors).map(function (entry) {
+                Object.entries(errors).map(function (entry) {
                   return [entry[0], entry[1][0]];
                 })
               ));
+            }
+
+            if (errors.id) {
+              showAlert('error', errors.id[0]);
             }
 
             return;
