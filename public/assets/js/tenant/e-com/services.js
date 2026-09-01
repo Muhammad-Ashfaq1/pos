@@ -121,9 +121,34 @@
     return inputName;
   };
 
+  const fieldFeedback = function ($field) {
+    if ($field.hasClass('select2-hidden-accessible')) {
+      return $field.closest('.position-relative').find('.invalid-feedback').first();
+    }
+    return $field.siblings('.invalid-feedback').first();
+  };
+
+  const applyFieldError = function (field, message) {
+    if (!message) {
+      return;
+    }
+
+    const $field = $form.find('[name="' + field + '"]').first();
+
+    if (! $field.length) {
+      return;
+    }
+
+    $field.addClass('is-invalid');
+    if ($field.hasClass('select2-hidden-accessible')) {
+      setSelect2ErrorState($field, true);
+    }
+    fieldFeedback($field).text(message).addClass('d-block').css('display', 'block');
+  };
+
   const resetValidationState = function () {
     $form.find('.is-invalid').removeClass('is-invalid');
-    $form.find('.invalid-feedback').text('');
+    $form.find('.invalid-feedback').text('').removeClass('d-block').css('display', '');
     setSelect2ErrorState($formCategory, false);
     $mappingsTableBody.find('.service-mapping-row').each(function () {
       const $row = $(this);
@@ -416,8 +441,34 @@
           max: 100
         }
       },
+      messages: {
+        name: {
+          required: 'Please enter a service name.',
+          maxlength: 'The service name may not be greater than 150 characters.'
+        },
+        slug: {
+          required: 'Please enter a service slug.',
+          maxlength: 'The service slug may not be greater than 170 characters.'
+        },
+        description: {
+          maxlength: 'The description may not be greater than 2000 characters.'
+        },
+        standard_price: {
+          required: 'Please enter a standard price.',
+          number: 'The standard price must be numeric.',
+          min: 'The standard price must be zero or greater.'
+        },
+        tax_percentage: {
+          number: 'Tax percentage must be numeric.',
+          min: 'Tax percentage must be zero or greater.',
+          max: 'Tax percentage may not be greater than 100.'
+        }
+      },
       errorElement: 'div',
-      errorClass: 'invalid-feedback',
+      errorClass: 'jquery-validate-error',
+      errorPlacement: function (error, element) {
+        applyFieldError($(element).attr('name'), error.text());
+      },
       highlight: function (element) {
         const $element = $(element);
         $element.addClass('is-invalid');
@@ -427,29 +478,14 @@
         }
       },
       unhighlight: function (element) {
-        const $element = $(element);
-        $element.removeClass('is-invalid');
+        const $field = $(element);
+        $field.removeClass('is-invalid');
 
-        if ($element.hasClass('select2-hidden-accessible')) {
-          setSelect2ErrorState($element, false);
-        }
-      },
-      errorPlacement: function (error, element) {
-        const $element = $(element);
-
-        if ($element.hasClass('select2-hidden-accessible')) {
-          $element.closest('.position-relative').find('.invalid-feedback').first().text(error.text());
-          return;
+        if ($field.hasClass('select2-hidden-accessible')) {
+          setSelect2ErrorState($field, false);
         }
 
-        const $feedback = $element.siblings('.invalid-feedback').first();
-
-        if ($feedback.length) {
-          $feedback.text(error.text());
-          return;
-        }
-
-        error.insertAfter(element);
+        fieldFeedback($field).text('').removeClass('d-block').css('display', '');
       }
     });
   };
@@ -778,12 +814,14 @@
           if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
             const errors = xhr.responseJSON.errors;
 
+            Object.entries(errors).forEach(function (entry) {
+              if (!entry[0].startsWith('mappings.')) {
+                applyFieldError(entry[0], entry[1][0]);
+              }
+            });
+
             if (errors.id) {
               showAlert('error', errors.id[0]);
-            }
-
-            if (errors.name && errors.name[0]) {
-              showAlert('error', errors.name[0]);
             }
 
             appendServerErrors(errors, validator);
