@@ -31,9 +31,7 @@
                                     <select
                                         id="discount_status"
                                         class="form-select filter-control select2"
-                                        data-placeholder="All statuses"
                                         data-allow-clear="false"
-                                        data-minimum-results-for-search="Infinity"
                                     >
                                         <option value="">All</option>
                                         <option value="1">Active</option>
@@ -47,7 +45,6 @@
                                         class="form-select filter-control select2"
                                         data-placeholder="All discount types"
                                         data-allow-clear="false"
-                                        data-minimum-results-for-search="Infinity"
                                     >
                                         <option value="">All</option>
                                         @foreach($discountTypes as $type => $label)
@@ -62,7 +59,6 @@
                                         class="form-select filter-control select2"
                                         data-placeholder="All targets"
                                         data-allow-clear="false"
-                                        data-minimum-results-for-search="Infinity"
                                     >
                                         <option value="">All</option>
                                         @foreach($appliesToOptions as $appliesTo => $label)
@@ -77,7 +73,6 @@
                                         class="form-select filter-control select2"
                                         data-placeholder="Sort discounts"
                                         data-allow-clear="false"
-                                        data-minimum-results-for-search="Infinity"
                                     >
                                         <option value="latest">Latest</option>
                                         <option value="name">Name A-Z</option>
