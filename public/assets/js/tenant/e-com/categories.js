@@ -451,7 +451,55 @@
     });
   };
 
+  const setSelect2ErrorState = function ($element, invalid) {
+    $element.next('.select2').find('.select2-selection').toggleClass('is-invalid', invalid);
+  };
+
+  const initStaticSelect2 = function () {
+    if (typeof $.fn.select2 !== 'function') {
+      return;
+    }
+
+    $('.select2').each(function () {
+      const $this = $(this);
+
+      if ($this.data('select2')) {
+        return;
+      }
+
+      const dropdownParentSelector = $this.data('dropdown-parent');
+      const $dropdownMenu = $this.closest('.dropdown-menu');
+
+      let $parent = $this.parent();
+      if (dropdownParentSelector) {
+        $parent = $(dropdownParentSelector);
+      } else if ($dropdownMenu.length) {
+        $parent = $dropdownMenu;
+      } else if (!$parent.hasClass('position-relative')) {
+        $this.wrap('<div class="position-relative"></div>');
+        $parent = $this.parent();
+      }
+
+      const select2Config = {
+        dropdownParent: $parent.length ? $parent : $(document.body),
+        allowClear: Boolean($this.data('allow-clear')),
+        minimumResultsForSearch: $this.data('minimum-results-for-search') ?? 0
+      };
+
+      const placeholder = $this.data('placeholder');
+      if (placeholder) {
+        select2Config.placeholder = placeholder;
+      }
+
+      $this.select2(select2Config).on('change', function () {
+        setSelect2ErrorState($this, false);
+        $this.closest('.position-relative').find('.invalid-feedback').text('').removeClass('d-block');
+      });
+    });
+  };
+
   $(function () {
+    initStaticSelect2();
     const validator = bindFormValidation();
     initDataTable();
     bindFilters();
