@@ -42,9 +42,7 @@
                                     <select
                                         id="subcategory_status"
                                         class="form-select filter-control select2"
-                                        data-placeholder="All statuses"
                                         data-allow-clear="false"
-                                        data-minimum-results-for-search="Infinity"
                                     >
                                         <option value="">All</option>
                                         <option value="1">Active</option>
@@ -56,9 +54,7 @@
                                     <select
                                         id="subcategory_sort"
                                         class="form-select filter-control select2"
-                                        data-placeholder="Sort sub categories"
                                         data-allow-clear="false"
-                                        data-minimum-results-for-search="Infinity"
                                     >
                                         <option value="latest">Latest</option>
                                         <option value="category">Category A-Z</option>

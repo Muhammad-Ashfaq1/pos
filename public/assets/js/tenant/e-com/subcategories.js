@@ -120,12 +120,31 @@
         return;
       }
 
-      $this.wrap('<div class="position-relative"></div>').select2({
-        dropdownParent: $this.parent(),
-        placeholder: $this.data('placeholder'),
+      const dropdownParentSelector = $this.data('dropdown-parent');
+      const $dropdownMenu = $this.closest('.dropdown-menu');
+
+      let $parent = $this.parent();
+      if (dropdownParentSelector) {
+        $parent = $(dropdownParentSelector);
+      } else if ($dropdownMenu.length) {
+        $parent = $dropdownMenu;
+      } else if (!$parent.hasClass('position-relative')) {
+        $this.wrap('<div class="position-relative"></div>');
+        $parent = $this.parent();
+      }
+
+      const select2Config = {
+        dropdownParent: $parent.length ? $parent : $(document.body),
         allowClear: Boolean($this.data('allow-clear')),
         minimumResultsForSearch: $this.data('minimum-results-for-search') ?? 0
-      });
+      };
+
+      const placeholder = $this.data('placeholder');
+      if (placeholder) {
+        select2Config.placeholder = placeholder;
+      }
+
+      $this.select2(select2Config);
     });
   };
 
