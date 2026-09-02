@@ -19,6 +19,7 @@
                                 type="button"
                                 class="btn btn-label-secondary btn-icon"
                                 data-bs-toggle="dropdown"
+                                data-bs-auto-close="outside"
                                 aria-expanded="false"
                                 title="Filters"
                             >
@@ -30,9 +31,7 @@
                                     <select
                                         id="status"
                                         class="form-select filter-control select2"
-                                        data-placeholder="All statuses"
                                         data-allow-clear="false"
-                                        data-minimum-results-for-search="Infinity"
                                     >
                                         <option value="">All</option>
                                         <option value="1">Active</option>
@@ -44,9 +43,7 @@
                                     <select
                                         id="sort"
                                         class="form-select filter-control select2"
-                                        data-placeholder="Sort product types"
                                         data-allow-clear="false"
-                                        data-minimum-results-for-search="Infinity"
                                     >
                                         <option value="latest">Latest</option>
                                         <option value="name">Name A-Z</option>
