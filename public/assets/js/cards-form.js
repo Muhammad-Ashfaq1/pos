@@ -20,15 +20,39 @@
     $element.next('.select2').find('.select2-selection').toggleClass('is-invalid', invalid);
   };
 
-  const clearFieldError = function ($element) {
+  const fieldFeedback = function ($element, baseField) {
     const $field = $element.closest('[data-card-field]');
+    if ($field.length && baseField) {
+      const $cardError = $field.find('[data-card-error="' + baseField + '"]').first();
+      if ($cardError.length) {
+        return $cardError;
+      }
+    }
+
+    if ($element.hasClass('select2-hidden-accessible')) {
+      return $element.closest('.position-relative').find('.invalid-feedback').first();
+    }
+
+    const $siblings = $element.siblings('.invalid-feedback').first();
+    if ($siblings.length) {
+      return $siblings;
+    }
+
+    return $element.closest('.position-relative').find('.invalid-feedback').first();
+  };
+
+  const clearFieldError = function ($element) {
+    const fieldName = $element.attr('name') ? $element.attr('name').split('.')[0].replace('[]', '') : '';
     $element.removeClass('is-invalid');
 
+    const $feedback = fieldFeedback($element, fieldName);
+    if ($feedback.length) {
+      $feedback.text('').removeClass('d-block').css('display', '');
+    }
+
+    const $field = $element.closest('[data-card-field]');
     if ($field.length) {
-      $field.find('[data-card-error]').text('');
-    } else {
-      $element.siblings('.invalid-feedback').first().text('');
-      $element.closest('.position-relative').find('.invalid-feedback').first().text('');
+      $field.find('[data-card-error]').text('').removeClass('d-block').css('display', '');
     }
 
     if ($element.hasClass('select2-hidden-accessible')) {
@@ -38,8 +62,8 @@
 
   const clearValidation = function ($form) {
     $form.find('.is-invalid').removeClass('is-invalid');
-    $form.find('[data-card-error]').text('');
-    $form.find('.invalid-feedback').text('');
+    $form.find('[data-card-error]').text('').removeClass('d-block').css('display', '');
+    $form.find('.invalid-feedback').text('').removeClass('d-block').css('display', '');
     $form.find('.select2-hidden-accessible').each(function () {
       setSelect2ErrorState($(this), false);
     });
@@ -61,19 +85,10 @@
         setSelect2ErrorState($element, true);
       }
 
-      const $field = $element.closest('[data-card-field]');
-      if ($field.length) {
-        $field.find('[data-card-error="' + baseField + '"]').first().text(message);
-        return;
-      }
-
-      const $feedback = $element.siblings('.invalid-feedback').first();
+      const $feedback = fieldFeedback($element, baseField);
       if ($feedback.length) {
-        $feedback.text(message);
-        return;
+        $feedback.text(message).addClass('d-block').css('display', 'block');
       }
-
-      $element.closest('.position-relative').find('.invalid-feedback').first().text(message);
     });
   };
 

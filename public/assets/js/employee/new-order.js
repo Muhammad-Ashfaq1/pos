@@ -3123,20 +3123,26 @@
         syncOrderCardDrawers();
     });
 
-    // Dynamically prepended cards: force radio selection on card click.
+    // Dynamically prepended cards: force radio selection on card click or display specific error validation.
     $(document).on('click', '.order-card-option', function (event) {
         if ($(event.target).closest('a, button').length) {
             return;
         }
 
         const $option = $(this);
-        if ($option.hasClass('is-ineligible')) {
+        const card = cardPayloadFromOption($option);
+        const order = getActiveOrder();
+        const totals = totalsForOrder(order);
+
+        if ($option.hasClass('is-ineligible') || !cardIsEligible(card, order, totals)) {
+            notifyOrder('warning', cardIneligibleMessage(card, order, totals));
             event.preventDefault();
             return false;
         }
 
         const $radio = $option.find('.order-card-radio').first();
         if (!$radio.length || $radio.prop('disabled')) {
+            notifyOrder('warning', cardIneligibleMessage(card, order, totals));
             event.preventDefault();
             return false;
         }
@@ -3150,8 +3156,18 @@
         const $selected = $('.order-card-list[data-card-type="' + type + '"] .order-card-radio:checked')
             .closest('.order-card-option');
 
-        if (!order || !$selected.length) {
-            notifyOrder('warning', 'Please select an eligible card first.');
+        if (!order) {
+            notifyOrder('warning', 'Please start or select an order first.');
+            return;
+        }
+
+        if (!order.items || order.items.length === 0) {
+            notifyOrder('warning', 'Please add items to cart before applying a ' + (type === 'discount' ? 'discount card' : type + ' card') + '.');
+            return;
+        }
+
+        if (!$selected.length) {
+            notifyOrder('warning', 'Please select a ' + (type === 'discount' ? 'discount card' : type + ' card') + ' to apply.');
             return;
         }
 
