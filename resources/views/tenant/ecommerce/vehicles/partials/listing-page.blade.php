@@ -33,9 +33,7 @@
                                 <select
                                     id="vehicle_default_filter"
                                     class="form-select filter-control select2"
-                                    data-placeholder="All vehicles"
                                     data-allow-clear="false"
-                                    data-minimum-results-for-search="Infinity"
                                 >
                                     <option value="">All</option>
                                     <option value="1">Default</option>
@@ -49,7 +47,6 @@
                                     class="form-select filter-control select2"
                                     data-placeholder="Sort vehicles"
                                     data-allow-clear="false"
-                                    data-minimum-results-for-search="Infinity"
                                 >
                                     <option value="latest">Latest</option>
                                     <option value="customer">Customer A-Z</option>

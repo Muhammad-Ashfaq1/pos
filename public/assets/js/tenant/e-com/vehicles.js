@@ -327,7 +327,37 @@
     });
   };
 
+  const initStaticSelect2 = function () {
+    const $selects = $('.select2');
+
+    if (typeof $.fn.select2 !== 'function' || !$selects.length) {
+      return;
+    }
+
+    $selects.each(function () {
+      const $this = $(this);
+
+      if ($this.data('select2')) {
+        return;
+      }
+
+      const dropdownParentSelector = $this.data('dropdown-parent');
+
+      if (!dropdownParentSelector && !$this.parent().hasClass('position-relative')) {
+        $this.wrap('<div class="position-relative"></div>');
+      }
+
+      $this.select2({
+        dropdownParent: dropdownParentSelector ? $(dropdownParentSelector) : $this.parent(),
+        placeholder: $this.data('placeholder'),
+        allowClear: Boolean($this.data('allow-clear')),
+        minimumResultsForSearch: $this.data('minimum-results-for-search') ?? 0
+      });
+    });
+  };
+
   $(function () {
+    initStaticSelect2();
     if (typeof window.VehicleManager === 'function') {
       vehicleManager = new window.VehicleManager({
         onSaveSuccess: function () {
