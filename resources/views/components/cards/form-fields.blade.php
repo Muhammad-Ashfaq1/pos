@@ -79,7 +79,7 @@
             @endif
         </label>
         @if ($resolvedValuePrefix)
-            <div class="input-group has-validation">
+            <div class="input-group">
                 <span class="input-group-text" data-card-value-prefix>{{ $resolvedValuePrefix }}</span>
                 <input
                     type="number"
@@ -92,8 +92,8 @@
                     @if ($isDiscount) max="100" @endif
                     @if ($valueRequired) required @endif
                 >
-                <div class="invalid-feedback" data-card-error="value"></div>
             </div>
+            <div class="invalid-feedback" data-card-error="value"></div>
         @else
             <input
                 type="number"
@@ -114,7 +114,7 @@
         <label class="form-label" for="{{ $idPrefix }}_minimum_spend">
             Minimum Spend Amount <span class="text-danger">*</span>
         </label>
-        <div class="input-group has-validation">
+        <div class="input-group">
             <span class="input-group-text">{{ $currencySymbol }}</span>
             <input
                 type="number"
@@ -126,8 +126,8 @@
                 step="0.01"
                 required
             >
-            <div class="invalid-feedback" data-card-error="minimum_spend"></div>
         </div>
+        <div class="invalid-feedback" data-card-error="minimum_spend"></div>
     </div>
 
     <div class="col-md-6" data-card-field="product_ids">

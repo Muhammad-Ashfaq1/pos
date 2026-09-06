@@ -1,4 +1,4 @@
-﻿(function ($) {
+(function ($) {
   'use strict';
 
   const csrfToken = $('meta[name="csrf-token"]').attr('content');
@@ -52,9 +52,57 @@
     $submitButton.prop('disabled', false).text(defaultText);
   };
 
+  const fieldFeedback = function ($field) {
+    return $field.siblings('.invalid-feedback').first();
+  };
+
+  const applyFieldError = function (field, message) {
+    if (!message) {
+      return;
+    }
+
+    const $field = $form.find('[name="' + field + '"]').first();
+
+    if (! $field.length) {
+      return;
+    }
+
+    $field.addClass('is-invalid');
+    fieldFeedback($field).text(message).addClass('d-block').css('display', 'block');
+  };
+
   const resetValidationState = function () {
     $form.find('.is-invalid').removeClass('is-invalid');
-    $form.find('.invalid-feedback').text('');
+    $form.find('.invalid-feedback').text('').removeClass('d-block').css('display', '');
+  };
+
+  const initStaticSelect2 = function () {
+    const $selects = $('.select2');
+
+    if (typeof $.fn.select2 !== 'function' || !$selects.length) {
+      return;
+    }
+
+    $selects.each(function () {
+      const $this = $(this);
+
+      if ($this.data('select2')) {
+        return;
+      }
+
+      const dropdownParentSelector = $this.data('dropdown-parent');
+
+      if (!dropdownParentSelector && !$this.parent().hasClass('position-relative')) {
+        $this.wrap('<div class="position-relative"></div>');
+      }
+
+      $this.select2({
+        dropdownParent: dropdownParentSelector ? $(dropdownParentSelector) : $this.parent(),
+        placeholder: $this.data('placeholder'),
+        allowClear: Boolean($this.data('allow-clear')),
+        minimumResultsForSearch: $this.data('minimum-results-for-search') ?? 0
+      });
+    });
   };
 
   const resetForm = function () {
@@ -156,22 +204,17 @@
         }
       },
       errorElement: 'div',
-      errorClass: 'invalid-feedback',
+      errorClass: 'jquery-validate-error',
+      errorPlacement: function (error, element) {
+        applyFieldError(element.attr('name'), error.text());
+      },
       highlight: function (element) {
         $(element).addClass('is-invalid');
       },
       unhighlight: function (element) {
-        $(element).removeClass('is-invalid');
-      },
-      errorPlacement: function (error, element) {
-        const $feedback = element.siblings('.invalid-feedback').first();
-
-        if ($feedback.length) {
-          $feedback.text(error.text());
-          return;
-        }
-
-        error.insertAfter(element);
+        const $field = $(element);
+        $field.removeClass('is-invalid');
+        fieldFeedback($field).text('').removeClass('d-block').css('display', '');
       }
     });
   };
@@ -371,13 +414,9 @@
           if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
             const errors = xhr.responseJSON.errors;
 
-            if (errors.id) {
-              showAlert('error', errors.id[0]);
-            }
-
-            if (errors.name && errors.name[0]) {
-              showAlert('error', errors.name[0]);
-            }
+            Object.entries(errors).forEach(function (entry) {
+              applyFieldError(entry[0], entry[1][0]);
+            });
 
             if (validator) {
               validator.showErrors(Object.fromEntries(
@@ -385,6 +424,10 @@
                   return [entry[0], entry[1][0]];
                 })
               ));
+            }
+
+            if (errors.id) {
+              showAlert('error', errors.id[0]);
             }
 
             return;
@@ -439,6 +482,7 @@
   };
 
   $(function () {
+    initStaticSelect2();
     const validator = bindFormValidation();
     initDataTable();
     bindFilters();

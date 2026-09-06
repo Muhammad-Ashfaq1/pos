@@ -22,7 +22,7 @@ class ListProductsRequest extends FormRequest
             'start'           => ['nullable', 'integer', 'min:0'],
             'length'          => ['nullable', 'integer', 'min:1', 'max:100'],
             'search.value'    => ['nullable', 'string', 'max:255'],
-            'status'          => ['nullable', Rule::in(['1', '0'])],
+            'status'          => ['nullable', Rule::in(['1', '0', 'all'])],
             'category_id'     => [
                 'nullable',
                 'integer',

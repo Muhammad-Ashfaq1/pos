@@ -3,6 +3,7 @@
         type="button"
         class="btn btn-label-secondary btn-icon"
         data-bs-toggle="dropdown"
+        data-bs-auto-close="outside"
         aria-expanded="false"
         title="Filters">
         <i class="ti tabler-filter"></i>
@@ -40,7 +41,7 @@
 
         <div>
             <label class="form-label" for="invoice_status">Status</label>
-            <select id="invoice_status" class="form-select" data-invoice-status data-invoice-filter-control>
+            <select id="invoice_status" class="form-select filter-control select2" data-invoice-status data-invoice-filter-control data-allow-clear="false">
                 <option value="">All</option>
                 <option value="paid">Paid</option>
                 <option value="partially_paid">Partially Paid</option>

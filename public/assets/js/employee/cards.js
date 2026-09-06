@@ -117,16 +117,92 @@
       }
     });
 
+    const bindFormValidation = function ($form) {
+      if (typeof $.fn.validate !== 'function') {
+        return null;
+      }
+
+      const cardType = String($form.data('cardType') || 'discount');
+      const isDiscount = cardType === 'discount';
+      const isReward = cardType === 'reward';
+
+      const rules = {
+        name: { required: true, maxlength: 150 },
+        value: { required: !isReward, number: true, min: isReward ? 0 : 0.01 },
+        minimum_spend: { required: true, number: true, min: 0 }
+      };
+
+      const messages = {
+        name: {
+          required: 'Please enter a card name.',
+          maxlength: 'The card name may not be greater than 150 characters.'
+        },
+        value: {
+          required: 'Please enter a card value.',
+          number: 'The card value must be numeric.',
+          min: isReward ? 'The card value must be zero or greater.' : 'The card value must be greater than zero.'
+        },
+        minimum_spend: {
+          required: 'Please enter a minimum spend amount.',
+          number: 'The minimum spend must be numeric.',
+          min: 'The minimum spend must be zero or greater.'
+        }
+      };
+
+      if (isDiscount) {
+        rules.discount_type = { required: true };
+        messages.discount_type = { required: 'Please select a discount type.' };
+
+        rules.value.max = function () {
+          return $form.find('[data-card-discount-type]').val() === 'percentage' ? 100 : undefined;
+        };
+        messages.value.max = 'Percentage discounts may not be greater than 100.';
+      }
+
+      return $form.validate({
+        ignore: [],
+        rules: rules,
+        messages: messages,
+        errorElement: 'div',
+        errorClass: 'jquery-validate-error',
+        errorPlacement: function (error, element) {
+          if (window.CardForm) {
+            window.CardForm.renderValidationErrors($form, {
+              [$(element).attr('name')]: error.text()
+            });
+          }
+        },
+        highlight: function (element) {
+          const $field = $(element);
+          $field.addClass('is-invalid');
+          if ($field.hasClass('select2-hidden-accessible') && window.CardForm) {
+            window.CardForm.setSelect2ErrorState($field, true);
+          }
+        },
+        unhighlight: function (element) {
+          const $field = $(element);
+          $field.removeClass('is-invalid');
+          if (window.CardForm) {
+            window.CardForm.clearFieldError($field);
+          }
+        }
+      });
+    };
+
     $forms.each(function () {
       const $form = $(this);
       const $modal = $form.closest('.modal');
       const $submitButton = $form.find('[data-card-submit]');
+      const validator = bindFormValidation($form);
 
       updateDiscountFields($form);
 
       $form.on('change', '[data-card-discount-type]', function () {
         window.CardForm.clearFieldError($(this));
         updateDiscountFields($form);
+        if (validator) {
+          validator.element($form.find('[data-card-value]'));
+        }
       });
 
       $form.on('input change', 'input, select', function () {
@@ -137,6 +213,9 @@
         $form[0].reset();
         $form.find('.card-product-select').val(null).trigger('change');
         window.CardForm.clearValidation($form);
+        if (validator) {
+          validator.resetForm();
+        }
         updateDiscountFields($form);
         window.CardForm.setButtonLoading($submitButton, false);
       });
@@ -144,7 +223,11 @@
       $form.on('submit', function (event) {
         event.preventDefault();
 
-        if (!$form[0].checkValidity()) {
+        if (validator && !$form.valid()) {
+          return;
+        }
+
+        if (!validator && !$form[0].checkValidity()) {
           $form[0].reportValidity();
           return;
         }

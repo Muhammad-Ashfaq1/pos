@@ -42,9 +42,7 @@
             <select
                 id="product_status"
                 class="form-select filter-control select2"
-                data-placeholder="All statuses"
                 data-allow-clear="false"
-                data-minimum-results-for-search="Infinity"
             >
                 <option value="">All</option>
                 <option value="1">Active</option>
@@ -73,7 +71,6 @@
                     class="form-select filter-control select2"
                     data-placeholder="All tracking types"
                     data-allow-clear="false"
-                    data-minimum-results-for-search="Infinity"
                 >
                     <option value="">All</option>
                     <option value="1">Tracked</option>
@@ -88,7 +85,6 @@
                 class="form-select filter-control select2"
                 data-placeholder="Sort products"
                 data-allow-clear="false"
-                data-minimum-results-for-search="Infinity"
             >
                 <option value="latest">Latest</option>
                 <option value="name">Name A-Z</option>

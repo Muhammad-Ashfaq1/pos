@@ -42,9 +42,7 @@
                                     <select
                                         id="service_status"
                                         class="form-select filter-control select2"
-                                        data-placeholder="All statuses"
                                         data-allow-clear="false"
-                                        data-minimum-results-for-search="Infinity"
                                     >
                                         <option value="">All</option>
                                         <option value="1">Active</option>
@@ -58,7 +56,6 @@
                                         class="form-select filter-control select2"
                                         data-placeholder="All services"
                                         data-allow-clear="false"
-                                        data-minimum-results-for-search="Infinity"
                                     >
                                         <option value="">All</option>
                                         <option value="1">Required</option>
@@ -72,7 +69,6 @@
                                         class="form-select filter-control select2"
                                         data-placeholder="Sort services"
                                         data-allow-clear="false"
-                                        data-minimum-results-for-search="Infinity"
                                     >
                                         <option value="latest">Latest</option>
                                         <option value="category">Category A-Z</option>

@@ -226,6 +226,43 @@
     return html;
   };
 
+  const fieldFeedback = function ($field) {
+    if ($field.hasClass('select2-hidden-accessible')) {
+      return $field.closest('.position-relative').find('.invalid-feedback').first();
+    }
+    const $container = $field.closest('[data-card-field]');
+    if ($container.length) {
+      const fieldName = $field.attr('name') ? $field.attr('name').split('.')[0].replace('[]', '') : '';
+      const $cardError = $container.find('[data-card-error="' + fieldName + '"]').first();
+      if ($cardError.length) {
+        return $cardError;
+      }
+    }
+    const $siblings = $field.siblings('.invalid-feedback').first();
+    if ($siblings.length) {
+      return $siblings;
+    }
+    return $field.closest('.position-relative').find('.invalid-feedback').first();
+  };
+
+  const applyFieldError = function (field, message) {
+    if (!message) {
+      return;
+    }
+
+    const $field = $form.find('[name="' + field + '"], [name="' + field + '[]"]').first();
+
+    if (!$field.length) {
+      return;
+    }
+
+    $field.addClass('is-invalid');
+    if ($field.hasClass('select2-hidden-accessible')) {
+      setSelect2ErrorState($field, true);
+    }
+    fieldFeedback($field).text(message).addClass('d-block').css('display', 'block');
+  };
+
   const bindFormValidation = function () {
     if (typeof $.fn.validate !== 'function') {
       return null;
@@ -233,19 +270,35 @@
 
     const rules = {
       name: { required: true, maxlength: 150 },
-      value: { required: true, number: true, min: 0.01 },
+      value: { required: !isReward, number: true, min: isReward ? 0 : 0.01 },
       minimum_spend: { required: true, number: true, min: 0 }
     };
 
     const messages = {
-      name: { required: 'Please enter a card name.' },
-      value: { required: 'Please enter a card value.' },
-      minimum_spend: { required: 'Please enter a minimum spend amount.' }
+      name: {
+        required: 'Please enter a card name.',
+        maxlength: 'The card name may not be greater than 150 characters.'
+      },
+      value: {
+        required: 'Please enter a card value.',
+        number: 'The card value must be numeric.',
+        min: isReward ? 'The card value must be zero or greater.' : 'The card value must be greater than zero.'
+      },
+      minimum_spend: {
+        required: 'Please enter a minimum spend amount.',
+        number: 'The minimum spend must be numeric.',
+        min: 'The minimum spend must be zero or greater.'
+      }
     };
 
     if (isDiscount) {
       rules.discount_type = { required: true };
       messages.discount_type = { required: 'Please select a discount type.' };
+
+      rules.value.max = function () {
+        return $('#card_discount_type').val() === 'percentage' ? 100 : undefined;
+      };
+      messages.value.max = 'Percentage discounts may not be greater than 100.';
     }
 
     return $form.validate({
@@ -253,35 +306,24 @@
       rules: rules,
       messages: messages,
       errorElement: 'div',
-      errorClass: 'invalid-feedback',
+      errorClass: 'jquery-validate-error',
+      errorPlacement: function (error, element) {
+        applyFieldError($(element).attr('name'), error.text());
+      },
       highlight: function (element) {
-        const $element = $(element);
-        $element.addClass('is-invalid');
-        if ($element.hasClass('select2-hidden-accessible')) {
-          setSelect2ErrorState($element, true);
+        const $field = $(element);
+        $field.addClass('is-invalid');
+        if ($field.hasClass('select2-hidden-accessible')) {
+          setSelect2ErrorState($field, true);
         }
       },
       unhighlight: function (element) {
-        const $element = $(element);
-        $element.removeClass('is-invalid');
-        if ($element.hasClass('select2-hidden-accessible')) {
-          setSelect2ErrorState($element, false);
+        const $field = $(element);
+        $field.removeClass('is-invalid');
+        if ($field.hasClass('select2-hidden-accessible')) {
+          setSelect2ErrorState($field, false);
         }
-      },
-      errorPlacement: function (error, element) {
-        const $element = $(element);
-        if ($element.hasClass('select2-hidden-accessible')) {
-          $element.closest('.position-relative').find('.invalid-feedback').first().text(error.text());
-          return;
-        }
-
-        const $feedback = $element.siblings('.invalid-feedback').first();
-        if ($feedback.length) {
-          $feedback.text(error.text());
-          return;
-        }
-
-        error.insertAfter(element);
+        fieldFeedback($field).text('').removeClass('d-block').css('display', '');
       }
     });
   };

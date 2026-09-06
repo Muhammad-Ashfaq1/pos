@@ -142,9 +142,34 @@
     $element.next('.select2').find('.select2-selection').toggleClass('is-invalid', invalid);
   };
 
+  CustomerManager.prototype.fieldFeedback = function ($field) {
+    if ($field.hasClass('select2-hidden-accessible')) {
+      return $field.closest('.position-relative').find('.invalid-feedback').first();
+    }
+    return $field.siblings('.invalid-feedback').first();
+  };
+
+  CustomerManager.prototype.applyFieldError = function (field, message) {
+    if (!message) {
+      return;
+    }
+
+    const $field = this.$form.find('[name="' + field + '"]').first();
+
+    if (! $field.length) {
+      return;
+    }
+
+    $field.addClass('is-invalid');
+    if ($field.hasClass('select2-hidden-accessible')) {
+      this.setSelect2ErrorState($field, true);
+    }
+    this.fieldFeedback($field).text(message).addClass('d-block').css('display', 'block');
+  };
+
   CustomerManager.prototype.resetValidationState = function () {
     this.$form.find('.is-invalid').removeClass('is-invalid');
-    this.$form.find('.invalid-feedback').text('');
+    this.$form.find('.invalid-feedback').text('').removeClass('d-block').css('display', '');
     this.setSelect2ErrorState(this.$form.find('#customer_type'), false);
     this.setSelect2ErrorState(this.$form.find('#customer_discount_group'), false);
   };
@@ -243,10 +268,18 @@
       messages: {
         customer_type: { required: 'Please select a customer type.' },
         name: { required: 'Please enter a customer name.', maxlength: 'The customer name may not be greater than 150 characters.' },
-        email: { email: 'Please enter a valid email address.' }
+        phone: { maxlength: 'The phone number may not be greater than 30 characters.' },
+        email: { email: 'Please enter a valid email address.', maxlength: 'The email may not be greater than 150 characters.' },
+        address: { maxlength: 'The address may not be greater than 1000 characters.' },
+        notes: { maxlength: 'The notes may not be greater than 2000 characters.' },
+        loyalty_points_balance: { number: 'Loyalty points must be numeric.', min: 'Loyalty points must be zero or greater.' },
+        credit_balance: { number: 'Credit balance must be numeric.' }
       },
       errorElement: 'div',
-      errorClass: 'invalid-feedback',
+      errorClass: 'jquery-validate-error',
+      errorPlacement: function (error, element) {
+        _this.applyFieldError($(element).attr('name'), error.text());
+      },
       highlight: function (element) {
         const $element = $(element);
         $element.addClass('is-invalid');
@@ -255,26 +288,12 @@
         }
       },
       unhighlight: function (element) {
-        const $element = $(element);
-        $element.removeClass('is-invalid');
-        if ($element.hasClass('select2-hidden-accessible')) {
-          _this.setSelect2ErrorState($element, false);
+        const $field = $(element);
+        $field.removeClass('is-invalid');
+        if ($field.hasClass('select2-hidden-accessible')) {
+          _this.setSelect2ErrorState($field, false);
         }
-      },
-      errorPlacement: function (error, element) {
-        const $element = $(element);
-        if ($element.hasClass('select2-hidden-accessible')) {
-          $element.closest('.position-relative').find('.invalid-feedback').first().text(error.text());
-          return;
-        }
-
-        const $feedback = $element.siblings('.invalid-feedback').first();
-        if ($feedback.length) {
-          $feedback.text(error.text());
-          return;
-        }
-
-        error.insertAfter(element);
+        _this.fieldFeedback($field).text('').removeClass('d-block').css('display', '');
       }
     });
   };
@@ -347,21 +366,16 @@
     Object.entries(errors || {}).forEach(function (entry) {
       const field = entry[0];
       const message = Array.isArray(entry[1]) ? entry[1][0] : entry[1];
-      const $element = _this.$form.find('[name="' + field + '"]');
-
-      if (!$element.length) return;
-
-      $element.addClass('is-invalid');
-
-      if ($element.hasClass('select2-hidden-accessible')) {
-        _this.setSelect2ErrorState($element, true);
-        $element.closest('.position-relative').find('.invalid-feedback').first().text(message);
-        return;
-      }
-
-      const $feedback = $element.siblings('.invalid-feedback').first();
-      if ($feedback.length) $feedback.text(message);
+      _this.applyFieldError(field, message);
     });
+
+    if (this.validator) {
+      this.validator.showErrors(Object.fromEntries(
+        Object.entries(errors || {}).map(function (entry) {
+          return [entry[0], Array.isArray(entry[1]) ? entry[1][0] : entry[1]];
+        })
+      ));
+    }
   };
 
   CustomerManager.prototype.toggleDiscountGroupVisibility = function () {

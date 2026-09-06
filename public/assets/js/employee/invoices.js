@@ -200,6 +200,35 @@
     });
   };
 
+  const initStaticSelect2 = function () {
+    const $selects = $page.find('.select2');
+
+    if (typeof $.fn.select2 !== 'function' || !$selects.length) {
+      return;
+    }
+
+    $selects.each(function () {
+      const $this = $(this);
+
+      if ($this.data('select2')) {
+        return;
+      }
+
+      const dropdownParentSelector = $this.data('dropdown-parent');
+
+      if (!dropdownParentSelector && !$this.parent().hasClass('position-relative')) {
+        $this.wrap('<div class="position-relative"></div>');
+      }
+
+      $this.select2({
+        dropdownParent: dropdownParentSelector ? $(dropdownParentSelector) : $this.parent(),
+        placeholder: $this.data('placeholder'),
+        allowClear: Boolean($this.data('allow-clear')),
+        minimumResultsForSearch: $this.data('minimum-results-for-search') ?? 0
+      });
+    });
+  };
+
   const readFiltersFromForm = function () {
     state.date_from = $page.find('[data-invoice-date-from]').val() || '';
     state.date_to = $page.find('[data-invoice-date-to]').val() || '';
@@ -222,7 +251,7 @@
     $page.find('[data-invoice-date-to]').val('');
     $page.find('[data-invoice-amount-min]').val('');
     $page.find('[data-invoice-amount-max]').val('');
-    $page.find('[data-invoice-status]').val('');
+    $page.find('[data-invoice-status]').val('').trigger('change');
     loadInvoices();
   };
 
@@ -324,5 +353,6 @@
     });
   });
 
+  initStaticSelect2();
   loadInvoices();
 })(window.jQuery);

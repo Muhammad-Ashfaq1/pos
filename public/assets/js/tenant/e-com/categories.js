@@ -46,9 +46,28 @@
     $submitButton.prop('disabled', false).text(defaultText);
   };
 
+  const fieldFeedback = function ($field) {
+    return $field.siblings('.invalid-feedback').first();
+  };
+
+  const applyFieldError = function (field, message) {
+    if (!message) {
+      return;
+    }
+
+    const $field = $form.find('[name="' + field + '"]').first();
+
+    if (! $field.length) {
+      return;
+    }
+
+    $field.addClass('is-invalid');
+    fieldFeedback($field).text(message).addClass('d-block');
+  };
+
   const resetValidationState = function () {
     $form.find('.is-invalid').removeClass('is-invalid');
-    $form.find('.invalid-feedback').text('');
+    $form.find('.invalid-feedback').text('').removeClass('d-block');
   };
 
   const resetForm = function () {
@@ -155,22 +174,23 @@
         }
       },
       errorElement: 'div',
-      errorClass: 'invalid-feedback',
+      errorClass: 'jquery-validate-error',
+      errorPlacement: function (error, element) {
+        applyFieldError(element.attr('name'), error.text());
+      },
       highlight: function (element) {
         $(element).addClass('is-invalid');
       },
       unhighlight: function (element) {
-        $(element).removeClass('is-invalid');
+        const $field = $(element);
+        $field.removeClass('is-invalid');
+        fieldFeedback($field).text('').removeClass('d-block');
       },
-      errorPlacement: function (error, element) {
-        const $feedback = element.siblings('.invalid-feedback').first();
-
-        if ($feedback.length) {
-          $feedback.text(error.text());
-          return;
-        }
-
-        error.insertAfter(element);
+      success: function (label, element) {
+        const $field = $(element);
+        $field.removeClass('is-invalid');
+        fieldFeedback($field).text('').removeClass('d-block');
+        label.remove();
       }
     });
   };
@@ -363,16 +383,22 @@
         })
         .fail(function (xhr) {
           if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
-            if (xhr.responseJSON.errors.id) {
-              showAlert('error', xhr.responseJSON.errors.id[0]);
-            }
+            const errors = xhr.responseJSON.errors;
+
+            Object.entries(errors).forEach(function (entry) {
+              applyFieldError(entry[0], entry[1][0]);
+            });
 
             if (validator) {
               validator.showErrors(Object.fromEntries(
-                Object.entries(xhr.responseJSON.errors).map(function (entry) {
+                Object.entries(errors).map(function (entry) {
                   return [entry[0], entry[1][0]];
                 })
               ));
+            }
+
+            if (errors.id) {
+              showAlert('error', errors.id[0]);
             }
 
             return;
@@ -425,7 +451,55 @@
     });
   };
 
+  const setSelect2ErrorState = function ($element, invalid) {
+    $element.next('.select2').find('.select2-selection').toggleClass('is-invalid', invalid);
+  };
+
+  const initStaticSelect2 = function () {
+    if (typeof $.fn.select2 !== 'function') {
+      return;
+    }
+
+    $('.select2').each(function () {
+      const $this = $(this);
+
+      if ($this.data('select2')) {
+        return;
+      }
+
+      const dropdownParentSelector = $this.data('dropdown-parent');
+      const $dropdownMenu = $this.closest('.dropdown-menu');
+
+      let $parent = $this.parent();
+      if (dropdownParentSelector) {
+        $parent = $(dropdownParentSelector);
+      } else if ($dropdownMenu.length) {
+        $parent = $dropdownMenu;
+      } else if (!$parent.hasClass('position-relative')) {
+        $this.wrap('<div class="position-relative"></div>');
+        $parent = $this.parent();
+      }
+
+      const select2Config = {
+        dropdownParent: $parent.length ? $parent : $(document.body),
+        allowClear: Boolean($this.data('allow-clear')),
+        minimumResultsForSearch: $this.data('minimum-results-for-search') ?? 0
+      };
+
+      const placeholder = $this.data('placeholder');
+      if (placeholder) {
+        select2Config.placeholder = placeholder;
+      }
+
+      $this.select2(select2Config).on('change', function () {
+        setSelect2ErrorState($this, false);
+        $this.closest('.position-relative').find('.invalid-feedback').text('').removeClass('d-block');
+      });
+    });
+  };
+
   $(function () {
+    initStaticSelect2();
     const validator = bindFormValidation();
     initDataTable();
     bindFilters();

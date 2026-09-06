@@ -15,6 +15,7 @@
                             type="button"
                             class="btn btn-label-secondary btn-icon"
                             data-bs-toggle="dropdown"
+                            data-bs-auto-close="outside"
                             aria-expanded="false"
                             title="Filters"
                         >
@@ -26,7 +27,6 @@
                                 <select
                                     id="customer_type_filter"
                                     class="form-select filter-control select2"
-                                    data-placeholder="All customer types"
                                     data-allow-clear="false"
                                 >
                                     <option value="">All</option>
@@ -42,7 +42,6 @@
                                     class="form-select filter-control select2"
                                     data-placeholder="Sort customers"
                                     data-allow-clear="false"
-                                    data-minimum-results-for-search="Infinity"
                                 >
                                     <option value="latest">Latest</option>
                                     <option value="name">Name A-Z</option>
