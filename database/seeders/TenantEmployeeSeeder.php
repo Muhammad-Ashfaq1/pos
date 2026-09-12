@@ -11,6 +11,10 @@ class TenantEmployeeSeeder extends Seeder
 {
     private const EMPLOYEES_PER_SHOP = 9;
 
+    private const EXCLUDED_EMAILS = [
+        'alrukanalthaki@gmail.com',
+    ];
+
     public function run(): void
     {
         app(PermissionSyncService::class)->sync(syncTenantAdmins: false);
@@ -19,6 +23,7 @@ class TenantEmployeeSeeder extends Seeder
         $password = (string) env('TENANT_DEMO_PASSWORD', 'password');
 
         Tenant::query()
+            ->whereNotIn('owner_email', self::EXCLUDED_EMAILS)
             ->orderBy('id')
             ->get()
             ->each(function (Tenant $tenant) use ($emailDomain, $password): void {

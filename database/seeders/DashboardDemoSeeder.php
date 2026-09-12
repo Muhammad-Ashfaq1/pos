@@ -35,7 +35,10 @@ class DashboardDemoSeeder extends Seeder
     {
         $orders = app(OrderRepositoryInterface::class);
 
-        Tenant::query()->orderBy('id')->each(function (Tenant $tenant) use ($orders): void {
+        Tenant::query()
+            ->where('owner_email', '!=', 'alrukanalthaki@gmail.com')
+            ->orderBy('id')
+            ->each(function (Tenant $tenant) use ($orders): void {
             app(TenantContext::class)->initialize($tenant);
 
             $products = Product::query()->where('is_active', true)->get();

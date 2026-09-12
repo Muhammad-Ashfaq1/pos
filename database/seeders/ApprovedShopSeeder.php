@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 class ApprovedShopSeeder extends Seeder
 {
-    private const SHOP_COUNT = 10;
+    private const SHOP_COUNT = 2;
 
     /**
      * Featured demo shop (shop #1) — Al Rukn Al Thaki, Sharjah UAE.
@@ -119,6 +119,7 @@ class ApprovedShopSeeder extends Seeder
             );
 
             $admin->assignPrimaryRole(User::TENANT_ADMIN, $tenant->id);
+            app(RolePermissionSeeder::class)->seedForTenant($tenant);
         }
     }
 
@@ -212,6 +213,7 @@ class ApprovedShopSeeder extends Seeder
         }
 
         $admin->assignPrimaryRole(User::TENANT_ADMIN, $tenant->id);
+        app(RolePermissionSeeder::class)->seedForTenant($tenant);
 
         $this->command?->info(sprintf(
             'Featured shop: %s — login %s (shop-specific password; override with FEATURED_SHOP_PASSWORD)',

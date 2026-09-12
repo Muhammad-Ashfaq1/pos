@@ -17,6 +17,10 @@ class TenantRoleUserSeeder extends Seeder
         User::INVENTORY_CLERK => 'inventory',
     ];
 
+    private const EXCLUDED_EMAILS = [
+        'alrukanalthaki@gmail.com',
+    ];
+
     public function run(): void
     {
         app(PermissionSyncService::class)->sync(syncTenantAdmins: false);
@@ -25,6 +29,7 @@ class TenantRoleUserSeeder extends Seeder
         $password = (string) env('TENANT_DEMO_PASSWORD', 'password');
 
         Tenant::query()
+            ->whereNotIn('owner_email', self::EXCLUDED_EMAILS)
             ->orderBy('id')
             ->get()
             ->each(function (Tenant $tenant) use ($emailDomain, $password): void {

@@ -6,6 +6,7 @@ use App\Enums\TenantStatus;
 use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -105,6 +106,7 @@ class SaveShopAction
             }
 
             $adminUser->assignPrimaryRole(User::TENANT_ADMIN, $tenant->id);
+            app(RolePermissionSeeder::class)->seedForTenant($tenant);
 
             return $tenant->fresh(['adminUser', 'plan']);
         });

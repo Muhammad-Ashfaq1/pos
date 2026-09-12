@@ -40,7 +40,10 @@ class CustomerPortalDemoSeeder extends Seeder
 
     public function run(): void
     {
-        $tenant = Tenant::query()->orderBy('id')->first();
+        $tenant = Tenant::query()
+            ->where('owner_email', '!=', 'alrukanalthaki@gmail.com')
+            ->orderBy('id')
+            ->first();
 
         if (! $tenant) {
             $this->command?->warn('No tenant found — run the shop seeders first. Skipping portal demo.');

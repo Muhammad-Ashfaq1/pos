@@ -202,9 +202,17 @@ class TenantCatalogSeeder extends Seeder
         ['name' => 'Item Clearance 25%',   'code' => 'CLEAR25',   'type' => Discount::TYPE_PERCENTAGE, 'applies_to' => Discount::APPLIES_TO_ITEM,             'value' => 25.00, 'max' => null],
     ];
 
+    private const EXCLUDED_EMAILS = [
+        'alrukanalthaki@gmail.com',
+    ];
+
     public function run(): void
     {
-        Tenant::query()->orderBy('id')->get()->each(function (Tenant $tenant): void {
+        Tenant::query()
+            ->whereNotIn('owner_email', self::EXCLUDED_EMAILS)
+            ->orderBy('id')
+            ->get()
+            ->each(function (Tenant $tenant): void {
             $this->command?->info("Seeding catalog data for tenant #{$tenant->id} - {$tenant->name}...");
 
             $adminId = User::query()
