@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             RolePermissionSeeder::class,
             SuperAdminSeeder::class,
+            PlanSeeder::class,
             ApprovedShopSeeder::class,
             TenantEmployeeSeeder::class,
             TenantRoleUserSeeder::class,

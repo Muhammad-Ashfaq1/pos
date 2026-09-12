@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\TenantStatus;
+use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -59,6 +60,8 @@ class ApprovedShopSeeder extends Seeder
         $emailDomain = trim((string) env('SEED_EMAIL_DOMAIN', 'obtainsolutions.com'), '@');
         $password = (string) env('TENANT_DEMO_PASSWORD', 'password');
         $websiteBase = rtrim((string) env('DEMO_SHOP_WEBSITE_BASE_URL', 'https://shops.obtainsolutions.com'), '/');
+        $monthlyPlan = Plan::query()->where('slug', 'starter-monthly')->first()
+            ?? Plan::query()->where('duration_days', 30)->first();
 
         for ($shopNumber = 1; $shopNumber <= self::SHOP_COUNT; $shopNumber++) {
             if ($shopNumber === 1) {
@@ -95,6 +98,8 @@ class ApprovedShopSeeder extends Seeder
                     'state' => $template['state'],
                     'country' => $template['country'],
                     'status' => TenantStatus::Approved->value,
+                    'plan_id' => $monthlyPlan?->id,
+                    'plan_expires_at' => now()->addDays($monthlyPlan?->duration_days ?: 30)->toDateString(),
                     'approved_at' => now(),
                     'approved_by' => $superAdminId,
                     'onboarding_completed_at' => now(),
@@ -136,6 +141,8 @@ class ApprovedShopSeeder extends Seeder
 
         // Keep legacy admin1@… row in sync if it already exists from older seeds.
         $legacyEmail = sprintf('admin1@%s', trim((string) env('SEED_EMAIL_DOMAIN', 'obtainsolutions.com'), '@'));
+        $yearlyPlan = Plan::query()->where('slug', 'enterprise-annual')->first()
+            ?? Plan::query()->where('duration_days', '>=', 365)->first();
 
         $tenant = Tenant::query()
             ->where('owner_email', $shop['owner_email'])
@@ -164,6 +171,8 @@ class ApprovedShopSeeder extends Seeder
             'country' => $shop['country'],
             'settings' => $settings,
             'status' => TenantStatus::Approved->value,
+            'plan_id' => $yearlyPlan?->id,
+            'plan_expires_at' => now()->addDays($yearlyPlan?->duration_days ?: 365)->toDateString(),
             'approved_at' => now(),
             'approved_by' => $superAdminId,
             'onboarding_completed_at' => now(),
