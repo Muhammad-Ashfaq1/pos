@@ -20,11 +20,24 @@
 
   CustomerManager.prototype.init = function () {
     this.initStaticSelect2();
+    this.initDatepickers();
     this.validator = this.bindFormValidation();
     this.bindModalActions();
     this.bindSaveForm();
     this.bindCustomerTypeToggle();
     this.bindPortalPanel();
+  };
+
+  CustomerManager.prototype.getCurrentDateTime = function () {
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  };
+
+  CustomerManager.prototype.initDatepickers = function () {
+    if (window.AppDatepicker && typeof window.AppDatepicker.init === 'function') {
+      window.AppDatepicker.init(this.$form[0]);
+    }
   };
 
   CustomerManager.prototype.bindPortalPanel = function () {
@@ -181,6 +194,20 @@
     this.$form.find('#customer_discount_group').val('').trigger('change');
     this.$form.find('#customer_loyalty_points_balance').val(0);
     this.$form.find('#customer_credit_balance').val('0.00');
+
+    // Date of Birth & Last Visit Defaults
+    const defaultDateTime = this.getCurrentDateTime();
+    const $lastVisit = this.$form.find('#customer_last_visit_at');
+    $lastVisit.val(defaultDateTime);
+    if (window.AppDatepicker && typeof window.AppDatepicker.set === 'function') {
+      window.AppDatepicker.set($lastVisit, defaultDateTime);
+    }
+    const $dob = this.$form.find('#customer_date_of_birth');
+    $dob.val('');
+    if (window.AppDatepicker && typeof window.AppDatepicker.set === 'function') {
+      window.AppDatepicker.set($dob, '');
+    }
+
     this.$form.find('#customerModalLabel').text('Add Customer');
     this.setSubmitButtonState(false);
     this.resetValidationState();
@@ -211,8 +238,19 @@
     this.$form.find('#customer_name').val(customer.name);
     this.$form.find('#customer_phone').val(customer.phone);
     this.$form.find('#customer_email').val(customer.email);
-    this.$form.find('#customer_date_of_birth').val(customer.date_of_birth);
-    this.$form.find('#customer_last_visit_at').val(customer.last_visit_at_form);
+
+    const dobVal = customer.date_of_birth || '';
+    this.$form.find('#customer_date_of_birth').val(dobVal);
+    if (window.AppDatepicker && typeof window.AppDatepicker.set === 'function') {
+      window.AppDatepicker.set(this.$form.find('#customer_date_of_birth'), dobVal);
+    }
+
+    const lastVisitVal = customer.last_visit_at_form || customer.last_visit_at || this.getCurrentDateTime();
+    this.$form.find('#customer_last_visit_at').val(lastVisitVal);
+    if (window.AppDatepicker && typeof window.AppDatepicker.set === 'function') {
+      window.AppDatepicker.set(this.$form.find('#customer_last_visit_at'), lastVisitVal);
+    }
+
     this.$form.find('#customer_address').val(customer.address);
     this.$form.find('#customer_notes').val(customer.notes);
     this.$form.find('#customer_loyalty_points_balance').val(customer.loyalty_points_balance);

@@ -484,23 +484,38 @@
     flex-shrink: 0;
 }
 
-/* Accessible and visible keyboard focus ring for modal navigation */
-.pos-listing-modal button:focus-visible,
-.pos-listing-modal .btn:focus-visible,
-.pos-listing-modal input:focus-visible,
-.pos-listing-modal select:focus-visible,
-.pos-listing-modal textarea:focus-visible,
-.pos-listing-modal .select2-container--default.select2-container--focus .select2-selection {
-    outline: 2px solid var(--bs-primary) !important;
-    outline-offset: 2px !important;
-    box-shadow: 0 0 0 4px rgba(var(--bs-primary-rgb), 0.25) !important;
+/* Clean, single-ring focus state for modal navigation (no double border/circle) */
+.pos-listing-modal input.form-control:focus,
+.pos-listing-modal input.form-control:focus-visible,
+.pos-listing-modal select.form-select:focus,
+.pos-listing-modal select.form-select:focus-visible,
+.pos-listing-modal textarea.form-control:focus,
+.pos-listing-modal textarea.form-control:focus-visible,
+.pos-listing-modal .form-control:focus,
+.pos-listing-modal .form-select:focus,
+.pos-listing .pos-listing-modal .form-control:focus,
+.pos-listing .pos-listing-modal .form-select:focus {
+    border-color: #7367f0 !important;
+    box-shadow: 0 0 0 0.2rem rgba(115, 103, 240, 0.18) !important;
+    outline: none !important;
 }
 
-.pos-listing-modal .modal-footer .btn-primary:focus-visible {
-    outline: 2px solid var(--bs-primary) !important;
-    outline-offset: 3px !important;
-    box-shadow: 0 0 0 5px rgba(var(--bs-primary-rgb), 0.4) !important;
-    transform: translateY(-1px);
+.pos-listing-modal .select2-container--default.select2-container--focus .select2-selection {
+    border-color: #7367f0 !important;
+    box-shadow: 0 0 0 0.2rem rgba(115, 103, 240, 0.18) !important;
+    outline: none !important;
+}
+
+.pos-listing-modal .modal-footer .btn:focus,
+.pos-listing-modal .modal-footer .btn:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 0.2rem rgba(115, 103, 240, 0.25) !important;
+}
+
+.pos-listing-modal .modal-header .btn-close:focus,
+.pos-listing-modal .modal-header .btn-close:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 /*
@@ -600,8 +615,9 @@
 
 .pos-listing .pos-listing-modal .form-control:focus,
 .pos-listing .pos-listing-modal .form-select:focus {
-    border-color: rgba(var(--bs-primary-rgb), 0.55);
-    box-shadow: 0 0 0 0.15rem rgba(var(--bs-primary-rgb), 0.12);
+    border-color: #7367f0 !important;
+    box-shadow: 0 0 0 0.2rem rgba(115, 103, 240, 0.18) !important;
+    outline: none !important;
 }
 
 .pos-listing .pos-listing-modal .jquery-validate-error {

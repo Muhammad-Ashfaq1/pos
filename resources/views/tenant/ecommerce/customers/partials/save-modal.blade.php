@@ -70,8 +70,8 @@
                         </div>
                         <div class="col-md-4">
                             <label for="customer_last_visit_at" class="form-label">Last Visit</label>
-                            <input type="datetime-local" class="form-control" id="customer_last_visit_at"
-                                name="last_visit_at">
+                            <input type="text" class="form-control app-datepicker app-datepicker-time" id="customer_last_visit_at"
+                                name="last_visit_at" placeholder="YYYY-MM-DD HH:mm" data-enable-time="true" data-date-format="Y-m-d H:i" autocomplete="off">
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>

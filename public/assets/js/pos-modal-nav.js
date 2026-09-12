@@ -171,13 +171,37 @@
       }
     }
 
-    // 3. Tab and Shift+Tab Smooth Navigation
+    // 3. Escape key: Close open dropdowns/calendars first before closing modal
+    if (e.key === 'Escape') {
+      let handled = false;
+      $openModal.find('.app-datepicker, [data-enable-time]').each(function () {
+        if (this._flatpickr && this._flatpickr.isOpen) {
+          this._flatpickr.close();
+          handled = true;
+        }
+      });
+      if ($('.select2-container--open').length) {
+        try {
+          $openModal.find('select.select2-hidden-accessible').select2('close');
+          handled = true;
+        } catch (err) {}
+      }
+      if (handled) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+    }
+
+    // 4. Tab and Shift+Tab Smooth Navigation
     if (e.key === 'Tab') {
       const focusable = getModalFocusableElements($openModal);
       if (!focusable || focusable.length === 0) return;
 
       // Check if current target is Select2 search input (dropdown open)
       const isSelect2Search = $(target).hasClass('select2-search__field');
+      const isInsideFlatpickr = Boolean($(target).closest('.flatpickr-calendar').length);
+
       let currentElement = target;
 
       if (isSelect2Search) {
@@ -189,6 +213,14 @@
             currentElement = $selection[0];
           }
         }
+      } else if (isInsideFlatpickr || $(target).hasClass('app-datepicker')) {
+        // Find which flatpickr input opened this calendar
+        $openModal.find('.app-datepicker, [data-enable-time]').each(function () {
+          if (this._flatpickr && (this._flatpickr.isOpen || this === target)) {
+            currentElement = this;
+            return false;
+          }
+        });
       }
 
       let currentIndex = focusable.indexOf(currentElement);
@@ -225,13 +257,20 @@
       if (nextElement) {
         e.preventDefault();
 
-        // If Select2 was open, close it cleanly before advancing
+        // Close any open Flatpickr calendars cleanly before advancing
+        $openModal.find('.app-datepicker, [data-enable-time]').each(function () {
+          if (this._flatpickr && this._flatpickr.isOpen) {
+            try {
+              this._flatpickr.close();
+            } catch (err) {}
+          }
+        });
+
+        // Close any open Select2 dropdowns cleanly before advancing
         if ($('.select2-container--open').length) {
           try {
             $openModal.find('select.select2-hidden-accessible').select2('close');
-          } catch (err) {
-            // ignore
-          }
+          } catch (err) {}
         }
 
         $(nextElement).focus();
