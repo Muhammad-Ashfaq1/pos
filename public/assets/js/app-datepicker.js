@@ -110,10 +110,26 @@
     if (maxDate) options.maxDate = maxDate;
     if (defaultDate) options.defaultDate = defaultDate;
 
+    const mode = readAttr(el, 'data-mode', el.classList.contains('app-datepicker-range') ? 'range' : null);
+    if (mode) {
+      options.mode = mode;
+    }
+
     if (el.hasAttribute('data-enable-time') || el.classList.contains('app-datepicker-time')) {
       options.enableTime = true;
       options.dateFormat = readAttr(el, 'data-date-format', 'Y-m-d H:i');
     }
+
+    // Ensure pressing Tab never traps keyboard focus inside calendar popup
+    options.onKeyDown = function (_selected, _dateStr, instance, event) {
+      if (event.key === 'Tab') {
+        if (instance && instance.isOpen) {
+          try {
+            instance.close();
+          } catch (e) {}
+        }
+      }
+    };
 
     return options;
   }
@@ -123,8 +139,9 @@
       el.setAttribute('type', 'text');
     }
     el.classList.add('app-datepicker', 'form-control');
+    const isRange = el.getAttribute('data-mode') === 'range' || el.classList.contains('app-datepicker-range');
     if (!el.getAttribute('placeholder')) {
-      el.setAttribute('placeholder', 'YYYY-MM-DD');
+      el.setAttribute('placeholder', isRange ? 'YYYY-MM-DD to YYYY-MM-DD' : (el.hasAttribute('data-enable-time') || el.classList.contains('app-datepicker-time') ? 'YYYY-MM-DD HH:mm' : 'YYYY-MM-DD'));
     }
     el.setAttribute('autocomplete', 'off');
     el.setAttribute('inputmode', 'none');
@@ -147,7 +164,15 @@
     normalizeInput(el);
 
     try {
-      return flatpickr(el, buildOptions(el));
+      const instance = flatpickr(el, buildOptions(el));
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab' && instance && instance.isOpen) {
+          try {
+            instance.close();
+          } catch (err) {}
+        }
+      });
+      return instance;
     } catch (error) {
       console.warn('AppDatepicker init failed', error);
       return null;

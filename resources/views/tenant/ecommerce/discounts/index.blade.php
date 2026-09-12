@@ -179,12 +179,12 @@
 
                                 <div class="col-md-6">
                                     <label for="discount_starts_at" class="form-label">Starts At</label>
-                                    <input type="datetime-local" class="form-control" id="discount_starts_at" name="starts_at">
+                                    <input type="text" class="form-control app-datepicker app-datepicker-time" id="discount_starts_at" name="starts_at" placeholder="YYYY-MM-DD HH:mm" data-enable-time="true" data-date-format="Y-m-d H:i" autocomplete="off">
                                     <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="discount_ends_at" class="form-label">Ends At</label>
-                                    <input type="datetime-local" class="form-control" id="discount_ends_at" name="ends_at">
+                                    <input type="text" class="form-control app-datepicker app-datepicker-time" id="discount_ends_at" name="ends_at" placeholder="YYYY-MM-DD HH:mm" data-enable-time="true" data-date-format="Y-m-d H:i" autocomplete="off">
                                     <div class="invalid-feedback"></div>
                                 </div>
 

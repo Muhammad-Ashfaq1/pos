@@ -128,6 +128,10 @@
     $('#discount_type').val('fixed').trigger('change');
     $('#discount_applies_to').val('bill').trigger('change');
     $('#discount_is_active').prop('checked', true);
+    if (window.AppDatepicker && typeof window.AppDatepicker.set === 'function') {
+      window.AppDatepicker.set('#discount_starts_at', '');
+      window.AppDatepicker.set('#discount_ends_at', '');
+    }
     $('#discountModalLabel').text('Add Discount');
     setSubmitButtonState(false);
     resetValidationState();
@@ -143,8 +147,13 @@
     $('#discount_applies_to').val(discount.applies_to).trigger('change');
     $('#discount_value').val(discount.value);
     $('#discount_max_discount_amount').val(discount.max_discount_amount);
-    $('#discount_starts_at').val(discount.starts_at);
-    $('#discount_ends_at').val(discount.ends_at);
+    if (window.AppDatepicker && typeof window.AppDatepicker.set === 'function') {
+      window.AppDatepicker.set('#discount_starts_at', discount.starts_at || '');
+      window.AppDatepicker.set('#discount_ends_at', discount.ends_at || '');
+    } else {
+      $('#discount_starts_at').val(discount.starts_at || '');
+      $('#discount_ends_at').val(discount.ends_at || '');
+    }
     $('#discount_usage_limit').val(discount.usage_limit);
     $('#discount_is_active').prop('checked', Boolean(discount.is_active));
     $('#discountModalLabel').text('Edit Discount');

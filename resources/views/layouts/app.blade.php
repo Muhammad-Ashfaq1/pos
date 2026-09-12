@@ -218,6 +218,7 @@
     <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.8/dist/notiflix-aio-3.2.8.min.js"></script>
     <script src="{{ asset('assets/js/pos-confirm.js') }}?v={{ filemtime(public_path('assets/js/pos-confirm.js')) }}"></script>
     <script src="{{ asset('assets/js/app-helpers.js') }}?v={{ filemtime(public_path('assets/js/app-helpers.js')) }}"></script>
+    <script src="{{ asset('assets/js/pos-modal-nav.js') }}?v={{ filemtime(public_path('assets/js/pos-modal-nav.js')) }}"></script>
     <script src="{{ asset('assets/js/app-loader.js') }}?v={{ filemtime(public_path('assets/js/app-loader.js')) }}"></script>
     <script src="{{ asset('assets/js/session-notifications.js') }}"></script>
     <script src="{{ asset('assets/js/pos-table.js') }}?v={{ filemtime(public_path('assets/js/pos-table.js')) }}"></script>

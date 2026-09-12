@@ -506,16 +506,166 @@
     outline: none !important;
 }
 
+/* ── High-visibility Double-Border & Glow for Buttons and Active Tabs ── */
+
+/* Active and keyboard-focused buttons: Update, Create, Cancel, Save */
+.modal .modal-footer .btn:focus,
+.modal .modal-footer .btn:focus-visible,
+.modal .modal-footer .btn.is-keyboard-focused,
+.modal .btn.is-keyboard-focused,
+.btn.is-keyboard-focused,
 .pos-listing-modal .modal-footer .btn:focus,
-.pos-listing-modal .modal-footer .btn:focus-visible {
-    outline: none !important;
-    box-shadow: 0 0 0 0.2rem rgba(115, 103, 240, 0.25) !important;
+.pos-listing-modal .modal-footer .btn:focus-visible,
+.pos-listing-modal .modal-footer .btn.is-keyboard-focused {
+    position: relative;
+    z-index: 5 !important;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease, outline 0.15s ease !important;
 }
 
+/* Primary Action Buttons (Update, Create, Save) — High-Visibility Double Border */
+.modal .modal-footer .btn-primary:focus,
+.modal .modal-footer .btn-primary:focus-visible,
+.modal .modal-footer .btn-primary.is-keyboard-focused,
+.pos-listing-modal .modal-footer .btn-primary:focus,
+.pos-listing-modal .modal-footer .btn-primary:focus-visible,
+.pos-listing-modal .modal-footer .btn-primary.is-keyboard-focused,
+.btn-primary.is-keyboard-focused {
+    outline: 3px solid #7367f0 !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 5px #7367f0, 0 0 20px rgba(115, 103, 240, 0.75), 0 8px 24px rgba(115, 103, 240, 0.45) !important;
+    transform: translateY(-2px) scale(1.03) !important;
+    filter: brightness(1.08) !important;
+    border-color: #5548e2 !important;
+}
+
+/* Cancel & Secondary Buttons — High-Visibility Double Border */
+.modal .modal-footer .btn-label-secondary:focus,
+.modal .modal-footer .btn-label-secondary:focus-visible,
+.modal .modal-footer .btn-secondary:focus,
+.modal .modal-footer .btn-secondary:focus-visible,
+.modal .modal-footer .btn-label-secondary.is-keyboard-focused,
+.modal .modal-footer .btn-secondary.is-keyboard-focused,
+.pos-listing-modal .modal-footer .btn-label-secondary:focus,
+.pos-listing-modal .modal-footer .btn-label-secondary:focus-visible,
+.pos-listing-modal .modal-footer .btn-secondary:focus,
+.pos-listing-modal .modal-footer .btn-secondary:focus-visible,
+.pos-listing-modal .modal-footer .btn-label-secondary.is-keyboard-focused,
+.pos-listing-modal .modal-footer .btn-secondary.is-keyboard-focused,
+.btn-label-secondary.is-keyboard-focused,
+.btn-secondary.is-keyboard-focused {
+    outline: 3px solid #6e7987 !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 5px #6e7987, 0 0 16px rgba(110, 121, 135, 0.6), 0 6px 18px rgba(110, 121, 135, 0.35) !important;
+    transform: translateY(-2px) scale(1.03) !important;
+    filter: brightness(1.05) !important;
+}
+
+/* ── Tabs: Active State Border & Keyboard Focus ── */
+
+/* Active tab distinct border and highlight */
+.nav-tabs .nav-link.active,
+.pos-listing .nav-tabs .nav-link.active,
+.pos-listing-modal .nav-tabs .nav-link.active {
+    border-bottom: 3px solid #7367f0 !important;
+    color: #7367f0 !important;
+    font-weight: 600 !important;
+    background: rgba(115, 103, 240, 0.08) !important;
+    box-shadow: inset 0 -3px 0 0 #7367f0 !important;
+}
+
+.nav-pills .nav-link.active,
+.pos-listing .nav-pills .nav-link.active,
+.pos-listing-modal .nav-pills .nav-link.active {
+    background-color: #7367f0 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: 0 3px 12px rgba(115, 103, 240, 0.45) !important;
+}
+
+/* Tabs active keyboard focus state */
+.nav-tabs .nav-link:focus,
+.nav-tabs .nav-link:focus-visible,
+.nav-tabs .nav-link.is-keyboard-focused,
+.nav-pills .nav-link:focus,
+.nav-pills .nav-link:focus-visible,
+.nav-pills .nav-link.is-keyboard-focused,
+.pos-listing-modal .nav-tabs .nav-link:focus,
+.pos-listing-modal .nav-tabs .nav-link:focus-visible,
+.pos-listing-modal .nav-pills .nav-link:focus,
+.pos-listing-modal .nav-pills .nav-link:focus-visible,
+.pos-listing .nav-tabs .nav-link:focus,
+.pos-listing .nav-tabs .nav-link:focus-visible,
+.pos-listing .nav-pills .nav-link:focus,
+.pos-listing .nav-pills .nav-link:focus-visible {
+    outline: 3px solid #7367f0 !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 5px #7367f0, 0 4px 12px rgba(115, 103, 240, 0.35) !important;
+    border-radius: 0.375rem !important;
+}
+
+/* ── Dark Theme Overrides for Buttons & Tabs ── */
+
+[data-bs-theme='dark'] .modal .modal-footer .btn-primary:focus,
+[data-bs-theme='dark'] .modal .modal-footer .btn-primary:focus-visible,
+[data-bs-theme='dark'] .modal .modal-footer .btn-primary.is-keyboard-focused,
+[data-bs-theme='dark'] .pos-listing-modal .modal-footer .btn-primary:focus,
+[data-bs-theme='dark'] .pos-listing-modal .modal-footer .btn-primary:focus-visible,
+[data-bs-theme='dark'] .pos-listing-modal .modal-footer .btn-primary.is-keyboard-focused,
+[data-bs-theme='dark'] .btn-primary.is-keyboard-focused {
+    outline: 3px solid #948bfa !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 2px #25293c, 0 0 0 5px #7367f0, 0 0 22px rgba(115, 103, 240, 0.85), 0 6px 20px rgba(0, 0, 0, 0.6) !important;
+}
+
+[data-bs-theme='dark'] .modal .modal-footer .btn-label-secondary:focus,
+[data-bs-theme='dark'] .modal .modal-footer .btn-label-secondary:focus-visible,
+[data-bs-theme='dark'] .modal .modal-footer .btn-secondary:focus,
+[data-bs-theme='dark'] .modal .modal-footer .btn-secondary:focus-visible,
+[data-bs-theme='dark'] .modal .modal-footer .btn-label-secondary.is-keyboard-focused,
+[data-bs-theme='dark'] .modal .modal-footer .btn-secondary.is-keyboard-focused,
+[data-bs-theme='dark'] .pos-listing-modal .modal-footer .btn-label-secondary:focus,
+[data-bs-theme='dark'] .pos-listing-modal .modal-footer .btn-label-secondary:focus-visible,
+[data-bs-theme='dark'] .pos-listing-modal .modal-footer .btn-secondary:focus,
+[data-bs-theme='dark'] .pos-listing-modal .modal-footer .btn-secondary:focus-visible,
+[data-bs-theme='dark'] .pos-listing-modal .modal-footer .btn-label-secondary.is-keyboard-focused,
+[data-bs-theme='dark'] .pos-listing-modal .modal-footer .btn-secondary.is-keyboard-focused,
+[data-bs-theme='dark'] .btn-label-secondary.is-keyboard-focused,
+[data-bs-theme='dark'] .btn-secondary.is-keyboard-focused {
+    outline: 3px solid #cbd5e1 !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 2px #25293c, 0 0 0 5px #a5a9ad, 0 0 16px rgba(165, 169, 173, 0.65), 0 6px 16px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-bs-theme='dark'] .nav-tabs .nav-link.active,
+[data-bs-theme='dark'] .pos-listing .nav-tabs .nav-link.active,
+[data-bs-theme='dark'] .pos-listing-modal .nav-tabs .nav-link.active {
+    border-bottom: 3px solid #7367f0 !important;
+    color: #948bfa !important;
+    background: rgba(115, 103, 240, 0.16) !important;
+    box-shadow: inset 0 -3px 0 0 #7367f0 !important;
+}
+
+[data-bs-theme='dark'] .nav-tabs .nav-link:focus,
+[data-bs-theme='dark'] .nav-tabs .nav-link:focus-visible,
+[data-bs-theme='dark'] .nav-tabs .nav-link.is-keyboard-focused,
+[data-bs-theme='dark'] .nav-pills .nav-link:focus,
+[data-bs-theme='dark'] .nav-pills .nav-link:focus-visible,
+[data-bs-theme='dark'] .nav-pills .nav-link.is-keyboard-focused,
+[data-bs-theme='dark'] .pos-listing-modal .nav-tabs .nav-link:focus,
+[data-bs-theme='dark'] .pos-listing-modal .nav-tabs .nav-link:focus-visible,
+[data-bs-theme='dark'] .pos-listing-modal .nav-pills .nav-link:focus,
+[data-bs-theme='dark'] .pos-listing-modal .nav-pills .nav-link:focus-visible {
+    outline: 3px solid #948bfa !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 2px #25293c, 0 0 0 5px #7367f0, 0 4px 14px rgba(115, 103, 240, 0.5) !important;
+}
+
+.modal .modal-header .btn-close:focus,
+.modal .modal-header .btn-close:focus-visible,
 .pos-listing-modal .modal-header .btn-close:focus,
 .pos-listing-modal .modal-header .btn-close:focus-visible {
     outline: none !important;
-    box-shadow: none !important;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #7367f0 !important;
 }
 
 /*

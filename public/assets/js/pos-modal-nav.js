@@ -34,7 +34,10 @@
     const $header = $modal.find('.modal-header');
 
     const selector = [
-      'input:not([type="hidden"]):not([disabled]):not([readonly]):not([tabindex="-1"])',
+      'input:not([type="hidden"]):not([disabled]):not([tabindex="-1"]):not([readonly])',
+      'input.app-datepicker:not([disabled]):not([tabindex="-1"])',
+      'input.flatpickr-input:not([disabled]):not([tabindex="-1"])',
+      'input[data-enable-time]:not([disabled]):not([tabindex="-1"])',
       'select:not([disabled]):not([tabindex="-1"])',
       '.select2-selection:not([aria-disabled="true"]):not([tabindex="-1"])',
       'textarea:not([disabled]):not([readonly]):not([tabindex="-1"])',
@@ -42,15 +45,21 @@
       '[tabindex]:not([tabindex="-1"]):not([disabled])'
     ].join(', ');
 
+    function isInteractable(el) {
+      const $el = $(el);
+      if ($el.is('select') && $el.hasClass('select2-hidden-accessible')) {
+        return false;
+      }
+      if ($el.hasClass('flatpickr-input') && $el.attr('type') === 'hidden') {
+        return false;
+      }
+      return $el.is(':visible') && $el.css('visibility') !== 'hidden' && $el.css('opacity') !== '0';
+    }
+
     // Body interactive elements
     const bodyElements = [];
     $body.find(selector).each(function () {
-      const $el = $(this);
-      // Skip hidden selects replaced by select2
-      if ($el.is('select') && $el.hasClass('select2-hidden-accessible')) {
-        return;
-      }
-      if ($el.is(':visible') && $el.css('visibility') !== 'hidden' && $el.css('opacity') !== '0') {
+      if (isInteractable(this) && !bodyElements.includes(this)) {
         bodyElements.push(this);
       }
     });
@@ -59,12 +68,12 @@
     const submitElements = [];
     const cancelElements = [];
     $footer.find(selector).each(function () {
-      const $el = $(this);
-      if ($el.is(':visible') && $el.css('visibility') !== 'hidden') {
+      if (isInteractable(this)) {
+        const $el = $(this);
         if ($el.is('[type="submit"]') || $el.hasClass('btn-primary') || $el.data('action') === 'submit') {
-          submitElements.push(this);
+          if (!submitElements.includes(this)) submitElements.push(this);
         } else {
-          cancelElements.push(this);
+          if (!cancelElements.includes(this)) cancelElements.push(this);
         }
       }
     });
@@ -72,7 +81,9 @@
     // Header close button
     const headerElements = [];
     $header.find('button.btn-close:visible, [data-bs-dismiss="modal"]:visible').each(function () {
-      headerElements.push(this);
+      if (!headerElements.includes(this)) {
+        headerElements.push(this);
+      }
     });
 
     // Logical order: Body Fields -> Submit Button -> Cancel Button -> Header Close Button
@@ -131,9 +142,9 @@
   });
 
   /**
-   * Global Keyboard Navigation within Modals
+   * Global Keyboard Navigation within Modals (Capture Phase)
    */
-  $(document).on('keydown', function (e) {
+  function handleModalKeydown(e) {
     const $openModal = $('.modal.show').last();
     if (!$openModal.length) return;
 
@@ -143,9 +154,9 @@
     // 1. Shortcut: Ctrl+Enter or Cmd+Enter anywhere in modal -> Submit
     if (isCtrlOrCmd && e.key === 'Enter') {
       e.preventDefault();
+      e.stopPropagation();
       const $submitBtn = $openModal.find('.modal-footer button[type="submit"]:visible, .modal-footer .btn-primary:visible, button[type="submit"]:visible').first();
       if ($submitBtn.length && !$submitBtn.prop('disabled')) {
-        // Visual click feedback
         $submitBtn.addClass('active');
         setTimeout(() => $submitBtn.removeClass('active'), 150);
         $submitBtn.trigger('click');
@@ -158,9 +169,12 @@
       const $target = $(target);
       const isSingleLineInput = $target.is('input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"])');
       const isSelect2Search = $target.hasClass('select2-search__field');
+      const isFlatpickrInput = $target.hasClass('app-datepicker') || $target.hasClass('flatpickr-input');
 
-      if (isSingleLineInput && !isSelect2Search) {
+      // If on datepicker or single-line input
+      if (isSingleLineInput && !isSelect2Search && !isFlatpickrInput) {
         e.preventDefault();
+        e.stopPropagation();
         const $submitBtn = $openModal.find('.modal-footer button[type="submit"]:visible, .modal-footer .btn-primary:visible, button[type="submit"]:visible').first();
         if ($submitBtn.length && !$submitBtn.prop('disabled')) {
           $submitBtn.addClass('active');
@@ -174,7 +188,7 @@
     // 3. Escape key: Close open dropdowns/calendars first before closing modal
     if (e.key === 'Escape') {
       let handled = false;
-      $openModal.find('.app-datepicker, [data-enable-time]').each(function () {
+      $openModal.find('.app-datepicker, .flatpickr-input, [data-enable-time]').each(function () {
         if (this._flatpickr && this._flatpickr.isOpen) {
           this._flatpickr.close();
           handled = true;
@@ -201,6 +215,7 @@
       // Check if current target is Select2 search input (dropdown open)
       const isSelect2Search = $(target).hasClass('select2-search__field');
       const isInsideFlatpickr = Boolean($(target).closest('.flatpickr-calendar').length);
+      const isDatepicker = $(target).hasClass('app-datepicker') || $(target).hasClass('flatpickr-input') || $(target).is('[data-enable-time]');
 
       let currentElement = target;
 
@@ -213,11 +228,22 @@
             currentElement = $selection[0];
           }
         }
-      } else if (isInsideFlatpickr || $(target).hasClass('app-datepicker')) {
-        // Find which flatpickr input opened this calendar
-        $openModal.find('.app-datepicker, [data-enable-time]').each(function () {
-          if (this._flatpickr && (this._flatpickr.isOpen || this === target)) {
-            currentElement = this;
+      } else if (isInsideFlatpickr) {
+        // Target is inside an open calendar container (e.g. day cell, time input, am/pm)
+        const calendarEl = $(target).closest('.flatpickr-calendar')[0];
+        $openModal.find('.app-datepicker, .flatpickr-input, [data-enable-time]').each(function () {
+          const fp = this._flatpickr;
+          if (fp && fp.calendarContainer === calendarEl) {
+            currentElement = fp.altInput || fp.input || this;
+            return false;
+          }
+        });
+      } else if (isDatepicker) {
+        // Target is the input element or its associated flatpickr input
+        $openModal.find('.app-datepicker, .flatpickr-input, [data-enable-time]').each(function () {
+          const fp = this._flatpickr;
+          if (this === target || (fp && (fp.input === target || fp.altInput === target))) {
+            currentElement = fp ? (fp.altInput || fp.input || this) : this;
             return false;
           }
         });
@@ -256,14 +282,18 @@
       const nextElement = focusable[nextIndex];
       if (nextElement) {
         e.preventDefault();
+        e.stopPropagation();
 
         // Close any open Flatpickr calendars cleanly before advancing
-        $openModal.find('.app-datepicker, [data-enable-time]').each(function () {
+        $openModal.find('.app-datepicker, .flatpickr-input, [data-enable-time]').each(function () {
           if (this._flatpickr && this._flatpickr.isOpen) {
             try {
               this._flatpickr.close();
             } catch (err) {}
           }
+        });
+        $('.flatpickr-calendar.open').each(function () {
+          $(this).removeClass('open').hide();
         });
 
         // Close any open Select2 dropdowns cleanly before advancing
@@ -273,14 +303,25 @@
           } catch (err) {}
         }
 
-        $(nextElement).focus();
+        // Highlight focused element
+        $openModal.find('.is-keyboard-focused').removeClass('is-keyboard-focused');
+        $(nextElement).addClass('is-keyboard-focused');
+        nextElement.focus();
         ensureElementVisible($openModal, nextElement);
       }
     }
+  }
+
+  // Register in capture phase so our handler runs before any third-party calendar focus traps
+  document.addEventListener('keydown', handleModalKeydown, true);
+
+  // Remove focus highlighting on blur
+  $(document).on('blur', '.modal button, .modal input, .modal select, .modal textarea, .modal .select2-selection, .modal .nav-link', function () {
+    $(this).removeClass('is-keyboard-focused');
   });
 
   // Track focus styling for keyboard users
-  $(document).on('focus', '.modal button, .modal input, .modal select, .modal textarea, .modal .select2-selection', function () {
+  $(document).on('focus', '.modal button, .modal input, .modal select, .modal textarea, .modal .select2-selection, .modal .nav-link', function () {
     const $modal = $(this).closest('.modal');
     if ($modal.length) {
       ensureElementVisible($modal, this);
