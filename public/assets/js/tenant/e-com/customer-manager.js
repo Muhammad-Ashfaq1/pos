@@ -189,6 +189,7 @@
     // Portal panel is edit-only.
     $('#customer_portal_panel').addClass('d-none');
     $('#credit_history_wrap').addClass('d-none');
+    this.$form.find('.modal-body').scrollTop(0);
   };
 
   CustomerManager.prototype.fillForm = function (customer) {
@@ -235,6 +236,7 @@
       $('#invite_portal_label').text(customer.has_portal_access ? 'Resend Portal Invite' : 'Send Portal Invite');
       $('#invite_portal_btn').toggleClass('disabled', !customer.invite_portal_url);
     }
+    this.$form.find('.modal-body').scrollTop(0);
   };
 
   CustomerManager.prototype.setSubmitButtonState = function (loading) {
@@ -255,6 +257,7 @@
     const _this = this;
     return this.$form.validate({
       ignore: [],
+      focusInvalid: false,
       rules: {
         customer_type: { required: true },
         name: { required: true, maxlength: 150 },
@@ -318,7 +321,17 @@
       event.preventDefault();
       _this.resetValidationState();
 
-      if (_this.validator && !_this.$form.valid()) return;
+      if (_this.validator && !_this.$form.valid()) {
+        const $firstInvalid = _this.$form.find('.is-invalid:visible').first();
+        if ($firstInvalid.length) {
+          const $modalBody = _this.$form.find('.modal-body');
+          if ($modalBody.length) {
+            const offsetTop = $firstInvalid.offset().top - $modalBody.offset().top + $modalBody.scrollTop() - 20;
+            $modalBody.stop().animate({ scrollTop: Math.max(0, offsetTop) }, 200);
+          }
+        }
+        return;
+      }
 
       _this.setSubmitButtonState(true);
       if (window.appLoading && typeof window.appLoading.show === 'function') {
@@ -375,6 +388,15 @@
           return [entry[0], Array.isArray(entry[1]) ? entry[1][0] : entry[1]];
         })
       ));
+    }
+
+    const $firstInvalid = this.$form.find('.is-invalid:visible').first();
+    if ($firstInvalid.length) {
+      const $modalBody = this.$form.find('.modal-body');
+      if ($modalBody.length) {
+        const offsetTop = $firstInvalid.offset().top - $modalBody.offset().top + $modalBody.scrollTop() - 20;
+        $modalBody.stop().animate({ scrollTop: Math.max(0, offsetTop) }, 200);
+      }
     }
   };
 

@@ -1,17 +1,17 @@
 <div class="modal fade pos-listing-modal" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true"
     data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
-            <form id="customerForm" action="{{ $customerSaveUrl ?? route('tenant.ecommerce.customers.save') }}" method="POST" novalidate>
+            <form id="customerForm" action="{{ $customerSaveUrl ?? route('tenant.ecommerce.customers.save') }}" method="POST" novalidate class="d-flex flex-column h-100 overflow-hidden">
                 @csrf
                 <input type="hidden" name="id" id="customer_id">
 
-                <div class="modal-header">
+                <div class="modal-header flex-shrink-0">
                     <h5 class="modal-title" id="customerModalLabel">Add Customer</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
-                <div class="modal-body">
+                <div class="modal-body overflow-y-auto">
                     <div class="row g-3 mb-4 p-0">
                         <div class="col">
                             <label for="customer_type" class="form-label">Customer Type <span
@@ -151,7 +151,7 @@
                     </div>
                 </div>
 
-                <div class="modal-footer">
+                <div class="modal-footer flex-shrink-0">
                     <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary" id="customerSubmitBtn"
                         data-create-text="Save Customer" data-update-text="Update Customer">
