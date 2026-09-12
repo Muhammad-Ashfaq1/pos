@@ -433,6 +433,11 @@
 }
 
 /* Ensure scrollable modals with inner forms keep footer pinned and body scrollable */
+.pos-listing-modal .modal-dialog {
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
+}
+
 .pos-listing-modal.modal-dialog-scrollable,
 .pos-listing-modal .modal-dialog-scrollable {
     height: calc(100% - 2rem);
@@ -440,15 +445,17 @@
     max-height: calc(100dvh - 2rem);
 }
 
+.pos-listing-modal .modal-content,
 .pos-listing-modal.modal-dialog-scrollable .modal-content,
 .pos-listing-modal .modal-dialog-scrollable .modal-content {
-    max-height: 100%;
-    height: 100%;
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
     display: flex;
     flex-direction: column;
     overflow: hidden;
 }
 
+.pos-listing-modal form,
 .pos-listing-modal.modal-dialog-scrollable form,
 .pos-listing-modal .modal-dialog-scrollable form {
     display: flex;
@@ -459,6 +466,7 @@
     overflow: hidden;
 }
 
+.pos-listing-modal .modal-body,
 .pos-listing-modal.modal-dialog-scrollable .modal-body,
 .pos-listing-modal .modal-dialog-scrollable .modal-body {
     flex: 1 1 auto;
@@ -467,11 +475,32 @@
     overscroll-behavior: contain;
 }
 
+.pos-listing-modal .modal-header,
+.pos-listing-modal .modal-footer,
 .pos-listing-modal.modal-dialog-scrollable .modal-header,
 .pos-listing-modal.modal-dialog-scrollable .modal-footer,
 .pos-listing-modal .modal-dialog-scrollable .modal-header,
 .pos-listing-modal .modal-dialog-scrollable .modal-footer {
     flex-shrink: 0;
+}
+
+/* Accessible and visible keyboard focus ring for modal navigation */
+.pos-listing-modal button:focus-visible,
+.pos-listing-modal .btn:focus-visible,
+.pos-listing-modal input:focus-visible,
+.pos-listing-modal select:focus-visible,
+.pos-listing-modal textarea:focus-visible,
+.pos-listing-modal .select2-container--default.select2-container--focus .select2-selection {
+    outline: 2px solid var(--bs-primary) !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 4px rgba(var(--bs-primary-rgb), 0.25) !important;
+}
+
+.pos-listing-modal .modal-footer .btn-primary:focus-visible {
+    outline: 2px solid var(--bs-primary) !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 5px rgba(var(--bs-primary-rgb), 0.4) !important;
+    transform: translateY(-1px);
 }
 
 /*

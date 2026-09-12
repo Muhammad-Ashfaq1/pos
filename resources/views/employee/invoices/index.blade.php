@@ -126,14 +126,14 @@
         </div>
 
         <div class="modal fade pos-listing-modal" id="invoiceShareModal" tabindex="-1" aria-labelledby="invoiceShareModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
-                    <div class="modal-header border-bottom">
+                    <div class="modal-header border-bottom flex-shrink-0">
                         <h5 class="modal-title fw-bold" id="invoiceShareModalLabel">Send Invoice Email</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form id="invoice-share-form">
-                        <div class="modal-body">
+                    <form id="invoice-share-form" class="d-flex flex-column h-100 overflow-hidden">
+                        <div class="modal-body overflow-y-auto">
                             <input type="hidden" name="share_url" data-invoice-share-url>
                             <label for="invoice_share_email" class="form-label fw-bold">
                                 Recipient Email <span class="text-danger">*</span>
@@ -149,7 +149,7 @@
                                 data-invoice-share-email
                                 autocomplete="email">
                         </div>
-                        <div class="modal-footer border-top">
+                        <div class="modal-footer border-top flex-shrink-0">
                             <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
                             <button type="submit" class="btn btn-primary fw-bold" data-invoice-share-submit>Send PDF</button>
                         </div>

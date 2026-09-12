@@ -141,16 +141,16 @@
             </div>
 
             <div class="modal fade pos-listing-modal" id="planModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                     <div class="modal-content">
-                        <form id="planForm" action="{{ route('admin.plans.save') }}" method="POST" novalidate>
+                        <form id="planForm" action="{{ route('admin.plans.save') }}" method="POST" novalidate class="d-flex flex-column h-100 overflow-hidden">
                             @csrf
                             <input type="hidden" name="id" id="plan_id">
-                            <div class="modal-header">
+                            <div class="modal-header flex-shrink-0">
                                 <h5 class="modal-title" id="planModalLabel">Add Plan</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
-                            <div class="modal-body">
+                            <div class="modal-body overflow-y-auto">
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label for="plan_name" class="form-label">Name <span class="text-danger">*</span></label>
@@ -192,7 +192,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="modal-footer">
+                            <div class="modal-footer flex-shrink-0">
                                 <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
                                 <button type="submit" class="btn btn-primary" id="planSubmitBtn" data-create-text="Save Plan" data-update-text="Update Plan">Save Plan</button>
                             </div>

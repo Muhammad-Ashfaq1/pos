@@ -58,18 +58,18 @@
 
 @if ($renderModal)
 <div class="modal fade pos-listing-modal" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
-            <form id="productForm" action="{{ $saveUrl }}" method="POST" novalidate>
+            <form id="productForm" action="{{ $saveUrl }}" method="POST" novalidate class="d-flex flex-column h-100 overflow-hidden">
                 @csrf
                 <input type="hidden" name="id" id="product_id">
 
-                <div class="modal-header">
+                <div class="modal-header flex-shrink-0">
                     <h5 class="modal-title" id="productModalLabel">Add Product</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
-                <div class="modal-body">
+                <div class="modal-body overflow-y-auto">
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label for="product_category_id" class="form-label">Category</label>
@@ -287,7 +287,7 @@
                     </div>
                 </div>
 
-                <div class="modal-footer">
+                <div class="modal-footer flex-shrink-0">
                     <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary" id="productSubmitBtn" data-create-text="Save Product" data-update-text="Update Product">
                         Save Product

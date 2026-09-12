@@ -103,18 +103,18 @@
         </div>
 
         <div class="modal fade pos-listing-modal" id="subCategoryModal" tabindex="-1" aria-labelledby="subCategoryModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
-                    <form id="subCategoryForm" action="{{ route('tenant.ecommerce.subcategories.save') }}" method="POST" novalidate>
+                    <form id="subCategoryForm" action="{{ route('tenant.ecommerce.subcategories.save') }}" method="POST" novalidate class="d-flex flex-column h-100 overflow-hidden">
                         @csrf
                         <input type="hidden" name="id" id="sub_category_id">
 
-                        <div class="modal-header">
+                        <div class="modal-header flex-shrink-0">
                             <h5 class="modal-title" id="subCategoryModalLabel">Add Sub Category</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
 
-                        <div class="modal-body">
+                        <div class="modal-body overflow-y-auto">
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label for="category_id" class="form-label">Category <span class="text-danger">*</span></label>
@@ -163,7 +163,7 @@
                             </div>
                         </div>
 
-                        <div class="modal-footer">
+                        <div class="modal-footer flex-shrink-0">
                             <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
                             <button type="submit" class="btn btn-primary" id="subCategorySubmitBtn" data-create-text="Save Sub Category" data-update-text="Update Sub Category">
                                 Save Sub Category

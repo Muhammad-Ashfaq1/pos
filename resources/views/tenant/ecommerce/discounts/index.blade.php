@@ -120,18 +120,18 @@
         </div>
 
         <div class="modal fade pos-listing-modal" id="discountModal" tabindex="-1" aria-labelledby="discountModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-            <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
-                    <form id="discountForm" action="{{ route('tenant.ecommerce.discounts.save') }}" method="POST" novalidate>
+                    <form id="discountForm" action="{{ route('tenant.ecommerce.discounts.save') }}" method="POST" novalidate class="d-flex flex-column h-100 overflow-hidden">
                         @csrf
                         <input type="hidden" name="id" id="discount_id">
 
-                        <div class="modal-header">
+                        <div class="modal-header flex-shrink-0">
                             <h5 class="modal-title" id="discountModalLabel">Add Discount</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
 
-                        <div class="modal-body">
+                        <div class="modal-body overflow-y-auto">
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <label for="discount_name" class="form-label">Name <span class="text-danger">*</span></label>
@@ -212,7 +212,7 @@
                             </div>
                         </div>
 
-                        <div class="modal-footer">
+                        <div class="modal-footer flex-shrink-0">
                             <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
                             <button type="submit" class="btn btn-primary" id="discountSubmitBtn" data-create-text="Save Discount" data-update-text="Update Discount">
                                 Save Discount

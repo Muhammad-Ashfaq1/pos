@@ -128,16 +128,16 @@
             </div>
 
             <div class="modal fade pos-listing-modal" id="demoRequestModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
                     <div class="modal-content">
-                        <div class="modal-header">
+                        <div class="modal-header flex-shrink-0">
                             <div>
                                 <h5 class="modal-title" id="demoModalName">-</h5>
                                 <p class="text-muted mb-0 small" id="demoModalBusiness">-</p>
                             </div>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body">
+                        <div class="modal-body overflow-y-auto">
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
                                     <div class="border rounded p-3 h-100">
@@ -189,7 +189,7 @@
                                 </div>
                             </form>
                         </div>
-                        <div class="modal-footer">
+                        <div class="modal-footer flex-shrink-0">
                             <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Close</button>
                             <button type="button" class="btn btn-primary" id="demoSaveBtn">
                                 <i class="icon-base ti tabler-device-floppy me-1"></i>Save Changes

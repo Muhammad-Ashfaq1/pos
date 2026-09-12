@@ -160,6 +160,7 @@
     const _this = this;
     return this.$form.validate({
       ignore: [],
+      focusInvalid: false,
       rules: {
         customer_id: { required: function() { return $('#vehicle_customer_entry_mode').val() === 'existing'; } },
         inline_customer_name: { required: function() { return $('#vehicle_customer_entry_mode').val() === 'walk_in'; }, maxlength: 150 },
@@ -244,7 +245,17 @@
       event.preventDefault();
       _this.resetValidationState();
 
-      if (_this.validator && !_this.$form.valid()) return;
+      if (_this.validator && !_this.$form.valid()) {
+        const $firstInvalid = _this.$form.find('.is-invalid:visible').first();
+        if ($firstInvalid.length) {
+          const $modalBody = _this.$form.find('.modal-body');
+          if ($modalBody.length) {
+            const offsetTop = $firstInvalid.offset().top - $modalBody.offset().top + $modalBody.scrollTop() - 20;
+            $modalBody.stop().animate({ scrollTop: Math.max(0, offsetTop) }, 200);
+          }
+        }
+        return;
+      }
 
       _this.setSubmitButtonState(true);
       if (window.appLoading && typeof window.appLoading.show === 'function') {

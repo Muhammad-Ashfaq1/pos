@@ -156,18 +156,18 @@
             </div>
 
             <div class="modal fade pos-listing-modal" id="shopSaveModal" tabindex="-1" aria-labelledby="shopModalTitle" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                     <div class="modal-content">
-                        <form id="shopSaveForm" action="{{ route('admin.shops.save') }}" method="POST" novalidate>
+                        <form id="shopSaveForm" action="{{ route('admin.shops.save') }}" method="POST" novalidate class="d-flex flex-column h-100 overflow-hidden">
                             @csrf
                             <input type="hidden" name="id" id="shop_id">
 
-                            <div class="modal-header">
+                            <div class="modal-header flex-shrink-0">
                                 <h5 class="modal-title" id="shopModalTitle">Add Shop</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
 
-                            <div class="modal-body">
+                            <div class="modal-body overflow-y-auto">
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label for="shop_owner_name" class="form-label">Owner Name <span class="text-danger">*</span></label>
@@ -271,7 +271,7 @@
                                 </div>
                             </div>
 
-                            <div class="modal-footer">
+                            <div class="modal-footer flex-shrink-0">
                                 <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
                                 <button type="submit" class="btn btn-primary" id="shopSubmitBtn" data-create-text="Save Shop" data-update-text="Update Shop">
                                     Save Shop

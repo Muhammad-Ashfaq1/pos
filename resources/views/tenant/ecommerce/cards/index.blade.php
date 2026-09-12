@@ -184,19 +184,19 @@
         </div>
 
         <div class="modal fade pos-listing-modal" id="cardModal" tabindex="-1" aria-labelledby="cardModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
-                    <form id="cardForm" action="{{ $saveUrl }}" method="POST" novalidate>
+                    <form id="cardForm" action="{{ $saveUrl }}" method="POST" novalidate class="d-flex flex-column h-100 overflow-hidden">
                         @csrf
                         <input type="hidden" name="id" id="card_id">
                         <input type="hidden" name="card_type" id="card_type" value="{{ $cardType }}">
 
-                        <div class="modal-header">
+                        <div class="modal-header flex-shrink-0">
                             <h5 class="modal-title" id="cardModalLabel">Add {{ $singular }}</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
 
-                        <div class="modal-body">
+                        <div class="modal-body overflow-y-auto">
                             <x-cards.form-fields
                                 :card-type="$cardType"
                                 :products="$products"
@@ -210,7 +210,7 @@
                             />
                         </div>
 
-                        <div class="modal-footer">
+                        <div class="modal-footer flex-shrink-0">
                             <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
                             <button
                                 type="submit"
