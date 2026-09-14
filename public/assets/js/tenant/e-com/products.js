@@ -650,6 +650,9 @@
     return $form.validate({
       ignore: [],
       rules: {
+        category_id: {
+          required: true
+        },
         product_type_id: {
           required: false
         },
@@ -709,6 +712,9 @@
         }
       },
       messages: {
+        category_id: {
+          required: 'Please select a category.'
+        },
         sale_price: {
           required: 'Please enter a sale price.',
           number: 'Please enter a valid sale price.',

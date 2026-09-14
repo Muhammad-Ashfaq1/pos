@@ -64,7 +64,7 @@ class SaveProductRequest extends FormRequest
                 ),
             ],
             'category_id' => [
-                'nullable',
+                'required',
                 'integer',
                 Rule::exists('categories', 'id')->where(
                     fn ($query) => $query->where('tenant_id', $tenantId)
@@ -291,6 +291,7 @@ class SaveProductRequest extends FormRequest
     {
         return [
             'id.exists' => 'The selected product was not found for this shop.',
+            'category_id.required' => 'Please select a category.',
             'category_id.exists' => 'The selected category was not found for this shop.',
             'sub_category_id.exists' => 'The selected sub category was not found for this shop.',
             'discount_id.exists' => 'Please select a valid item discount for this shop.',
