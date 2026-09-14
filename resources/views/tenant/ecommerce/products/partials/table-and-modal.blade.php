@@ -72,13 +72,13 @@
                 <div class="modal-body overflow-y-auto">
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label for="product_category_id" class="form-label">Category</label>
+                            <label for="product_category_id" class="form-label">Category <span class="text-muted fw-normal">(Optional)</span></label>
                             <div class="position-relative">
                                 <select
                                     id="product_category_id"
                                     name="category_id"
                                     class="form-select category-select2"
-                                    data-placeholder="Select a category"
+                                    data-placeholder="Select a category (Optional)"
                                     data-allow-clear="true"
                                     data-dropdown-parent="#productModal"
                                 ></select>
@@ -86,13 +86,13 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <label for="product_sub_category_id" class="form-label">Sub Category</label>
+                            <label for="product_sub_category_id" class="form-label">Sub Category <span class="text-muted fw-normal">(Optional)</span></label>
                             <div class="position-relative">
                                 <select
                                     id="product_sub_category_id"
                                     name="sub_category_id"
                                     class="form-select subcategory-select2"
-                                    data-placeholder="Select a sub category"
+                                    data-placeholder="Select a sub category (Optional)"
                                     data-allow-clear="true"
                                     data-dropdown-parent="#productModal"
                                 ></select>
@@ -100,9 +100,10 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <label for="product_type" class="form-label">Product Type <span class="text-danger">*</span></label>
+                            <label for="product_type" class="form-label">Product Type <span class="text-muted fw-normal">(Optional)</span></label>
                             <div class="position-relative">
-                                <select id="product_type" name="product_type_id" class="form-select select2" data-placeholder="Select a product type" data-dropdown-parent="#productModal">
+                                <select id="product_type" name="product_type_id" class="form-select select2" data-placeholder="Select a product type (Optional)" data-allow-clear="true" data-dropdown-parent="#productModal">
+                                    <option value=""></option>
                                     @foreach($productTypes as $type => $label)
                                         <option value="{{ $type }}">{{ $label }}</option>
                                     @endforeach

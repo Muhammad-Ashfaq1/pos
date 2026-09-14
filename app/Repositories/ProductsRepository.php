@@ -82,16 +82,36 @@ class ProductsRepository implements ProductRepositoryInterface
 
             $data['minimum_stock_level'] = $this->normalizeStock($data['minimum_stock_level'] ?? 0);
             $data['reorder_level'] = $this->normalizeStock($data['reorder_level'] ?? 0);
-            $data['tax_percentage'] = $data['tax_percentage'] !== null && $data['tax_percentage'] !== ''
+            $data['tax_percentage'] = (! empty($data['tax_percentage']) || (isset($data['tax_percentage']) && $data['tax_percentage'] === '0'))
                 ? $this->normalizeMoney($data['tax_percentage'])
                 : null;
             $data['cost_price'] = $this->normalizeMoney($data['cost_price'] ?? 0);
             $data['sale_price'] = $this->normalizeMoney($data['sale_price'] ?? 0);
-            $data['category_id'] = $data['category_id'] ?: null;
-            $data['sub_category_id'] = $data['sub_category_id'] ?: null;
+            $data['category_id'] = ! empty($data['category_id']) ? (int) $data['category_id'] : null;
+            $data['sub_category_id'] = ! empty($data['sub_category_id']) ? (int) $data['sub_category_id'] : null;
+            if ($data['sub_category_id'] && ! $data['category_id']) {
+                $data['category_id'] = SubCategory::query()->whereKey($data['sub_category_id'])->value('category_id');
+            }
             $data['discount_id'] = ! empty($data['discount_id']) ? (int) $data['discount_id'] : null;
             $data['service_id'] = ! empty($data['service_id']) ? (int) $data['service_id'] : null;
             $data['product_type_id'] = ! empty($data['product_type_id']) ? (int) $data['product_type_id'] : null;
+
+            // If product_type_id is not provided, resolve tenant's default product type
+            if (! $data['product_type_id']) {
+                if ($isUpdate && $product?->product_type_id) {
+                    $data['product_type_id'] = $product->product_type_id;
+                } else {
+                    $data['product_type_id'] = ProductType::query()
+                        ->where(function ($q) {
+                            $q->where('slug', 'part')
+                                ->orWhere('slug', 'inventory')
+                                ->orWhere('slug', 'other');
+                        })
+                        ->orderByRaw("CASE WHEN slug = 'part' THEN 1 WHEN slug = 'inventory' THEN 2 WHEN slug = 'other' THEN 3 ELSE 4 END")
+                        ->value('id') ?? ProductType::query()->orderBy('sort_order')->value('id');
+                }
+            }
+
             // Keep the legacy `product_type` string in sync with the selected type's
             // slug so the POS feeds and dropdowns that still read it keep working.
             $data['product_type'] = $data['product_type_id']

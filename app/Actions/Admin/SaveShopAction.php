@@ -2,6 +2,7 @@
 
 namespace App\Actions\Admin;
 
+use App\Enums\DefaultProductType;
 use App\Enums\TenantStatus;
 use App\Models\Plan;
 use App\Models\Tenant;
@@ -107,6 +108,7 @@ class SaveShopAction
 
             $adminUser->assignPrimaryRole(User::TENANT_ADMIN, $tenant->id);
             app(RolePermissionSeeder::class)->seedForTenant($tenant);
+            DefaultProductType::seedDefaultsForTenant($tenant, $adminUser->id);
 
             return $tenant->fresh(['adminUser', 'plan']);
         });

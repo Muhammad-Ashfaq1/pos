@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DefaultProductType;
 use App\Enums\TenantStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +17,13 @@ class Tenant extends Model implements TenantContract
 {
     use CentralConnection;
     use TenantRun;
+
+    protected static function booted(): void
+    {
+        static::created(function (Tenant $tenant): void {
+            DefaultProductType::seedDefaultsForTenant($tenant);
+        });
+    }
 
     public const DEFAULT_SETTINGS = [
         'regional' => [

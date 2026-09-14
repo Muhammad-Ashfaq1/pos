@@ -423,6 +423,11 @@
           };
         }
       }
+    }).on('select2:select', function (e) {
+      const data = e.params ? e.params.data : null;
+      if (data && data.category_id && !$formCategory.val()) {
+        ensureSelectOption($formCategory, data.category_id, data.category_name || 'Category #' + data.category_id);
+      }
     }).on('change', function () {
       setSelect2ErrorState($element, false);
       $element.closest('.position-relative').find('.invalid-feedback').text('');
@@ -530,7 +535,8 @@
     $('#product_reorder_level').val('0');
     $('#product_is_active').prop('checked', true);
     $('#product_track_inventory_toggle').prop('checked', true);
-    $('#product_type').val(Object.keys(window.productTypes)[0]).trigger('change');
+    const defaultTypeId = window.productTypes && Object.keys(window.productTypes).length ? Object.keys(window.productTypes)[0] : '';
+    $('#product_type').val(defaultTypeId).trigger('change');
     ensureSelectOption($formCategory, null, null);
     clearSubCategorySelect($formSubCategory);
     ensureSelectOption($formDiscount, null, null);
@@ -645,7 +651,7 @@
       ignore: [],
       rules: {
         product_type_id: {
-          required: true
+          required: false
         },
         name: {
           required: true,
@@ -703,9 +709,6 @@
         }
       },
       messages: {
-        product_type_id: {
-          required: 'Please select a product type.'
-        },
         name: {
           required: 'Please enter a product name.',
           maxlength: 'The product name may not be greater than 150 characters.'

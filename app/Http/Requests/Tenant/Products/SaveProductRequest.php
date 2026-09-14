@@ -19,10 +19,41 @@ class SaveProductRequest extends FormRequest
         return true;
     }
 
+    private function resolveTenantId(): ?int
+    {
+        return app(TenantContext::class)->id();
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $tenantId = $this->resolveTenantId();
+        $subCategoryId = $this->input('sub_category_id');
+        $categoryId = $this->input('category_id');
+
+        if (! empty($subCategoryId) && empty($categoryId)) {
+            $parentCategoryId = SubCategory::query()
+                ->where('tenant_id', $tenantId)
+                ->whereKey($subCategoryId)
+                ->value('category_id');
+
+            if ($parentCategoryId) {
+                $this->merge(['category_id' => $parentCategoryId]);
+            }
+        }
+
+        if (! $this->has('track_inventory')) {
+            $this->merge(['track_inventory' => true]);
+        }
+
+        if (! $this->has('is_active')) {
+            $this->merge(['is_active' => true]);
+        }
+    }
+
     public function rules(): array
     {
-        $tenantId = app(TenantContext::class)->id();
-        $productId = $this->filled('id') ? (int) $this->input('id') : null;
+        $tenantId = $this->resolveTenantId();
+        $productId = $this->input('id');
 
         return [
             'id' => [
@@ -45,26 +76,23 @@ class SaveProductRequest extends FormRequest
                 Rule::exists('sub_categories', 'id')->where(
                     fn ($query) => $query->where('tenant_id', $tenantId)
                 ),
-                function (string $attribute, mixed $value, Closure $fail): void {
+                function (string $attribute, mixed $value, Closure $fail) use ($tenantId): void {
                     if (! $value) {
                         return;
                     }
 
                     $categoryId = $this->input('category_id');
 
-                    if (! $categoryId) {
-                        $fail('Please select a category before choosing a sub category.');
+                    if ($categoryId) {
+                        $belongsToCategory = SubCategory::query()
+                            ->whereKey($value)
+                            ->where('tenant_id', $tenantId)
+                            ->where('category_id', $categoryId)
+                            ->exists();
 
-                        return;
-                    }
-
-                    $belongsToCategory = SubCategory::query()
-                        ->whereKey($value)
-                        ->where('category_id', $categoryId)
-                        ->exists();
-
-                    if (! $belongsToCategory) {
-                        $fail('The selected sub category does not belong to the selected category.');
+                        if (! $belongsToCategory) {
+                            $fail('The selected sub category does not belong to the selected category.');
+                        }
                     }
                 },
             ],
@@ -85,7 +113,7 @@ class SaveProductRequest extends FormRequest
                 ),
             ],
             'product_type_id' => [
-                'required',
+                'nullable',
                 'integer',
                 Rule::exists('product_types', 'id')->where(
                     fn ($query) => $query->where('tenant_id', $tenantId)
