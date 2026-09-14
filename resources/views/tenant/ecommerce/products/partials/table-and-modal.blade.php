@@ -72,13 +72,13 @@
                 <div class="modal-body overflow-y-auto">
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label for="product_category_id" class="form-label">Category <span class="text-muted fw-normal">(Optional)</span></label>
+                            <label for="product_category_id" class="form-label">Category <span class="text-danger">*</span></label>
                             <div class="position-relative">
                                 <select
                                     id="product_category_id"
                                     name="category_id"
                                     class="form-select category-select2"
-                                    data-placeholder="Select a category (Optional)"
+                                    data-placeholder="Select a category"
                                     data-allow-clear="true"
                                     data-dropdown-parent="#productModal"
                                 ></select>

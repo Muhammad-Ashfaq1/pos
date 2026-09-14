@@ -676,13 +676,43 @@
         return $col[0].outerHTML;
     }
 
+    function isItemOutOfStock(item) {
+        const trackInventory = isTruthyFlag(item.track_inventory);
+        const stock = parseInt(item.current_stock, 10) || 0;
+        return trackInventory && stock <= 0;
+    }
+
+    function renderAddToCartButtonHtml(isOutOfStock, isPosStyle) {
+        if (isOutOfStock) {
+            if (isPosStyle) {
+                return '<button type="button" class="btn btn-secondary pos-product-add-btn disabled" disabled aria-disabled="true">'
+                    + '<i class="ti tabler-package-off"></i><span>Out of Stock</span>'
+                    + '</button>';
+            }
+            return '<button type="button" class="btn btn-secondary btn-sm rounded-pill fw-bold w-100 disabled" disabled aria-disabled="true">'
+                + '<i class="ti tabler-package-off me-1"></i> Out of Stock'
+                + '</button>';
+        }
+
+        if (isPosStyle) {
+            return '<button type="button" class="btn btn-primary pos-product-add-btn btn-add-to-cart">'
+                + '<i class="ti tabler-shopping-cart"></i><span>Add to Cart</span>'
+                + '</button>';
+        }
+        return '<button type="button" class="btn btn-primary btn-sm rounded-pill fw-bold w-100 btn-add-to-cart shadow-primary">'
+            + '<i class="ti tabler-shopping-cart me-1"></i> Add to Cart'
+            + '</button>';
+    }
+
     function buildProductDetailCard(item) {
         const price = formatMoney(Number(item.sale_price || 0));
-        const stock = item.current_stock || 0;
+        const stock = parseInt(item.current_stock, 10) || 0;
         const sku = item.sku || '—';
         const barcode = item.barcode || '—';
         const hasImage = item.image_url && item.image_url !== '';
         const discountText = item.discount ? discountLabel(item.discount) : '';
+        const trackInventory = isTruthyFlag(item.track_inventory);
+        const isOutOfStock = isItemOutOfStock(item);
 
         return ''
             + '<div class="col-md-4">'
@@ -692,7 +722,7 @@
             + '       data-sku="' + (item.sku || '') + '" '
             + '       data-barcode="' + (item.barcode || '') + '" '
             + '       data-stock="' + stock + '" '
-            + '       data-track-inventory="' + (item.track_inventory ? '1' : '0') + '" '
+            + '       data-track-inventory="' + (trackInventory ? '1' : '0') + '" '
             + '       data-image="' + (item.image_url || '') + '" '
             + '       data-discount="' + encodePayload(item.discount || null) + '" '
             + '       data-tax-percentage="' + (item.tax_percentage || 0) + '" '
@@ -725,19 +755,17 @@
             + '      <div class="d-flex gap-2 mb-3">'
             + '        <div class="flex-grow-1 bg-label-primary bg-opacity-10 p-2 rounded-3 border border-primary border-opacity-10 text-center">'
             + '          <small class="text-muted d-block small fw-semibold text-uppercase" style="font-size: 0.55rem;">Available</small>'
-            + '          <span class="fw-bold text-primary product-available-stock">' + stock + '</span>'
+            + '          <span class="fw-bold ' + (isOutOfStock ? 'text-danger' : 'text-primary') + ' product-available-stock">' + stock + '</span>'
             + '        </div>'
             + '        <div class="flex-grow-1">'
             + '          <div class="input-group input-group-sm border border-primary rounded-pill overflow-hidden">'
-            + '            <button class="btn btn-outline-primary border-0 px-2 product-qty-minus-btn" type="button"><i class="ti tabler-minus fs-5"></i></button>'
-            + '            <input type="number" min="1" step="1" class="form-control border-0 text-center fw-bold product-qty-input bg-white" value="1" />'
-            + '            <button class="btn btn-outline-primary border-0 px-2 product-qty-plus-btn" type="button"><i class="ti tabler-plus fs-5"></i></button>'
+            + '            <button class="btn btn-outline-primary border-0 px-2 product-qty-minus-btn" type="button"' + (isOutOfStock ? ' disabled' : '') + '><i class="ti tabler-minus fs-5"></i></button>'
+            + '            <input type="number" min="1" step="1" class="form-control border-0 text-center fw-bold product-qty-input bg-white" value="' + (isOutOfStock ? '0' : '1') + '"' + (isOutOfStock ? ' disabled' : '') + ' />'
+            + '            <button class="btn btn-outline-primary border-0 px-2 product-qty-plus-btn" type="button"' + (isOutOfStock ? ' disabled' : '') + '><i class="ti tabler-plus fs-5"></i></button>'
             + '          </div>'
             + '        </div>'
             + '      </div>'
-            + '      <button type="button" class="btn btn-primary btn-sm rounded-pill fw-bold w-100 btn-add-to-cart shadow-primary">'
-            + '        <i class="ti tabler-shopping-cart me-1"></i> Add to Cart'
-            + '      </button>'
+            +        renderAddToCartButtonHtml(isOutOfStock, false)
             + '    </div>'
             + '  </div>'
             + '</div>';
@@ -754,6 +782,7 @@
         const discountText = item.discount ? discountLabel(item.discount) : '';
         const trackInventory = isTruthyFlag(item.track_inventory);
         const inCartQty = inCartQuantity(productId);
+        const isOutOfStock = isItemOutOfStock(item);
 
         return ''
             + '<div class="col-md-4">'
@@ -790,7 +819,7 @@
             + '        <span>In Cart</span>'
             + '        <strong class="product-in-cart-count">' + inCartQty + '</strong>'
             + '      </div>'
-            + '      <div class="pos-product-stat pos-product-stat-stock">'
+            + '      <div class="pos-product-stat pos-product-stat-stock' + (isOutOfStock ? ' text-danger' : '') + '">'
             + '        <span>Available</span>'
             + '        <strong class="product-available-stock">' + stock + '</strong>'
             + '      </div>'
@@ -798,16 +827,17 @@
             + '    ' + (discountText ? '<div class="product-discount-banner pos-product-discount"><small><i class="ti tabler-discount-2"></i> ' + escape(discountText) + '</small></div>' : '')
             + '    <label class="pos-product-qty-label">Quantity</label>'
             + '    <div class="pos-product-qty-control">'
-            + '      <button class="product-qty-minus-btn" type="button" aria-label="Decrease quantity"><i class="ti tabler-minus"></i></button>'
-            + '      <input type="number" min="1" step="1" class="product-qty-input input-group-text" value="1" aria-label="Quantity" />'
-            + '      <button class="product-qty-plus-btn" type="button" aria-label="Increase quantity"><i class="ti tabler-plus"></i></button>'
+            + '      <button class="product-qty-minus-btn" type="button" aria-label="Decrease quantity"' + (isOutOfStock ? ' disabled' : '') + '><i class="ti tabler-minus"></i></button>'
+            + '      <input type="number" min="1" step="1" class="product-qty-input input-group-text" value="' + (isOutOfStock ? '0' : '1') + '" aria-label="Quantity"' + (isOutOfStock ? ' disabled' : '') + ' />'
+            + '      <button class="product-qty-plus-btn" type="button" aria-label="Increase quantity"' + (isOutOfStock ? ' disabled' : '') + '><i class="ti tabler-plus"></i></button>'
             + '    </div>'
-            + '    <button type="button" class="btn btn-primary pos-product-add-btn btn-add-to-cart">'
-            + '      <i class="ti tabler-shopping-cart"></i><span>Add to Cart</span>'
-            + '    </button>'
-            + '    <button type="button" class="btn btn-link pos-product-clear-btn btn-clear-qty">'
-            + '      <i class="ti tabler-refresh"></i><span>Clear Selection</span>'
-            + '    </button>'
+            +      renderAddToCartButtonHtml(isOutOfStock, true)
+            + (isOutOfStock
+                ? '    <button type="button" class="btn btn-link pos-product-clear-btn opacity-0 pe-none" aria-hidden="true" tabindex="-1"><i class="ti tabler-refresh"></i><span>Clear Selection</span></button>'
+                : '    <button type="button" class="btn btn-link pos-product-clear-btn btn-clear-qty">'
+                + '      <i class="ti tabler-refresh"></i><span>Clear Selection</span>'
+                + '    </button>'
+              )
             + '  </div>'
             + '</div>';
     }
@@ -1032,7 +1062,9 @@
 
     $(document).on('click', '.btn-clear-qty', function () {
         const $card = $(this).closest('.product-detail-card');
-        $card.find('.product-qty-input').val(1);
+        const stock = parseInt($card.data('stock')) || 0;
+        const track_inventory = $card.attr('data-track-inventory') === '1';
+        $card.find('.product-qty-input').val(track_inventory && stock <= 0 ? 0 : 1);
     });
 
     $(document).on('click', '.product-qty-plus-btn', function () {
@@ -1040,6 +1072,12 @@
         const $input = $card.find('.product-qty-input');
         const stock = parseInt($card.data('stock')) || 0;
         const track_inventory = $card.attr('data-track-inventory') === '1';
+
+        if (track_inventory && stock <= 0) {
+            notifyOrder('warning', 'Product is out of stock.');
+            return;
+        }
+
         const val = parseInt($input.val(), 10) || 1;
 
         if (!track_inventory || val < stock) {
@@ -1052,6 +1090,13 @@
     $(document).on('click', '.product-qty-minus-btn', function () {
         const $card = $(this).closest('.product-detail-card');
         const $input = $card.find('.product-qty-input');
+        const stock = parseInt($card.data('stock')) || 0;
+        const track_inventory = $card.attr('data-track-inventory') === '1';
+
+        if (track_inventory && stock <= 0) {
+            return;
+        }
+
         const val = parseInt($input.val(), 10) || 1;
         if (val > 1) {
             $input.val(val - 1);
@@ -1063,6 +1108,12 @@
         const $input = $(this);
         const stock = parseInt($card.data('stock')) || 0;
         const track_inventory = $card.attr('data-track-inventory') === '1';
+
+        if (track_inventory && stock <= 0) {
+            $input.val(0);
+            return;
+        }
+
         let val = parseInt($input.val(), 10);
 
         if (isNaN(val) || val < 1) {
@@ -1074,7 +1125,11 @@
     });
 
     $(document).on('click', '.btn-add-to-cart', function () {
-        const $card = $(this).closest('.product-detail-card');
+        const $btn = $(this);
+        if ($btn.is(':disabled') || $btn.hasClass('disabled')) {
+            return;
+        }
+        const $card = $btn.closest('.product-detail-card');
         const id = $card.data('id');
         const name = $card.data('name');
         const price = parseFloat($card.data('price')) || 0;
