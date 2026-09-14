@@ -527,8 +527,8 @@
   const resetForm = function () {
     $form[0].reset();
     $('#product_id').val('');
-    $('#product_cost_price').val('0.00');
-    $('#product_sale_price').val('0.00');
+    $('#product_cost_price').val('');
+    $('#product_sale_price').val('');
     $('#product_opening_stock').val('0');
     $('#product_current_stock').val('0');
     $('#product_minimum_stock_level').val('0');
@@ -673,14 +673,14 @@
           maxlength: 2000
         },
         cost_price: {
-          required: true,
+          required: false,
           number: true,
           min: 0
         },
         sale_price: {
           required: true,
           number: true,
-          min: 0
+          min: 0.01
         },
         tax_percentage: {
           number: true,
@@ -709,6 +709,11 @@
         }
       },
       messages: {
+        sale_price: {
+          required: 'Please enter a sale price.',
+          number: 'Please enter a valid sale price.',
+          min: 'The sale price must be greater than 0.00.'
+        },
         name: {
           required: 'Please enter a product name.',
           maxlength: 'The product name may not be greater than 150 characters.'

@@ -186,24 +186,14 @@
                             <div class="invalid-feedback"></div>
                         </div>
 
-                        <div class="col-12">
-                            <x-media.dropzone
-                                id="product_images_dropzone"
-                                label="Product Images"
-                                inputName="images[]"
-                                primaryInputName="primary_image_ref"
-                                removedInputName="removed_image_ids[]"
-                            />
-                        </div>
-
                         <div class="col-md-3">
-                            <label for="product_cost_price" class="form-label">Cost Price <span class="text-danger">*</span></label>
-                            <input type="number" step="0.01" min="0" class="form-control" id="product_cost_price" name="cost_price" value="0.00">
+                            <label for="product_cost_price" class="form-label">Cost Price <span class="text-muted fw-normal">(Optional)</span></label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="product_cost_price" name="cost_price" placeholder="0.00">
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-3">
                             <label for="product_sale_price" class="form-label">Sale Price <span class="text-danger">*</span></label>
-                            <input type="number" step="0.01" min="0" class="form-control" id="product_sale_price" name="sale_price" value="0.00">
+                            <input type="number" step="0.01" min="0.01" class="form-control" id="product_sale_price" name="sale_price" placeholder="0.00">
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-3">
@@ -284,6 +274,16 @@
                             <label for="product_reorder_level" class="form-label">Reorder Level</label>
                             <input type="number" step="1" min="0" inputmode="numeric" pattern="[0-9]*" class="form-control inventory-field" id="product_reorder_level" name="reorder_level" value="0">
                             <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <x-media.dropzone
+                                id="product_images_dropzone"
+                                label="Product Images"
+                                inputName="images[]"
+                                primaryInputName="primary_image_ref"
+                                removedInputName="removed_image_ids[]"
+                            />
                         </div>
                     </div>
                 </div>

@@ -81,6 +81,56 @@ class ProductSetupAndTypeSeedingTest extends TestCase
         $this->assertEquals('part', $product->product_type);
     }
 
+    public function test_can_create_product_with_nullable_cost_price(): void
+    {
+        [$tenant, $user] = $this->makeTenantAdminWithPermissions([
+            'product.view', 'product.create', 'products.view', 'products.manage',
+        ]);
+        app(TenantContext::class)->initialize($tenant);
+
+        $response = $this->actingAs($user)->postJson(
+            route('tenant.ecommerce.products.save'),
+            [
+                'name' => 'Zero Cost Accessory',
+                'sale_price' => '20.00',
+                // cost_price intentionally omitted
+            ]
+        );
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'Product created successfully.');
+
+        $product = Product::withoutTenantScope()
+            ->where('tenant_id', $tenant->id)
+            ->where('name', 'Zero Cost Accessory')
+            ->first();
+
+        $this->assertNotNull($product);
+        $this->assertEquals('0.00', (string) $product->cost_price);
+        $this->assertEquals('20.00', (string) $product->sale_price);
+    }
+
+    public function test_saving_product_with_zero_sale_price_is_rejected(): void
+    {
+        [$tenant, $user] = $this->makeTenantAdminWithPermissions([
+            'product.view', 'product.create', 'products.view', 'products.manage',
+        ]);
+        app(TenantContext::class)->initialize($tenant);
+
+        $response = $this->actingAs($user)->postJson(
+            route('tenant.ecommerce.products.save'),
+            [
+                'name' => 'Zero Price Item',
+                'cost_price' => '10.00',
+                'sale_price' => '0.00',
+                'opening_stock' => 5,
+            ]
+        );
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['sale_price']);
+    }
+
     public function test_creating_product_with_only_subcategory_auto_links_parent_category(): void
     {
         [$tenant, $user] = $this->makeTenantAdminWithPermissions([
