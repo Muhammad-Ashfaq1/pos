@@ -832,9 +832,12 @@
             + '      <button class="product-qty-plus-btn" type="button" aria-label="Increase quantity"' + (isOutOfStock ? ' disabled' : '') + '><i class="ti tabler-plus"></i></button>'
             + '    </div>'
             +      renderAddToCartButtonHtml(isOutOfStock, true)
-            + '    <button type="button" class="btn btn-link pos-product-clear-btn btn-clear-qty"' + (isOutOfStock ? ' disabled' : '') + '>'
-            + '      <i class="ti tabler-refresh"></i><span>Clear Selection</span>'
-            + '    </button>'
+            + (isOutOfStock
+                ? '    <button type="button" class="btn btn-link pos-product-clear-btn opacity-0 pe-none" aria-hidden="true" tabindex="-1"><i class="ti tabler-refresh"></i><span>Clear Selection</span></button>'
+                : '    <button type="button" class="btn btn-link pos-product-clear-btn btn-clear-qty">'
+                + '      <i class="ti tabler-refresh"></i><span>Clear Selection</span>'
+                + '    </button>'
+              )
             + '  </div>'
             + '</div>';
     }
