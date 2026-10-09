@@ -255,17 +255,24 @@
                                 </button>
                                 <h3 class="fw-bold mb-0 catalog-title">Categories</h3>
                             </div>
-                            <div class="input-group w-50">
-                                <div class="input-group input-group-merge">
-                                    <span class="input-group-text"><i class="icon-base ti tabler-search"></i></span>
-                                    <input type="text" class="form-control catalog-search px-3"
-                                        placeholder="Search Categories, Sub Categories, Products..." />
-                                    <button type="button"
-                                        class="btn btn-icon btn-text-secondary catalog-search-clear d-none"
-                                        title="Clear search">
-                                        <i class="ti tabler-x"></i>
-                                    </button>
+                            <div class="catalog-header-actions">
+                                <div class="input-group catalog-header-search">
+                                    <div class="input-group input-group-merge">
+                                        <span class="input-group-text"><i class="icon-base ti tabler-search"></i></span>
+                                        <input type="text" class="form-control catalog-search px-3"
+                                            placeholder="Search Categories, Sub Categories, Products..." />
+                                        <button type="button"
+                                            class="btn btn-icon btn-text-secondary catalog-search-clear d-none"
+                                            title="Clear search">
+                                            <i class="ti tabler-x"></i>
+                                        </button>
+                                    </div>
                                 </div>
+                                @can('create', \App\Models\Product::class)
+                                    <button type="button" class="btn btn-primary btn-sm add-order-product-btn" data-bs-toggle="modal" data-bs-target="#productModal">
+                                        <i class="ti tabler-plus me-1"></i> Add Product
+                                    </button>
+                                @endcan
                             </div>
                         </div>
 
@@ -533,6 +540,16 @@
         'products' => $cardFormProducts ?? collect(),
         'currencySymbol' => $currencySymbol ?? \App\Support\Currency::symbol(),
     ])
+    @can('create', \App\Models\Product::class)
+        @include('tenant.ecommerce.products.partials.table-and-modal', [
+            'productTypes' => $productTypes ?? [],
+            'saveUrl' => $productSaveUrl,
+            'renderTable' => false,
+            'isEmployeeSurface' => true,
+            'useSelect2' => true,
+            'posCreateModal' => true,
+        ])
+    @endcan
     @include('tenant.ecommerce.customers.partials.save-modal')
     @if($vehicleRequired)
         @include('tenant.ecommerce.vehicles.partials.save-modal')
@@ -657,6 +674,15 @@
             currencySymbol: @json($currencySymbol ?? \App\Support\Currency::symbol()),
             context: 'pos',
         };
+        @can('create', \App\Models\Product::class)
+            window.productListingUrl = '';
+            window.productEditUrlTemplate = '';
+            window.categoryDropdownUrl = @json($productCategoriesDropdownUrl);
+            window.subCategoryDropdownUrl = @json($productSubCategoriesDropdownUrl);
+            window.discountDropdownUrl = @json($productDiscountDropdownUrl);
+            window.serviceDropdownUrl = @json($productServicesDropdownUrl);
+            window.productTypes = @json($productTypes ?? []);
+        @endcan
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"></script>
     <script src="{{ asset('assets/js/tenant/e-com/customer-manager.js') }}?v={{ filemtime(public_path('assets/js/tenant/e-com/customer-manager.js')) }}"></script>
@@ -669,6 +695,12 @@
     @can('create', \App\Models\Card::class)
         <script src="{{ asset('assets/js/cards-form.js') }}?v={{ filemtime(public_path('assets/js/cards-form.js')) }}"></script>
         <script src="{{ asset('assets/js/employee/cards.js') }}?v={{ filemtime(public_path('assets/js/employee/cards.js')) }}"></script>
+    @endcan
+
+    @can('create', \App\Models\Product::class)
+        <script src="{{ asset('assets/vendor/libs/dropzone/dropzone.js') }}"></script>
+        <script src="{{ asset('assets/js/media-dropzone.js') }}"></script>
+        <script src="{{ asset('assets/js/tenant/e-com/products.js') }}?v={{ filemtime(public_path('assets/js/tenant/e-com/products.js')) }}"></script>
     @endcan
 
     <script src="{{ asset('assets/js/employee/catalog-api.js') }}"></script>

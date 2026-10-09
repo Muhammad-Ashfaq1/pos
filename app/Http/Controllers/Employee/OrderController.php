@@ -12,6 +12,7 @@ use App\Repositories\Interface\OrderRepositoryInterface;
 use App\Services\CreditService;
 use App\Support\Currency;
 use App\Support\OrderSurface;
+use App\Support\ProductSurface;
 use App\Support\Tenancy\TenantContext;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
@@ -72,6 +73,7 @@ class OrderController extends Controller
                 ->orderBy('name')
                 ->get(['id', 'name']),
             'currencySymbol' => Currency::symbol(),
+            ...ProductSurface::productModalData(),
         ]));
     }
 

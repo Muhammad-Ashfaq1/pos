@@ -347,8 +347,12 @@
   };
 
   const initCategorySelect = function ($element) {
-    if (typeof $.fn.select2 !== 'function' || !$element.length || $element.data('select2')) {
+    if (typeof $.fn.select2 !== 'function' || !$element.length) {
       return;
+    }
+
+    if ($element.data('select2')) {
+      $element.select2('destroy');
     }
 
     const dropdownParentSelector = $element.data('dropdown-parent');
@@ -388,8 +392,12 @@
   };
 
   const initSubCategorySelect = function ($element, getCategoryId) {
-    if (typeof $.fn.select2 !== 'function' || !$element.length || $element.data('select2')) {
+    if (typeof $.fn.select2 !== 'function' || !$element.length) {
       return;
+    }
+
+    if ($element.data('select2')) {
+      $element.select2('destroy');
     }
 
     const dropdownParentSelector = $element.data('dropdown-parent');
@@ -435,8 +443,12 @@
   };
 
   const initDiscountSelect = function ($element) {
-    if (typeof $.fn.select2 !== 'function' || !$element.length || $element.data('select2')) {
+    if (typeof $.fn.select2 !== 'function' || !$element.length) {
       return;
+    }
+
+    if ($element.data('select2')) {
+      $element.select2('destroy');
     }
 
     const dropdownParentSelector = $element.data('dropdown-parent');
@@ -478,8 +490,12 @@
   };
 
   const initServiceSelect = function ($element) {
-    if (typeof $.fn.select2 !== 'function' || !$element.length || $element.data('select2')) {
+    if (typeof $.fn.select2 !== 'function' || !$element.length) {
       return;
+    }
+
+    if ($element.data('select2')) {
+      $element.select2('destroy');
     }
 
     const dropdownParentSelector = $element.data('dropdown-parent');

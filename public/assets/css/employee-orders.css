@@ -1,4 +1,4 @@
-﻿.employee-orders-page {
+.employee-orders-page {
     /* max-width: 92rem; */
     margin: 0 auto;
     padding: 0.35rem 0 2rem;
@@ -1739,6 +1739,36 @@ a.employee-orders-tab:hover,
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
+.pos-order-glass .catalog-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    width: min(62%, 540px);
+}
+
+.pos-order-glass .catalog-header-search {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.pos-order-glass .add-order-product-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+@media (max-width: 767.98px) {
+    .pos-order-glass .catalog-header {
+        align-items: stretch !important;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .pos-order-glass .catalog-header-actions {
+        width: 100%;
+    }
+}
+
 .pos-order-glass .catalog-header .input-group .form-control,
 .pos-order-glass .catalog-header .input-group .input-group-text {
     background: transparent;
@@ -1896,6 +1926,14 @@ a.employee-orders-tab:hover,
     animation: posGlassDropdownFade 0.18s ease-out;
 }
 
+/* Keep the Add Product menu attached to the focused field. */
+[data-pos-product-modal="1"] .select2-dropdown.pos-order-product-fields-select2.select2-dropdown--below {
+    transform: none !important;
+    border-top: 1px solid #7367f0 !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+}
+
 @keyframes posGlassDropdownFade {
     from {
         opacity: 0;
@@ -2009,3 +2047,109 @@ a.employee-orders-tab:hover,
 [data-bs-theme="dark"] .select2-dropdown.pos-order-select2 .select2-results__option {
     color: #b6bee3 !important;
 }
+
+/* Product creation dropdowns use a plain, solid Select2 surface. */
+[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 {
+    background: #ffffff !important;
+    background-image: none !important;
+    border-radius: 0.45rem !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: 0 8px 20px rgba(47, 43, 61, 0.16) !important;
+    animation: none !important;
+}
+
+[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-search__field {
+    background: #ffffff !important;
+    border-radius: 0.4rem !important;
+    box-shadow: none !important;
+}
+
+[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-results__option {
+    padding: 0.38rem 0.65rem !important;
+    margin: 0.08rem 0 !important;
+    border-radius: 0.3rem !important;
+    line-height: 1.25 !important;
+}
+
+[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-results__options {
+    padding: 0.2rem 0.3rem !important;
+}
+
+[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-search--dropdown {
+    padding: 0.35rem 0.5rem !important;
+}
+
+[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-search--dropdown .select2-search__field {
+    box-sizing: border-box !important;
+    height: 28px !important;
+    padding: 3px 9px !important;
+    border: 1px solid #d8d8de !important;
+    border-radius: 4px !important;
+    background: #ffffff !important;
+    color: #444050 !important;
+    font-size: 14px !important;
+    line-height: 20px !important;
+    box-shadow: none !important;
+}
+
+[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-search--dropdown .select2-search__field:focus {
+    border-color: #d8d8de !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-results__option--highlighted,
+[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-results__option--highlighted[aria-selected] {
+    background: #f1f1f4 !important;
+    color: #2b2c40 !important;
+    box-shadow: none !important;
+}
+
+[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-results__option[aria-selected="true"] {
+    background: #e7e5ff !important;
+    color: #7367f0 !important;
+}
+
+[data-bs-theme="dark"] [data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 {
+    background: #2f3349 !important;
+    background-image: none !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-bs-theme="dark"] [data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-search__field {
+    background: #25293c !important;
+}
+
+[data-bs-theme="dark"] [data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-results__option--highlighted,
+[data-bs-theme="dark"] [data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-results__option--highlighted[aria-selected] {
+    background: #41465f !important;
+    color: #e2e8f0 !important;
+}
+
+[data-bs-theme="dark"] [data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-results__option[aria-selected="true"] {
+    background: rgba(115, 103, 240, 0.24) !important;
+    color: #c4bfff !important;
+}
+
+.add-order-product-btn,
+.add-order-product-btn:hover,
+.add-order-product-btn:focus-visible,
+.add-order-product-btn:active {
+    color: #ffffff !important;
+    background-color: #4338ca !important;
+    border-color: #7367f0 !important;
+    box-shadow: 0 2px 5px rgba(67, 56, 202, 0.25) !important;
+    opacity: 1 !important;
+}
+
+.add-order-product-btn:hover,
+.add-order-product-btn:focus-visible {
+    background-color: #3730a3 !important;
+}
+
+.add-order-product-btn i {
+    color: inherit !important;
+}
+
+
