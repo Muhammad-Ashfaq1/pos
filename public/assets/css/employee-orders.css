@@ -2048,90 +2048,6 @@ a.employee-orders-tab:hover,
     color: #b6bee3 !important;
 }
 
-/* Product creation dropdowns use a plain, solid Select2 surface. */
-[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 {
-    background: #ffffff !important;
-    background-image: none !important;
-    border-radius: 0.45rem !important;
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
-    box-shadow: 0 8px 20px rgba(47, 43, 61, 0.16) !important;
-    animation: none !important;
-}
-
-[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-search__field {
-    background: #ffffff !important;
-    border-radius: 0.4rem !important;
-    box-shadow: none !important;
-}
-
-[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-results__option {
-    padding: 0.38rem 0.65rem !important;
-    margin: 0.08rem 0 !important;
-    border-radius: 0.3rem !important;
-    line-height: 1.25 !important;
-}
-
-[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-results__options {
-    padding: 0.2rem 0.3rem !important;
-}
-
-[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-search--dropdown {
-    padding: 0.35rem 0.5rem !important;
-}
-
-[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-search--dropdown .select2-search__field {
-    box-sizing: border-box !important;
-    height: 28px !important;
-    padding: 3px 9px !important;
-    border: 1px solid #d8d8de !important;
-    border-radius: 4px !important;
-    background: #ffffff !important;
-    color: #444050 !important;
-    font-size: 14px !important;
-    line-height: 20px !important;
-    box-shadow: none !important;
-}
-
-[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-search--dropdown .select2-search__field:focus {
-    border-color: #d8d8de !important;
-    outline: none !important;
-    box-shadow: none !important;
-}
-
-[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-results__option--highlighted,
-[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-results__option--highlighted[aria-selected] {
-    background: #f1f1f4 !important;
-    color: #2b2c40 !important;
-    box-shadow: none !important;
-}
-
-[data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-results__option[aria-selected="true"] {
-    background: #e7e5ff !important;
-    color: #7367f0 !important;
-}
-
-[data-bs-theme="dark"] [data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 {
-    background: #2f3349 !important;
-    background-image: none !important;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4) !important;
-}
-
-[data-bs-theme="dark"] [data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-search__field {
-    background: #25293c !important;
-}
-
-[data-bs-theme="dark"] [data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-results__option--highlighted,
-[data-bs-theme="dark"] [data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-results__option--highlighted[aria-selected] {
-    background: #41465f !important;
-    color: #e2e8f0 !important;
-}
-
-[data-bs-theme="dark"] [data-pos-product-modal="1"] .select2-dropdown.pos-order-select2 .select2-results__option[aria-selected="true"] {
-    background: rgba(115, 103, 240, 0.24) !important;
-    color: #c4bfff !important;
-}
-
 .add-order-product-btn,
 .add-order-product-btn:hover,
 .add-order-product-btn:focus-visible,
@@ -2151,5 +2067,6 @@ a.employee-orders-tab:hover,
 .add-order-product-btn i {
     color: inherit !important;
 }
+
 
 
