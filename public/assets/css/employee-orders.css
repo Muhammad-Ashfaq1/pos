@@ -1,4 +1,4 @@
-﻿.employee-orders-page {
+.employee-orders-page {
     /* max-width: 92rem; */
     margin: 0 auto;
     padding: 0.35rem 0 2rem;
@@ -1739,6 +1739,36 @@ a.employee-orders-tab:hover,
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
+.pos-order-glass .catalog-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    width: min(62%, 540px);
+}
+
+.pos-order-glass .catalog-header-search {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.pos-order-glass .add-order-product-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+@media (max-width: 767.98px) {
+    .pos-order-glass .catalog-header {
+        align-items: stretch !important;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .pos-order-glass .catalog-header-actions {
+        width: 100%;
+    }
+}
+
 .pos-order-glass .catalog-header .input-group .form-control,
 .pos-order-glass .catalog-header .input-group .input-group-text {
     background: transparent;
@@ -1896,6 +1926,14 @@ a.employee-orders-tab:hover,
     animation: posGlassDropdownFade 0.18s ease-out;
 }
 
+/* Keep the Add Product menu attached to the focused field. */
+[data-pos-product-modal="1"] .select2-dropdown.pos-order-product-fields-select2.select2-dropdown--below {
+    transform: none !important;
+    border-top: 1px solid #7367f0 !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+}
+
 @keyframes posGlassDropdownFade {
     from {
         opacity: 0;
@@ -2009,3 +2047,26 @@ a.employee-orders-tab:hover,
 [data-bs-theme="dark"] .select2-dropdown.pos-order-select2 .select2-results__option {
     color: #b6bee3 !important;
 }
+
+.add-order-product-btn,
+.add-order-product-btn:hover,
+.add-order-product-btn:focus-visible,
+.add-order-product-btn:active {
+    color: #ffffff !important;
+    background-color: #4338ca !important;
+    border-color: #7367f0 !important;
+    box-shadow: 0 2px 5px rgba(67, 56, 202, 0.25) !important;
+    opacity: 1 !important;
+}
+
+.add-order-product-btn:hover,
+.add-order-product-btn:focus-visible {
+    background-color: #3730a3 !important;
+}
+
+.add-order-product-btn i {
+    color: inherit !important;
+}
+
+
+

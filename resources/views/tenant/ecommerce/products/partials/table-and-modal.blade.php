@@ -2,6 +2,8 @@
     $isEmployeeSurface = ! empty($isEmployeeSurface);
     $renderTable = $renderTable ?? true;
     $renderModal = $renderModal ?? true;
+    $useSelect2 = $useSelect2 ?? false;
+    $posCreateModal = $posCreateModal ?? false;
 @endphp
 
 @if ($renderTable)
@@ -57,7 +59,7 @@
 @endif
 
 @if ($renderModal)
-<div class="modal fade pos-listing-modal" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade pos-listing-modal" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false" @if($posCreateModal) data-pos-product-modal="1" @endif>
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <form id="productForm" action="{{ $saveUrl }}" method="POST" novalidate class="d-flex flex-column h-100 overflow-hidden">
@@ -77,7 +79,7 @@
                                 <select
                                     id="product_category_id"
                                     name="category_id"
-                                    class="form-select category-select2"
+                                    class="form-select category-select2{{ $useSelect2 ? ' select2' : ' js-product-native-select' }}"
                                     data-placeholder="Select a category"
                                     data-allow-clear="true"
                                     data-dropdown-parent="#productModal"
@@ -91,7 +93,7 @@
                                 <select
                                     id="product_sub_category_id"
                                     name="sub_category_id"
-                                    class="form-select subcategory-select2"
+                                    class="form-select subcategory-select2{{ $useSelect2 ? ' select2' : ' js-product-native-select' }}"
                                     data-placeholder="Select a sub category (Optional)"
                                     data-allow-clear="true"
                                     data-dropdown-parent="#productModal"
@@ -117,7 +119,7 @@
                                 <select
                                     id="product_discount_id"
                                     name="discount_id"
-                                    class="form-select discount-select2"
+                                    class="form-select discount-select2{{ $useSelect2 ? ' select2' : ' js-product-native-select' }}"
                                     data-placeholder="Select an item discount"
                                     data-allow-clear="true"
                                     data-dropdown-parent="#productModal"
@@ -133,7 +135,7 @@
                                 <select
                                     id="product_service_id"
                                     name="service_id"
-                                    class="form-select service-select2"
+                                    class="form-select service-select2{{ $useSelect2 ? ' select2' : ' js-product-native-select' }}"
                                     data-placeholder="Select a service (optional)"
                                     data-allow-clear="true"
                                     data-dropdown-parent="#productModal"

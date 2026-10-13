@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Card;
 use App\Repositories\Interface\OrderRepositoryInterface;
 use App\Support\OrderSurface;
+use App\Support\ProductSurface;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,6 +31,7 @@ class InvoiceController extends Controller
             'dashboardRoute' => $surface['dashboard_route'],
             'orderRoutes' => $surface['routes'],
             'isEmployeeSurface' => $surface['is_employee'],
+            ...ProductSurface::productModalData(),
         ]);
     }
 
@@ -102,6 +104,7 @@ class InvoiceController extends Controller
             'dashboardRoute' => $surface['dashboard_route'],
             'orderRoutes' => $surface['routes'],
             'isEmployeeSurface' => $surface['is_employee'],
+            ...ProductSurface::productModalData(),
         ]);
     }
 }

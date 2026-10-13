@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\ProductType;
 use Illuminate\Http\Request;
 
 /**
@@ -10,6 +11,28 @@ use Illuminate\Http\Request;
  */
 final class ProductSurface
 {
+    /**
+     * Shared data required to mount the product creation modal on employee pages.
+     *
+     * @return array<string, mixed>
+     */
+    public static function productModalData(): array
+    {
+        return [
+            'productTypes' => ProductType::query()
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->pluck('name', 'id')
+                ->all(),
+            'productSaveUrl' => self::route('save'),
+            'productCategoriesDropdownUrl' => route('tenant.ecommerce.dropdowns.categories'),
+            'productSubCategoriesDropdownUrl' => route('tenant.ecommerce.dropdowns.subcategories'),
+            'productDiscountDropdownUrl' => route('tenant.ecommerce.dropdowns.discounts'),
+            'productServicesDropdownUrl' => route('tenant.ecommerce.dropdowns.services'),
+        ];
+    }
+
     /**
      * @return array{
      *     is_employee: bool,

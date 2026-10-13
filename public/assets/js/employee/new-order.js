@@ -925,6 +925,19 @@
         });
     }
 
+    $(document).on('product:created', function () {
+        const top = navStack[navStack.length - 1];
+        const query = $searchInput.val() || '';
+
+        if (!top || top.level === 'categories') {
+            loadCategories(query);
+        } else if (top.level === 'subCategories') {
+            loadSubCategories(top.meta.categoryId, query);
+        } else if (top.level === 'products') {
+            loadProducts(top.meta.subCategoryId, query);
+        }
+    });
+
     function loadSubCategories(categoryId, q) {
         showLoading($grid);
         Catalog.getSubCategories({ categoryId: categoryId, q: q }).done(function (res) {
@@ -3458,6 +3471,9 @@
         $selects.each(function () {
             const $this = $(this);
             if ($this.data('select2')) return;
+            // The product form script owns the Add Product modal Select2
+            // instances, including their category/subcategory AJAX sources.
+            if ($this.closest('#productModal').length) return;
             // Card create modals are initialized by cards-form.js (CardForm.initProductSelects).
             if ($this.hasClass('card-product-select')) return;
 
