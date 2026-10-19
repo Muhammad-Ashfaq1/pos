@@ -932,9 +932,9 @@
         if (!top || top.level === 'categories') {
             loadCategories(query);
         } else if (top.level === 'subCategories') {
-            loadSubCategories(top.meta.categoryId, query);
+            loadSubCategories(top.meta.id, query);
         } else if (top.level === 'products') {
-            loadProducts(top.meta.subCategoryId, query);
+            loadProducts(top.meta.id, query);
         }
     });
 

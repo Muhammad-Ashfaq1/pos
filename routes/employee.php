@@ -216,7 +216,7 @@ Route::middleware(['auth', 'verified', 'active.user', 'employee.panel', 'tenant.
                     ->whereNumber('product')
                     ->name('edit');
                 Route::post('/save', 'save')
-                    ->middleware('permission:product.create|product.update')
+                    ->middleware('permission:product.create|product.update|products.manage')
                     ->name('save');
                 Route::delete('/{product}', 'destroy')
                     ->middleware('permission:product.delete|products.manage')
