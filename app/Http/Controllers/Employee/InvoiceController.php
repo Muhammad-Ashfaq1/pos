@@ -31,7 +31,6 @@ class InvoiceController extends Controller
             'dashboardRoute' => $surface['dashboard_route'],
             'orderRoutes' => $surface['routes'],
             'isEmployeeSurface' => $surface['is_employee'],
-            ...ProductSurface::productModalData(),
         ]);
     }
 

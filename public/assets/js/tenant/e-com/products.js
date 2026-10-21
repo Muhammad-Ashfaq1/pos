@@ -317,8 +317,14 @@
     $select.val(String(id)).trigger('change');
   };
 
+  const ajaxOwnedSelectIds = '#product_category_id, #product_sub_category_id, #product_discount_id, #product_service_id, #product_filter_category, #product_filter_sub_category';
+
   const initStaticSelect2 = function () {
-    const $selects = $('.select2');
+    // Only own product-form / product-toolbar selects. Never touch order, customer,
+    // or other page dropdowns that share the global `.select2` class.
+    const $selects = $modal.find('.select2')
+      .add('#productTableActions .select2')
+      .add('.pos-listing-toolbar .select2');
 
     if (typeof $.fn.select2 !== 'function' || !$selects.length) {
       return;
@@ -327,7 +333,7 @@
     $selects.each(function () {
       const $this = $(this);
 
-      if ($this.data('select2')) {
+      if ($this.data('select2') || $this.is(ajaxOwnedSelectIds)) {
         return;
       }
 
@@ -347,7 +353,7 @@
   };
 
   const initCategorySelect = function ($element) {
-    if (typeof $.fn.select2 !== 'function' || !$element.length) {
+    if (typeof $.fn.select2 !== 'function' || !$element.length || !window.categoryDropdownUrl) {
       return;
     }
 
@@ -392,7 +398,7 @@
   };
 
   const initSubCategorySelect = function ($element, getCategoryId) {
-    if (typeof $.fn.select2 !== 'function' || !$element.length) {
+    if (typeof $.fn.select2 !== 'function' || !$element.length || !window.subCategoryDropdownUrl) {
       return;
     }
 
@@ -443,7 +449,7 @@
   };
 
   const initDiscountSelect = function ($element) {
-    if (typeof $.fn.select2 !== 'function' || !$element.length) {
+    if (typeof $.fn.select2 !== 'function' || !$element.length || !window.discountDropdownUrl) {
       return;
     }
 
@@ -490,7 +496,7 @@
   };
 
   const initServiceSelect = function ($element) {
-    if (typeof $.fn.select2 !== 'function' || !$element.length) {
+    if (typeof $.fn.select2 !== 'function' || !$element.length || !window.serviceDropdownUrl) {
       return;
     }
 
@@ -824,7 +830,7 @@
   };
 
   const initDataTable = function () {
-    if (typeof DataTable === 'undefined' || !$table.length) {
+    if (typeof DataTable === 'undefined' || !$table.length || !window.productListingUrl) {
       return;
     }
 
@@ -1146,6 +1152,7 @@
           }
 
           reloadTable();
+          $(document).trigger('product:created', [response]);
           showAlert('success', response.message || 'Product saved successfully.');
         })
         .fail(function (xhr) {

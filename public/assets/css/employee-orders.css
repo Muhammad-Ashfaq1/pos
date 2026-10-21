@@ -1752,7 +1752,7 @@ a.employee-orders-tab:hover,
     min-width: 0;
 }
 
-.pos-order-glass .add-order-product-btn {
+.pos-order-glass #addProductBtn {
     flex: 0 0 auto;
     white-space: nowrap;
 }
@@ -1926,13 +1926,6 @@ a.employee-orders-tab:hover,
     animation: posGlassDropdownFade 0.18s ease-out;
 }
 
-/* Keep the Add Product menu attached to the focused field. */
-[data-pos-product-modal="1"] .select2-dropdown.pos-order-product-fields-select2.select2-dropdown--below {
-    transform: none !important;
-    border-top: 1px solid #7367f0 !important;
-    border-top-left-radius: 0 !important;
-    border-top-right-radius: 0 !important;
-}
 
 @keyframes posGlassDropdownFade {
     from {
@@ -2047,26 +2040,4 @@ a.employee-orders-tab:hover,
 [data-bs-theme="dark"] .select2-dropdown.pos-order-select2 .select2-results__option {
     color: #b6bee3 !important;
 }
-
-.add-order-product-btn,
-.add-order-product-btn:hover,
-.add-order-product-btn:focus-visible,
-.add-order-product-btn:active {
-    color: #ffffff !important;
-    background-color: #4338ca !important;
-    border-color: #7367f0 !important;
-    box-shadow: 0 2px 5px rgba(67, 56, 202, 0.25) !important;
-    opacity: 1 !important;
-}
-
-.add-order-product-btn:hover,
-.add-order-product-btn:focus-visible {
-    background-color: #3730a3 !important;
-}
-
-.add-order-product-btn i {
-    color: inherit !important;
-}
-
-
 

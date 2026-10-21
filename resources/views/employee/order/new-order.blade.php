@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/pos-glass.css') }}?v={{ filemtime(public_path('assets/css/pos-glass.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/pos.css') }}?v={{ filemtime(public_path('assets/css/pos.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/employee-orders.css') }}?v={{ filemtime(public_path('assets/css/employee-orders.css')) }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/dropzone/dropzone.css') }}" />
 @endpush
 
 @section('content')
@@ -269,7 +270,7 @@
                                     </div>
                                 </div>
                                 @can('create', \App\Models\Product::class)
-                                    <button type="button" class="btn btn-primary btn-sm add-order-product-btn" data-bs-toggle="modal" data-bs-target="#productModal">
+                                    <button type="button" class="btn btn-primary btn-sm" id="addProductBtn" data-bs-toggle="modal" data-bs-target="#productModal">
                                         <i class="ti tabler-plus me-1"></i> Add Product
                                     </button>
                                 @endcan
