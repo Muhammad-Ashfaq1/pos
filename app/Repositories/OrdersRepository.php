@@ -1731,6 +1731,7 @@ class OrdersRepository implements OrderRepositoryInterface
             ->whereIn('status', [Order::STATUS_PAID, Order::STATUS_PARTIALLY_PAID])
             ->where('paid_at', '>=', now()->subDays($returnDays))
             ->where('status', '!=', 'returned')
+            ->where('total_quantity', '>', 0)
             ->with([
                 'customer:id,name,phone,email',
                 'vehicle:id,plate_number,make,model',
@@ -1767,10 +1768,7 @@ class OrdersRepository implements OrderRepositoryInterface
 
         // Filter out orders where all items have been fully returned
         $orders = $orders->filter(function (Order $order) {
-            $alreadyReturnedQuantities = $this->getAlreadyReturnedQuantities($order);
-            $totalReturned = array_sum($alreadyReturnedQuantities);
-            $totalOriginal = $order->items->sum('quantity');
-            return $totalReturned < $totalOriginal;
+            return (int) $order->items->sum('quantity') > 0 && $order->status !== Order::STATUS_RETURNED;
         });
 
         return [
@@ -1894,11 +1892,12 @@ class OrdersRepository implements OrderRepositoryInterface
                 }
 
                 $alreadyReturned = $alreadyReturnedQuantities[$orderItemId] ?? 0;
-                $availableToReturn = $orderItem->quantity - $alreadyReturned;
+                $availableToReturn = (int) $orderItem->quantity;
 
                 if ($returnQty > $availableToReturn) {
+                    $originalQuantity = (int) $orderItem->quantity + $alreadyReturned;
                     throw ValidationException::withMessages([
-                        'return_items' => "Cannot return more than {$availableToReturn} items for {$orderItem->product_name}. Already returned: {$alreadyReturned}, Original quantity: {$orderItem->quantity}.",
+                        'return_items' => "Cannot return more than {$availableToReturn} items for {$orderItem->product_name}. Already returned: {$alreadyReturned}, Original quantity: {$originalQuantity}.",
                     ]);
                 }
 
@@ -1910,8 +1909,8 @@ class OrdersRepository implements OrderRepositoryInterface
             }
 
             // Calculate proportional discount only (service fee is not refundable for partial returns)
-            $totalOrderItems = $order->items->sum('quantity');
-            $proportionalDiscount = $order->discount_amount > 0
+            $totalOrderItems = (int) $order->items->sum('quantity');
+            $proportionalDiscount = ($order->discount_amount > 0 && $totalOrderItems > 0)
                 ? round($order->discount_amount * ($totalReturnedItems / $totalOrderItems), 2)
                 : 0;
 
@@ -1925,12 +1924,34 @@ class OrdersRepository implements OrderRepositoryInterface
                 ]);
             }
 
-            // Update order status to returned if all items are returned
-            if ($totalReturnedItems >= $totalOrderItems) {
-                $order->forceFill([
-                    'status' => 'returned',
-                    'updated_by' => $userId,
-                ])->save();
+            $isFullyReturned = ((int) $order->total_quantity - $totalReturnedItems) <= 0;
+
+            // Calculate returned items subtotal for this return
+            $returnedItemsSubtotal = 0;
+            foreach ($itemQuantitiesToReturn as $orderItemId => $returnQty) {
+                $orderItem = $order->items->firstWhere('id', $orderItemId);
+                if ($orderItem) {
+                    $returnedItemsSubtotal += round((float) $orderItem->unit_price * $returnQty, 2);
+                }
+            }
+
+            // Calculate updated order totals
+            if ($isFullyReturned) {
+                $newTotalAmount = 0.00;
+                $newPaymentAmount = 0.00;
+                $newSubtotalAmount = 0.00;
+                $newTotalQuantity = 0;
+                $newDiscountAmount = 0.00;
+                $newStatus = Order::STATUS_RETURNED;
+            } else {
+                $newTotalAmount = round(max((float) $order->total_amount - $refundAmount, 0), 2);
+                $newPaymentAmount = round(max((float) $order->payment_amount - $refundAmount, 0), 2);
+                $newSubtotalAmount = round(max((float) $order->subtotal_amount - $returnedItemsSubtotal, 0), 2);
+                $newDiscountAmount = round(max((float) $order->discount_amount - $proportionalDiscount, 0), 2);
+                $newTotalQuantity = max((int) $order->total_quantity - $totalReturnedItems, 0);
+                $newStatus = $newTotalAmount == 0
+                    ? Order::STATUS_RETURNED
+                    : ($newPaymentAmount >= $newTotalAmount ? Order::STATUS_PAID : Order::STATUS_PARTIALLY_PAID);
             }
 
             // Create a refund payment record (negative amount)
@@ -1947,6 +1968,8 @@ class OrdersRepository implements OrderRepositoryInterface
                 'refund_method' => $data['refund_method'],
                 'refund_amount' => $refundAmount,
                 'returned_items' => $itemQuantitiesToReturn,
+                'previous_total_amount' => (float) $order->total_amount,
+                'new_total_amount' => $newTotalAmount,
                 'returned_at' => now()->toIso8601String(),
             ];
 
@@ -1957,17 +1980,32 @@ class OrdersRepository implements OrderRepositoryInterface
             $existingNotes[] = $returnDetails;
 
             $order->forceFill([
+                'total_amount' => $newTotalAmount,
+                'payment_amount' => $newPaymentAmount,
+                'subtotal_amount' => $newSubtotalAmount,
+                'total_quantity' => $newTotalQuantity,
+                'discount_amount' => $newDiscountAmount,
+                'status' => $newStatus,
                 'notes' => json_encode($existingNotes),
                 'updated_by' => $userId,
             ])->save();
 
-            // Restore stock for tracked items (only for returned quantities)
+            // Update order items quantity and restore stock for tracked items
             foreach ($itemQuantitiesToReturn as $orderItemId => $returnQty) {
                 $orderItem = $order->items->firstWhere('id', $orderItemId);
                 if (!$orderItem) continue;
 
+                $newQty = max((int) $orderItem->quantity - $returnQty, 0);
+                $newLineTotal = round($newQty * (float) $orderItem->unit_price, 2);
+
+                $orderItem->forceFill([
+                    'quantity' => $newQty,
+                    'line_total' => $newLineTotal,
+                ])->save();
+
                 $product = Product::query()
                     ->where('id', $orderItem->product_id)
+                    ->where('tenant_id', $order->tenant_id)
                     ->where('track_inventory', true)
                     ->first();
 
@@ -2008,9 +2046,9 @@ class OrdersRepository implements OrderRepositoryInterface
                 'product_id' => $item->product_id,
                 'product_name' => $item->product_name,
                 'sku' => $item->sku,
-                'quantity' => (int) $item->quantity,
+                'quantity' => (int) $item->quantity + $returnedQuantity,
                 'returned_quantity' => $returnedQuantity,
-                'available_quantity' => (int) $item->quantity - $returnedQuantity,
+                'available_quantity' => (int) $item->quantity,
                 'unit_price' => (float) $item->unit_price,
                 'line_total' => (float) $item->line_total,
                 'unit_price_label' => $this->moneyLabel((float) $item->unit_price),
@@ -2049,8 +2087,9 @@ class OrdersRepository implements OrderRepositoryInterface
 
     private function transformReturnedOrder(Order $order): array
     {
-        $refundPayment = $order->payments->first(fn ($payment) => $payment->amount < 0);
-        $refundAmount = $refundPayment ? abs((float) $refundPayment->amount) : 0;
+        $refundPayments = $order->payments->filter(fn ($payment) => $payment->amount < 0);
+        $refundPayment = $refundPayments->last() ?? $refundPayments->first();
+        $refundAmount = abs((float) $refundPayments->sum('amount'));
         $refundMethod = $refundPayment ? $refundPayment->payment_method : null;
         $refundMethodLabel = $refundMethod ? str($refundMethod)->replace('_', ' ')->title()->toString() : 'N/A';
         $refundedAt = $refundPayment ? $refundPayment->created_at : $order->updated_at;
